@@ -5,3 +5,7 @@ code/jvm/.idea
 
 # Ignore Gradle build output directory
 build
+
+node_modules/
+
+.env
