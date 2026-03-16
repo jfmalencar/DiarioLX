@@ -1,57 +1,90 @@
-import { Link, Outlet, useNavigate } from 'react-router';
+import { Link, Outlet, useMatches } from 'react-router';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
-import './AdminLayout.css';
+
+import logo from '@/assets/logo.svg';
+
+type RouteHandle = {
+  title: string
+  subtitle: string
+}
 
 export function AdminLayout() {
-  const { user, logout } = useAuthentication();
-  const navigate = useNavigate();
+  const { user } = useAuthentication();
   const { t } = useI18n();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/admin/login');
-  };
+  const matches = useMatches()
+  const currentMatch = matches[matches.length - 1]
+  const handle = currentMatch?.handle as RouteHandle
 
+  if (window.location.pathname === '/admin/login') return <Outlet />
   return (
-    <>
-      <div className='layout-header'>
-        <div className='nav-links'>
-          <Link to='/admin' className='nav-link'>
-            {t('admin_layout.home')}
+    <div className='d-flex min-vh-100'>
+      <aside
+        className='bg-black text-white d-flex flex-column justify-content-between p-4'
+        style={{ width: '260px' }}
+      >
+        <div>
+          <Link to='/admin' className='text-decoration-none'>
+            <div className='mb-5 text-center'>
+              <img src={logo} alt='DiárioLX' style={{ width: '120px' }} />
+              <div className='mt-2 text-secondary'>Backoffice</div>
+            </div>
           </Link>
-          <Link to='/admin/users' className='nav-link'>
-            {t('admin_layout.users')}
+          <hr className='border-secondary' />
+          <div className='mt-4'>
+            <p className='text-uppercase text-secondary small mb-3'>{t('admin_layout.manage')}</p>
+            <nav className='nav flex-column gap-2'>
+              <Link to='/admin/publicacoes' className='nav-link text-white p-0'>
+                {t('admin_layout.publications')}
+              </Link>
+              <Link to='/admin/utilizadores' className='nav-link text-white p-0'>
+                {t('admin_layout.users')}
+              </Link>
+            </nav>
+          </div>
+          <hr className='border-secondary my-4' />
+          <div>
+            <p className='text-uppercase text-secondary small mb-3'>{t('admin_layout.personal')}</p>
+            <nav className='nav flex-column gap-2'>
+              <Link to='/admin/perfil' className='nav-link text-white p-0'>
+                {t('admin_layout.profile')}
+              </Link>
+              <Link to='/admin/acessos' className='nav-link text-white p-0'>
+                {t('admin_layout.access')}
+              </Link>
+            </nav>
+          </div>
+        </div>
+        <div>
+          <Link to='/' className='d-block mt-2 text-secondary text-decoration-none'>
+            {t('admin_layout.visit')}
           </Link>
         </div>
-        <div className='auth-section'>
-          {user ? (
-            <>
-              <button
-                onClick={() => navigate('/admin/profile')}
-                className='profile-button'
-                title={t('admin_layout.profile')}
-              >
-                {user.charAt(0).toUpperCase()}
-              </button>
-              <button
-                onClick={handleLogout}
-                className='auth-button logout-button'
-              >
-                {t('admin_layout.logout')}
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => navigate('/admin/login')}
-              className='auth-button'
+      </aside>
+      <div className='flex-grow-1 bg-light'>
+        <header className='d-flex justify-content-between align-items-start px-5 py-4'>
+          <div>
+            <h1 className='mb-0 mt-0 fw-medium'>{t(handle.title)}</h1>
+            <p className='text-secondary fs-5 mb-0'>{t(handle.subtitle)}</p>
+          </div>
+          <div className='d-flex align-items-center gap-3'>
+            <div className='text-end'>
+              <div className='fw-semibold'>{user}</div>
+              <div className='text-secondary small'>Super-Admin</div>
+            </div>
+            <div
+              className='rounded-circle bg-dark text-white d-flex align-items-center justify-content-center'
+              style={{ width: '44px', height: '44px' }}
             >
-              {t('admin_layout.login')}
-            </button>
-          )}
-        </div>
+              {user?.charAt(0).toUpperCase()}
+            </div>
+          </div>
+        </header>
+        <main className='px-5 pb-4'>
+          <Outlet />
+        </main>
       </div>
-      <Outlet />
-    </>
-  );
+    </div>
+  )
 }

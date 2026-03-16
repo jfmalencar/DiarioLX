@@ -1,10 +1,10 @@
 import { useI18n } from "@/shared/hooks/useI18n";
 
-export function Users() {
+export function Articles() {
     const { t } = useI18n();
     return (
         <div>
-            <h5>{t('users.title')}</h5>
+            <h5>{t('articles.title')}</h5>
         </div>
     );
 }

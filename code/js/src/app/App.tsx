@@ -8,8 +8,9 @@ import { Home } from '@/modules/public/Home';
 import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
 import { Login } from '@/modules/admin/Login';
-import { Dashboard } from '@/modules/admin/Dashboard';
+import { Homepage } from '@/modules/admin/Homepage';
 import { Users } from '@/modules/admin/Users';
+import { Articles } from '@/modules/admin/Articles';
 
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
@@ -39,16 +40,44 @@ const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       {
-        index: true,
-        element: <RequireAuthentication><Dashboard/></RequireAuthentication>,
-      },
-      {
         path: 'login',
         element: <Login />,
       },
       {
-        path: 'users',
-        element: <RequireAuthentication><Users/></RequireAuthentication>,
+        index: true,
+        element: (
+          <RequireAuthentication>
+            <Homepage />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'admin_layout.homepage',
+          subtitle: 'admin_layout.homepage_subtitle',
+        }
+      },
+      {
+        path: 'utilizadores',
+        element: (
+          <RequireAuthentication>
+            <Users />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'admin_layout.users',
+          subtitle: 'admin_layout.users_subtitle',
+        }
+      },
+      {
+        path: 'publicacoes',
+        element: (
+          <RequireAuthentication>
+            <Articles />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'admin_layout.publications',
+          subtitle: 'admin_layout.publications_subtitle',
+        }
       },
     ]
   }
@@ -57,11 +86,11 @@ const router = createBrowserRouter([
 export function App() {
   return (
     //<BootstrapProvider>
-      <I18nProvider>
-        <AuthenticationProvider>
-          <RouterProvider router={router} />
-        </AuthenticationProvider>
-      </I18nProvider>
+    <I18nProvider>
+      <AuthenticationProvider>
+        <RouterProvider router={router} />
+      </AuthenticationProvider>
+    </I18nProvider>
     //</BootstrapProvider>
   );
 }

@@ -1,10 +1,10 @@
 import { useI18n } from "@/shared/hooks/useI18n";
 
-export function Dashboard() {
+export function Homepage() {
     const { t } = useI18n();
     return (
         <div>
-            <h3>{t('dashboard.title')}</h3>
+            <h5>{t('homepage.title')}</h5>
         </div>
     );
 }

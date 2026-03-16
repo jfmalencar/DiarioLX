@@ -1,6 +1,5 @@
 import { Link, Outlet } from 'react-router';
 import { useI18n } from '@/shared/hooks/useI18n';
-import './PublicLayout.css';
 
 export function PublicLayout() {
   const { t } = useI18n();
