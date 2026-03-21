@@ -38,13 +38,14 @@ export const categoriesMockService: CategoriesService = {
 
   async create(category) {
     const newCategory = {
-      id: String(fakeCategories.length + 1),
       ...category,
+      id: String(fakeCategories.length + 1),
       parentName: category.parentId
         ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
         : null,
       count: 0,
     };
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     fakeCategories.push(newCategory);
     return newCategory.id;
   },
@@ -54,6 +55,7 @@ export const categoriesMockService: CategoriesService = {
     if (index === -1) {
       throw new Error('Category not found');
     }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     fakeCategories[index] = {
       ...fakeCategories[index],
       ...category,

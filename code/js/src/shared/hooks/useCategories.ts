@@ -3,16 +3,9 @@ import { useState, useCallback, useMemo } from 'react';
 import { categoriesService } from '../services/categories/index';
 import { useSearchParams } from 'react-router-dom';
 import { getQueryParams } from '../utils/queryParams';
+import type { Category } from '../services/categories/categories.types';
 
-export type Category = {
-    id: string;
-    name: string;
-    slug: string;
-    color: string;
-    description?: string;
-    parentName?: string | null;
-    count: number;
-}
+export type { Category };
 
 export const useCategories = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -44,10 +37,46 @@ export const useCategories = () => {
         [query]
     )
 
+    const create = useCallback(
+        async (category: Omit<Category, 'id'>): Promise<string | undefined> => {
+            setLoading(true)
+            setError(null)
+            try {
+                const newCategoryId = await categoriesService.create(category)
+                return newCategoryId
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to create category'
+                setError(message)
+                return undefined
+            } finally {
+                setLoading(false)
+            }
+        },
+        []
+    )
+
+    const update = useCallback(
+        async (id: string, category: Omit<Category, 'id'>): Promise<void> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await categoriesService.update(id, category)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to update category'
+                setError(message)
+            } finally {
+                setLoading(false)
+            }
+        },
+        []
+    )
+
     return {
         loading,
         error,
+        categories,
         fetch,
-        categories
+        create,
+        update
     }
 }

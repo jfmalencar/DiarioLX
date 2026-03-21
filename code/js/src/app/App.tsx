@@ -10,6 +10,7 @@ import { Categories } from '@/modules/public/Categories';
 import { Login } from '@/modules/admin/Login';
 import { Homepage } from '@/modules/admin/Homepage';
 import { Categories as AdminCategories } from '@/modules/admin/Categories';
+import { Category as AdminCategory } from '@/modules/admin/Category';
 import { Users } from '@/modules/admin/Users';
 import { Articles } from '@/modules/admin/Articles';
 import { PublicLayout } from '@/layouts/PublicLayout';
@@ -76,7 +77,7 @@ const router = createBrowserRouter([
         path: 'categorias/:id',
         element: (
           <RequireAuthentication>
-            <div>Nova ou edição de categoria</div>
+            <AdminCategory />
           </RequireAuthentication>
         ),
         handle: {

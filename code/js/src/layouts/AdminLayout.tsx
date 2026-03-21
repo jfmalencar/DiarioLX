@@ -99,8 +99,8 @@ export function AdminLayout() {
             </div>
           </div>
         </header>
+        <FloatingActionMenu options={options} />
         <main className='px-5 pb-4'>
-          <FloatingActionMenu options={options} />
           <Outlet />
         </main>
       </div>

@@ -7,7 +7,6 @@ import { Table, TableHeader, TableColumn, TableRow } from '@/shared/components/t
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { TableFilters } from '@/shared/components/table/TableFilters';
 import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
-
 import { type Category, useCategories } from '@/shared/hooks/useCategories';
 import { useI18n } from '@/shared/hooks/useI18n';
 
@@ -99,6 +98,7 @@ const CategoriesTable = ({ rows }: Props) => {
                     <TableColumn className='col-4 col-lg-1 text-lg-end'>
                         <Link
                             to={`/admin/categorias/${row.id}`}
+                            state={{ category: row }}
                             className='btn btn-dark px-4 rounded-2'
                         >
                             {t('categories.manage')}

@@ -16,27 +16,28 @@ export function FloatingActionMenu({ options }: Props) {
 
     const handleToggle = () => {
         setIsOpen((prev) => !prev);
-    }
+    };
 
     const handleSelect = (option: ActionOption) => {
         option.action();
         setIsOpen(false);
-    }
+    };
 
     return (
         <div
-            className='position-fixed d-flex flex-column align-items-end'
+            className='position-fixed'
             style={{ bottom: 32, right: 32, zIndex: 1050 }}
         >
             <div
-                className='bg-transparent p-2 mb-2'
+                className='position-absolute end-0 mb-2'
                 style={{
+                    bottom: '100%',
                     width: 240,
-                    borderRadius: 8,
                     opacity: isOpen ? 1 : 0,
+                    visibility: isOpen ? 'visible' : 'hidden',
                     transform: isOpen ? 'translateY(0)' : 'translateY(10px)',
                     pointerEvents: isOpen ? 'auto' : 'none',
-                    transition: 'opacity 200ms ease, transform 200ms ease',
+                    transition: 'opacity 200ms ease, transform 200ms ease, visibility 200ms ease',
                 }}
             >
                 <div className='d-flex flex-column gap-2'>
@@ -65,11 +66,13 @@ export function FloatingActionMenu({ options }: Props) {
                     border: isOpen ? '2px solid #000' : 'none',
                     transition: 'all 200ms ease',
                 }}
+                aria-expanded={isOpen}
             >
                 <span
                     style={{
                         transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
                         transition: 'transform 200ms ease',
+                        display: 'inline-flex',
                     }}
                 >
                     <Plus />
