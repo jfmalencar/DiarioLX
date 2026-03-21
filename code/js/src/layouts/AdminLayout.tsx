@@ -1,23 +1,38 @@
 import { Link, Outlet, useMatches } from 'react-router';
+import { useNavigate } from 'react-router';
+import { FloatingActionMenu } from '@/shared/components/FloatingActionMenu';
+
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
 
 import logo from '@/assets/logo.svg';
 
+
 type RouteHandle = {
   title: string
   subtitle: string
+  layout: 'none' | 'edit' | 'dashboard'
 }
 
 export function AdminLayout() {
+  const navigate = useNavigate();
   const { user } = useAuthentication();
   const { t } = useI18n();
+
+  const options = [
+    { key: 'article', label: 'Artigo', action: () => navigate('/admin/publicacoes/novo') },
+    { key: 'podcast', label: 'Podcast', action: () => navigate('/admin/podcasts/novo') },
+    { key: 'video', label: 'Vídeo', action: () => navigate('/admin/videos/novo') },
+    { key: 'category', label: 'Categoria', action: () => navigate('/admin/categorias/nova') },
+    { key: 'tag', label: 'Etiqueta', action: () => navigate('/admin/etiquetas/nova') },
+  ]
 
   const matches = useMatches()
   const currentMatch = matches[matches.length - 1]
   const handle = currentMatch?.handle as RouteHandle
 
-  if (window.location.pathname === '/admin/login') return <Outlet />
+  if (handle.layout === 'none') return <Outlet />
+  if (handle.layout === 'edit') return <Outlet />
   return (
     <div className='d-flex min-vh-100'>
       <aside
@@ -40,6 +55,9 @@ export function AdminLayout() {
               </Link>
               <Link to='/admin/utilizadores' className='nav-link text-white p-0'>
                 {t('admin_layout.users')}
+              </Link>
+              <Link to='/admin/categorias' className='nav-link text-white p-0'>
+                {t('admin_layout.categories')}
               </Link>
             </nav>
           </div>
@@ -82,6 +100,7 @@ export function AdminLayout() {
           </div>
         </header>
         <main className='px-5 pb-4'>
+          <FloatingActionMenu options={options} />
           <Outlet />
         </main>
       </div>

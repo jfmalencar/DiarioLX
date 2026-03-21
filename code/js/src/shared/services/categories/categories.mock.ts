@@ -1,0 +1,73 @@
+import type { CategoriesService, Category } from './categories.types';
+
+const fakeCategories: Category[] = [
+  {
+    id: '1',
+    name: 'Category 1',
+    description: 'Description 1',
+    slug: 'category-1',
+    parentId: null,
+    parentName: null,
+    count: 10,
+    color: '#ec6b43',
+  },
+  {
+    id: '2',
+    name: 'Category 2',
+    description: 'Description 2',
+    slug: 'category-2',
+    parentId: null,
+    parentName: null,
+    count: 5,
+    color: '#43a1ec',
+  },
+]
+
+export const categoriesMockService: CategoriesService = {
+  async fetch() {
+    return {
+      categories: fakeCategories,
+      _links: {
+        self: {
+          href: '/api/categories',
+          method: 'GET',
+        },
+      },
+    };
+  },
+
+  async create(category) {
+    const newCategory = {
+      id: String(fakeCategories.length + 1),
+      ...category,
+      parentName: category.parentId
+        ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
+        : null,
+      count: 0,
+    };
+    fakeCategories.push(newCategory);
+    return newCategory.id;
+  },
+
+  async update(id, category) {
+    const index = fakeCategories.findIndex((cat) => cat.id === id);
+    if (index === -1) {
+      throw new Error('Category not found');
+    }
+    fakeCategories[index] = {
+      ...fakeCategories[index],
+      ...category,
+      parentName: category.parentId
+        ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
+        : null,
+    };
+  },
+
+  async delete(id) {
+    const index = fakeCategories.findIndex((cat) => cat.id === id);
+    if (index === -1) {
+      throw new Error('Category not found');
+    }
+    fakeCategories.splice(index, 1);
+  }
+}

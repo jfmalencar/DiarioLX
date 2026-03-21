@@ -9,9 +9,9 @@ import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
 import { Login } from '@/modules/admin/Login';
 import { Homepage } from '@/modules/admin/Homepage';
+import { Categories as AdminCategories } from '@/modules/admin/Categories';
 import { Users } from '@/modules/admin/Users';
 import { Articles } from '@/modules/admin/Articles';
-
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
@@ -42,6 +42,9 @@ const router = createBrowserRouter([
       {
         path: 'login',
         element: <Login />,
+        handle: {
+          layout: 'none'
+        }
       },
       {
         index: true,
@@ -53,6 +56,31 @@ const router = createBrowserRouter([
         handle: {
           title: 'admin_layout.homepage',
           subtitle: 'admin_layout.homepage_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
+        path: 'categorias',
+        element: (
+          <RequireAuthentication>
+            <AdminCategories />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'admin_layout.categories',
+          subtitle: 'admin_layout.categories_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
+        path: 'categorias/:id',
+        element: (
+          <RequireAuthentication>
+            <div>Nova ou edição de categoria</div>
+          </RequireAuthentication>
+        ),
+        handle: {
+          layout: 'edit'
         }
       },
       {
@@ -65,6 +93,7 @@ const router = createBrowserRouter([
         handle: {
           title: 'admin_layout.users',
           subtitle: 'admin_layout.users_subtitle',
+          layout: 'dashboard'
         }
       },
       {
@@ -77,6 +106,7 @@ const router = createBrowserRouter([
         handle: {
           title: 'admin_layout.publications',
           subtitle: 'admin_layout.publications_subtitle',
+          layout: 'dashboard'
         }
       },
     ]

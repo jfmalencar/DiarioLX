@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from 'react';
 
-type HttpResponse = {}
+export type HttpResponse = object
 
 // The State
 type State<A extends HttpResponse> =
@@ -35,7 +35,7 @@ function reducer<A extends HttpResponse>(state: State<A>, action: Action<A>): St
 }
 
 export function useFetch<A extends HttpResponse>(url: string, options?: RequestInit): State<A> {
-  const [state, dispatch] = useReducer(reducer as any, { type: 'begin' } as State<A>);
+  const [state, dispatch] = useReducer(reducer, { type: 'begin' } as State<A>);
 
   useEffect(() => {
     if (!url) return;

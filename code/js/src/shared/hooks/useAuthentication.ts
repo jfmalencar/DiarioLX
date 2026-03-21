@@ -19,11 +19,11 @@ export type AuthenticationState = {
 
 export const AuthenticationContext = createContext<AuthenticationState | undefined>(undefined);
 
-export function useAuthentication(): AuthenticationState{
+export function useAuthentication(): AuthenticationState {
   const context = useContext(AuthenticationContext);
   if (!context) {
     throw new Error('useAuthentication must be used within an AuthenticationProvider');
   }
-  
+
   return context
 }

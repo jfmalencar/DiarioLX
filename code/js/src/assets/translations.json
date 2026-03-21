@@ -11,6 +11,8 @@
         "admin_layout.personal": "Personal",
         "admin_layout.access": "Access",
         "admin_layout.visit": "Visit DiárioLX",
+        "admin_layout.categories": "Categories",
+        "admin_layout.categories_subtitle": "Here you can manage categories.",
         "public_layout.home": "Home",
         "home.welcome": "Welcome to Diário LX!",
         "home.welcome.logged": "Welcome to Diário LX, {{name}}!",
@@ -26,7 +28,19 @@
         "login.create_account": "Create account",
         "users.title": "User Management",
         "articles.title": "Articles Management",
-        "homepage.title": "Homepage Management"
+        "homepage.title": "Homepage Management",
+        "categories.all": "All",
+        "categories.search_placeholder": "Search categories",
+        "categories.name": "Category",
+        "categories.slug": "Slug",
+        "categories.hierarchy": "Hierarchy",
+        "categories.count": "Count",
+        "categories.actions": "Actions",
+        "categories.manage": "Manage",
+        "filters.title": "Filters",
+        "filters.apply": "Apply filters",
+        "filters.clear": "Clear filters",
+        "filters.close": "Close filters"
     },
     "pt": {
         "admin_layout.manage": "Gerir",
@@ -40,6 +54,8 @@
         "admin_layout.personal": "Pessoal",
         "admin_layout.access": "Acessos",
         "admin_layout.visit": "Visitar o DiárioLX",
+        "admin_layout.categories": "Categorias",
+        "admin_layout.categories_subtitle": "Aqui podes gerir as categorias.",
         "public_layout.home": "Início",
         "home.welcome": "Bem-vindo ao Diário LX!",
         "home.welcome.logged": "Bem-vindo ao Diário LX, {{name}}!",
@@ -55,6 +71,18 @@
         "login.create_account": "Criar conta",
         "users.title": "Gerir Colaboradores",
         "articles.title": "Gerir Publicações",
-        "homepage.title": "Gerir Página Inicial"
+        "homepage.title": "Gerir Página Inicial",
+        "categories.all": "Todas",
+        "categories.search_placeholder": "Pesquisar categorias",
+        "categories.name": "Categoria",
+        "categories.slug": "Slug",
+        "categories.hierarchy": "Hierarquia",
+        "categories.count": "Qtd.",
+        "categories.actions": "Ações",
+        "categories.manage": "Gerir",
+        "filters.title": "Filtros",
+        "filters.apply": "Aplicar filtros",
+        "filters.clear": "Limpar filtros",
+        "filters.close": "Fechar filtros"
     }
 }

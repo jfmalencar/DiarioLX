@@ -7,7 +7,7 @@ export type BootstrapState = {
   loading: boolean;
 };
 
-export type Config = {};
+export type Config = object;
 
 export type Links = {
   [key: string]: {
@@ -16,10 +16,10 @@ export type Links = {
   };
 };
 
-export const BootstrapContext = createContext<BootstrapState>({ 
-    config: {},
-    links: {},
-    loading: true
+export const BootstrapContext = createContext<BootstrapState>({
+  config: {},
+  links: {},
+  loading: true
 });
 
 export function useBootstrap(): BootstrapState {
