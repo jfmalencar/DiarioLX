@@ -9,3 +9,10 @@ build
 node_modules/
 
 .env
+
+playwright-report
+
+test-storageState.json
+
+test-results/
+

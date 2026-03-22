@@ -19,15 +19,33 @@ export const useCategories = () => {
         perPage: { type: 'number' },
     }), [searchParams]);
 
-    const fetch = useCallback(
+    const fetchOne = useCallback(
+        async (id: string): Promise<Category | undefined> => {
+            setLoading(true)
+            setError(null)
+            try {
+                const data = await categoriesService.fetchOne(id)
+                return data.category
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch category'
+                setError(message)
+                return undefined
+            } finally {
+                setLoading(false)
+            }
+        },
+        []
+    )
+
+    const fetchAll = useCallback(
         async (): Promise<undefined> => {
             setLoading(true)
             setError(null)
             try {
-                const categoriesList = await categoriesService.fetch(query)
-                setCategories(categoriesList.categories)
+                const data = await categoriesService.fetchAll(query)
+                setCategories(data.categories)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Login failed'
+                const message = err instanceof Error ? err.message : 'Failed to fetch categories'
                 setError(message)
                 setCategories([])
             } finally {
@@ -75,7 +93,8 @@ export const useCategories = () => {
         loading,
         error,
         categories,
-        fetch,
+        fetchAll,
+        fetchOne,
         create,
         update
     }

@@ -4,6 +4,7 @@ type TableProps = {
     children: React.ReactNode;
     emptyMessage?: string;
     isEmpty?: boolean;
+    dataTestId?: string;
 };
 
 type TableHeaderProps = {
@@ -21,18 +22,17 @@ type TableColumnProps = {
     isHeader?: boolean;
 };
 
-export function Table({ children, isEmpty, emptyMessage = 'Sem dados' }: TableProps) {
+export function Table({ children, isEmpty, emptyMessage = 'Sem dados', dataTestId }: TableProps) {
     if (isEmpty) {
         return (
-            <div className='row'>
+            <div className='row' data-testid={dataTestId}>
                 <div className='col-12 text-center py-5'>
                     <p className='text-muted mb-0'>{emptyMessage}</p>
                 </div>
             </div>
         );
     }
-
-    return <div>{children}</div>;
+    return <div data-testid={dataTestId}>{children}</div>;
 }
 
 export function TableHeader({ children }: TableHeaderProps) {

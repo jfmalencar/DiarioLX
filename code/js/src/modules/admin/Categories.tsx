@@ -45,7 +45,7 @@ type Props = {
 const CategoriesTable = ({ rows }: Props) => {
     const { t } = useI18n();
     return (
-        <Table isEmpty={rows.length === 0} emptyMessage='Nenhuma categoria encontrada.'>
+        <Table dataTestId='categories-table' isEmpty={rows.length === 0} emptyMessage='Nenhuma categoria encontrada.'>
             <TableHeader>
                 <TableColumn className='col-lg-5' isHeader={true}>
                     {t('categories.name')}
@@ -63,7 +63,7 @@ const CategoriesTable = ({ rows }: Props) => {
                     {t('categories.actions')}
                 </TableColumn>
             </TableHeader>
-            {rows.map((row) => (
+            {rows.map((row, index) => (
                 <TableRow key={row.id}>
                     <TableColumn className='col-lg-5'>
                         <div className='d-flex align-items-center gap-3'>
@@ -100,6 +100,7 @@ const CategoriesTable = ({ rows }: Props) => {
                             to={`/admin/categorias/${row.id}`}
                             state={{ category: row }}
                             className='btn btn-dark px-4 rounded-2'
+                            data-testid={`manage-category-button-${index}`}
                         >
                             {t('categories.manage')}
                         </Link>
@@ -111,13 +112,13 @@ const CategoriesTable = ({ rows }: Props) => {
 }
 
 export function Categories() {
-    const { categories, fetch } = useCategories();
+    const { categories, fetchAll } = useCategories();
     const [searchParams] = useSearchParams();
     const { t } = useI18n();
 
     useEffect(() => {
-        fetch()
-    }, [fetch, searchParams]);
+        fetchAll()
+    }, [fetchAll, searchParams]);
 
     return (
         <>

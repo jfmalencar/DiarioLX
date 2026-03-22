@@ -24,7 +24,7 @@ const fakeCategories: Category[] = [
 ]
 
 export const categoriesMockService: CategoriesService = {
-  async fetch() {
+  async fetchAll() {
     return {
       categories: fakeCategories,
       _links: {
@@ -34,6 +34,14 @@ export const categoriesMockService: CategoriesService = {
         },
       },
     };
+  },
+
+  async fetchOne(id) {
+    const category = fakeCategories.find((cat) => cat.id === id);
+    if (!category) {
+      throw new Error('Category not found');
+    }
+    return { category, _links: { self: { href: `/api/categories/${id}`, method: 'GET' } } };
   },
 
   async create(category) {

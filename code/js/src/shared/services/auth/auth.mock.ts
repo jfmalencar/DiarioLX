@@ -6,6 +6,7 @@ export const authMockService: AuthService = {
   async authenticate(username, password) {
     if (password === "test") {
       fakeUser = username;
+      cookieStore.set('authToken', username);
       return username;
     }
     return undefined;
@@ -13,6 +14,7 @@ export const authMockService: AuthService = {
 
   async logout() {
     fakeUser = undefined;
+    cookieStore.delete('authToken');
   },
 
   async register(username) {
@@ -21,6 +23,8 @@ export const authMockService: AuthService = {
   },
 
   async getCurrentUser() {
+    const result = await cookieStore.get('authToken')
+    fakeUser = result ? 'testuser' : undefined;
     return fakeUser;
   },
 };

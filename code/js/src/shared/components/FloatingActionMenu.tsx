@@ -45,6 +45,7 @@ export function FloatingActionMenu({ options }: Props) {
                         <button
                             key={option.key}
                             type='button'
+                            data-testid={`action-${option.key}`}
                             className='btn btn-dark text-start rounded-2'
                             style={{ boxShadow: '0 .125rem .25rem rgba(0,0,0,.2)' }}
                             onClick={() => handleSelect(option)}
@@ -57,6 +58,7 @@ export function FloatingActionMenu({ options }: Props) {
             <button
                 type='button'
                 onClick={handleToggle}
+                data-testid='floating-action-button'
                 className='btn d-flex align-items-center justify-content-center rounded-3'
                 style={{
                     width: 64,

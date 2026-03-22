@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useReducer, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
-import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
-
+import { Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { UnderlineTextArea } from '@/shared/components/inputs/UnderlineTextArea';
 import { SearchField } from '@/shared/components/inputs/SearchField';
 import { slugify } from '@/shared/utils/format';
-import { type Category as CategoryType, useCategories } from '@/shared/hooks/useCategories';
+import { type Category, useCategories } from '@/shared/hooks/useCategories';
 
 import icon from '@/assets/icon.svg';
 
@@ -26,19 +25,12 @@ type Inputs = {
 }
 
 type State =
-    | {
-        tag: 'editing';
-        error?: string;
-        inputs: Inputs;
-    }
-    | {
-        tag: 'submitting';
-        inputs: Inputs;
-    }
+    | { tag: 'editing'; error?: string; inputs: Inputs; }
+    | { tag: 'submitting'; inputs: Inputs; }
     | { tag: 'success' };
 
 type Action =
-    | { type: 'init'; category: CategoryType }
+    | { type: 'init'; category: Category }
     | { type: 'edit'; inputName: string; inputValue: string }
     | { type: 'select-parent'; parentId: string; parentName: string }
     | { type: 'submit' }
@@ -111,9 +103,10 @@ const reduce = (state: State, action: Action): State => {
     }
 }
 
-export const Category = () => {
-    const { create, update } = useCategories();
+export const EditCategory = () => {
+    const { fetchOne, create, update } = useCategories();
     const [isColorOpen, setIsColorOpen] = useState(false);
+    const navigate = useNavigate();
     const location = useLocation();
     const params = useParams();
     const [state, dispatch] = useReducer(reduce, {
@@ -132,8 +125,16 @@ export const Category = () => {
         if (location.state?.category) {
             const category = location.state.category;
             dispatch({ type: 'init', category });
+        } else if (params.id && params.id !== 'nova') {
+            fetchOne(params.id).then((category) => {
+                if (category) {
+                    dispatch({ type: 'init', category });
+                } else {
+                    navigate('/admin/categorias/nova', { replace: true });
+                }
+            });
         }
-    }, [location.state]);
+    }, [location.state, fetchOne, params.id, navigate]);
 
     const inputs = state.tag === 'submitting' || state.tag === 'editing' ? state.inputs : null;
 
@@ -164,7 +165,7 @@ export const Category = () => {
 
         dispatch({ type: 'submit' });
 
-        const category: CategoryType = {
+        const category: Category = {
             id: params.id === 'nova' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,
@@ -210,6 +211,7 @@ export const Category = () => {
                                     placeholder='Nome da categoria'
                                     disabled={state.tag === 'submitting'}
                                     onChange={handleChange}
+                                    dataTestId='category-input'
                                 />
                             </FieldSection>
                             <FieldSection
@@ -295,7 +297,7 @@ export const Category = () => {
                                         Cancelar
                                     </Link>
                                 }
-                                <button type='submit' className='btn btn-dark px-4 rounded-3' disabled={state.tag === 'submitting'}>
+                                <button data-testid='save-category-button' type='submit' className='btn btn-dark px-4 rounded-3' disabled={state.tag === 'submitting'}>
                                     {state.tag === 'submitting' ? 'A guardar...' : 'Guardar categoria'}
                                 </button>
                             </div>

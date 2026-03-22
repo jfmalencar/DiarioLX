@@ -1,12 +1,20 @@
-import type { CategoriesService, CategoriesResponse } from './categories.types';
+import type { CategoriesService, CategoriesResponse, CategoryResponse } from './categories.types';
 import { get, post } from '../http/client';
 
 export const categoriesApiService: CategoriesService = {
 
-  async fetch() {
+  async fetchAll() {
     const result = await get<CategoriesResponse>('/api/categories');
     if (!result.success) {
       throw new Error('Failed to fetch categories');
+    }
+    return result.data;
+  },
+
+  async fetchOne(id) {
+    const result = await get<CategoryResponse>(`/api/categories/${id}`);
+    if (!result.success) {
+      throw new Error('Failed to fetch category');
     }
     return result.data;
   },

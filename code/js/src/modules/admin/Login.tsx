@@ -93,17 +93,17 @@ export function Login() {
             <p className='text-muted'>{t('login.subtitle')}</p>
             <form onSubmit={handleSubmit}>
               <div className='mb-4'>
-                <input value={email} onChange={handleChange} type='email' name='email' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='email' />
+                <input data-testid='email-login' value={email} onChange={handleChange} type='email' name='email' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='email' />
               </div>
               <div className='mb-3'>
-                <input value={password} onChange={handleChange} type='password' name='password' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='password' />
+                <input data-testid='password-login' value={password} onChange={handleChange} type='password' name='password' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='password' />
               </div>
               <div className='text-end mb-4'>
                 <Link to='/admin/forgot-password' className='small'>
                   {t('login.forgot_password')}
                 </Link>
               </div>
-              <button className='btn btn-outline-dark w-100 rounded-0' disabled={state.tag === 'submitting'}>
+              <button data-testid='submit-login' className='btn btn-outline-dark w-100 rounded-0' disabled={state.tag === 'submitting'}>
                 {t('login.submit')}
               </button>
               <div className='text-center mt-4'>

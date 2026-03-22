@@ -27,8 +27,20 @@ export type CategoriesResponse = {
   };
 };
 
+export type CategoryResponse = {
+  category: Category;
+  _links: {
+    self: {
+      href: string;
+      method: string;
+    }
+  };
+}
+
 export interface CategoriesService {
-  fetch(params: Record<string, string | number | string[]>): Promise<CategoriesResponse>;
+  fetchAll(params: Record<string, string | number | string[]>): Promise<CategoriesResponse>;
+
+  fetchOne(id: string): Promise<CategoryResponse>;
 
   create(category: Omit<Category, 'id'>): Promise<string | undefined>;
 

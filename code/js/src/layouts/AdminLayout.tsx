@@ -7,7 +7,6 @@ import { useI18n } from '@/shared/hooks/useI18n';
 
 import logo from '@/assets/logo.svg';
 
-
 type RouteHandle = {
   title: string
   subtitle: string
@@ -20,11 +19,11 @@ export function AdminLayout() {
   const { t } = useI18n();
 
   const options = [
-    { key: 'article', label: 'Artigo', action: () => navigate('/admin/publicacoes/novo') },
-    { key: 'podcast', label: 'Podcast', action: () => navigate('/admin/podcasts/novo') },
-    { key: 'video', label: 'Vídeo', action: () => navigate('/admin/videos/novo') },
-    { key: 'category', label: 'Categoria', action: () => navigate('/admin/categorias/nova') },
-    { key: 'tag', label: 'Etiqueta', action: () => navigate('/admin/etiquetas/nova') },
+    { key: 'new-article', label: 'Artigo', action: () => navigate('/admin/publicacoes/novo') },
+    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/admin/podcasts/novo') },
+    { key: 'new-video', label: 'Vídeo', action: () => navigate('/admin/videos/novo') },
+    { key: 'new-category', label: 'Categoria', action: () => navigate('/admin/categorias/nova') },
+    { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/admin/etiquetas/nova') },
   ]
 
   const matches = useMatches()
@@ -50,13 +49,13 @@ export function AdminLayout() {
           <div className='mt-4'>
             <p className='text-uppercase text-secondary small mb-3'>{t('admin_layout.manage')}</p>
             <nav className='nav flex-column gap-2'>
-              <Link to='/admin/publicacoes' className='nav-link text-white p-0'>
+              <Link to='/admin/publicacoes' data-testid='publications-link' className='nav-link text-white p-0'>
                 {t('admin_layout.publications')}
               </Link>
-              <Link to='/admin/utilizadores' className='nav-link text-white p-0'>
+              <Link to='/admin/utilizadores' data-testid='users-link' className='nav-link text-white p-0'>
                 {t('admin_layout.users')}
               </Link>
-              <Link to='/admin/categorias' className='nav-link text-white p-0'>
+              <Link to='/admin/categorias' data-testid='categories-link' className='nav-link text-white p-0'>
                 {t('admin_layout.categories')}
               </Link>
             </nav>

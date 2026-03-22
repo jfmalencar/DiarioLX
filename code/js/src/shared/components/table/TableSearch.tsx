@@ -66,6 +66,7 @@ export function TableSearch({
             <button
                 type='button'
                 onClick={handleOpen}
+                data-testid='table-search-button'
                 className='btn p-0 border-0 bg-transparent position-absolute top-50 translate-middle-y d-flex align-items-center justify-content-center'
                 style={{
                     left: 0,
@@ -79,6 +80,7 @@ export function TableSearch({
             <input
                 ref={inputRef}
                 value={localValue}
+                data-testid='table-search-input'
                 onChange={(e) => setLocalValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onBlur={handleBlur}
