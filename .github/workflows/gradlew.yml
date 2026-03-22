@@ -1,0 +1,29 @@
+name: Gradle
+
+on:
+  # Roda quando você faz PUSH em qualquer branch
+  push:
+  # Permite rodar manualmente
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Continuous Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: 'gradle' # Adicionar cache para acelerar o processo
+          
+      - name: Grant execution permission for gradlew
+        run: chmod +x code/jvm/gradlew
+        
+      - name: Build and Run Checks with Gradle
+        # O comando --info não é estritamente necessário para o check
+        run: ./gradlew check
+        working-directory: code/jvm/

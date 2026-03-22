@@ -2,12 +2,21 @@ type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 type JSONObject = { [key: string]: JSONValue }
 type JSONArray = Array<JSONValue>;
 
-type ApiResult<T> = 
+type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+
+export function put<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
+  return request<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }, onUnauthorized);
+}
+
 export function post<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
   return request<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }, onUnauthorized);
+}
+
+export function remove<T>(url: string, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
+  return request<T>(url, { ...options, method: 'DELETE' }, onUnauthorized);
 }
 
 export function get<T>(url: string, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {

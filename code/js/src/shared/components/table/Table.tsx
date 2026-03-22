@@ -38,7 +38,7 @@ export function Table({ children, isEmpty, emptyMessage = 'Sem dados', dataTestI
 export function TableHeader({ children }: TableHeaderProps) {
     return (
         <div
-            className='row d-none d-lg-flex text-uppercase text-muted small border-bottom pb-2 mb-0'
+            className='row d-none d-lg-flex text-uppercase text-muted small border-bottom pb-2 mb-0 position-sticky top-0 bg-light'
             style={{ letterSpacing: '0.05em' }}
         >
             {children}

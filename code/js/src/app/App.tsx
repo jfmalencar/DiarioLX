@@ -81,7 +81,7 @@ const router = createBrowserRouter([
           </RequireAuthentication>
         ),
         handle: {
-          layout: 'edit'
+          layout: 'none'
         }
       },
       {

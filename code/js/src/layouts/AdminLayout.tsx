@@ -4,13 +4,14 @@ import { FloatingActionMenu } from '@/shared/components/FloatingActionMenu';
 
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
+import { ScrollToTop } from '@/shared/components/ScrollToTop';
 
 import logo from '@/assets/logo.svg';
 
 type RouteHandle = {
   title: string
   subtitle: string
-  layout: 'none' | 'edit' | 'dashboard'
+  layout: 'none' | 'dashboard'
 }
 
 export function AdminLayout() {
@@ -30,12 +31,18 @@ export function AdminLayout() {
   const currentMatch = matches[matches.length - 1]
   const handle = currentMatch?.handle as RouteHandle
 
-  if (handle.layout === 'none') return <Outlet />
-  if (handle.layout === 'edit') return <Outlet />
+  if (handle.layout === 'none') {
+    return (
+      <>
+        <ScrollToTop />
+        <Outlet />
+      </>
+    )
+  }
   return (
     <div className='d-flex min-vh-100'>
       <aside
-        className='bg-black text-white d-flex flex-column justify-content-between p-4'
+        className='bg-black text-white d-flex flex-column justify-content-between p-4 position-sticky top-0 vh-100'
         style={{ width: '260px' }}
       >
         <div>
@@ -103,6 +110,7 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <ScrollToTop />
     </div>
   )
 }

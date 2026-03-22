@@ -1,5 +1,5 @@
 import type { CategoriesService, CategoriesResponse, CategoryResponse } from './categories.types';
-import { get, post } from '../http/client';
+import { get, post, put, remove } from '../http/client';
 
 export const categoriesApiService: CategoriesService = {
 
@@ -28,14 +28,14 @@ export const categoriesApiService: CategoriesService = {
   },
 
   async update(id, category) {
-    const result = await post(`/api/categories/${id}`, category);
+    const result = await put(`/api/categories/${id}`, category);
     if (!result.success) {
       throw new Error('Failed to update category');
     }
   },
 
   async delete(id) {
-    const result = await post(`/api/categories/${id}/delete`, {});
+    const result = await remove(`/api/categories/${id}/delete`, {});
     if (!result.success) {
       throw new Error('Failed to delete category');
     }

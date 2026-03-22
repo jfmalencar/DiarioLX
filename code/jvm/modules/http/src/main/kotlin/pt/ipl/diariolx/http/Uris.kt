@@ -23,6 +23,16 @@ object Uris {
         fun register(): URI = URI(CREATE)
     }
 
+    object Categories {
+        const val GET_BY_ID = "$PREFIX/categories/{id}"
+        const val CREATE = "$PREFIX/categories"
+        const val UPDATE = "$PREFIX/categories/{id}"
+        const val DELETE = "$PREFIX/categories/{id}"
+        const val GET_ALL = "$PREFIX/categories"
+
+        fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
+    }
+
     object Status {
         const val HOSTNAME = "$PREFIX/status/hostname"
         const val IP = "$PREFIX/status/ip"
