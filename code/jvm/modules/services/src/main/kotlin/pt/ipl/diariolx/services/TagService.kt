@@ -6,12 +6,10 @@ import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
 import pt.ipl.diariolx.repository.Transaction
 import pt.ipl.diariolx.repository.TransactionManager
-import pt.ipl.diariolx.utils.ColorValidator
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.SlugValidator
 import pt.ipl.diariolx.utils.TagCreateResult
 import pt.ipl.diariolx.utils.TagError
-import pt.ipl.diariolx.utils.TagQuery
 import pt.ipl.diariolx.utils.TagResult
 import pt.ipl.diariolx.utils.TagUpdateResult
 import pt.ipl.diariolx.utils.TagValidationResult

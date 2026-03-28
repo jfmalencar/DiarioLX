@@ -3,11 +3,9 @@ package pt.ipl.diariolx.repository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.domain.tag.NewTag
 import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
-import pt.ipl.diariolx.repository.JdbiCategoryRepository.CategoryModel
 
 class JdbiTagRepository(
     private val handle: Handle,

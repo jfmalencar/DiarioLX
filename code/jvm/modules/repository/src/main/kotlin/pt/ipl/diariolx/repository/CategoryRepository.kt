@@ -3,7 +3,6 @@ package pt.ipl.diariolx.repository
 import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.domain.category.UpdateCategory
-import pt.ipl.diariolx.domain.tag.Tag
 
 interface CategoryRepository {
     fun create(category: NewCategory): Int
