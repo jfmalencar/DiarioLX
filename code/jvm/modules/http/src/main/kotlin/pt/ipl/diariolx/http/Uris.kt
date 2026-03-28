@@ -29,6 +29,20 @@ object Uris {
         const val UPDATE = "$PREFIX/categories/{id}"
         const val DELETE = "$PREFIX/categories/{id}"
         const val GET_ALL = "$PREFIX/categories"
+        const val ARCHIVE = "$PREFIX/categories/{id}/archive"
+        const val UNARCHIVE = "$PREFIX/categories/{id}/unarchive"
+
+        fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
+    }
+
+    object Tags {
+        const val GET_BY_ID = "$PREFIX/tags/{id}"
+        const val CREATE = "$PREFIX/tags"
+        const val UPDATE = "$PREFIX/tags/{id}"
+        const val DELETE = "$PREFIX/tags/{id}"
+        const val GET_ALL = "$PREFIX/tags"
+        const val ARCHIVE = "$PREFIX/tags/{id}/archive"
+        const val UNARCHIVE = "$PREFIX/tags/{id}/unarchive"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
     }

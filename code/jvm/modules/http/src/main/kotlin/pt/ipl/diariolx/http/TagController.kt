@@ -9,92 +9,92 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.http.model.CategoryRequest
-import pt.ipl.diariolx.services.CategoryService
+import pt.ipl.diariolx.http.model.TagRequest
+import pt.ipl.diariolx.services.TagService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
 
 @RestController
-class CategoryController(
-    private val categoryService: CategoryService,
+class TagController(
+    private val tagService: TagService,
 ) {
-    @GetMapping(Uris.Categories.GET_BY_ID)
-    fun getCategoryById(
+    @GetMapping(Uris.Tags.GET_BY_ID)
+    fun getTagById(
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val id = id.toInt()
-        return when (val result = categoryService.get(id)) {
-            is Success -> ResponseEntity.ok(mapOf("category" to result.value))
+        return when (val result = tagService.get(id)) {
+            is Success -> ResponseEntity.ok(mapOf("tag" to result.value))
             is Failure -> ResponseEntity.notFound().build<Unit>()
         }
     }
 
-    @GetMapping(Uris.Categories.GET_ALL)
-    fun getAllCategories(
+    @GetMapping(Uris.Tags.GET_ALL)
+    fun getAllTags(
         @RequestParam page: Int = 1,
         @RequestParam limit: Int = 10,
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
         val limit = if (limit > 30) 30 else limit
-        val categories = categoryService.getAll(page, limit, archived)
-        return ResponseEntity.ok(mapOf("categories" to categories))
+        val tags = tagService.getAll(page, limit, archived)
+        return ResponseEntity.ok(mapOf("tags" to tags))
     }
 
-    @PostMapping(Uris.Categories.CREATE)
-    fun createCategory(
-        @RequestBody body: CategoryRequest,
+    @PostMapping(Uris.Tags.CREATE)
+    fun createTag(
+        @RequestBody body: TagRequest,
     ): ResponseEntity<*> =
-        when (val res = categoryService.create(body.name, body.slug, body.description, body.color, body.parentId)) {
+        when (val res = tagService.create(body.name, body.slug, body.description)) {
             is Success ->
                 ResponseEntity
                     .status(201)
                     .header(
                         "Location",
-                        Uris.Categories.byId(res.value).toASCIIString(),
+                        Uris.Tags.byId(res.value).toASCIIString(),
                     ).build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }
 
-    @PutMapping(Uris.Categories.UPDATE)
-    fun updateCategory(
+    @PutMapping(Uris.Tags.UPDATE)
+    fun updateTag(
         @PathVariable id: String,
-        @RequestBody body: CategoryRequest,
+        @RequestBody body: TagRequest,
     ): ResponseEntity<*> {
         val id = id.toInt()
-        return when (categoryService.update(id, body.name, body.slug, body.description, body.color, body.parentId)) {
+        return when (tagService.update(id, body.name, body.slug, body.description)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }
     }
 
-    @DeleteMapping(Uris.Categories.DELETE)
-    fun deleteCategory(
+    @DeleteMapping(Uris.Tags.DELETE)
+    fun deleteTag(
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val id = id.toInt()
-        return when (categoryService.delete(id)) {
+        return when (tagService.delete(id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }
     }
 
-    @PostMapping(Uris.Categories.ARCHIVE)
-    fun archiveCategory(
+    @PostMapping(Uris.Tags.ARCHIVE)
+    fun archiveTag(
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val id = id.toInt()
-        return when (categoryService.archive(id)) {
+        return when (tagService.archive(id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }
     }
 
-    @PostMapping(Uris.Categories.UNARCHIVE)
-    fun unarchiveCategory(
+    @PostMapping(Uris.Tags.UNARCHIVE)
+    fun unarchiveTag(
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val id = id.toInt()
-        return when (categoryService.unarchive(id)) {
+        return when (tagService.unarchive(id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }

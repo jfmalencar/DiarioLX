@@ -10,10 +10,10 @@ import pt.ipl.diariolx.utils.CategoryCreateResult
 import pt.ipl.diariolx.utils.CategoryError
 import pt.ipl.diariolx.utils.CategoryResult
 import pt.ipl.diariolx.utils.CategoryUpdateResult
+import pt.ipl.diariolx.utils.CategoryValidationResult
 import pt.ipl.diariolx.utils.ColorValidator
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.SlugValidator
-import pt.ipl.diariolx.utils.ValidationResult
 import pt.ipl.diariolx.utils.failure
 import pt.ipl.diariolx.utils.success
 
@@ -72,9 +72,13 @@ class CategoryService(
             }
         }
 
-    fun getAll(): List<Category> =
+    fun getAll(
+        page: Int,
+        limit: Int,
+        archived: Boolean,
+    ): List<Category> =
         transactionManager.run {
-            it.categoryRepository.getAll()
+            it.categoryRepository.getAll(page, limit, archived)
         }
 
     fun delete(id: Int): CategoryUpdateResult =
@@ -87,11 +91,31 @@ class CategoryService(
             }
         }
 
+    fun archive(id: Int): CategoryUpdateResult =
+        transactionManager.run {
+            val result = it.categoryRepository.archive(id)
+            if (result) {
+                return@run success(Unit)
+            } else {
+                return@run failure(CategoryError.CategoryNotFound)
+            }
+        }
+
+    fun unarchive(id: Int): CategoryUpdateResult =
+        transactionManager.run {
+            val result = it.categoryRepository.unarchive(id)
+            if (result) {
+                return@run success(Unit)
+            } else {
+                return@run failure(CategoryError.CategoryNotFound)
+            }
+        }
+
     private fun validateInputs(
         name: String?,
         slug: String?,
         color: String?,
-    ): ValidationResult {
+    ): CategoryValidationResult {
         if (name.isNullOrBlank()) {
             return failure(CategoryError.EmptyName)
         }
@@ -109,7 +133,7 @@ class CategoryService(
         id: Int?,
         slug: String?,
         parentId: Int?,
-    ): ValidationResult {
+    ): CategoryValidationResult {
         val existing = tx.categoryRepository.getBySlug(slug!!)
         if (existing != null && existing.id != id) {
             return failure(CategoryError.SlugAlreadyExists)

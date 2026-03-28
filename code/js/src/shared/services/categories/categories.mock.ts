@@ -10,6 +10,9 @@ const fakeCategories: Category[] = [
     parentName: null,
     count: 10,
     color: '#ec6b43',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    archivedAt: null,
   },
   {
     id: '2',
@@ -20,6 +23,9 @@ const fakeCategories: Category[] = [
     parentName: null,
     count: 5,
     color: '#43a1ec',
+    createdAt: '2024-01-02T00:00:00Z',
+    updatedAt: '2024-01-02T00:00:00Z',
+    archivedAt: null,
   },
 ]
 
@@ -52,6 +58,9 @@ export const categoriesMockService: CategoriesService = {
         ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
         : null,
       count: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      archivedAt: null,
     };
     await new Promise((resolve) => setTimeout(resolve, 2000));
     fakeCategories.push(newCategory);
@@ -67,6 +76,7 @@ export const categoriesMockService: CategoriesService = {
     fakeCategories[index] = {
       ...fakeCategories[index],
       ...category,
+      updatedAt: new Date().toISOString(),
       parentName: category.parentId
         ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
         : null,
@@ -79,5 +89,31 @@ export const categoriesMockService: CategoriesService = {
       throw new Error('Category not found');
     }
     fakeCategories.splice(index, 1);
+  },
+
+  async archive(id) {
+    const index = fakeCategories.findIndex((cat) => cat.id === id);
+    if (index === -1) {
+      throw new Error('Category not found');
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    fakeCategories[index] = {
+      ...fakeCategories[index],
+      archivedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  },
+
+  async unarchive(id) {
+    const index = fakeCategories.findIndex((cat) => cat.id === id);
+    if (index === -1) {
+      throw new Error('Category not found');
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    fakeCategories[index] = {
+      ...fakeCategories[index],
+      archivedAt: null,
+      updatedAt: new Date().toISOString(),
+    };
   }
-}
+};

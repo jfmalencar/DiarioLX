@@ -1,25 +1,25 @@
 
 import { useState, useCallback } from 'react';
-import { categoriesService } from '../services/categories/index';
-import type { Category, CategoryRequest } from '../services/categories/categories.types';
+import { tagsService } from '../services/tags/index';
+import type { Tag, TagRequest } from '../services/tags/tags.types';
 import type { Query } from '@/shared/types/Query';
 
-export type { Category, CategoryRequest };
+export type { Tag, TagRequest };
 
-export const useCategories = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
+export const useTags = () => {
+    const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const fetchOne = useCallback(
-        async (id: string): Promise<Category | undefined> => {
+        async (id: string): Promise<Tag | undefined> => {
             setLoading(true)
             setError(null)
             try {
-                const data = await categoriesService.fetchOne(id)
-                return data.category
+                const data = await tagsService.fetchOne(id)
+                return data.tag
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to fetch category'
+                const message = err instanceof Error ? err.message : 'Failed to fetch tag'
                 setError(message)
                 return undefined
             } finally {
@@ -34,12 +34,12 @@ export const useCategories = () => {
             setLoading(true)
             setError(null)
             try {
-                const data = await categoriesService.fetchAll(params)
-                setCategories(data.categories)
+                const data = await tagsService.fetchAll(params)
+                setTags(data.tags)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to fetch categories'
+                const message = err instanceof Error ? err.message : 'Failed to fetch tags'
                 setError(message)
-                setCategories([])
+                setTags([])
             } finally {
                 setLoading(false)
             }
@@ -48,14 +48,14 @@ export const useCategories = () => {
     )
 
     const create = useCallback(
-        async (category: CategoryRequest): Promise<string | undefined> => {
+        async (tag: TagRequest): Promise<string | undefined> => {
             setLoading(true)
             setError(null)
             try {
-                const newCategoryId = await categoriesService.create(category)
-                return newCategoryId
+                const newTagId = await tagsService.create(tag)
+                return newTagId
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to create category'
+                const message = err instanceof Error ? err.message : 'Failed to create tag'
                 setError(message)
                 return undefined
             } finally {
@@ -66,13 +66,13 @@ export const useCategories = () => {
     )
 
     const update = useCallback(
-        async (id: string, category: CategoryRequest): Promise<void> => {
+        async (id: string, tag: TagRequest): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
-                await categoriesService.update(id, category)
+                await tagsService.update(id, tag)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to update category'
+                const message = err instanceof Error ? err.message : 'Failed to update tag'
                 setError(message)
             } finally {
                 setLoading(false)
@@ -81,15 +81,14 @@ export const useCategories = () => {
         []
     )
 
-
     const archive = useCallback(
         async (id: string): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
-                await categoriesService.archive(id)
+                await tagsService.archive(id)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to archive category'
+                const message = err instanceof Error ? err.message : 'Failed to archive tag'
                 setError(message)
             } finally {
                 setLoading(false)
@@ -103,9 +102,9 @@ export const useCategories = () => {
             setLoading(true)
             setError(null)
             try {
-                await categoriesService.unarchive(id)
+                await tagsService.unarchive(id)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to unarchive category'
+                const message = err instanceof Error ? err.message : 'Failed to unarchive tag'
                 setError(message)
             } finally {
                 setLoading(false)
@@ -117,7 +116,7 @@ export const useCategories = () => {
     return {
         loading,
         error,
-        categories,
+        tags,
         fetchAll,
         fetchOne,
         create,

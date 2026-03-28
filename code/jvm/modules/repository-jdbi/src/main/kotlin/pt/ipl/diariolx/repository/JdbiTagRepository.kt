@@ -4,53 +4,50 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.NewCategory
-import pt.ipl.diariolx.domain.category.UpdateCategory
+import pt.ipl.diariolx.domain.tag.NewTag
+import pt.ipl.diariolx.domain.tag.Tag
+import pt.ipl.diariolx.domain.tag.UpdateTag
+import pt.ipl.diariolx.repository.JdbiCategoryRepository.CategoryModel
 
-class JdbiCategoryRepository(
+class JdbiTagRepository(
     private val handle: Handle,
-) : CategoryRepository {
-    override fun create(category: NewCategory): Int =
+) : TagRepository {
+    override fun create(tag: NewTag): Int =
         handle
             .createQuery(
                 """
-                insert into categories (name, slug, description, color, parent_id)
-                values (:name, :slug, :description, :color, :parent_id)
+                insert into tags (name, slug, description)
+                values (:name, :slug, :description)
                 returning id
                 """.trimIndent(),
-            ).bind("name", category.name)
-            .bind("slug", category.slug)
-            .bind("description", category.description)
-            .bind("color", category.color)
-            .bind("parent_id", category.parentId)
+            ).bind("name", tag.name)
+            .bind("slug", tag.slug)
+            .bind("description", tag.description)
             .mapTo<Int>()
             .one()
 
-    override fun update(category: UpdateCategory): Boolean =
+    override fun update(tag: UpdateTag) =
         handle
             .createUpdate(
                 """
-                update categories
-                set name = :name, slug = :slug, description = :description,
-                color = :color, parent_id = :parent_id, updated_at = EXTRACT(EPOCH FROM NOW())
+                update tags
+                set name = :name, slug = :slug, description = :description
                 where id = :id
                 """.trimIndent(),
-            ).bind("id", category.id)
-            .bind("name", category.name)
-            .bind("slug", category.slug)
-            .bind("description", category.description)
-            .bind("color", category.color)
-            .bind("parent_id", category.parentId)
+            ).bind("id", tag.id)
+            .bind("name", tag.name)
+            .bind("slug", tag.slug)
+            .bind("description", tag.description)
             .execute() > 0
 
     override fun getAll(
         page: Int,
         limit: Int,
         archived: Boolean,
-    ): List<Category> {
+    ): List<Tag> {
         val sql =
             buildString {
-                append("select * from v_categories WHERE 1 = 1".trimIndent())
+                append("select * from v_tags WHERE 1 = 1".trimIndent())
                 when (archived) {
                     true -> append(" AND archived_at IS NOT NULL")
                     false -> append(" AND archived_at IS NULL")
@@ -62,9 +59,9 @@ class JdbiCategoryRepository(
             .createQuery(sql)
             .bind("limit", limit)
             .bind("offset", (page - 1) * limit)
-            .mapTo<CategoryModel>()
+            .mapTo<TagModel>()
             .list()
-            .map { it.category }
+            .map { it.tag }
     }
 
     override fun delete(id: Int): Boolean =
@@ -73,27 +70,27 @@ class JdbiCategoryRepository(
             .bind("id", id)
             .execute() > 0
 
-    override fun getById(id: Int): Category? =
+    override fun getById(id: Int): Tag? =
         handle
-            .createQuery("select * from v_categories where id = :id ")
+            .createQuery("select * from v_tags where id = :id ")
             .bind("id", id)
-            .mapTo<CategoryModel>()
+            .mapTo<TagModel>()
             .singleOrNull()
-            ?.category
+            ?.tag
 
-    override fun getBySlug(slug: String): Category? =
+    override fun getBySlug(slug: String): Tag? =
         handle
-            .createQuery("select * from v_categories where slug = :slug")
+            .createQuery("select * from v_tags where slug = :slug")
             .bind("slug", slug)
-            .mapTo<CategoryModel>()
+            .mapTo<TagModel>()
             .singleOrNull()
-            ?.category
+            ?.tag
 
     override fun archive(id: Int): Boolean =
         handle
             .createUpdate(
                 """
-                update categories
+                update tags
                 set archived_at = EXTRACT(EPOCH FROM NOW()), updated_at = EXTRACT(EPOCH FROM NOW())
                 where id = :id
             """,
@@ -104,36 +101,30 @@ class JdbiCategoryRepository(
         handle
             .createUpdate(
                 """
-                update categories
+                update tags
                 set archived_at = null, updated_at = EXTRACT(EPOCH FROM NOW())
                 where id = :id
             """,
             ).bind("id", id)
             .execute() > 0
 
-    private data class CategoryModel(
+    private data class TagModel(
         val id: Int,
         val name: String,
         val description: String?,
         val slug: String,
-        val color: String,
-        val parentId: Int,
-        val parentName: String?,
         val quantity: Int,
         val createdAt: Long,
         val updatedAt: Long,
         val archivedAt: Long?,
     ) {
-        val category: Category
+        val tag: Tag
             get() =
-                Category(
+                Tag(
                     id = id,
                     name = name,
                     description = description,
-                    color = color,
                     slug = slug,
-                    parentId = parentId,
-                    parentName = parentName,
                     quantity = quantity,
                     createdAt = Instant.fromEpochSeconds(createdAt),
                     updatedAt = Instant.fromEpochSeconds(updatedAt),

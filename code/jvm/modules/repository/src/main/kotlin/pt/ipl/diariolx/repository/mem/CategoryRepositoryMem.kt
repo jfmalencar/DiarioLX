@@ -27,7 +27,7 @@ class CategoryRepositoryMem : CategoryRepository {
         return id
     }
 
-    override fun update(category: UpdateCategory) {
+    override fun update(category: UpdateCategory): Boolean {
         val categoryToUpdate = categories.find { it.id == category.id }
         if (categoryToUpdate != null) {
             val categoryUpdated =
@@ -43,10 +43,16 @@ class CategoryRepositoryMem : CategoryRepository {
                 )
             categories.remove(categoryToUpdate)
             categories.add(categoryUpdated)
+            return true
         }
+        return false
     }
 
-    override fun getAll(): List<Category> = categories
+    override fun getAll(
+        page: Int,
+        limit: Int,
+        archived: Boolean,
+    ): List<Category> = categories.filter { !archived || it.archivedAt != null }
 
     override fun delete(id: Int): Boolean {
         if (categories.none { it.id == id }) return false
@@ -57,4 +63,28 @@ class CategoryRepositoryMem : CategoryRepository {
     override fun getById(id: Int): Category? = categories.find { it.id == id }
 
     override fun getBySlug(slug: String): Category? = categories.find { it.slug == slug }
+
+    override fun archive(id: Int): Boolean {
+        val categoryToArchive = categories.find { it.id == id }
+        if (categoryToArchive != null) {
+            val now = Clock.System.now()
+            val categoryArchived = categoryToArchive.copy(archivedAt = now, updatedAt = now)
+            categories.remove(categoryToArchive)
+            categories.add(categoryArchived)
+            return true
+        }
+        return false
+    }
+
+    override fun unarchive(id: Int): Boolean {
+        val categoryToUnarchive = categories.find { it.id == id }
+        if (categoryToUnarchive != null) {
+            val now = Clock.System.now()
+            val categoryArchived = categoryToUnarchive.copy(archivedAt = null, updatedAt = now)
+            categories.remove(categoryToUnarchive)
+            categories.add(categoryArchived)
+            return true
+        }
+        return false
+    }
 }

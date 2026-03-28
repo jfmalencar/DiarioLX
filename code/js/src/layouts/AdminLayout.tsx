@@ -65,6 +65,9 @@ export function AdminLayout() {
               <Link to='/admin/categorias' data-testid='categories-link' className='nav-link text-white p-0'>
                 {t('admin_layout.categories')}
               </Link>
+              <Link to='/admin/etiquetas' data-testid='tags-link' className='nav-link text-white p-0'>
+                {t('admin_layout.tags')}
+              </Link>
             </nav>
           </div>
           <hr className='border-secondary my-4' />

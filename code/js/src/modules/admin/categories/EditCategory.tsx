@@ -5,8 +5,10 @@ import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { UnderlineTextArea } from '@/shared/components/inputs/UnderlineTextArea';
 import { SearchField } from '@/shared/components/inputs/SearchField';
+import { Button } from '@/shared/components/Button';
 import { slugify } from '@/shared/utils/format';
-import { type Category, useCategories } from '@/shared/hooks/useCategories';
+
+import { type Category, type CategoryRequest, useCategories } from '@/shared/hooks/useCategories';
 
 import icon from '@/assets/icon.svg';
 
@@ -165,7 +167,7 @@ export const EditCategory = () => {
 
         dispatch({ type: 'submit' });
 
-        const category: Category = {
+        const category: CategoryRequest = {
             id: params.id === 'nova' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,
@@ -173,7 +175,6 @@ export const EditCategory = () => {
             color: inputs.color,
             parentId: inputs.parentId || null,
             parentName: inputs.parentSearch || null,
-            count: 0,
         };
         (
             params.id === 'nova' ? create(category) : update(params.id!, category)
@@ -297,9 +298,9 @@ export const EditCategory = () => {
                                         Cancelar
                                     </Link>
                                 }
-                                <button data-testid='save-category-button' type='submit' className='btn btn-dark px-4 rounded-3' disabled={state.tag === 'submitting'}>
+                                <Button dataTestId='save-category-button' type='submit' disabled={state.tag === 'submitting'}>
                                     {state.tag === 'submitting' ? 'A guardar...' : 'Guardar categoria'}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>

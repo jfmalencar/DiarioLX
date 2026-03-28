@@ -1,23 +1,20 @@
 import type { Query } from '@/shared/types/Query';
 
-export type Category = {
+export type Tag = {
   id: string;
   name: string;
   description: string;
-  color: string;
   slug: string;
-  parentId: string | null;
-  parentName: string | null;
   count: number;
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
 }
 
-export type CategoryRequest = Omit<Category, 'count' | 'createdAt' | 'updatedAt' | 'archivedAt'>;
+export type TagRequest = Omit<Tag, 'count' | 'createdAt' | 'updatedAt' | 'archivedAt'>;
 
-export type CategoriesResponse = {
-  categories: Category[];
+export type TagsResponse = {
+  tags: Tag[];
   _links: {
     self: {
       href: string;
@@ -34,8 +31,8 @@ export type CategoriesResponse = {
   };
 };
 
-export type CategoryResponse = {
-  category: Category;
+export type TagResponse = {
+  tag: Tag;
   _links: {
     self: {
       href: string;
@@ -44,14 +41,14 @@ export type CategoryResponse = {
   };
 }
 
-export interface CategoriesService {
-  fetchAll(params: Query): Promise<CategoriesResponse>;
+export interface TagsService {
+  fetchAll(params: Query): Promise<TagsResponse>;
 
-  fetchOne(id: string): Promise<CategoryResponse>;
+  fetchOne(id: string): Promise<TagResponse>;
 
-  create(category: CategoryRequest): Promise<string | undefined>;
+  create(tag: TagRequest): Promise<string | undefined>;
 
-  update(id: string, category: CategoryRequest): Promise<void>;
+  update(id: string, tag: TagRequest): Promise<void>;
 
   delete(id: string): Promise<void>;
 

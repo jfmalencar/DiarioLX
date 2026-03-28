@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 type TableProps = {
     children: React.ReactNode;
@@ -52,4 +53,43 @@ export function TableRow({ children }: TableRowProps) {
 
 export function TableColumn({ children, className, isHeader }: TableColumnProps) {
     return <div className={className || (isHeader ? 'col' : 'col-12')}>{children}</div>;
+}
+
+export function TablePagination() {
+    /*
+    Componente pra testar paginação, mas versão final deve ser
+    mais complexa, com indicação de página atual, total de páginas,
+    etc. Deve também ser possível receber total de páginas e ir
+    para uma página específica.
+    */
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const goToNext = () => {
+        const page = parseInt(searchParams.get('p') || '1', 10);
+        goToPage(page + 1);
+    }
+
+    const goToPrevious = () => {
+        const page = parseInt(searchParams.get('p') || '1', 10);
+        goToPage(page - 1);
+    }
+
+    const goToPage = (page: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('p', page.toString());
+        setSearchParams(params);
+    }
+
+    return (
+        <div className='d-flex align-items-center gap-3 mt-4'>
+            <div className='btn-group' role='group'>
+                <button type='button' onClick={() => goToPrevious()} className='btn btn-outline-secondary btn-sm' >
+                    Anterior
+                </button>
+                <button type='button' onClick={() => goToNext()} className='btn btn-outline-secondary btn-sm' >
+                    Seguinte
+                </button>
+            </div>
+        </div>
+    );
 }

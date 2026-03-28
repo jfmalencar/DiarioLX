@@ -9,8 +9,10 @@ import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
 import { Login } from '@/modules/admin/Login';
 import { Homepage } from '@/modules/admin/Homepage';
-import { Categories as AdminCategories } from '@/modules/admin/Categories';
-import { EditCategory } from '@/modules/admin/EditCategory';
+import { Categories as AdminCategories } from '@/modules/admin/categories/Categories';
+import { Tags } from '@/modules/admin/tags/Tags';
+import { EditCategory } from '@/modules/admin/categories/EditCategory';
+import { EditTag } from '@/modules/admin/tags/EditTag';
 import { Users } from '@/modules/admin/Users';
 import { Articles } from '@/modules/admin/Articles';
 import { PublicLayout } from '@/layouts/PublicLayout';
@@ -78,6 +80,30 @@ const router = createBrowserRouter([
         element: (
           <RequireAuthentication>
             <EditCategory />
+          </RequireAuthentication>
+        ),
+        handle: {
+          layout: 'none'
+        }
+      },
+      {
+        path: 'etiquetas',
+        element: (
+          <RequireAuthentication>
+            <Tags />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'admin_layout.tags',
+          subtitle: 'admin_layout.tags_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
+        path: 'etiquetas/:id',
+        element: (
+          <RequireAuthentication>
+            <EditTag />
           </RequireAuthentication>
         ),
         handle: {

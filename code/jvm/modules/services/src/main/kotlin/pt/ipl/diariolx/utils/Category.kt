@@ -24,4 +24,4 @@ typealias CategoryUpdateResult = Either<CategoryError, Unit>
 
 typealias CategoryCreateResult = Either<CategoryError, Int>
 
-typealias ValidationResult = Either<CategoryError, Unit>
+typealias CategoryValidationResult = Either<CategoryError, Unit>

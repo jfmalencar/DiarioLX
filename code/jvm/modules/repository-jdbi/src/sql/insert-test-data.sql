@@ -35,3 +35,29 @@ INSERT INTO categories (name, slug, description, color, parent_id) VALUES
 ('Ambiente', 'ambiente', 'Clima, território e sustentabilidade.', '#22C55E',
  (SELECT id FROM categories WHERE slug = 'sociedade')
 );
+
+-- =========================
+-- TAGS
+-- =========================
+
+INSERT INTO tags (name, slug, description) VALUES
+('Lisboa', 'lisboa', 'Conteúdos relacionados com a cidade de Lisboa'),
+('Portugal', 'portugal', 'Notícias e temas nacionais'),
+('Política', 'politica', 'Cobertura política e decisões governamentais'),
+('Sociedade', 'sociedade', 'Temas sociais e questões do dia a dia'),
+('Cultura', 'cultura', 'Arte, música, cinema e eventos culturais'),
+('Economia', 'economia', 'Negócios, finanças e economia'),
+('Tecnologia', 'tecnologia', 'Inovação, startups e tecnologia'),
+('Ambiente', 'ambiente', 'Sustentabilidade e meio ambiente'),
+('Educação', 'educacao', 'Ensino, escolas e universidades'),
+('Saúde', 'saude', 'Sistema de saúde e bem-estar'),
+('Habitação', 'habitacao', 'Mercado imobiliário e acesso à habitação'),
+('Justiça', 'justica', 'Sistema judicial e leis'),
+('Desporto', 'desporto', 'Eventos e notícias desportivas'),
+('Opinião', 'opiniao', 'Artigos de opinião e colunas'),
+('Entrevista', 'entrevista', 'Conversas e entrevistas exclusivas'),
+('Reportagem', 'reportagem', 'Reportagens aprofundadas'),
+('Breaking News', 'breaking-news', 'Notícias de última hora'),
+('Investigação', 'investigacao', 'Jornalismo investigativo'),
+('Internacional', 'internacional', 'Notícias fora de Portugal'),
+('Media', 'media', 'Indústria dos media e comunicação');

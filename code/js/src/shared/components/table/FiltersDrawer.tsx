@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { X } from 'lucide-react'
 
 import { useI18n } from '@/shared/hooks/useI18n';
+import { Button } from '@/shared/components/Button';
 
 export type FiltersValue = Record<string, string[]>;
 
@@ -118,20 +119,12 @@ export function FiltersDrawer({
                     ))}
                 </div>
                 <div className='border-top p-4 d-flex justify-content-end gap-3'>
-                    <button
-                        type='button'
-                        className='btn btn-outline-dark px-4'
-                        onClick={onClear}
-                    >
+                    <Button type='button' color='secondary' onClick={onClear} className='px-4'>
                         {t('filters.clear')}
-                    </button>
-                    <button
-                        type='button'
-                        className='btn btn-dark px-4'
-                        onClick={onApply}
-                    >
+                    </Button>
+                    <Button dataTestId='apply-filters-button' type='button' onClick={onApply} className='px-4'>
                         {t('filters.apply')}
-                    </button>
+                    </Button>
                 </div>
             </aside>
         </>

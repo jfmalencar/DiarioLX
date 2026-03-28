@@ -18,7 +18,7 @@ export default defineConfig({
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on("error", (_, __, res) => {
-            console.log("error connection upstream")
+            //console.log("error connection upstream")
             if ("writeHead" in res) {
               res.writeHead(200);
             }
@@ -26,12 +26,12 @@ export default defineConfig({
           })
           proxy.on("proxyRes", (proxyRes, _, res) => {
             const upstreamSocket = proxyRes.socket
-            console.log("upstream connected")
-            if(upstreamSocket) {
+            //console.log("upstream connected")
+            if (upstreamSocket) {
               upstreamSocket.once('close', () => {
-                console.log("upstream closed")
-                if(!res.writableFinished) {
-                  console.log("destroying downstream")
+                //console.log("upstream closed")
+                if (!res.writableFinished) {
+                  //console.log("destroying downstream")
                   res.destroy()
                 }
               })
