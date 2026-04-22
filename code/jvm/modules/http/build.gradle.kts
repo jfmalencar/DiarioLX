@@ -14,6 +14,7 @@ dependencies {
 
     // To use Spring MVC and the Servlet API
     implementation("org.springframework:spring-webmvc:6.2.10")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0")
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
 
     // To use SLF4J

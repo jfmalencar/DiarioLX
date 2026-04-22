@@ -1,0 +1,172 @@
+# === ADMIN USER REQUESTS ===
+# DiarioLX Admin User Management API Tests
+
+# === VARIABLES ===
+@baseUrl = http://localhost:8180
+@adminInviteToken = SUPER-ADMIN-INVITE
+
+# Admin credentials
+@adminUsername = admin
+@adminEmail = admin.email@diariolx.pt
+@adminPassword = SecurePass123!
+@adminFirstName = Admin
+@adminLastName = User
+
+### ===== STEP 1: CREATE ADMIN USER WITH INVITE =====
+
+### Create admin user
+POST {{baseUrl}}/user/signup
+Content-Type: application/json
+Authorization: Invite {{adminInviteToken}}
+
+{
+  "username": "{{adminUsername}}",
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "fName": "{{adminFirstName}}",
+  "lName": "{{adminLastName}}"
+}
+
+> {%
+  if (response.status === 201) {
+    client.global.set("adminId", response.body.userId);
+    client.global.set("adminToken", "");
+  }
+%}
+
+### ===== STEP 2: ADMIN LOGIN =====
+
+### Admin login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "username": "{{adminUsername}}",
+  "password": "{{adminPassword}}"
+}
+
+> {%
+  if (response.status === 202) {
+    client.global.set("adminToken", response.body.token);
+  }
+%}
+
+### ===== STEP 3: CREATE INVITES (AS ADMIN) =====
+
+### Create EDITOR invite
+POST {{baseUrl}}/user/admin/create-invite
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "role": "EDITOR"
+}
+
+> {%
+  if (response.status === 201) {
+    client.global.set("editorInviteToken", response.body.inviteToken);
+  }
+%}
+
+###
+### Create CONTRIBUTOR invite 1
+POST {{baseUrl}}/user/admin/create-invite
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "role": "CONTRIBUTOR"
+}
+
+> {%
+  if (response.status === 201) {
+    client.global.set("contributorInviteToken", response.body.inviteToken);
+  }
+%}
+
+###
+### Create CONTRIBUTOR invite 2
+POST {{baseUrl}}/user/admin/create-invite
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "role": "CONTRIBUTOR"
+}
+
+> {%
+    if (response.status === 201) {
+        client.global.set("contributorInviteToken2", response.body.inviteToken);
+    }
+%}
+
+### ===== STEP 4: GET ADMIN INFO =====
+
+### Get admin user info
+GET {{baseUrl}}/user/{{adminId}}
+Cookie: token={{adminToken}}
+
+### ===== STEP 5: LIST ALL USERS =====
+
+### Get all users (include deactivated)
+GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=true
+Cookie: token={{adminToken}}
+
+###
+### Get all users (exclude deactivated)
+GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=false
+Cookie: token={{adminToken}}
+
+### ===== STEP 6: ADMIN OPERATIONS - DEACTIVATE USER =====
+
+### Deactivate a user (replace {{userId}} with actual ID)
+POST {{baseUrl}}/user/admin/deactivate-user
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "id": 2
+}
+
+###
+### Try to deactivate non-existent user (should fail - 404 NOT_FOUND)
+POST {{baseUrl}}/user/admin/deactivate-user
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "id": 9999
+}
+
+### ===== STEP 7: ADMIN OPERATIONS - REMOVE USER =====
+
+### Remove user permanently (replace {{userId}} with actual ID)
+POST {{baseUrl}}/user/admin/remove-user
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "id": 3
+}
+
+###
+### Try to remove non-existent user (should fail - 404 NOT_FOUND)
+POST {{baseUrl}}/user/admin/remove-user
+Content-Type: application/json
+Cookie: token={{adminToken}}
+
+{
+  "id": 9999
+}
+
+### ===== STEP 8: ADMIN LOGOUT =====
+
+### Admin logout
+POST {{baseUrl}}/user/logout
+Cookie: token={{adminToken}}
+
+###
+### Try to access after logout (should fail - 401 UNAUTHORIZED)
+GET {{baseUrl}}/user/{{adminId}}
+Cookie: token={{adminToken}}
+

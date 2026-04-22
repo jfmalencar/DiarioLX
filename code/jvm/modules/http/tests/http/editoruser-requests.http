@@ -1,0 +1,188 @@
+# === EDITOR USER REQUESTS ===
+# DiarioLX Editor User Management API Tests
+
+# === VARIABLES ===
+@baseUrl = http://localhost:8180
+@editorUsername = editoruser
+@editorEmail = editor@diariolx.pt
+@editorPassword = EditorPass123!
+@editorFirstName = Editor
+@editorLastName = User
+
+# Get these from admin-requests first
+@editorInviteToken = {{editorInviteToken}}
+
+### ===== STEP 1: CREATE EDITOR USER WITH INVITE =====
+
+### Create editor user (EDITOR role via invite)
+POST {{baseUrl}}/user/signup
+Content-Type: application/json
+Authorization: Invite {{editorInviteToken}}
+
+{
+  "username": "{{editorUsername}}",
+  "email": "{{editorEmail}}",
+  "password": "{{editorPassword}}",
+  "fName": "{{editorFirstName}}",
+  "lName": "{{editorLastName}}"
+}
+
+> {%
+  if (response.status === 201) {
+    client.global.set("editorUserId", response.body.userId);
+  }
+%}
+
+### ===== STEP 2: EDITOR USER LOGIN =====
+
+### Editor user login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "username": "{{editorUsername}}",
+  "password": "{{editorPassword}}"
+}
+
+> {%
+  if (response.status === 202) {
+    client.global.set("editorToken", response.body.token);
+  }
+%}
+
+### ===== STEP 3: GET USER INFO =====
+
+### Get editor user info
+GET {{baseUrl}}/user/{{editorUserId}}
+Cookie: token={{editorToken}}
+
+###
+### Get other user info
+GET {{baseUrl}}/user/1
+Cookie: token={{editorToken}}
+
+### ===== STEP 4: LIST USERS =====
+
+### Get all users
+GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=true
+Cookie: token={{editorToken}}
+
+###
+### Get active users only
+GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=false
+Cookie: token={{editorToken}}
+
+### ===== STEP 5: UPDATE EDITOR PROFILE =====
+
+### Update all fields
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "username": "editoruser_updated",
+  "email": "editor.updated@diariolx.pt",
+  "password": "UpdatedEditorPass123!",
+  "fName": "Editor",
+  "lName": "Updated",
+  "bio": "I am an editor user",
+  "profilePictureURL": "https://example.com/editor-avatar.jpg"
+}
+
+###
+### Update only bio field
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": "Updated editor bio",
+  "profilePictureURL": null
+}
+
+###
+### Update only profile picture URL
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": "https://example.com/editor-new-avatar.png"
+}
+
+### ===== STEP 6: UPDATE ERROR CASES =====
+
+### Try to update with existing email (should fail - 409 CONFLICT)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "username": null,
+  "email": "admin.email@diariolx.pt",
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Try to update with weak password (should fail - 400 BAD_REQUEST)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": "weak",
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+### ===== STEP 7: UNAUTHORIZED OPERATIONS =====
+
+### Try to deactivate user without admin privileges (should fail - 403 FORBIDDEN)
+POST {{baseUrl}}/user/admin/deactivate-user
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "id": 2
+}
+
+###
+### Try to remove user without admin privileges (should fail - 403 FORBIDDEN)
+POST {{baseUrl}}/user/admin/remove-user
+Content-Type: application/json
+Cookie: token={{editorToken}}
+
+{
+  "id": 2
+}
+
+### ===== STEP 8: EDITOR USER LOGOUT =====
+
+### Editor user logout
+POST {{baseUrl}}/user/logout
+Cookie: token={{editorToken}}
+
+###
+### Try to access after logout (should fail - 401 UNAUTHORIZED)
+GET {{baseUrl}}/user/{{editorUserId}}
+Cookie: token={{editorToken}}
+

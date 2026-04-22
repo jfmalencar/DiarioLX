@@ -1,0 +1,220 @@
+# === THIRD USER REQUESTS ===
+# DiarioLX Third User Management API Tests
+
+# === VARIABLES ===
+@baseUrl = http://localhost:8180
+@thirdUsername = thirduser
+@thirdEmail = third@diariolx.pt
+@thirdPassword = ThirdPass123!
+@thirdFirstName = Third
+@thirdLastName = User
+
+# Get these from admin-requests first
+@contributorInviteToken2 = {{contributorInviteToken2}}
+
+### ===== STEP 1: CREATE THIRD USER WITH INVITE =====
+
+### Create third user (CONTRIBUTOR role via invite)
+POST {{baseUrl}}/user/signup
+Content-Type: application/json
+Authorization: Invite {{contributorInviteToken2}}
+
+{
+  "username": "{{thirdUsername}}",
+  "email": "{{thirdEmail}}",
+  "password": "{{thirdPassword}}",
+  "fName": "{{thirdFirstName}}",
+  "lName": "{{thirdLastName}}"
+}
+
+> {%
+  if (response.status === 201) {
+    client.global.set("thirdUserId", response.body.userId);
+  }
+%}
+
+### ===== STEP 2: THIRD USER LOGIN =====
+
+### Third user login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "username": "{{thirdUsername}}",
+  "password": "{{thirdPassword}}"
+}
+
+> {%
+  if (response.status === 202) {
+    client.global.set("thirdToken", response.body.token);
+  }
+%}
+
+### ===== STEP 3: GET USER INFO =====
+
+### Get third user info
+GET {{baseUrl}}/user/{{thirdUserId}}
+Cookie: token={{thirdToken}}
+
+###
+### Get other user info
+GET {{baseUrl}}/user/1
+Cookie: token={{thirdToken}}
+
+### ===== STEP 4: LIST USERS =====
+
+### Get all users
+GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=true
+Cookie: token={{thirdToken}}
+
+###
+### Get active users with different pagination
+GET {{baseUrl}}/user/all?offset=1&limit=3&deactivated=false
+Cookie: token={{thirdToken}}
+
+### ===== STEP 5: UPDATE THIRD USER PROFILE =====
+
+### Update username and email
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": "thirduser_new",
+  "email": "third.new@diariolx.pt",
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Update only bio field
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": "I am the third user",
+  "profilePictureURL": null
+}
+
+###
+### Update only first and last name
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": "ThirdUpdated",
+  "lName": "UserUpdated",
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Update profile picture URL
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": "https://example.com/third-avatar.jpg"
+}
+
+### ===== STEP 6: UPDATE ERROR CASES =====
+
+### Try to update with existing username (should fail - 409 CONFLICT)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": "admin",
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Try to update with invalid email format (should fail - 400 BAD_REQUEST)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": null,
+  "email": "invalidemail",
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Try to update with weak password (should fail - 400 BAD_REQUEST)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": "weak",
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+### ===== STEP 7: UNAUTHORIZED OPERATIONS =====
+
+### Try to deactivate another user (should fail - 403 FORBIDDEN)
+POST {{baseUrl}}/user/admin/deactivate-user
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "id": 2
+}
+
+###
+### Try to remove another user (should fail - 403 FORBIDDEN)
+POST {{baseUrl}}/user/admin/remove-user
+Content-Type: application/json
+Cookie: token={{thirdToken}}
+
+{
+  "id": 2
+}
+
+### ===== STEP 8: THIRD USER LOGOUT =====
+
+### Third user logout
+POST {{baseUrl}}/user/logout
+Cookie: token={{thirdToken}}
+
+###
+### Try to access after logout (should fail - 401 UNAUTHORIZED)
+GET {{baseUrl}}/user/{{thirdUserId}}
+Cookie: token={{thirdToken}}
+

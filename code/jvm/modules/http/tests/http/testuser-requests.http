@@ -1,0 +1,225 @@
+# === TEST USER REQUESTS ===
+# DiarioLX Test User Management API Tests
+
+# === VARIABLES ===
+@baseUrl = http://localhost:8180
+@testUsername = testuser
+@testEmail = testuser@diariolx.pt
+@testPassword = TestPass123!
+@testFirstName = Test
+@testLastName = User
+
+# Get these from admin-requests first
+@contributorInviteToken = {{contributorInviteToken}}
+
+### ===== STEP 1: CREATE TEST USER WITH INVITE =====
+
+### Create test user (CONTRIBUTOR role via invite)
+POST {{baseUrl}}/user/signup
+Content-Type: application/json
+Authorization: Invite {{contributorInviteToken}}
+
+{
+  "username": "{{testUsername}}",
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}",
+  "fName": "{{testFirstName}}",
+  "lName": "{{testLastName}}"
+}
+
+> {%
+  if (response.status === 201) {
+    client.global.set("testUserId", response.body.userId);
+  }
+%}
+
+### ===== STEP 2: TEST USER LOGIN =====
+
+### Test user login
+POST {{baseUrl}}/user/login
+Content-Type: application/json
+
+{
+  "username": "{{testUsername}}",
+  "password": "{{testPassword}}"
+}
+
+> {%
+  if (response.status === 202) {
+    client.global.set("testToken", response.body.token);
+  }
+%}
+
+### ===== STEP 3: GET USER INFO =====
+
+### Get test user info
+GET {{baseUrl}}/user/{{testUserId}}
+Cookie: token={{testToken}}
+
+###
+### Get another user info (admin)
+GET {{baseUrl}}/user/1
+Cookie: token={{testToken}}
+
+###
+### Get with invalid ID (should return 404)
+GET {{baseUrl}}/user/9999
+Cookie: token={{testToken}}
+
+### ===== STEP 4: LIST USERS =====
+
+### Get all users (pagination)
+GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=true
+Cookie: token={{testToken}}
+
+###
+### Get active users only
+GET {{baseUrl}}/user/all?offset=0&limit=5&deactivated=false
+Cookie: token={{testToken}}
+
+### ===== STEP 5: UPDATE USER PROFILE =====
+
+### Update all fields
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": "testuser_updated",
+  "email": "testuser.updated@diariolx.pt",
+  "password": "UpdatedPass123!",
+  "fName": "Test",
+  "lName": "Updated",
+  "bio": "I am a test user with a bio",
+  "profilePictureURL": "https://example.com/avatar.jpg"
+}
+
+###
+### Update only bio field
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": "New bio for test user",
+  "profilePictureURL": null
+}
+
+###
+### Update only profile picture URL
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": "https://example.com/new-avatar.png"
+}
+
+### ===== STEP 6: UPDATE ERROR CASES =====
+
+### Try to update with existing email (should fail - 409 CONFLICT)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": null,
+  "email": "admin.email@diariolx.pt",
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Try to update with invalid email (should fail - 400 BAD_REQUEST)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": null,
+  "email": "invalidemail",
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Try to update with weak password (should fail - 400 BAD_REQUEST)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": null,
+  "email": null,
+  "password": "weak",
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+###
+### Try to update with duplicate username (should fail - 409 CONFLICT)
+POST {{baseUrl}}/user/update
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "username": "admin",
+  "email": null,
+  "password": null,
+  "fName": null,
+  "lName": null,
+  "bio": null,
+  "profilePictureURL": null
+}
+
+### ===== STEP 7: UNAUTHORIZED OPERATIONS =====
+
+### Try to deactivate user without admin privileges (should fail - 403 FORBIDDEN)
+POST {{baseUrl}}/user/admin/deactivate-user
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "id": 2
+}
+
+###
+### Try to remove user without admin privileges (should fail - 403 FORBIDDEN)
+POST {{baseUrl}}/user/admin/remove-user
+Content-Type: application/json
+Cookie: token={{testToken}}
+
+{
+  "id": 2
+}
+
+### ===== STEP 8: TEST USER LOGOUT =====
+
+### Test user logout
+POST {{baseUrl}}/user/logout
+Cookie: token={{testToken}}
+
+###
+### Try to access after logout (should fail - 401 UNAUTHORIZED)
+GET {{baseUrl}}/user/{{testUserId}}
+Cookie: token={{testToken}}
+
