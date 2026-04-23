@@ -11,7 +11,7 @@ class TransactionMem(
     override val userRepository: UserRepository = UserRepositoryMem(),
     override val inviteRepository: InviteRepository = InviteRepositoryMem(),
     override val tagRepository: TagRepository = TagRepositoryMem(),
-    ) : Transaction {
+) : Transaction {
     override fun rollback() {
         TODO("Not yet implemented")
     }

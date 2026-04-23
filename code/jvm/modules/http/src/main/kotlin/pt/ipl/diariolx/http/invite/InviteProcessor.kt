@@ -8,7 +8,7 @@ import pt.ipl.diariolx.services.InviteServices
 @Component
 class InviteProcessor(
     val inviteService: InviteServices,
-    val logger: Logger
+    val logger: Logger,
 ) {
     fun processorInviteHeaderValue(authorizationValue: String?): Invite? {
         if (authorizationValue == null) {

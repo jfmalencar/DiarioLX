@@ -21,13 +21,9 @@ import pt.ipl.diariolx.http.auth.AuthenticatedUserArgumentResolver
 import pt.ipl.diariolx.http.auth.AuthenticationInterceptor
 import pt.ipl.diariolx.http.invite.InviteArgumentResolver
 import pt.ipl.diariolx.http.invite.InviteInterceptor
+import pt.ipl.diariolx.repository.JdbiTransactionManager
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.repository.configureWithAppRequirements
-import pt.ipl.diariolx.repository.JdbiTransactionManager
-import pt.ipl.diariolx.repository.mem.TransactionManagerMem
-import pt.ipl.diariolx.repository.mem.CategoryRepositoryMem
-import pt.ipl.diariolx.repository.mem.InviteRepositoryMem
-import pt.ipl.diariolx.repository.mem.UserRepositoryMem
 import pt.ipl.diariolx.utils.token.Sha256TokenEncoder
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -38,7 +34,7 @@ class PipelineConfigurer(
     private val inviteInterceptor: InviteInterceptor,
     private val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
     private val inviteArgumentResolver: InviteArgumentResolver,
-): WebMvcConfigurer {
+) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(authenticationInterceptor)
         registry.addInterceptor(inviteInterceptor)
@@ -52,7 +48,6 @@ class PipelineConfigurer(
 
 @SpringBootApplication
 class DiarioLXApplication {
-    
     // ======================== Database Mode Configuration ========================
     // This application is configured to use JDBI/PostgreSQL database
     // To use in-memory mode, comment out the jdbiTransactionManager and uncomment memoryTransactionManager
@@ -70,10 +65,11 @@ class DiarioLXApplication {
     fun transactionManager(jdbi: Jdbi): TransactionManager =
         JdbiTransactionManager(
             jdbi = jdbi,
-            logger()
+            logger(),
         )
 
     // === UNCOMMENT BELOW TO USE IN-MEMORY REPOSITORIES INSTEAD ===
+
     /*
     @Bean
     fun transactionManager(): TransactionManager =
@@ -82,7 +78,7 @@ class DiarioLXApplication {
             userRepository = UserRepositoryMem(),
             inviteRepository = InviteRepositoryMem(),
         )
-    */
+     */
 
     @Bean
     fun passwordEncoder() = BCryptPasswordEncoder()
@@ -111,12 +107,13 @@ class DiarioLXApplication {
         )
 
     @Bean
-    fun inviteDomainConfig() = InviteDomainConfig(
-        inviteExpirationTime = 30.minutes,
-    )
+    fun inviteDomainConfig() =
+        InviteDomainConfig(
+            inviteExpirationTime = 30.minutes,
+        )
 
     @Bean
-    fun logger(): Logger  = LoggerFactory.getLogger(DiarioLXApplication::class.java)
+    fun logger(): Logger = LoggerFactory.getLogger(DiarioLXApplication::class.java)
 }
 
 private val logger = LoggerFactory.getLogger("main")

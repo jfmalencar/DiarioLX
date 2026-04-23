@@ -2,7 +2,6 @@ package pt.ipl.diariolx.domain.users.config
 
 import kotlin.time.Duration
 
-
 data class UsersDomainConfig(
     val tokenSizeInBytes: Int,
     val tokenExpirationTime: Duration,

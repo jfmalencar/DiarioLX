@@ -7,23 +7,21 @@ import org.slf4j.Logger
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.invites.internal.NewInvite
 import pt.ipl.diariolx.domain.users.UserRole
-import pt.ipl.diariolx.repository.mappers.InstantMapper
-import java.sql.ResultSet
 
 class JdbiInviteRepository(
     private val handle: Handle,
-    private val logger: Logger
+    private val logger: Logger,
 ) : InviteRepository {
-
     override fun get(invite: String): Invite? {
         logger.info("Looking for invite: $invite")
 
         // First check if invite exists at all
-        val result = handle.createQuery(
-            "SELECT id, invite_token, role_assigned, created_at, expires_at, used FROM invites WHERE invite_token = :invite_token"
-        ).bind("invite_token", invite)
-        .mapTo<InviteDBModel>()
-        .singleOrNull()
+        val result =
+            handle.createQuery(
+                "SELECT id, invite_token, role_assigned, created_at, expires_at, used FROM invites WHERE invite_token = :invite_token",
+            ).bind("invite_token", invite)
+                .mapTo<InviteDBModel>()
+                .singleOrNull()
 
         if (result == null) {
             logger.warn("Invite not found in database: $invite")
@@ -50,19 +48,20 @@ class JdbiInviteRepository(
     }
 
     override fun create(invite: NewInvite): Invite {
-        val id = handle.createUpdate(
-            """
+        val id =
+            handle.createUpdate(
+                """
             INSERT INTO invites (invite_token, role_assigned, created_at, expires_at, used)
             VALUES (:invite_token, :role_assigned::user_role, :created_at, :expires_at, false)
             RETURNING id
-            """
-        ).bind("invite_token", invite.invite)
-        .bind("role_assigned", invite.role.name)
-        .bind("created_at", invite.createdAt.epochSeconds)
-        .bind("expires_at", invite.expiresAt.epochSeconds)
-        .executeAndReturnGeneratedKeys()
-        .mapTo(Int::class.java)
-        .one()
+            """,
+            ).bind("invite_token", invite.invite)
+                .bind("role_assigned", invite.role.name)
+                .bind("created_at", invite.createdAt.epochSeconds)
+                .bind("expires_at", invite.expiresAt.epochSeconds)
+                .executeAndReturnGeneratedKeys()
+                .mapTo(Int::class.java)
+                .one()
 
         return Invite(
             id = id,
@@ -75,10 +74,11 @@ class JdbiInviteRepository(
     }
 
     override fun consumeInvite(id: Int): Boolean {
-        val rowsAffected = handle.createUpdate(
-            "UPDATE invites SET used = true WHERE id = :id AND used = false"
-        ).bind("id", id)
-        .execute()
+        val rowsAffected =
+            handle.createUpdate(
+                "UPDATE invites SET used = true WHERE id = :id AND used = false",
+            ).bind("id", id)
+                .execute()
         return rowsAffected > 0
     }
 
@@ -101,4 +101,3 @@ class JdbiInviteRepository(
             )
     }
 }
-

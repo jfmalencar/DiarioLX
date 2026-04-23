@@ -1,10 +1,8 @@
 package pt.ipl.diariolx.utils.user
 
-import java.security.MessageDigest
-
 @JvmInline
 value class PasswordHash(
-    val value: String
+    val value: String,
 )
 
 fun String.isPasswordValid(): Boolean {

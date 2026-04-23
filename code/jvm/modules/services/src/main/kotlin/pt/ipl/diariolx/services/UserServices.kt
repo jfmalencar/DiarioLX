@@ -3,15 +3,14 @@ package pt.ipl.diariolx.services
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
 import org.slf4j.Logger
 import org.springframework.security.crypto.password.PasswordEncoder
 import pt.ipl.diariolx.domain.invites.Invite
-import pt.ipl.diariolx.domain.users.internal.NewUser
-import pt.ipl.diariolx.domain.users.internal.UpdateUser
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
+import pt.ipl.diariolx.domain.users.internal.NewUser
+import pt.ipl.diariolx.domain.users.internal.UpdateUser
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.utils.LoginError
 import pt.ipl.diariolx.utils.LoginResult
@@ -54,46 +53,54 @@ class UserServices(
         lastName: String?,
         invite: Invite,
     ): UserCreateResult {
-        logger.info("Creating new user: $username, email: $email, password: $password, firstName: $firstName, lastName: $lastName, invite: ${invite.invite}")
-        val username = username?.let {
-            if (it.isUsernameValid()) {
-                Username(it)
-            } else {
-                return failure(UserError.InvalidUsername)
-            }
-        } ?: return failure(UserError.InvalidUsername)
+        logger.info(
+            "Creating new user: $username, email: $email, password: $password, firstName: $firstName, " +
+                "lastName: $lastName, invite: ${invite.invite}",
+        )
+        val username =
+            username?.let {
+                if (it.isUsernameValid()) {
+                    Username(it)
+                } else {
+                    return failure(UserError.InvalidUsername)
+                }
+            } ?: return failure(UserError.InvalidUsername)
 
-        val email = email?.let {
-            if (it.isEmailValid()) {
-                Email(it)
-            } else {
-                return failure(UserError.InvalidEmail)
-            }
-        } ?: return failure(UserError.InvalidEmail)
+        val email =
+            email?.let {
+                if (it.isEmailValid()) {
+                    Email(it)
+                } else {
+                    return failure(UserError.InvalidEmail)
+                }
+            } ?: return failure(UserError.InvalidEmail)
 
-        val password = password?.let {
-            if (it.isPasswordValid()) {
-                PasswordHash(passwordEncoder.encode(it))
-            } else {
-                return failure(UserError.InvalidPassword)
-            }
-        } ?: return failure(UserError.InvalidPassword)
+        val password =
+            password?.let {
+                if (it.isPasswordValid()) {
+                    PasswordHash(passwordEncoder.encode(it))
+                } else {
+                    return failure(UserError.InvalidPassword)
+                }
+            } ?: return failure(UserError.InvalidPassword)
 
-        val fName = firstName?.let {
-            if (it.isNameValid()) {
-                Name(it)
-            } else {
-                return failure(UserError.InvalidName)
-            }
-        } ?: return failure(UserError.InvalidName)
+        val fName =
+            firstName?.let {
+                if (it.isNameValid()) {
+                    Name(it)
+                } else {
+                    return failure(UserError.InvalidName)
+                }
+            } ?: return failure(UserError.InvalidName)
 
-        val lName = lastName?.let {
-            if (it.isNameValid()) {
-                Name(it)
-            } else {
-                return failure(UserError.InvalidName)
-            }
-        } ?: return failure(UserError.InvalidName)
+        val lName =
+            lastName?.let {
+                if (it.isNameValid()) {
+                    Name(it)
+                } else {
+                    return failure(UserError.InvalidName)
+                }
+            } ?: return failure(UserError.InvalidName)
 
         return transactionManager.run { tx ->
             val newUser = NewUser(username, email, password, fName, lName, invite.role)
@@ -115,46 +122,54 @@ class UserServices(
         bio: String?,
         profilePictureURL: String?,
     ): UserUpdateResult {
-        logger.info("Updating user ${oldUser.id}: new username: $username, new email: $email, new password: $password, new firstName: $firstName, new lastName: $lastName, new bio: $bio, new profilePictureURL: $profilePictureURL")
-        val username = username?.let {
-            if (it.isUsernameValid()) {
-                Username(it)
-            } else {
-                return failure(UserError.InvalidUsername)
-            }
-        } ?: oldUser.username
+        logger.info(
+            "Updating user ${oldUser.id}: new username: $username, new email: $email, new password: $password, " +
+                "new firstName: $firstName, new lastName: $lastName, new bio: $bio, new profilePictureURL: $profilePictureURL",
+        )
+        val username =
+            username?.let {
+                if (it.isUsernameValid()) {
+                    Username(it)
+                } else {
+                    return failure(UserError.InvalidUsername)
+                }
+            } ?: oldUser.username
 
-        val email = email?.let {
-            if (it.isEmailValid()) {
-                Email(it)
-            } else {
-                return failure(UserError.InvalidEmail)
-            }
-        } ?: oldUser.email
+        val email =
+            email?.let {
+                if (it.isEmailValid()) {
+                    Email(it)
+                } else {
+                    return failure(UserError.InvalidEmail)
+                }
+            } ?: oldUser.email
 
-        val password = password?.let {
-            if (it.isPasswordValid()) {
-                PasswordHash(passwordEncoder.encode(it))
-            } else {
-                return failure(UserError.InvalidPassword)
-            }
-        } ?: oldUser.passwordHash
+        val password =
+            password?.let {
+                if (it.isPasswordValid()) {
+                    PasswordHash(passwordEncoder.encode(it))
+                } else {
+                    return failure(UserError.InvalidPassword)
+                }
+            } ?: oldUser.passwordHash
 
-        val fName = firstName?.let {
-            if (it.isNameValid()) {
-                Name(it)
-            } else {
-                return failure(UserError.InvalidName)
-            }
-        } ?: oldUser.fName
+        val fName =
+            firstName?.let {
+                if (it.isNameValid()) {
+                    Name(it)
+                } else {
+                    return failure(UserError.InvalidName)
+                }
+            } ?: oldUser.fName
 
-        val lName = lastName?.let {
-            if (it.isNameValid()) {
-                Name(it)
-            } else {
-                return failure(UserError.InvalidName)
-            }
-        } ?: oldUser.lName
+        val lName =
+            lastName?.let {
+                if (it.isNameValid()) {
+                    Name(it)
+                } else {
+                    return failure(UserError.InvalidName)
+                }
+            } ?: oldUser.lName
 
         val bio = bio ?: oldUser.bio
 
@@ -180,7 +195,10 @@ class UserServices(
         }
     }
 
-    fun get(me: User, id: Int): UserResult =
+    fun get(
+        me: User,
+        id: Int,
+    ): UserResult =
         transactionManager.run {
             if (!me.active) {
                 return@run failure(UserError.DeactivatedAccount)
@@ -213,7 +231,10 @@ class UserServices(
             }
         }
 
-    fun delete(author: User, id: Int): UserUpdateResult =
+    fun delete(
+        author: User,
+        id: Int,
+    ): UserUpdateResult =
         transactionManager.run {
             if (!author.active) {
                 return@run failure(UserError.DeactivatedAccount)
@@ -231,7 +252,10 @@ class UserServices(
             }
         }
 
-    fun deactivate(author: User, id: Int): UserUpdateResult =
+    fun deactivate(
+        author: User,
+        id: Int,
+    ): UserUpdateResult =
         transactionManager.run {
             if (!author.active) {
                 return@run failure(UserError.DeactivatedAccount)
@@ -249,7 +273,10 @@ class UserServices(
             }
         }
 
-    fun login(username: String, password: String): LoginResult {
+    fun login(
+        username: String,
+        password: String,
+    ): LoginResult {
         logger.info("Logging in user: $username; password: $password")
         val username =
             if (username.isUsernameValid()) {
@@ -258,14 +285,14 @@ class UserServices(
                 return failure(LoginError.InvalidCredentials)
             }
 
-
-            if (!password.isPasswordValid()) {
-                return failure(LoginError.InvalidCredentials)
-            }
+        if (!password.isPasswordValid()) {
+            return failure(LoginError.InvalidCredentials)
+        }
 
         return transactionManager.run {
-            val user = it.userRepository.getByUsername(username)
-                ?: return@run failure(LoginError.InvalidCredentials)
+            val user =
+                it.userRepository.getByUsername(username)
+                    ?: return@run failure(LoginError.InvalidCredentials)
             if (!user.active) {
                 return@run failure(LoginError.DeactivatedAccount)
             }
@@ -274,20 +301,23 @@ class UserServices(
             }
             val tokenValue = generateTokenValue()
             val now = clock.now()
-            val newSession = Session(
-                tokenEncoder.createSessionToken(tokenValue),
-                user.id,
-                now,
-                now
-            )
+            val newSession =
+                Session(
+                    tokenEncoder.createSessionToken(tokenValue),
+                    user.id,
+                    now,
+                    now,
+                )
 
             it.userRepository.createSession(newSession, config.maxTokensPerUser)
             success(LoginResultOutput(tokenValue, getTokenExpiration(newSession)))
         }
     }
 
-    fun verifyPasswordMatch(loginPassword: String, realPasswordInfo: PasswordHash): Boolean =
-        passwordEncoder.matches(loginPassword, realPasswordInfo.value)
+    fun verifyPasswordMatch(
+        loginPassword: String,
+        realPasswordInfo: PasswordHash,
+    ): Boolean = passwordEncoder.matches(loginPassword, realPasswordInfo.value)
 
     fun logout(tokenValue: String): Boolean {
         val sessionToken = tokenEncoder.createSessionToken(tokenValue)
@@ -339,9 +369,8 @@ class UserServices(
 
     private fun Session.isStillValid(clock: Clock): Boolean {
         val now = clock.now()
-        return this.createdAt <= now
-                && (now - this.createdAt) <= config.tokenExpirationTime
-                && (now - this.lastUsedAt) <= config.sessionExpirationTime
+        return this.createdAt <= now &&
+            (now - this.createdAt) <= config.tokenExpirationTime &&
+            (now - this.lastUsedAt) <= config.sessionExpirationTime
     }
 }
-

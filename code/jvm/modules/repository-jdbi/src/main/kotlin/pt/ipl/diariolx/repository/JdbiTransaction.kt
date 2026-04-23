@@ -5,7 +5,7 @@ import org.slf4j.Logger
 
 class JdbiTransaction(
     private val handle: Handle,
-    private val logger: Logger
+    private val logger: Logger,
 ) : Transaction {
     override val categoryRepository: CategoryRepository = JdbiCategoryRepository(handle)
     override val tagRepository: TagRepository = JdbiTagRepository(handle)

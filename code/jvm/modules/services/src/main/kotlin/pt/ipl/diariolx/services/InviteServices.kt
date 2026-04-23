@@ -23,22 +23,26 @@ class InviteServices(
     fun getInvite(invite: String): Invite? =
         transactionManager.run {
             val result = it.inviteRepository.get(invite) ?: return@run null
-            if (result.isStillValid(clock)){
+            if (result.isStillValid(clock)) {
                 result
             } else {
                 null
             }
         }
 
-    fun createInvite(author: User, role: String): Either<UserError, Invite> {
+    fun createInvite(
+        author: User,
+        role: String,
+    ): Either<UserError, Invite> {
         if (author.role != UserRole.ADMIN) {
             return failure(UserError.Unauthorized)
         }
-        val userRole = try {
-            UserRole.valueOf(role.uppercase())
-        } catch (e: IllegalArgumentException) {
-            return failure(UserError.InvalidRole)
-        }
+        val userRole =
+            try {
+                UserRole.valueOf(role.uppercase())
+            } catch (e: IllegalArgumentException) {
+                return failure(UserError.InvalidRole)
+            }
         return transactionManager.run {
             val inviteCode = generateInviteCode()
             val now = clock.now()
@@ -47,20 +51,18 @@ class InviteServices(
                     invite = inviteCode,
                     createdAt = now,
                     expiresAt = now.plus(config.inviteExpirationTime),
-                    role = userRole
+                    role = userRole,
                 )
             val result = it.inviteRepository.create(invite)
             success(result)
         }
     }
 
-    private fun generateInviteCode(): String =
-        UUID.randomUUID().toString()
+    private fun generateInviteCode(): String = UUID.randomUUID().toString()
 
     private fun Invite.isStillValid(clock: Clock): Boolean {
         val now = clock.now()
-        return this.createdAt <= now
-                && (now - this.createdAt) <= config.inviteExpirationTime
+        return this.createdAt <= now &&
+            (now - this.createdAt) <= config.inviteExpirationTime
     }
 }
-

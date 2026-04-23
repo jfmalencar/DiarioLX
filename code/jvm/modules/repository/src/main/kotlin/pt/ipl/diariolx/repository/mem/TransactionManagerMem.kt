@@ -9,7 +9,7 @@ import pt.ipl.diariolx.repository.UserRepository
 class TransactionManagerMem(
     categoryRepository: CategoryRepository,
     userRepository: UserRepository = UserRepositoryMem(),
-    inviteRepository: InviteRepository = InviteRepositoryMem()
+    inviteRepository: InviteRepository = InviteRepositoryMem(),
 ) : TransactionManager {
     private val transaction = TransactionMem(categoryRepository, userRepository, inviteRepository)
 

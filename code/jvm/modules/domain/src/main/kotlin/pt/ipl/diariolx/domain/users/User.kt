@@ -14,7 +14,8 @@ data class User(
     val role: UserRole,
     val fName: Name,
     val lName: Name,
-    val bio: String = "", // TODO(): Prevent SQL Injection on Bio DB Field
+    val bio: String = "",
+    // TODO(): Prevent SQL Injection on Bio DB Field
     val createdAt: Instant,
     val updatedAt: Instant,
     val profilePictureURL: String = "",

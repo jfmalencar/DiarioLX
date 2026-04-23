@@ -14,17 +14,16 @@ import pt.ipl.diariolx.utils.user.PasswordHash
 import pt.ipl.diariolx.utils.user.Username
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
 /**
  * Test suite for UserRepository implementations.
  * Verifies all CRUD operations, filtering, and session management.
  */
 class UserRepositoryTest {
-
     private fun createRepository(): UserRepository = UserRepositoryMem()
 
     // ======================== Helper Functions ========================
@@ -357,10 +356,11 @@ class UserRepositoryTest {
         val now = Clock.System.now()
         val createdUser = repo.create(createNewUser(email = "original@example.com"), now)
 
-        val updateUser = createUpdateUser(
-            email = "updated@example.com",
-            fName = "Updated",
-        )
+        val updateUser =
+            createUpdateUser(
+                email = "updated@example.com",
+                fName = "Updated",
+            )
         repo.update(updateUser, createdUser.id, now)
 
         val updated = repo.getById(createdUser.id)
@@ -615,4 +615,3 @@ class UserRepositoryTest {
         assertNull(user2Repo1)
     }
 }
-

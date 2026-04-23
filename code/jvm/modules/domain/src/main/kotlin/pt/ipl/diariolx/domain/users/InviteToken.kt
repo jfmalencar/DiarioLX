@@ -12,4 +12,3 @@ data class InviteToken(
     val usedAt: Timestamp? = null,
     val usedByUserId: Int? = null,
 )
-

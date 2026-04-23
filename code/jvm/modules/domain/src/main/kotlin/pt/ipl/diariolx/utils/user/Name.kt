@@ -21,7 +21,7 @@ data class Name(val value: String) {
 }
 
 fun String.isNameValid(): Boolean {
-    return this.isNotBlank()
-            && this.length in MIN_NAME_LENGTH..MAX_NAME_LENGTH
-            && Regex("^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ'-]+$").matches(this)
+    return this.isNotBlank() &&
+        this.length in MIN_NAME_LENGTH..MAX_NAME_LENGTH &&
+        Regex("^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ'-]+$").matches(this)
 }

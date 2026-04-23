@@ -2,7 +2,6 @@ package pt.ipl.diariolx.domain.invites
 
 import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.users.UserRole
-import kotlin.time.Duration
 
 data class Invite(
     val id: Int,
