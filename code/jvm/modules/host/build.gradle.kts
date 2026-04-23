@@ -12,7 +12,7 @@ dependencies {
     // Module dependencies
     implementation(project(":http"))
     implementation(project(":services"))
-    implementation(project(":repository"))
+    implementation(project(":repository-jdbi"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

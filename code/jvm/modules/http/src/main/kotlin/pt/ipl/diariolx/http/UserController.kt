@@ -42,10 +42,11 @@ class UserController(
 fun createUser(
         invite: Invite,
         @RequestBody body: NewUserDTO,
-    ): ResponseEntity<*> =
-        handleUserOperationResult(
+    ): ResponseEntity<*> {
+        logger.info("POST /signup $invite, $body")
+        return handleUserOperationResult(
             "/user/signup",
-            userServices.create(body.username, body.email,  body.password,body.fName, body.lName, invite),
+            userServices.create(body.username, body.email, body.password, body.fName, body.lName, invite),
             HttpStatus.CREATED,
         ) {
             logger.info("Invite: ${invite.invite} used to create user with username: ${body.username}")
@@ -53,6 +54,7 @@ fun createUser(
                 "userId" to it,
             )
         }
+    }
 
     @PostMapping(
         "/update"

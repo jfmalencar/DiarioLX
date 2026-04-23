@@ -1,6 +1,8 @@
 package pt.ipl.diariolx
 
 import kotlinx.datetime.Clock
+import org.jdbi.v3.core.Jdbi
+import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -20,6 +22,8 @@ import pt.ipl.diariolx.http.auth.AuthenticationInterceptor
 import pt.ipl.diariolx.http.invite.InviteArgumentResolver
 import pt.ipl.diariolx.http.invite.InviteInterceptor
 import pt.ipl.diariolx.repository.TransactionManager
+import pt.ipl.diariolx.repository.configureWithAppRequirements
+import pt.ipl.diariolx.repository.JdbiTransactionManager
 import pt.ipl.diariolx.repository.mem.TransactionManagerMem
 import pt.ipl.diariolx.repository.mem.CategoryRepositoryMem
 import pt.ipl.diariolx.repository.mem.InviteRepositoryMem
@@ -49,10 +53,28 @@ class PipelineConfigurer(
 @SpringBootApplication
 class DiarioLXApplication {
     
-    // ======================== Memory Mode Configuration ========================
-    // This application is configured to use IN-MEMORY repositories for development
-    // To use database mode, uncomment the JDBC beans below and comment out memory beans
-    
+    // ======================== Database Mode Configuration ========================
+    // This application is configured to use JDBI/PostgreSQL database
+    // To use in-memory mode, comment out the jdbiTransactionManager and uncomment memoryTransactionManager
+
+    @Bean
+    fun jdbi() =
+        Jdbi
+            .create(
+                PGSimpleDataSource().apply {
+                    setURL(Environment.getDbUrl())
+                },
+            ).configureWithAppRequirements()
+
+    @Bean
+    fun transactionManager(jdbi: Jdbi): TransactionManager =
+        JdbiTransactionManager(
+            jdbi = jdbi,
+            logger()
+        )
+
+    // === UNCOMMENT BELOW TO USE IN-MEMORY REPOSITORIES INSTEAD ===
+    /*
     @Bean
     fun transactionManager(): TransactionManager =
         TransactionManagerMem(
@@ -60,6 +82,7 @@ class DiarioLXApplication {
             userRepository = UserRepositoryMem(),
             inviteRepository = InviteRepositoryMem(),
         )
+    */
 
     @Bean
     fun passwordEncoder() = BCryptPasswordEncoder()
