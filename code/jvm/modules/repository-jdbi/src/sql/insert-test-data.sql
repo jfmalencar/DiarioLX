@@ -61,3 +61,15 @@ INSERT INTO tags (name, slug, description) VALUES
 ('Investigação', 'investigacao', 'Jornalismo investigativo'),
 ('Internacional', 'internacional', 'Notícias fora de Portugal'),
 ('Media', 'media', 'Indústria dos media e comunicação');
+
+INSERT INTO authors (name, slug, bio, avatar_url) VALUES
+    ('João Silva', 'joao-silva', 'Jornalista focado em política nacional e europeia.', 'https://i.pravatar.cc/150?img=1'),
+    ('Maria Santos', 'maria-santos', 'Especialista em sociedade e educação.', 'https://i.pravatar.cc/150?img=2'),
+    ('Pedro Costa', 'pedro-costa', 'Repórter de investigação com foco em justiça e corrupção.', 'https://i.pravatar.cc/150?img=3'),
+    ('Ana Ribeiro', 'ana-ribeiro', 'Jornalista cultural apaixonada por cinema e literatura.', 'https://i.pravatar.cc/150?img=4'),
+    ('Ricardo Mendes', 'ricardo-mendes', 'Analista político e comentador.', 'https://i.pravatar.cc/150?img=5'),
+    ('Carla Ferreira', 'carla-ferreira', 'Especialista em saúde pública e políticas de saúde.', 'https://i.pravatar.cc/150?img=6'),
+    ('Tiago Almeida', 'tiago-almeida', 'Jornalista desportivo com foco em futebol nacional.', 'https://i.pravatar.cc/150?img=7'),
+    ('Sofia Martins', 'sofia-martins', 'Repórter multimédia com foco em storytelling digital.', 'https://i.pravatar.cc/150?img=8'),
+    ('Bruno Rocha', 'bruno-rocha', 'Cobertura de tecnologia, inovação e startups.', 'https://i.pravatar.cc/150?img=9'),
+    ('Inês Duarte', 'ines-duarte', 'Jornalista dedicada a temas ambientais e sustentabilidade.', 'https://i.pravatar.cc/150?img=10');

@@ -3,7 +3,7 @@ export const FieldSection = ({ title, optional, description, children }: { title
         <div className='mb-5'>
             <div className='d-flex align-items-center gap-2 mb-2'>
                 <label className='fw-bold' style={{ fontSize: '1rem' }}>
-                    {title}
+                    {title.toUpperCase()}
                 </label>
                 {optional && <span className='text-uppercase text-muted small'>Opcional</span>}
             </div>

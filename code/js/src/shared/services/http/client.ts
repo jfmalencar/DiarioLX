@@ -1,11 +1,10 @@
-type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
+type JSONValue = string | number | boolean | null | JSONObject | JSONArray | undefined;
 type JSONObject = { [key: string]: JSONValue }
-type JSONArray = Array<JSONValue>;
+type JSONArray = Array<JSONValue> | JSONValue[];
 
 type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
-
 
 export function put<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
   return request<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }, onUnauthorized);
@@ -13,6 +12,11 @@ export function put<T>(url: string, body: JSONValue, options: RequestInit = {}, 
 
 export function post<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
   return request<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }, onUnauthorized);
+}
+
+export function upload<T>(url: string, formData: FormData, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
+  const { headers, ...rest } = options;
+  return request<T>(url, { ...rest, headers: { ...headers, 'Content-Type': 'multipart/form-data' }, method: 'POST', body: formData }, onUnauthorized);
 }
 
 export function remove<T>(url: string, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
@@ -48,7 +52,8 @@ export async function request<T>(url: string, options: RequestInit = {}, onUnaut
     const raw = await response.text();
     try {
       return { success: true, data: JSON.parse(raw) };
-    } catch (err) {
+    } catch (e) {
+      console.error('Failed to parse JSON, returning raw response', { raw, error: e });
       return { success: true, data: raw as unknown as T };
     }
   } catch (err) {

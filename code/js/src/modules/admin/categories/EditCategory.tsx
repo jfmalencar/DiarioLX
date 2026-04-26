@@ -8,7 +8,7 @@ import { SearchField } from '@/shared/components/inputs/SearchField';
 import { Button } from '@/shared/components/Button';
 import { slugify } from '@/shared/utils/format';
 
-import { type Category, type CategoryRequest, useCategories } from '@/shared/hooks/useCategories';
+import { type Category, type CategoryFormValues, useCategories } from '@/shared/hooks/useCategories';
 
 import icon from '@/assets/icon.svg';
 
@@ -167,7 +167,7 @@ export const EditCategory = () => {
 
         dispatch({ type: 'submit' });
 
-        const category: CategoryRequest = {
+        const category: CategoryFormValues = {
             id: params.id === 'nova' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,

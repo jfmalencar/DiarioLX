@@ -14,10 +14,14 @@ import { Tags } from '@/modules/admin/tags/Tags';
 import { EditCategory } from '@/modules/admin/categories/EditCategory';
 import { EditTag } from '@/modules/admin/tags/EditTag';
 import { Users } from '@/modules/admin/Users';
-import { Articles } from '@/modules/admin/Articles';
+import { Articles } from '@/modules/admin/articles/Articles';
+import { EditArticle } from '@/modules/admin/articles/EditArticle';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
+
+import { FileUpload } from '@/modules/public/File';
+import { Article } from '@/modules/public/Article';
 
 const router = createBrowserRouter([
   {
@@ -36,8 +40,13 @@ const router = createBrowserRouter([
         path: 'categorias/:id',
         element: <Category />,
       },
+      {
+        path: 'p/:slug',
+        element: <Article />,
+      }
     ],
   },
+  { path: '/file-upload', element: <FileUpload /> },
   {
     path: '/admin',
     element: <AdminLayout />,
@@ -134,6 +143,17 @@ const router = createBrowserRouter([
           title: 'admin_layout.publications',
           subtitle: 'admin_layout.publications_subtitle',
           layout: 'dashboard'
+        }
+      },
+      {
+        path: 'publicacoes/:id',
+        element: (
+          <RequireAuthentication>
+            <EditArticle />
+          </RequireAuthentication>
+        ),
+        handle: {
+          layout: 'none'
         }
       },
     ]

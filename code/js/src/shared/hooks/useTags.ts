@@ -1,10 +1,11 @@
 
 import { useState, useCallback } from 'react';
-import { tagsService } from '../services/tags/index';
-import type { Tag, TagRequest } from '../services/tags/tags.types';
+
+import { tagsService } from '@/shared/services/tags';
+import type { Tag, TagFormValues } from '@/shared/services/tags/tags.types';
 import type { Query } from '@/shared/types/Query';
 
-export type { Tag, TagRequest };
+export type { Tag, TagFormValues };
 
 export const useTags = () => {
     const [tags, setTags] = useState<Tag[]>([]);
@@ -48,7 +49,7 @@ export const useTags = () => {
     )
 
     const create = useCallback(
-        async (tag: TagRequest): Promise<string | undefined> => {
+        async (tag: TagFormValues): Promise<string | undefined> => {
             setLoading(true)
             setError(null)
             try {
@@ -66,7 +67,7 @@ export const useTags = () => {
     )
 
     const update = useCallback(
-        async (id: string, tag: TagRequest): Promise<void> => {
+        async (id: string, tag: TagFormValues): Promise<void> => {
             setLoading(true)
             setError(null)
             try {

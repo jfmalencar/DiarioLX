@@ -14,34 +14,32 @@ export type Category = {
   archivedAt: string | null;
 }
 
-export type CategoryRequest = Omit<Category, 'count' | 'createdAt' | 'updatedAt' | 'archivedAt'>;
+export type CategoryFormValues = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  slug: string;
+  parentId: string | null;
+  parentName: string | null;
+}
+
+export type CategoryRequest = {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  slug: string;
+  parentId: string | null;
+  parentName: string | null;
+}
 
 export type CategoriesResponse = {
   categories: Category[];
-  _links: {
-    self: {
-      href: string;
-      method: string;
-    };
-    previous?: {
-      href: string;
-      method: string;
-    };
-    next?: {
-      href: string;
-      method: string;
-    };
-  };
 };
 
 export type CategoryResponse = {
   category: Category;
-  _links: {
-    self: {
-      href: string;
-      method: string;
-    }
-  };
 }
 
 export interface CategoriesService {
@@ -49,9 +47,9 @@ export interface CategoriesService {
 
   fetchOne(id: string): Promise<CategoryResponse>;
 
-  create(category: CategoryRequest): Promise<string | undefined>;
+  create(category: CategoryFormValues): Promise<string | undefined>;
 
-  update(id: string, category: CategoryRequest): Promise<void>;
+  update(id: string, category: CategoryFormValues): Promise<void>;
 
   delete(id: string): Promise<void>;
 

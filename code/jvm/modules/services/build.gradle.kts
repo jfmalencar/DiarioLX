@@ -7,6 +7,7 @@ version = "1.0-SNAPSHOT"
 
 dependencies {
     api(project(":domain"))
+    implementation(project(":storage"))
     implementation(project(":repository"))
 
     // To get the DI annotation

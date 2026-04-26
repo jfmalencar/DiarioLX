@@ -6,7 +6,9 @@ import pt.ipl.diariolx.repository.Transaction
 
 class TransactionMem(
     override val categoryRepository: CategoryRepository,
-    override val tagRepository: TagRepository = TagRepositoryMem(),
+    override val tagRepository: TagRepository,
+    override val articleRepository: ArticleRepositoryMem,
+    override val fileRepository: FileRepositoryMem,
 ) : Transaction {
     override fun rollback() {
         TODO("Not yet implemented")

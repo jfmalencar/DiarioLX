@@ -3,7 +3,6 @@ import { useI18n } from '@/shared/hooks/useI18n';
 
 export function PublicLayout() {
   const { t } = useI18n();
-
   return (
     <>
       <div className='layout-header'>

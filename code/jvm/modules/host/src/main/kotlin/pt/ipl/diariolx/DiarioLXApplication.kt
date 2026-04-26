@@ -4,6 +4,7 @@ import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.MessageSource
@@ -11,6 +12,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import pt.ipl.diariolx.repository.configureWithAppRequirements
+import pt.ipl.diariolx.storage.FileStorage
+import pt.ipl.diariolx.storage.FileStorageFactory
 
 @SpringBootApplication
 class DiarioLXApplication {
@@ -36,6 +39,18 @@ class DiarioLXApplication {
         messageSource.setDefaultEncoding("UTF-8")
         return messageSource
     }
+
+    @Bean
+    fun fileStorage(
+        @Value("\${storage.s3.endpoint}") url: String,
+        @Value("\${storage.s3.region}") region: String,
+        @Value("\${storage.s3.access-key}") accessKey: String,
+        @Value("\${storage.s3.secret-key}") secretKey: String,
+        @Value("\${storage.s3.bucket}") bucket: String,
+        @Value("\${storage.s3.path-style-access}") pathStyleAccess: Boolean,
+    ): FileStorage =
+        FileStorageFactory()
+            .create(url, region, accessKey, secretKey, bucket, pathStyleAccess)
 }
 
 private val logger = LoggerFactory.getLogger("main")
