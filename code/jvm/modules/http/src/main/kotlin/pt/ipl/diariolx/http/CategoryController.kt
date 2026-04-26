@@ -33,10 +33,11 @@ class CategoryController(
     fun getAllCategories(
         @RequestParam page: Int = 1,
         @RequestParam limit: Int = 10,
+        @RequestParam query: String? = null,
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
         val limit = if (limit > 30) 30 else limit
-        val categories = categoryService.getAll(page, limit, archived)
+        val categories = categoryService.getAll(page, limit, query, archived)
         return ResponseEntity.ok(mapOf("categories" to categories))
     }
 

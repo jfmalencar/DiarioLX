@@ -1,4 +1,4 @@
-import type { CategoriesService, CategoriesResponse, CategoryResponse } from './categories.types';
+import type { CategoryRequest, CategoriesService, CategoriesResponse, CategoryResponse } from './categories.types';
 import { get, post, put, remove } from '../http/client';
 
 export const categoriesApiService: CategoriesService = {
@@ -20,7 +20,16 @@ export const categoriesApiService: CategoriesService = {
   },
 
   async create(category) {
-    const result = await post<string>('/api/categories', category);
+    const request: CategoryRequest = {
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      color: category.color,
+      slug: category.slug,
+      parentId: category.parentId,
+      parentName: category.parentName
+    }
+    const result = await post<string>('/api/categories', request);
     if (!result.success) {
       throw new Error('Failed to create category');
     }
@@ -28,7 +37,16 @@ export const categoriesApiService: CategoriesService = {
   },
 
   async update(id, category) {
-    const result = await put(`/api/categories/${id}`, category);
+    const request: CategoryRequest = {
+      id: category.id,
+      name: category.name,
+      description: category.description,
+      color: category.color,
+      slug: category.slug,
+      parentId: category.parentId,
+      parentName: category.parentName
+    }
+    const result = await put(`/api/categories/${id}`, request);
     if (!result.success) {
       throw new Error('Failed to update category');
     }

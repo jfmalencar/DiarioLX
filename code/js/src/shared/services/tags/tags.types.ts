@@ -11,34 +11,26 @@ export type Tag = {
   archivedAt: string | null;
 }
 
-export type TagRequest = Omit<Tag, 'count' | 'createdAt' | 'updatedAt' | 'archivedAt'>;
+export type TagFormValues = {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+}
+
+export type TagRequest = {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+}
 
 export type TagsResponse = {
   tags: Tag[];
-  _links: {
-    self: {
-      href: string;
-      method: string;
-    };
-    previous?: {
-      href: string;
-      method: string;
-    };
-    next?: {
-      href: string;
-      method: string;
-    };
-  };
 };
 
 export type TagResponse = {
   tag: Tag;
-  _links: {
-    self: {
-      href: string;
-      method: string;
-    }
-  };
 }
 
 export interface TagsService {
@@ -46,7 +38,7 @@ export interface TagsService {
 
   fetchOne(id: string): Promise<TagResponse>;
 
-  create(tag: TagRequest): Promise<string | undefined>;
+  create(tag: TagFormValues): Promise<string | undefined>;
 
   update(id: string, tag: TagRequest): Promise<void>;
 

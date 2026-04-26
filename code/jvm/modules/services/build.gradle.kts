@@ -7,7 +7,8 @@ version = "1.0-SNAPSHOT"
 
 dependencies {
     api(project(":domain"))
-    implementation(project(":repository-jdbi"))
+    implementation(project(":storage"))
+    implementation(project(":repository"))
 
     // To get the DI annotation
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")

@@ -10,3 +10,55 @@ services:
       - POSTGRES_DB=db
     ports:
       - 5435:5432
+
+  seaweed-master:
+    image: chrislusf/seaweedfs:latest
+    command: "master -ip=seaweed-master -ip.bind=0.0.0.0"
+    ports:
+      - "9333:9333"
+    volumes:
+      - seaweed-master-data:/data
+
+  seaweed-volume:
+    image: chrislusf/seaweedfs:latest
+    command: 'volume -mserver="seaweed-master:9333" -ip=seaweed-volume -ip.bind=0.0.0.0 -dir=/data'
+    depends_on:
+      - seaweed-master
+    ports:
+      - "8080:8080"
+    volumes:
+      - seaweed-volume-data:/data
+
+  seaweed-filer:
+    image: chrislusf/seaweedfs:latest
+    command: 'filer -master="seaweed-master:9333" -ip=seaweed-filer -ip.bind=0.0.0.0'
+    depends_on:
+      - seaweed-master
+      - seaweed-volume
+    ports:
+      - "8888:8888"
+    volumes:
+      - seaweed-filer-data:/data
+
+  seaweed-s3:
+    image: chrislusf/seaweedfs:latest
+    command: 's3 -filer="seaweed-filer:8888" -ip.bind=0.0.0.0 -config=/etc/seaweedfs/seaweed-config.json'
+    depends_on:
+      - seaweed-filer
+    ports:
+      - "8333:8333"
+    volumes:
+      - ./seaweed-config.json:/etc/seaweedfs/seaweed-config.json:ro
+
+  seaweed-admin:
+    image: chrislusf/seaweedfs:latest
+    command: 'admin -port=23646 -masters="seaweed-master:9333"'
+    depends_on:
+      - seaweed-master
+    ports:
+      - "23646:23646"
+
+volumes:
+  seaweed-master-data:
+  seaweed-volume-data:
+  seaweed-filer-data:

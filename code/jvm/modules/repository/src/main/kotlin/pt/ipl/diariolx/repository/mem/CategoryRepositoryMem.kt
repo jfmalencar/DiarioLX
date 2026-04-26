@@ -51,8 +51,12 @@ class CategoryRepositoryMem : CategoryRepository {
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
-    ): List<Category> = categories.filter { !archived || it.archivedAt != null }
+    ): List<Category> =
+        categories.filter {
+            !archived || it.archivedAt != null && (if (query == null) true else it.name.contains(query))
+        }
 
     override fun delete(id: Int): Boolean {
         if (categories.none { it.id == id }) return false

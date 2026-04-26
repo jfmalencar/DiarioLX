@@ -14,6 +14,7 @@ interface CategoryRepository {
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
     ): List<Category>
 

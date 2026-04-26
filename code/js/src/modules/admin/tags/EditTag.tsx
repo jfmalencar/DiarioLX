@@ -6,7 +6,7 @@ import { UnderlineTextArea } from '@/shared/components/inputs/UnderlineTextArea'
 import { Button } from '@/shared/components/Button';
 import { slugify } from '@/shared/utils/format';
 
-import { type Tag, type TagRequest, useTags } from '@/shared/hooks/useTags';
+import { type Tag, type TagFormValues, useTags } from '@/shared/hooks/useTags';
 
 import icon from '@/assets/icon.svg';
 
@@ -123,7 +123,7 @@ export const EditTag = () => {
 
         dispatch({ type: 'submit' });
 
-        const tag: TagRequest = {
+        const tag: TagFormValues = {
             id: params.id === 'nova' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,

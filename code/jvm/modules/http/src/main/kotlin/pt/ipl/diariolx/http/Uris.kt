@@ -51,4 +51,16 @@ object Uris {
         const val HOSTNAME = "$PREFIX/status/hostname"
         const val IP = "$PREFIX/status/ip"
     }
+
+    object Files {
+        const val UPLOAD = "$PREFIX/media"
+        const val GET_ALL = "$PREFIX/media"
+        const val GET_SIGNED_URL = "$PREFIX/media/signed-url"
+        const val COMPLETE_UPLOAD = "$PREFIX/media/{id}"
+    }
+
+    object Articles {
+        const val CREATE = "$PREFIX/articles"
+        const val GET_BY_SLUG = "$PREFIX/articles/slug/{slug}"
+    }
 }

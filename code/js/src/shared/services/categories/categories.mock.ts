@@ -33,12 +33,6 @@ export const categoriesMockService: CategoriesService = {
   async fetchAll() {
     return {
       categories: fakeCategories,
-      _links: {
-        self: {
-          href: '/api/categories',
-          method: 'GET',
-        },
-      },
     };
   },
 
@@ -47,7 +41,7 @@ export const categoriesMockService: CategoriesService = {
     if (!category) {
       throw new Error('Category not found');
     }
-    return { category, _links: { self: { href: `/api/categories/${id}`, method: 'GET' } } };
+    return { category };
   },
 
   async create(category) {
