@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { useArticles, type Article } from '@/shared/hooks/useArticles';
 
 const formatNewsDate = (dateString: string): string => {
@@ -143,12 +143,20 @@ export function Article() {
                             {article?.blocks.map((block, index) => {
                                 if (block.type === 'image') {
                                     return (
-                                        <img
-                                            key={index}
-                                            src={`http://localhost:8333/${block.media.url}`}
-                                            alt={block.media.altText}
-                                            className='img-fluid mb-4'
-                                        />
+                                        <>
+                                            <img
+                                                key={index}
+                                                src={`http://localhost:8333/${block.media.url}`}
+                                                alt={block.media.altText}
+                                                className='img-fluid mb-4'
+                                            />
+                                            <div
+                                                className='text-uppercase mb-4'
+                                                style={{ fontSize: '0.9rem', lineHeight: 1.3, fontFamily: 'Sora' }}
+                                            >
+                                                FOTOGRAFIA POR <span className='fw-semibold'>{block.media.photographer.name}</span>
+                                            </div>
+                                        </>
                                     );
                                 }
                                 return (
@@ -159,6 +167,22 @@ export function Article() {
                                     />
                                 );
                             })}
+                        </div>
+                        <div style={{ fontFamily: 'Sora' }} >
+                            <hr />
+                            <div className='text-center my-4'>
+                                <span className='fw-bold me-2'>TAGS</span>
+                                {article?.tags.map((tag) => (
+                                    <Link
+                                        key={tag.slug}
+                                        to={`/tags/${tag.slug}`}
+                                        className='text-dark text-decoration-underline mx-2'
+                                    >
+                                        {tag.name}
+                                    </Link>
+                                ))}
+                            </div>
+                            <hr />
                         </div>
                     </article>
                 </section>

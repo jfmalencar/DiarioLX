@@ -130,11 +130,8 @@ export const EditCategory = () => {
     }, [location.state, fetchOne, params.id, navigate]);
 
     useEffect(() => {
-        if (!inputs?.parentSearch) return;
-
         const timeout = setTimeout(async () => {
-            const search = inputs.parentSearch.trim().toLowerCase();
-
+            const search = inputs?.parentSearch.trim().toLowerCase() || '';
             await fetchAll({ query: search });
         }, 400);
 
