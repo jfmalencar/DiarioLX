@@ -7,6 +7,7 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.article.Article
+import pt.ipl.diariolx.domain.article.ArticleSummary
 import pt.ipl.diariolx.domain.article.NewArticle
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.media.MediaSummary
@@ -52,9 +53,26 @@ class JdbiArticleRepository(
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
-    ): List<Article> {
-        TODO("Not yet implemented")
+    ): List<ArticleSummary> {
+        val sql =
+            buildString {
+                append("select * from v_articles_summary WHERE 1 = 1".trimIndent())
+                if (query != null) {
+                    append(" AND (title ILIKE :query OR slug ILIKE :query)")
+                }
+                append(" ORDER BY id desc")
+                append(" LIMIT :limit OFFSET :offset")
+            }
+        return handle
+            .createQuery(sql)
+            .bind("limit", limit)
+            .bind("offset", (page - 1) * limit)
+            .bind("query", "%$query%")
+            .mapTo<ArticleSummaryModel>()
+            .list()
+            .map { it.article }
     }
 
     override fun delete(id: Int): Boolean {
@@ -188,6 +206,29 @@ class JdbiArticleRepository(
                     updatedAt = Instant.fromEpochSeconds(updatedAt),
                     publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) },
                     archivedAt = archivedAt?.let { Instant.fromEpochSeconds(it) },
+                )
+    }
+
+    private data class ArticleSummaryModel(
+        val id: Int,
+        val title: String,
+        val slug: String,
+        val categoryName: String,
+        val featuredImage: String?,
+        val authors: String,
+        val createdAt: Long,
+    ) {
+        val article: ArticleSummary
+            get() =
+                ArticleSummary(
+                    id = id,
+                    title = title,
+                    slug = slug,
+                    category = categoryName,
+                    featuredImage = featuredImage,
+                    authors = authors.split(", "),
+                    createdAt = Instant.fromEpochSeconds(createdAt).toString(),
+                    isPublished = true,
                 )
     }
 }

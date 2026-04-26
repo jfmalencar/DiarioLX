@@ -105,8 +105,8 @@ export function Tags() {
 
     const messageModal = open?.archivedAt ? 'Tem a certeza que deseja desarquivar esta etiqueta?' : 'Tem a certeza que deseja arquivar esta etiqueta?';
     const alertMessage = open?.archivedAt
-        ? 'Os conteúdos associados voltarão a estar visíveis assim que a etiqueta for desarquivada.'
-        : 'Os conteúdos associados deixarão de estar visíveis enquanto a etiqueta estiver arquivada.';
+        ? 'Os conteúdos que têm esta etiqueta como etiqueta principal voltarão a estar visíveis assim que ela for desarquivada.'
+        : 'Os conteúdos que têm esta etiqueta como etiqueta principal deixarão de estar visíveis enquanto ela estiver arquivada.';
     const labelModal = open?.archivedAt ? 'Desarquivar' : 'Arquivar';
     const actionModal = open?.archivedAt ? unarchive : archive;
     const redirectAfterAction = open?.archivedAt ? `/admin/etiquetas?tab=all` : '/admin/etiquetas?tab=archived';

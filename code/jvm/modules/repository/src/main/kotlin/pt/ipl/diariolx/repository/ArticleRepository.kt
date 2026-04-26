@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.repository
 
 import pt.ipl.diariolx.domain.article.Article
+import pt.ipl.diariolx.domain.article.ArticleSummary
 import pt.ipl.diariolx.domain.article.NewArticle
 
 interface ArticleRepository {
@@ -13,8 +14,9 @@ interface ArticleRepository {
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
-    ): List<Article>
+    ): List<ArticleSummary>
 
     fun delete(id: Int): Boolean
 

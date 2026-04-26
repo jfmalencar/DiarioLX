@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.http.model.CategoryRequest
+import pt.ipl.diariolx.http.model.CategoryResponse
 import pt.ipl.diariolx.services.CategoryService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -24,7 +25,7 @@ class CategoryController(
     ): ResponseEntity<*> {
         val id = id.toInt()
         return when (val result = categoryService.get(id)) {
-            is Success -> ResponseEntity.ok(mapOf("category" to result.value))
+            is Success -> ResponseEntity.ok(mapOf("category" to CategoryResponse.from(result.value)))
             is Failure -> ResponseEntity.notFound().build<Unit>()
         }
     }
@@ -38,7 +39,7 @@ class CategoryController(
     ): ResponseEntity<*> {
         val limit = if (limit > 30) 30 else limit
         val categories = categoryService.getAll(page, limit, query, archived)
-        return ResponseEntity.ok(mapOf("categories" to categories))
+        return ResponseEntity.ok(mapOf("categories" to categories.map { CategoryResponse.from(it) }))
     }
 
     @PostMapping(Uris.Categories.CREATE)

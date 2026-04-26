@@ -37,6 +37,7 @@ interface UserRepository {
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         deactivated: Boolean,
     ): List<User>
 

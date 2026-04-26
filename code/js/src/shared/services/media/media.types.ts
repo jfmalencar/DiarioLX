@@ -12,15 +12,15 @@ export type Media = {
         name: string;
         slug: string
     };
-    alt: string;
+    altText: string;
     mimeType: string;
     createdAt: string;
 };
 
 export type MediaFormValues = {
     file: File;
-    alt: string;
-    photographer: string;
+    altText: string;
+    photographerId: string;
 };
 
 export type MediasResponse = {

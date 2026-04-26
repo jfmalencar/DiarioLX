@@ -33,10 +33,11 @@ class TagController(
     fun getAllTags(
         @RequestParam page: Int = 1,
         @RequestParam limit: Int = 10,
+        @RequestParam query: String? = null,
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
         val limit = if (limit > 30) 30 else limit
-        val tags = tagService.getAll(page, limit, archived)
+        val tags = tagService.getAll(page, limit, query, archived)
         return ResponseEntity.ok(mapOf("tags" to tags))
     }
 

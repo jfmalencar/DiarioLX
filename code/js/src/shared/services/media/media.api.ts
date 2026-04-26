@@ -14,8 +14,8 @@ export const mediaApiService: MediaService = {
   async upload(media) {
     const formData = new FormData();
     formData.append('file', media.file);
-    formData.append('alt', media.alt);
-    formData.append('photographer', media.photographer);
+    formData.append('altText', media.altText);
+    formData.append('photographerId', media.photographerId);
 
     const result = await upload<Media>('/api/media', formData);
     if (!result.success) {
@@ -26,8 +26,8 @@ export const mediaApiService: MediaService = {
 
   async getSignedUrl(media) {
     const result = await post<SignedUpload>('/api/media/signed-url', {
-      altText: media.alt,
-      photographer: media.photographer,
+      altText: media.altText,
+      photographerId: media.photographerId,
       originalFileName: media.file.name,
       contentType: media.file.type,
     });

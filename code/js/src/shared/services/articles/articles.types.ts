@@ -29,6 +29,17 @@ export type Article = {
     publishedAt: string | null;
 };
 
+export type ArticleSummary = {
+    id: string;
+    title: string;
+    slug: string;
+    featuredImage: string
+    category: string
+    authors: string[]
+    createdAt: string
+    isPublished: boolean
+}
+
 type ArticleBlockBase = {
     id: string;
     position: number;
@@ -94,7 +105,7 @@ export type ArticleRequest = {
 }
 
 export type ArticlesResponse = {
-    articles: Article[];
+    articles: ArticleSummary[];
 };
 
 export type ArticleResponse = {

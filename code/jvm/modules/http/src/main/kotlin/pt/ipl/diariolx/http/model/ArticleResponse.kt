@@ -1,5 +1,6 @@
 package pt.ipl.diariolx.http.model
 
+import pt.ipl.diariolx.domain.article.Article
 import pt.ipl.diariolx.domain.article.ArticleBlock
 import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary
@@ -19,7 +20,7 @@ data class ArticleResponse(
     val createdAt: String,
 ) {
     companion object {
-        fun from(article: pt.ipl.diariolx.domain.article.Article): ArticleResponse =
+        fun from(article: Article): ArticleResponse =
             ArticleResponse(
                 id = article.id,
                 title = article.title,

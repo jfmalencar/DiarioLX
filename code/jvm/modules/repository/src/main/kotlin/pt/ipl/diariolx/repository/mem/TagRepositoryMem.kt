@@ -49,8 +49,12 @@ class TagRepositoryMem : TagRepository {
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
-    ): List<Tag> = tags.filter { !archived || it.archivedAt != null }
+    ): List<Tag> =
+        tags.filter {
+            !archived || it.archivedAt != null && (if (query == null) true else it.name.contains(query))
+        }
 
     override fun delete(id: Int): Boolean {
         if (tags.none { it.id == id }) return false

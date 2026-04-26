@@ -2,6 +2,7 @@ package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
 import pt.ipl.diariolx.domain.article.Article
+import pt.ipl.diariolx.domain.article.ArticleSummary
 import pt.ipl.diariolx.domain.article.NewArticle
 import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary
@@ -48,8 +49,25 @@ class ArticleRepositoryMem : ArticleRepository {
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
-    ): List<Article> = articles.filter { !archived || it.archivedAt != null }
+    ): List<ArticleSummary> =
+
+        articles
+            .filter {
+                !archived || it.archivedAt != null && (if (query == null) true else it.title.contains(query))
+            }.map {
+                ArticleSummary(
+                    id = it.id,
+                    title = it.title,
+                    slug = it.slug,
+                    category = it.category.name,
+                    featuredImage = it.featuredImage?.url,
+                    createdAt = it.createdAt.toString(),
+                    authors = it.authors.map { a -> a.name },
+                    isPublished = it.publishedAt != null,
+                )
+            }
 
     override fun delete(id: Int): Boolean {
         if (articles.none { it.id == id }) return false

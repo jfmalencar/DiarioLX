@@ -15,8 +15,8 @@ class JdbiFileRepository(
         handle
             .createQuery(
                 """
-                insert into media (type, original_file_name, bucket, object_key, alt_text, mime_type,status)
-                values (:type, :original_file_name, :bucket, :object_key, :alt_text, :mime_type, :status)
+                insert into media (type, original_file_name, bucket, object_key, alt_text, mime_type,status, contributor_id)
+                values (:type, :original_file_name, :bucket, :object_key, :alt_text, :mime_type, :status, :contributor_id)
                 returning id
                 """.trimIndent(),
             ).bind("type", "image")
@@ -26,6 +26,7 @@ class JdbiFileRepository(
             .bind("alt_text", upload.altText)
             .bind("mime_type", upload.contentType)
             .bind("status", "pending")
+            .bind("contributor_id", upload.photographerId)
             .mapTo<Int>()
             .one()
 
@@ -34,8 +35,16 @@ class JdbiFileRepository(
         limit: Int,
     ): List<Media> =
         handle
-            .createQuery("select * from media where status = :status")
-            .bind("limit", limit)
+            .createQuery(
+                """
+                select media.*, users.id as user_id,
+                concat(users.first_name, ' ', users.last_name) as full_name,
+                users.username as username from media
+                left join users on users.id = media.contributor_id
+                where status = :status
+                limit :limit offset :offset
+            """,
+            ).bind("limit", limit)
             .bind("offset", (page - 1) * limit)
             .bind("status", "pending")
             .mapTo<MediaModel>()
@@ -69,6 +78,9 @@ class JdbiFileRepository(
         val sizeBytes: Long,
         val createdAt: Long,
         val uploadedAt: Long?,
+        val userId: Int,
+        val fullName: String,
+        val username: String,
     ) {
         val media: Media
             get() =
@@ -80,7 +92,7 @@ class JdbiFileRepository(
                     mimeType = mimeType,
                     status = status,
                     sizeBytes = sizeBytes,
-                    photographer = Author(1, "Photographer name"),
+                    photographer = Author(userId, fullName, username),
                     createdAt = Instant.fromEpochSeconds(createdAt),
                     uploadedAt = uploadedAt?.let { Instant.fromEpochSeconds(it) },
                 )

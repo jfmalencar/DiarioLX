@@ -41,6 +41,7 @@ class JdbiTagRepository(
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
     ): List<Tag> {
         val sql =
@@ -50,6 +51,9 @@ class JdbiTagRepository(
                     true -> append(" AND archived_at IS NOT NULL")
                     false -> append(" AND archived_at IS NULL")
                 }
+                if (query != null) {
+                    append(" AND (name ILIKE :query OR slug ILIKE :query)")
+                }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
             }
@@ -57,6 +61,7 @@ class JdbiTagRepository(
             .createQuery(sql)
             .bind("limit", limit)
             .bind("offset", (page - 1) * limit)
+            .bind("query", "%$query%")
             .mapTo<TagModel>()
             .list()
             .map { it.tag }

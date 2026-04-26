@@ -83,10 +83,23 @@ class UserRepositoryMem : UserRepository {
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         deactivated: Boolean,
     ): List<User> {
         val users: List<User> = users.toList().drop((page * limit)).take(limit)
-        return users
+        return users.filter {
+            !deactivated ||
+                it.active &&
+                (
+                    if (query == null) {
+                        true
+                    } else {
+                        it.fName.value.contains(query) ||
+                            it.lName.value.contains(query) ||
+                            it.username.value.contains(query)
+                    }
+                )
+        }
     }
 
     /** Session Management **/

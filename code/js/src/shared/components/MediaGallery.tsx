@@ -1,7 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useMedia, type Media } from '@/shared/hooks/useMedia';
 import { useFilters } from '../hooks/useFilters';
+import { useUsers } from '../hooks/useUsers';
+
+import { FieldSection } from './inputs/FieldSection';
+import { UnderlineInput } from './inputs/UnderlineInput';
+import { SearchField } from './inputs/SearchField';
+import { Button } from './Button';
+import { Pill } from './Pill';
 
 type MediaGalleryProps = {
     isOpen: boolean;
@@ -12,23 +19,31 @@ type MediaGalleryProps = {
 export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [showUploadForm, setShowUploadForm] = useState(false);
-
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [photographer, setPhotographer] = useState('');
+    const [photographer, setPhotographer] = useState({ id: '', name: '' });
     const [altText, setAltText] = useState('');
 
+    const { fetchAll: fetchUsers, users } = useUsers();
     const { buildQuery } = useFilters();
     const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
 
+    const load = useCallback(async () => {
+        const params = buildQuery({ p: 'page', total: 'limit' });
+        await fetchAll(params);
+    }, [fetchAll, buildQuery]);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            const query = photographer.name.trim().toLowerCase();
+            fetchUsers({ query });
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [photographer, fetchUsers]);
+
     useEffect(() => {
         if (!isOpen) return;
-        const load = async () => {
-            const params = buildQuery({ p: 'page', total: 'limit' });
-            await fetchAll(params);
-        };
-
         load();
-    }, [isOpen, fetchAll, buildQuery]);
+    }, [isOpen, load]);
 
     const previewUrl = useMemo(() => {
         if (!selectedFile) return null;
@@ -52,7 +67,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
 
     const resetUploadForm = () => {
         setSelectedFile(null);
-        setPhotographer('');
+        setPhotographer({ id: '', name: '' });
         setAltText('');
         setShowUploadForm(false);
     };
@@ -64,8 +79,8 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
             setIsUploading(true);
             const response = await getSignedUrl({
                 file: selectedFile,
-                photographer,
-                alt: altText,
+                photographerId: photographer.id,
+                altText,
             });
             if (!response) {
                 throw new Error('Failed to upload media');
@@ -86,8 +101,8 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
             }
 
             await completeUpload(id);
-
             resetUploadForm();
+            load();
         } finally {
             setIsUploading(false);
         }
@@ -100,8 +115,6 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
     const handleModalClick = (event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation();
     };
-
-    console.log('medias', medias)
 
     return (
         <div
@@ -117,33 +130,30 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
             >
                 <div className='modal-content'>
                     <div className='modal-header'>
-                        <h5 className='modal-title'>Media Gallery</h5>
+                        <h5 className='modal-title'>Galeria de Media</h5>
                         <button
                             type='button'
                             className='btn-close'
-                            aria-label='Close'
+                            aria-label='Fechar'
                             onClick={onClose}
                         />
                     </div>
                     <div className='modal-body'>
-                        <div className='d-flex justify-content-between align-items-center mb-3'>
-                            <div>
-                                <strong>Images</strong>
+                        {!showUploadForm &&
+                            <div className='d-flex justify-content-end align-items-center mb-3'>
+                                <Button
+                                    className='btn btn-primary'
+                                    onClick={() => setShowUploadForm((prev) => !prev)}
+                                >
+                                    Adicionar imagem
+                                </Button>
                             </div>
-                            <button
-                                type='button'
-                                className='btn btn-primary'
-                                onClick={() => setShowUploadForm((prev) => !prev)}
-                            >
-                                {showUploadForm ? 'Cancel' : 'Add new image'}
-                            </button>
-                        </div>
+                        }
                         {showUploadForm && (
                             <div className='card mb-4'>
                                 <div className='card-body'>
                                     <div className='row g-3'>
                                         <div className='col-12'>
-                                            <label className='form-label'>Choose image</label>
                                             <input
                                                 type='file'
                                                 accept='image/*'
@@ -152,24 +162,41 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                                             />
                                         </div>
                                         <div className='col-12 col-md-6'>
-                                            <label className='form-label'>Photographer</label>
-                                            <input
-                                                type='text'
-                                                className='form-control'
-                                                value={photographer}
-                                                onChange={(e) => setPhotographer(e.target.value)}
-                                                placeholder='Photographer name'
-                                            />
+                                            <FieldSection title='Fotógrafo' className='mb-0'>
+                                                {photographer.id ? (
+                                                    <Pill
+                                                        label={photographer.name}
+                                                        onRemove={() => setPhotographer({ id: '', name: '' })}
+                                                    />
+                                                ) : (
+                                                    <SearchField
+                                                        disabled={loading}
+                                                        value={photographer.name}
+                                                        name='photographer'
+                                                        options={users.map((user) => ({
+                                                            id: user.userId,
+                                                            name: user.fName + ' ' + user.lName,
+                                                        }))}
+                                                        placeholder='Pesquisar fotógrafo...'
+                                                        onSearch={(e) =>
+                                                            setPhotographer({ id: '', name: e.currentTarget.value })
+                                                        }
+                                                        onSelect={(option) =>
+                                                            setPhotographer({ id: option.id, name: option.name })
+                                                        }
+                                                    />
+                                                )}
+                                            </FieldSection>
                                         </div>
                                         <div className='col-12 col-md-6'>
-                                            <label className='form-label'>Alt text</label>
-                                            <input
-                                                type='text'
-                                                className='form-control'
-                                                value={altText}
-                                                onChange={(e) => setAltText(e.target.value)}
-                                                placeholder='Describe the image'
-                                            />
+                                            <FieldSection title='Texto alternativo'>
+                                                <UnderlineInput
+                                                    value={altText}
+                                                    name='altText'
+                                                    placeholder='Descreva a imagem para acessibilidade'
+                                                    onChange={(e) => setAltText(e.currentTarget.value)}
+                                                />
+                                            </FieldSection>
                                         </div>
                                         {previewUrl && (
                                             <div className='col-12'>
@@ -185,32 +212,29 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                                             </div>
                                         )}
                                         <div className='col-12 d-flex justify-content-end gap-2'>
-                                            <button
-                                                type='button'
-                                                className='btn btn-outline-secondary'
+                                            <Button
+                                                color='secondary'
                                                 onClick={resetUploadForm}
                                                 disabled={isUploading}
                                             >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type='button'
-                                                className='btn btn-primary'
+                                                Cancelar
+                                            </Button>
+                                            <Button
                                                 onClick={handleUpload}
                                                 disabled={!selectedFile || isUploading}
                                             >
-                                                {isUploading ? 'Uploading...' : 'Upload image'}
-                                            </button>
+                                                {isUploading ? 'A fazer upload...' : 'Fazer upload'}
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         )}
                         {loading ? (
-                            <div className='text-center py-4'>Loading images...</div>
+                            <div className='text-center py-4'>A carregar imagens...</div>
                         ) : medias.length === 0 ? (
                             <div className='text-center py-4 text-muted'>
-                                No images found.
+                                Nenhuma imagem encontrada.
                             </div>
                         ) : (
                             <div className='row g-3'>
@@ -223,7 +247,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                                         >
                                             <img
                                                 src={item.thumbnailUrl || item.url}
-                                                alt={item.alt || 'Media image'}
+                                                alt={item.altText || 'Media image'}
                                                 className='w-100'
                                                 style={{
                                                     height: 180,
@@ -236,7 +260,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                                                     {item.photographer.name}
                                                 </div>
                                                 <div className='small text-muted text-truncate'>
-                                                    {item.alt || 'alt text'}
+                                                    {item.altText || 'Texto alternativo não fornecido'}
                                                 </div>
                                             </div>
                                         </button>
@@ -251,7 +275,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                             className='btn btn-secondary'
                             onClick={onClose}
                         >
-                            Close
+                            Fechar
                         </button>
                     </div>
                 </div>

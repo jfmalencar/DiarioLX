@@ -51,6 +51,7 @@ class FileController(
     fun getSignedUrl(
         @RequestBody body: SignedUrlRequest,
     ): ResponseEntity<*> {
+        println(body)
         val response =
             fileService.getSignedUrl(
                 body.altText,

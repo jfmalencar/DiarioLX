@@ -139,14 +139,28 @@ class JdbiUserRepository(
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         deactivated: Boolean,
     ): List<User> {
-        val whereClause = if (deactivated) "" else "WHERE active_account = true"
+        val sql =
+            buildString {
+                append("select * from users WHERE 1 = 1".trimIndent())
+                when (deactivated) {
+                    true -> append(" AND active_account = false")
+                    false -> append(" AND active_account = true")
+                }
+                if (query != null) {
+                    append(" AND (first_name ILIKE :query OR last_name ILIKE :query OR username ILIKE :query)")
+                }
+                append(" ORDER BY id desc")
+                append(" LIMIT :limit OFFSET :offset")
+            }
+
         return handle
-            .createQuery(
-                "SELECT * FROM users $whereClause ORDER BY id OFFSET :offset LIMIT :limit",
-            ).bind("offset", page * limit)
+            .createQuery(sql)
+            .bind("offset", page * limit)
             .bind("limit", limit)
+            .bind("query", "%$query%")
             .mapTo<UserDBModel>()
             .list()
             .map { it.toUserDomain() }

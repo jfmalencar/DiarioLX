@@ -1,7 +1,7 @@
 package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
-import pt.ipl.diariolx.domain.article.Article
+import pt.ipl.diariolx.domain.article.ArticleSummary
 import pt.ipl.diariolx.domain.article.NewArticle
 import pt.ipl.diariolx.repository.Transaction
 import pt.ipl.diariolx.repository.TransactionManager
@@ -38,10 +38,11 @@ class ArticleService(
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
-    ): List<Article> =
+    ): List<ArticleSummary> =
         transactionManager.run {
-            it.articleRepository.getAll(page, limit, archived)
+            it.articleRepository.getAll(page, limit, query, archived)
         }
 
     fun delete(id: Int): ArticleUpdateResult =

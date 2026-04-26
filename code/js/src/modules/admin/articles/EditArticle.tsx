@@ -1,178 +1,41 @@
-import { useReducer, useState } from 'react';
+import { useReducer, useState, useEffect, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 
 import type { Editor } from '@tiptap/react';
-import { Upload } from 'lucide-react';
+import { Upload, EditIcon } from 'lucide-react';
 
 import { RichTextToolbar } from '@/shared/components/richtext/RichTextToolbar';
 import { RichTextBlock } from '@/shared/components/richtext/RichTextBlock';
 import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { MediaGallery } from '@/shared/components/MediaGallery';
+import { SearchField } from '@/shared/components/inputs/SearchField';
+import { Pill } from '@/shared/components/Pill';
 
-import type { Media } from '@/shared/services/media/media.types';
-import type { ArticleBlock } from '@/shared/services/articles/articles.types';
-
+import { useCategories } from '@/shared/hooks/useCategories';
 import { useArticles } from '@/shared/hooks/useArticles';
+import { useTags } from '@/shared/hooks/useTags';
+import { useUsers } from '@/shared/hooks/useUsers';
+
+import type { ImageBlockProps } from './EditArticle.types';
+import { editArticleReducer, initialState } from './EditArticle.reducer';
 
 import icon from '@/assets/icon.svg';
 
-type Props = {
-    url: string;
-    alt: string;
-    width?: number;
+const useDebouncedSearch = (
+    value: string,
+    fetchFn: (args: { query: string }) => Promise<unknown>,
+) => {
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            const query = value.trim().toLowerCase();
+            fetchFn({ query });
+        }, 400);
+        return () => clearTimeout(timeout);
+    }, [value, fetchFn]);
 };
 
-type ArticleEditingInput = {
-    title: string;
-    slug: string;
-    headline: string;
-    featuredMedia: Media | null;
-};
-
-type GalleryMode = 'featured' | 'block' | null;
-
-type EditArticleState =
-    {
-        tag: 'loading' | 'editing';
-        articleData: ArticleEditingInput;
-        blocks: ArticleBlock[];
-        galleryMode: GalleryMode;
-    }
-
-type EditArticleAction =
-    | { type: 'change-tag', payload: EditArticleState['tag'] }
-    | { type: 'edit'; inputName: string; inputValue: string }
-    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null> }
-    | { type: 'close-gallery' }
-    | { type: 'select-media'; payload: Media }
-    | { type: 'add-text-block' }
-    | { type: 'remove-block'; payload: { blockId: string } }
-    | { type: 'update-text-block'; payload: { blockId: string; content: string } };
-
-const generateId = () => crypto.randomUUID().toString();
-
-const initialState: EditArticleState = {
-    tag: 'editing',
-    articleData: {
-        title: '',
-        slug: '',
-        headline: '',
-        featuredMedia: null,
-    },
-    blocks: [],
-    galleryMode: null,
-};
-
-const editArticleReducer = (
-    state: EditArticleState,
-    action: EditArticleAction,
-): EditArticleState => {
-    switch (action.type) {
-        case 'edit':
-            return {
-                ...state, articleData: {
-                    ...state.articleData,
-                    [action.inputName]: action.inputValue,
-                },
-            };
-
-        case 'open-gallery':
-            return {
-                ...state,
-                galleryMode: action.payload,
-            };
-
-        case 'close-gallery':
-            return {
-                ...state,
-                galleryMode: null,
-            };
-
-        case 'select-media': {
-            if (state.galleryMode === 'featured') {
-                return {
-                    ...state,
-                    articleData: {
-                        ...state.articleData,
-                        featuredMedia: action.payload,
-                    },
-                    galleryMode: null,
-                };
-            }
-
-            if (state.galleryMode === 'block') {
-                const newBlock: ArticleBlock = {
-                    id: generateId(),
-                    type: 'image',
-                    position: state.blocks.length,
-                    media: action.payload,
-                    caption: '',
-                };
-
-                return {
-                    ...state,
-                    blocks: [...state.blocks, newBlock],
-                    galleryMode: null,
-                };
-            }
-
-            return state;
-        }
-
-        case 'add-text-block': {
-            const newBlock: ArticleBlock = {
-                id: generateId(),
-                type: 'text',
-                position: state.blocks.length,
-                content: '<p></p>',
-            };
-
-            return {
-                ...state,
-                blocks: [...state.blocks, newBlock],
-            };
-        }
-
-        case 'update-text-block':
-            return {
-                ...state,
-                blocks: state.blocks.map((block) =>
-                    block.id === action.payload.blockId && block.type === 'text'
-                        ? { ...block, content: action.payload.content }
-                        : block,
-                ),
-            };
-
-        case 'remove-block': {
-            const blockToRemove = state.blocks.find(
-                (block) => block.id === action.payload.blockId,
-            );
-            if (!blockToRemove) return state;
-            return {
-                ...state,
-                blocks: state.blocks
-                    .filter((block) => block.id !== action.payload.blockId)
-                    .map((block) =>
-                        block.position > blockToRemove.position
-                            ? { ...block, position: block.position - 1 }
-                            : block,
-                    ),
-            };
-        }
-
-        case 'change-tag':
-            return {
-                ...state,
-                tag: action.payload,
-            };
-
-        default:
-            return state;
-    }
-}
-
-const ImageBlock = ({ url, alt = '', width = 400 }: Props) => {
+const ImageBlock = ({ url, alt = '', width = 400 }: ImageBlockProps) => {
     return (
         <div className='mb-4'>
             <img
@@ -187,58 +50,70 @@ const ImageBlock = ({ url, alt = '', width = 400 }: Props) => {
 
 export const EditArticle = () => {
     const navigate = useNavigate();
-    const { create, loading } = useArticles();
-    const [state, dispatch] = useReducer(editArticleReducer, initialState);
-    const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
     const params = useParams();
 
-    const handleChangeTextBlock = (blockId: string, html: string) => {
-        dispatch({
-            type: 'update-text-block',
-            payload: { blockId, content: html },
-        });
-    };
+    const { create, loading } = useArticles();
+    const { fetchAll: fetchCategories, categories } = useCategories();
+    const { fetchAll: fetchAuthors, users } = useUsers();
+    const { fetchAll: fetchTags, tags } = useTags();
 
-    const handleFocusEditor = (editor: Editor) => {
-        setActiveEditor(editor);
-    };
+    const [state, dispatch] = useReducer(editArticleReducer, initialState);
+    const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
+
+    const article = state.articleData;
+    const authors = useMemo(() => users.map((user) => ({ id: user.userId, name: `${user.fName} ${user.lName}` })), [users]);
+
+    useDebouncedSearch(article.categorySearch, fetchCategories);
+    useDebouncedSearch(article.mainTagSearch, fetchTags);
+    useDebouncedSearch(article.secondaryTagSearch, fetchTags);
+    useDebouncedSearch(article.mainAuthorSearch, fetchAuthors);
+    useDebouncedSearch(article.secondaryAuthorSearch, fetchAuthors);
+
+    const filteredTags = tags.filter((tag) =>
+        tag.id !== article.mainTag.id &&
+        !article.secondaryTags.some((selectedTag) => selectedTag.id === tag.id),
+    );
+
+    const filteredAuthors = authors.filter((author) =>
+        author.id !== article.mainAuthor.id &&
+        !article.secondaryAuthors.some((selectedAuthor) => selectedAuthor.id === author.id),
+    );
 
     const handleBlurEditor = (event: FocusEvent) => {
         const toolbar = document.getElementById('richtext-toolbar');
-        const isClickInsideToolbar = toolbar?.contains(event.relatedTarget as Node) ?? false;
-        if (isClickInsideToolbar) {
-            return;
-        }
+        const isClickInsideToolbar =
+            toolbar?.contains(event.relatedTarget as Node) ?? false;
+
+        if (isClickInsideToolbar) return;
+
         setActiveEditor(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         await create({
-            id: generateId(),
-            title: state.articleData.title,
-            slug: state.articleData.slug,
-            headline: state.articleData.headline,
-            featuredMediaId: state.articleData.featuredMedia?.id || null,
-            tags: [{
-                tagId: '1',
-            },
-            {
-                tagId: '2',
-            }],
-            category: {
-                id: '1',
-            },
-            authors: [{
-                authorId: '1',
-            },
-            {
-                authorId: '2',
-            }],
+            id: 'nova',
+            title: article.title,
+            slug: article.slug,
+            headline: article.headline,
+            featuredMediaId: article.featuredMedia?.id || null,
+            tags: [
+                { tagId: article.mainTag.id },
+                ...article.secondaryTags.map((tag) => ({ tagId: tag.id })),
+            ],
+            category: { id: article.category.id },
+            authors: [
+                { authorId: article.mainAuthor.id },
+                ...article.secondaryAuthors.map((author) => ({
+                    authorId: author.id,
+                })),
+            ],
             blocks: state.blocks,
-        })
-        navigate('/p/' + state.articleData.slug);
-    }
+        });
+
+        navigate('/p/' + article.slug);
+    };
 
     return (
         <div className='d-flex flex-column vh-100 bg-light'>
@@ -299,11 +174,13 @@ export const EditArticle = () => {
                             fontWeight: 500,
                         }}
                         disabled={loading}
-                        value={state.articleData.title}
+                        value={article.title}
                         placeholder='Adiciona um título'
-                        onChange={(e) =>
-                            dispatch({ type: 'edit', inputName: 'title', inputValue: e.target.value })
-                        }
+                        onChange={(e) => dispatch({
+                            type: 'edit',
+                            field: 'title',
+                            value: e.target.value
+                        })}
                         onInput={(e) => {
                             const el = e.currentTarget;
                             el.style.height = 'auto';
@@ -316,10 +193,12 @@ export const EditArticle = () => {
                         disabled={loading}
                         style={{ minHeight: 0, fontSize: '1.25rem', resize: 'none' }}
                         placeholder='Adiciona uma entrada'
-                        value={state.articleData.headline}
-                        onChange={(e) =>
-                            dispatch({ type: 'edit', inputName: 'headline', inputValue: e.target.value })
-                        }
+                        value={article.headline}
+                        onChange={(e) => dispatch({
+                            type: 'edit',
+                            field: 'headline',
+                            value: e.target.value
+                        })}
                         onInput={(e) => {
                             const el = e.currentTarget;
                             el.style.height = 'auto';
@@ -327,13 +206,27 @@ export const EditArticle = () => {
                         }}
                         rows={1}
                     />
-                    {state.articleData.featuredMedia ? (
-                        <div className='mb-4'>
+                    {article.featuredMedia ? (
+                        <div className='mb-4 position-relative' style={{ width: 600 }}>
                             <ImageBlock
                                 width={600}
-                                url={state.articleData.featuredMedia.url}
-                                alt={state.articleData.featuredMedia.alt}
+                                url={article.featuredMedia.url}
+                                alt={article.featuredMedia.altText}
                             />
+                            <button
+                                type='button'
+                                className='btn btn-dark position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center'
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                }}
+                                onClick={() => dispatch({
+                                    type: 'open-gallery',
+                                    payload: 'featured',
+                                })}
+                            >
+                                <EditIcon size={24} />
+                            </button>
                         </div>
                     ) : (
                         <button
@@ -355,15 +248,16 @@ export const EditArticle = () => {
                     {state.blocks.map((block) => (
                         <div key={block.id} className='position-relative'>
                             {block.type === 'image' ? (
-                                <ImageBlock url={block.media.url} alt={block.media.alt} />
+                                <ImageBlock url={block.media.url} alt={block.media.altText} />
                             ) : (
                                 <RichTextBlock
                                     value={block.content}
                                     disabled={loading}
-                                    onChange={(html) => handleChangeTextBlock(block.id, html)}
-                                    onFocusEditor={(editor) =>
-                                        handleFocusEditor(editor)
-                                    }
+                                    onChange={(html) => dispatch({
+                                        type: 'update-text-block',
+                                        payload: { blockId: block.id, content: html },
+                                    })}
+                                    onFocusEditor={(editor) => setActiveEditor(editor)}
                                     onBlurEditor={(event) => handleBlurEditor(event)}
                                     placeholder='Começa a escrever'
                                 />
@@ -407,78 +301,226 @@ export const EditArticle = () => {
                     </div>
                 </div>
                 <div
-                    className='px-4 pt-4 border-start border-dark'
+                    className='pt-4 border-start border-dark'
                     style={{ width: 366, flexShrink: 0, overflowY: 'auto' }}
                 >
                     <form onSubmit={handleSubmit} className='bg-transparent'>
-                        <FieldSection title='Slug'>
-                            <UnderlineInput
-                                value={state.articleData.slug}
-                                name='slug'
-                                disabled={loading}
-                                placeholder='slug-do-artigo'
-                                onChange={(e) =>
-                                    dispatch({
+                        <div className='px-4'>
+                            <FieldSection title='Slug'>
+                                <UnderlineInput
+                                    value={article.slug}
+                                    name='slug'
+                                    disabled={loading}
+                                    placeholder='slug-do-artigo'
+                                    onChange={(e) => dispatch({
                                         type: 'edit',
-                                        inputName: 'slug',
-                                        inputValue: e.currentTarget.value,
-                                    })
-                                }
-                                dataTestId='article-slug-input'
-                            />
-                        </FieldSection>
-                        <FieldSection title='Nome'>
-                            <UnderlineInput
-                                value=''
-                                name='name'
+                                        field: 'slug',
+                                        value: e.currentTarget.value
+                                    })}
+                                    dataTestId='article-slug-input'
+                                />
+                            </FieldSection>
+                            <FieldSection title='Categoria'>
+                                {article.category.id ? (
+                                    <Pill
+                                        label={article.category.name}
+                                        onRemove={() =>
+                                            dispatch({
+                                                type: 'clear-single',
+                                                field: 'category',
+                                                searchField: 'categorySearch',
+                                            })
+                                        }
+                                    />
+                                ) : (
+                                    <SearchField
+                                        value={article.categorySearch}
+                                        name='categorySearch'
+                                        options={categories}
+                                        placeholder='Pesquisar categoria'
+                                        onSearch={(e) =>
+                                            dispatch({
+                                                type: 'edit',
+                                                field: 'categorySearch',
+                                                value: e.currentTarget.value,
+                                            })
+                                        }
+                                        onSelect={(option) =>
+                                            dispatch({
+                                                type: 'select-single',
+                                                field: 'category',
+                                                searchField: 'categorySearch',
+                                                option,
+                                            })
+                                        }
+                                    />
+                                )}
+                            </FieldSection>
+                            <FieldSection title='Tag principal'>
+                                {article.mainTag.id ? (
+                                    <Pill
+                                        label={article.mainTag.name}
+                                        onRemove={() =>
+                                            dispatch({
+                                                type: 'clear-single',
+                                                field: 'mainTag',
+                                                searchField: 'mainTagSearch',
+                                            })
+                                        }
+                                    />
+                                ) : (
+                                    <SearchField
+                                        disabled={loading}
+                                        value={article.mainTagSearch}
+                                        name='mainTagSearch'
+                                        options={filteredTags}
+                                        placeholder='Pesquisar tag principal'
+                                        onSearch={(e) =>
+                                            dispatch({
+                                                type: 'edit',
+                                                field: 'mainTagSearch',
+                                                value: e.currentTarget.value
+                                            })
+                                        }
+                                        onSelect={(option) =>
+                                            dispatch({
+                                                type: 'select-single',
+                                                field: 'mainTag',
+                                                searchField: 'mainTagSearch',
+                                                option
+                                            })
+                                        }
+                                    />
+                                )}
+                            </FieldSection>
+                            <FieldSection title='Tags secundárias' optional={true}>
+                                <div className='d-flex flex-wrap gap-2 mb-2'>
+                                    {article.secondaryTags.map((tag) => (
+                                        <Pill
+                                            key={tag.id}
+                                            label={tag.name}
+                                            onRemove={() =>
+                                                dispatch({
+                                                    type: 'remove-secondary',
+                                                    field: 'secondaryTags',
+                                                    id: tag.id
+                                                })
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                                <SearchField
+                                    disabled={loading}
+                                    value={article.secondaryTagSearch}
+                                    name='secondaryTagSearch'
+                                    options={filteredTags}
+                                    placeholder='Pesquisar tag secundária'
+                                    onSearch={(e) =>
+                                        dispatch({
+                                            type: 'edit',
+                                            field: 'secondaryTagSearch',
+                                            value: e.currentTarget.value
+                                        })
+                                    }
+                                    onSelect={(option) =>
+                                        dispatch({
+                                            type: 'add-secondary',
+                                            field: 'secondaryTags',
+                                            searchField: 'secondaryTagSearch',
+                                            option
+                                        })
+                                    }
+                                />
+                            </FieldSection>
+                            <FieldSection title='Autor responsável'>
+                                {article.mainAuthor.id ? (
+                                    <Pill
+                                        label={article.mainAuthor.name}
+                                        onRemove={() =>
+                                            dispatch({
+                                                type: 'clear-single',
+                                                field: 'mainAuthor',
+                                                searchField: 'mainAuthorSearch',
+                                            })
+                                        }
+                                    />
+                                ) : (
+                                    <SearchField
+                                        disabled={loading}
+                                        value={article.mainAuthorSearch}
+                                        name='mainAuthorSearch'
+                                        options={filteredAuthors}
+                                        placeholder='Pesquisar autor responsável'
+                                        onSearch={(e) =>
+                                            dispatch({
+                                                type: 'edit',
+                                                field: 'mainAuthorSearch',
+                                                value: e.currentTarget.value
+                                            })
+                                        }
+                                        onSelect={(option) =>
+                                            dispatch({
+                                                type: 'select-single',
+                                                field: 'mainAuthor',
+                                                searchField: 'mainAuthorSearch',
+                                                option
+                                            })
+                                        }
+                                    />
+                                )}
+                            </FieldSection>
+                            <FieldSection title='Restantes autores' optional={true}>
+                                <div className='d-flex flex-wrap gap-2 mb-2'>
+                                    {article.secondaryAuthors.map((author) => (
+                                        <Pill
+                                            key={author.id}
+                                            label={author.name}
+                                            onRemove={() =>
+                                                dispatch({
+                                                    type: 'remove-secondary',
+                                                    field: 'secondaryAuthors',
+                                                    id: author.id
+                                                })
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                                <SearchField
+                                    disabled={loading}
+                                    value={article.secondaryAuthorSearch}
+                                    name='secondaryAuthorSearch'
+                                    options={filteredAuthors}
+                                    placeholder='Pesquisar autor secundário'
+                                    onSearch={(e) =>
+                                        dispatch({
+                                            type: 'edit',
+                                            field: 'secondaryAuthorSearch',
+                                            value: e.currentTarget.value
+                                        })
+                                    }
+                                    onSelect={(option) =>
+                                        dispatch({
+                                            type: 'add-secondary',
+                                            field: 'secondaryAuthors',
+                                            searchField: 'secondaryAuthorSearch',
+                                            option
+                                        })
+                                    }
+                                />
+                            </FieldSection>
+                        </div>
+
+                        <div
+                            className='bg-light p-3 position-sticky bottom-0 start-0 end-0'
+                            style={{
+                                boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.08)',
+                            }}
+                        >
+                            <button
+                                type='submit'
+                                className='btn btn-dark w-100'
                                 disabled={loading}
-                                placeholder='Nome da categoria'
-                                onChange={() => { }}
-                                dataTestId='article-category-input'
-                            />
-                        </FieldSection>
-                        <FieldSection title='Tag principal'>
-                            <UnderlineInput
-                                value=''
-                                name='name'
-                                disabled={loading}
-                                placeholder='Uma tag principal'
-                                onChange={() => { }}
-                                dataTestId='article-tag-input'
-                            />
-                        </FieldSection>
-                        <FieldSection title='Tags secundárias' optional={true}>
-                            <UnderlineInput
-                                value=''
-                                name='name'
-                                disabled={loading}
-                                placeholder='Várias tags secundárias'
-                                onChange={() => { }}
-                                dataTestId='article-tag-input'
-                            />
-                        </FieldSection>
-                        <FieldSection title='Autor responsável'>
-                            <UnderlineInput
-                                value=''
-                                name='name'
-                                disabled={loading}
-                                placeholder='Pesquisar autor'
-                                onChange={() => { }}
-                                dataTestId='article-tag-input'
-                            />
-                        </FieldSection>
-                        <FieldSection title='Restantes autores' optional={true}>
-                            <UnderlineInput
-                                value=''
-                                name='name'
-                                disabled={loading}
-                                placeholder='Pesquisar autor'
-                                onChange={() => { }}
-                                dataTestId='article-tag-input'
-                            />
-                        </FieldSection>
-                        <div className='position-sticky bottom-0 start-0 end-0 bg-light py-3 d-flex justify-content-end gap-3 border-top'>
-                            <button type='submit' className='btn btn-dark mt-4 w-100' disabled={loading}>
+                            >
                                 Guardar alterações
                             </button>
                         </div>
@@ -497,4 +539,4 @@ export const EditArticle = () => {
             />
         </div>
     );
-}
+};

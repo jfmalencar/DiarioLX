@@ -2,13 +2,13 @@
 import { useState, useCallback } from 'react';
 import { articlesService } from '../services/articles';
 
-import type { Article, ArticleRequest } from '../services/articles/articles.types';
+import type { Article, ArticleRequest, ArticleSummary } from '../services/articles/articles.types';
 import type { Query } from '@/shared/types/Query';
 
-export type { Article, ArticleRequest };
+export type { Article, ArticleSummary, ArticleRequest };
 
 export const useArticles = () => {
-    const [articles, setArticles] = useState<Article[]>([]);
+    const [articles, setArticles] = useState<ArticleSummary[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 

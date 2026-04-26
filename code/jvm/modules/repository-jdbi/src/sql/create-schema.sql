@@ -61,65 +61,58 @@ DROP TYPE IF EXISTS user_role CASCADE;
 CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
 
 CREATE TABLE IF NOT EXISTS users (
-                                     id SERIAL PRIMARY KEY,
-                                     username VARCHAR(30) NOT NULL UNIQUE ,
-                                     email VARCHAR(30) NOT NULL UNIQUE,
-                                     role user_role NOT NULL,
-                                     password_hash VARCHAR(255) NOT NULL,
-                                     first_name VARCHAR(30) NOT NULL,
-                                     last_name VARCHAR(30) NOT NULL,
-                                     bio TEXT DEFAULT '',
-                                     profile_picture_url VARCHAR(255) DEFAULT '',
-                                     active_account BOOLEAN DEFAULT TRUE,
-                                     created_at BIGINT NOT NULL ,
-                                     updated_at BIGINT NOT NULL
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(30) NOT NULL UNIQUE ,
+    email VARCHAR(30) NOT NULL UNIQUE,
+    role user_role NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(30) NOT NULL,
+    last_name VARCHAR(30) NOT NULL,
+    bio TEXT DEFAULT '',
+    profile_picture_url VARCHAR(255) DEFAULT '',
+    active_account BOOLEAN DEFAULT TRUE,
+    created_at BIGINT NOT NULL ,
+    updated_at BIGINT NOT NULL
 );
 
---CREATE TABLE IF NOT EXISTS pictures (
---    id SERIAL PRIMARY KEY,
---    created_by_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
---    url VARCHAR(255) NOT NULL UNIQUE,
---    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
---);
-
 CREATE TABLE invites (
-                         id SERIAL PRIMARY KEY,
-                         invite_token VARCHAR(64) UNIQUE NOT NULL,
-                         role_assigned user_role NOT NULL,
-                         created_at BIGINT NOT NULL,
-                         expires_at BIGINT NOT NULL,
-                         used BOOLEAN DEFAULT FALSE
+    id SERIAL PRIMARY KEY,
+    invite_token VARCHAR(64) UNIQUE NOT NULL,
+    role_assigned user_role NOT NULL,
+    created_at BIGINT NOT NULL,
+    expires_at BIGINT NOT NULL,
+    used BOOLEAN DEFAULT FALSE
 );
 
 INSERT INTO invites (invite_token, role_assigned, created_at, expires_at) VALUES
     ('SUPER-ADMIN-INVITE', 'ADMIN', extract(epoch from now())::bigint, extract(epoch from now() + interval '20 minutes')::bigint);
 
 CREATE TABLE sessions (
-                          session_token VARCHAR(256) PRIMARY KEY ,
-                          user_id INT REFERENCES users (id),
-                          created_at BIGINT NOT NULL,
-                          last_used_at BIGINT NOT NULL
+     session_token VARCHAR(256) PRIMARY KEY ,
+     user_id INT REFERENCES users (id),
+     created_at BIGINT NOT NULL,
+     last_used_at BIGINT NOT NULL
 );
 
 CREATE TABLE media (
-    id                    SERIAL PRIMARY KEY,
-    type                  VARCHAR(20) NOT NULL CHECK (type IN ('image', 'video', 'audio')),
+    id        SERIAL PRIMARY KEY,
+    type      VARCHAR(20) NOT NULL CHECK (type IN ('image', 'video', 'audio')),
     original_file_name    TEXT NOT NULL,
-    bucket                TEXT NOT NULL,
+    bucket    TEXT NOT NULL,
     object_key            TEXT NOT NULL,
     thumbnail_bucket      TEXT NULL,
     thumbnail_object_key  TEXT NULL,
     alt_text              VARCHAR(255) NULL,
     mime_type             VARCHAR(100) NULL,
-    status                VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'ready')),
+    status    VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'ready')),
     size_bytes            BIGINT,
+    contributor_id        INT REFERENCES users (id),
     created_at            BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
     uploaded_at           BIGINT DEFAULT NULL
 );
 
 CREATE TABLE articles (
-    id                SERIAL PRIMARY KEY,
+    id    SERIAL PRIMARY KEY,
     title             VARCHAR(255) NOT NULL,
     headline          TEXT,
     featured_media_id INTEGER NULL REFERENCES media(id),
@@ -133,19 +126,9 @@ CREATE TABLE articles (
 CREATE INDEX idx_articles_category_id ON articles(category_id);
 CREATE INDEX idx_articles_slug ON articles(slug);
 
-CREATE TABLE authors (
-    id              SERIAL PRIMARY KEY,
-    name            VARCHAR(255) NOT NULL,
-    slug            VARCHAR(255),
-    bio             TEXT NULL,
-    avatar_url      TEXT NULL,
-    created_at      BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
-    updated_at      BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
-);
-
 CREATE TABLE article_authors (
     article_id      INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
-    author_id       INTEGER NOT NULL REFERENCES authors(id),
+    author_id       INTEGER NOT NULL REFERENCES users(id),
     role            VARCHAR(20) NOT NULL CHECK (role IN ('primary', 'secondary')),
     PRIMARY KEY (article_id, author_id)
 );
@@ -212,35 +195,35 @@ SELECT
     CASE
         WHEN fm.id IS NULL THEN NULL
         ELSE json_build_object(
-                'id', fm.id,
-                'url', fm.bucket || '/' || fm.object_key,
-                'thumbnailUrl',
-                CASE
-                    WHEN fm.thumbnail_object_key IS NOT NULL
+    'id', fm.id,
+    'url', fm.bucket || '/' || fm.object_key,
+    'thumbnailUrl',
+    CASE
+        WHEN fm.thumbnail_object_key IS NOT NULL
      THEN fm.thumbnail_bucket || '/' || fm.thumbnail_object_key
-                    ELSE NULL
-                    END,
-                'altText', fm.alt_text,
-                'photographer',
-                json_build_object(
-     'id', au.id,
-     'name', au.name,
-     'slug', au.slug
-                )
+        ELSE NULL
+        END,
+    'altText', fm.alt_text,
+    'photographer',
+    json_build_object(
+     'id', mu.id,
+     'name', mu.first_name || ' ' || mu.last_name,
+     'slug', mu.username
+    )
              )
         END AS "featuredImage",
 
     -- TAGS
     COALESCE(
             (
-                SELECT json_agg(
+    SELECT json_agg(
             json_build_object(
-                    'id', t.id,
-                    'name', t.name,
-                    'slug', t.slug
+        'id', t.id,
+        'name', t.name,
+        'slug', t.slug
             )
     )
-                FROM article_tags at
+    FROM article_tags at
             JOIN tags t ON t.id = at.tag_id
             WHERE at.article_id = a.id
         ),
@@ -250,16 +233,16 @@ SELECT
     -- AUTHORS
     COALESCE(
             (
-                SELECT json_agg(
+    SELECT json_agg(
             json_build_object(
-                    'id', au.id,
-                    'name', au.name,
-                    'slug', au.slug
+        'id', au.id,
+        'name', au.first_name || ' ' || au.last_name,
+        'slug', au.username
             )
     )
-                FROM article_authors aa
-      JOIN authors au ON au.id = aa.author_id
-                WHERE aa.article_id = a.id
+    FROM article_authors aa
+      JOIN users au ON au.id = aa.author_id
+    WHERE aa.article_id = a.id
             ),
             '[]'::json
     )::text AS authors,
@@ -267,39 +250,39 @@ SELECT
     -- BLOCKS
     COALESCE(
             (
-                SELECT json_agg(
+    SELECT json_agg(
             json_build_object(
-                    'id', ab.id,
-                    'type', ab.type,
-                    'content', ab.content,
-                    'media',
-                    CASE
-                        WHEN m.id IS NULL THEN NULL
-                        ELSE json_build_object(
+        'id', ab.id,
+        'type', ab.type,
+        'content', ab.content,
+        'media',
+        CASE
+            WHEN m.id IS NULL THEN NULL
+            ELSE json_build_object(
              'id', m.id,
              'url', m.bucket || '/' || m.object_key,
              'thumbnailUrl',
              CASE
-                 WHEN m.thumbnail_object_key IS NOT NULL
-                     THEN m.thumbnail_bucket || '/' || m.thumbnail_object_key
-                 ELSE NULL
-                 END,
+     WHEN m.thumbnail_object_key IS NOT NULL
+         THEN m.thumbnail_bucket || '/' || m.thumbnail_object_key
+     ELSE NULL
+     END,
              'altText', m.alt_text,
              'photographer',
              json_build_object(
-                     'id', pa.id,
-                     'name', pa.name,
-                     'slug', pa.slug
+         'id', pa.id,
+         'name', pa.first_name || ' ' || pa.last_name,
+         'slug', pa.username
              )
           )
-                        END
+            END
             )
-                ORDER BY ab.position
+    ORDER BY ab.position
     )
-                FROM article_blocks ab
+    FROM article_blocks ab
       LEFT JOIN media m ON m.id = ab.media_id
-      LEFT JOIN authors pa ON pa.id = m.id -- ⚠
-                WHERE ab.article_id = a.id
+      LEFT JOIN users pa ON pa.id = m.contributor_id
+    WHERE ab.article_id = a.id
             ),
             '[]'::json
     )::text AS blocks
@@ -307,9 +290,29 @@ SELECT
 FROM articles a
          JOIN categories c ON c.id = a.category_id
          LEFT JOIN media fm ON fm.id = a.featured_media_id
-         LEFT JOIN authors au ON au.id = (
+         LEFT JOIN users mu ON mu.id = fm.contributor_id
+         LEFT JOIN users au ON au.id = (
     SELECT aa.author_id
     FROM article_authors aa
     WHERE aa.article_id = a.id AND aa.role = 'primary'
     LIMIT 1
     );
+
+
+CREATE OR REPLACE VIEW v_articles_summary AS
+SELECT
+    a.id,
+    a.title,
+    a.slug,
+    c.name AS "categoryName",
+    fm.bucket || '/' || fm.object_key AS "featuredImage",
+    COALESCE(authors.names, '') AS authors,
+    a.created_at AS "createdAt"
+FROM articles a
+    JOIN categories c ON c.id = a.category_id
+    LEFT JOIN media fm ON fm.id = a.featured_media_id
+    LEFT JOIN LATERAL (
+        SELECT string_agg(concat_ws(' ', u.first_name, u.last_name), ', ' ORDER BY u.first_name) AS names
+FROM article_authors aa
+    JOIN users u ON u.id = aa.author_id
+WHERE aa.article_id = a.id) authors ON true;

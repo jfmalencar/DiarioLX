@@ -146,7 +146,7 @@ export function Article() {
                                         <img
                                             key={index}
                                             src={`http://localhost:8333/${block.media.url}`}
-                                            alt={block.media.alt || 'Image'}
+                                            alt={block.media.altText}
                                             className='img-fluid mb-4'
                                         />
                                     );
