@@ -35,7 +35,9 @@ sealed class UserError(
     object DeactivatedAccount : UserError("Your account is deactivated")
 }
 
-sealed class LoginError(val message: String) {
+sealed class LoginError(
+    val message: String,
+) {
     object InvalidCredentials : LoginError("Invalid credentials")
 
     object DeactivatedAccount : LoginError("Your account is deactivated")

@@ -3,7 +3,9 @@ package pt.ipl.diariolx.utils.user
 import pt.ipl.diariolx.utils.user.Name.Companion.MAX_NAME_LENGTH
 import pt.ipl.diariolx.utils.user.Name.Companion.MIN_NAME_LENGTH
 
-data class Name(val value: String) {
+data class Name(
+    val value: String,
+) {
     init {
         require(value.isNotBlank()) { "Name cannot be blank" }
         require(value.length in MIN_NAME_LENGTH..MAX_NAME_LENGTH) {
@@ -20,8 +22,7 @@ data class Name(val value: String) {
     }
 }
 
-fun String.isNameValid(): Boolean {
-    return this.isNotBlank() &&
+fun String.isNameValid(): Boolean =
+    this.isNotBlank() &&
         this.length in MIN_NAME_LENGTH..MAX_NAME_LENGTH &&
         Regex("^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ'-]+$").matches(this)
-}

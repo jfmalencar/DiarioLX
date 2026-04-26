@@ -6,7 +6,5 @@ package pt.ipl.diariolx.utils.token
 data class SessionToken(
     val value: String,
 ) {
-    override fun equals(other: Any?): Boolean {
-        return other is SessionToken && value == other.value
-    }
+    override fun equals(other: Any?): Boolean = other is SessionToken && value == other.value
 }

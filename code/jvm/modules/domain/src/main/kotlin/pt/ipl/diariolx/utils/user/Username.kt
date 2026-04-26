@@ -1,6 +1,8 @@
 package pt.ipl.diariolx.utils.user
 
-data class Username(val value: String) {
+data class Username(
+    val value: String,
+) {
     init {
         require(value.isNotBlank()) { "Username cannot be blank" }
         require(value.length in MIN_USERNAME_LENGTH..MAX_USERNAME_LENGTH) {
@@ -17,8 +19,7 @@ data class Username(val value: String) {
     }
 }
 
-fun String.isUsernameValid(): Boolean {
-    return this.isNotBlank() &&
+fun String.isUsernameValid(): Boolean =
+    this.isNotBlank() &&
         this.length in Username.MIN_USERNAME_LENGTH..Username.MAX_USERNAME_LENGTH &&
         Regex("^[a-zA-Z0-9_.-]+$").matches(this)
-}

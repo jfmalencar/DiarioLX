@@ -1,8 +1,13 @@
 package pt.ipl.diariolx.services
 
 import pt.ipl.diariolx.domain.category.Category
+import pt.ipl.diariolx.repository.mem.ArticleRepositoryMem
 import pt.ipl.diariolx.repository.mem.CategoryRepositoryMem
+import pt.ipl.diariolx.repository.mem.FileRepositoryMem
+import pt.ipl.diariolx.repository.mem.InviteRepositoryMem
+import pt.ipl.diariolx.repository.mem.TagRepositoryMem
 import pt.ipl.diariolx.repository.mem.TransactionManagerMem
+import pt.ipl.diariolx.repository.mem.UserRepositoryMem
 import pt.ipl.diariolx.utils.CategoryError
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -165,7 +170,7 @@ class CategoryServiceTest {
         service.create("Cultura", "cultura", null, "#ffffff", null)
         service.create("Sociedade", "sociedade", null, "#000000", null)
 
-        val result = service.getAll(page = 1, limit = 10, archived = false)
+        val result = service.getAll(page = 1, limit = 10, query = null, archived = false)
 
         assertEquals(2, result.size)
     }
@@ -282,7 +287,13 @@ class CategoryServiceTest {
     }
 
     companion object {
-        fun createService(repo: CategoryRepositoryMem = CategoryRepositoryMem()): CategoryService =
-            CategoryService(TransactionManagerMem(repo))
+        fun createService(
+            repo: CategoryRepositoryMem = CategoryRepositoryMem(),
+            tagRepo: TagRepositoryMem = TagRepositoryMem(),
+            userRepo: UserRepositoryMem = UserRepositoryMem(),
+            inviteRepo: InviteRepositoryMem = InviteRepositoryMem(),
+            articleRepo: ArticleRepositoryMem = ArticleRepositoryMem(),
+            fileRepo: FileRepositoryMem = FileRepositoryMem(),
+        ): CategoryService = CategoryService(TransactionManagerMem(repo, userRepo, inviteRepo, tagRepo, articleRepo, fileRepo))
     }
 }

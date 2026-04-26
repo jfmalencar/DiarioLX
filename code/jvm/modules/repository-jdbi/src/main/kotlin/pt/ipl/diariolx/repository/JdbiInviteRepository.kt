@@ -17,9 +17,10 @@ class JdbiInviteRepository(
 
         // First check if invite exists at all
         val result =
-            handle.createQuery(
-                "SELECT id, invite_token, role_assigned, created_at, expires_at, used FROM invites WHERE invite_token = :invite_token",
-            ).bind("invite_token", invite)
+            handle
+                .createQuery(
+                    "SELECT id, invite_token, role_assigned, created_at, expires_at, used FROM invites WHERE invite_token = :invite_token",
+                ).bind("invite_token", invite)
                 .mapTo<InviteDBModel>()
                 .singleOrNull()
 
@@ -49,13 +50,14 @@ class JdbiInviteRepository(
 
     override fun create(invite: NewInvite): Invite {
         val id =
-            handle.createUpdate(
-                """
+            handle
+                .createUpdate(
+                    """
             INSERT INTO invites (invite_token, role_assigned, created_at, expires_at, used)
             VALUES (:invite_token, :role_assigned::user_role, :created_at, :expires_at, false)
             RETURNING id
             """,
-            ).bind("invite_token", invite.invite)
+                ).bind("invite_token", invite.invite)
                 .bind("role_assigned", invite.role.name)
                 .bind("created_at", invite.createdAt.epochSeconds)
                 .bind("expires_at", invite.expiresAt.epochSeconds)
@@ -75,9 +77,10 @@ class JdbiInviteRepository(
 
     override fun consumeInvite(id: Int): Boolean {
         val rowsAffected =
-            handle.createUpdate(
-                "UPDATE invites SET used = true WHERE id = :id AND used = false",
-            ).bind("id", id)
+            handle
+                .createUpdate(
+                    "UPDATE invites SET used = true WHERE id = :id AND used = false",
+                ).bind("id", id)
                 .execute()
         return rowsAffected > 0
     }

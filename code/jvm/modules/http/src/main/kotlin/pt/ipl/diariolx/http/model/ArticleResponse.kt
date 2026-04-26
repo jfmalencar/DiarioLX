@@ -1,6 +1,5 @@
 package pt.ipl.diariolx.http.model
 
-import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.article.ArticleBlock
 import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary

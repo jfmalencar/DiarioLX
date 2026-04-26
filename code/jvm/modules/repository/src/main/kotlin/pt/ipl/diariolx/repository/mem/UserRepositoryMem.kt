@@ -74,17 +74,11 @@ class UserRepositoryMem : UserRepository {
         return true
     }
 
-    override fun getById(id: Int): User? {
-        return users.find { it.id == id }
-    }
+    override fun getById(id: Int): User? = users.find { it.id == id }
 
-    override fun getByEmail(email: Email): User? {
-        return users.find { it.email == email }
-    }
+    override fun getByEmail(email: Email): User? = users.find { it.email == email }
 
-    override fun getByUsername(username: Username): User? {
-        return users.find { it.username == username }
-    }
+    override fun getByUsername(username: Username): User? = users.find { it.username == username }
 
     override fun getAll(
         page: Int,
@@ -111,9 +105,7 @@ class UserRepositoryMem : UserRepository {
         sessions.add(newSession)
     }
 
-    override fun deleteSession(sessionToken: SessionToken): Boolean {
-        return sessions.removeIf { it.sessionToken == sessionToken }
-    }
+    override fun deleteSession(sessionToken: SessionToken): Boolean = sessions.removeIf { it.sessionToken == sessionToken }
 
     override fun updateSessionTokenUsage(
         session: Session,
@@ -126,11 +118,10 @@ class UserRepositoryMem : UserRepository {
         }
     }
 
-    override fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>? {
-        return sessions.find { it.sessionToken == sessionToken }?.let { session ->
+    override fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>? =
+        sessions.find { it.sessionToken == sessionToken }?.let { session ->
             users.find { user -> user.id == session.userId }?.let { user ->
                 user to session
             }
         }
-    }
 }
