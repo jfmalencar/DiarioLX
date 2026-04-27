@@ -28,7 +28,7 @@ import pt.ipl.diariolx.utils.Success
 import pt.ipl.diariolx.utils.UserError
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/user")
 class UserController(
     private val userServices: UserServices,
     private val inviteServices: InviteServices,
@@ -79,6 +79,20 @@ class UserController(
                 "message" to "User updated successfully",
             )
         }
+
+    @GetMapping("/me")
+    fun getCurrentUser(me: AuthenticatedUser): ResponseEntity<*> =
+        ResponseEntity.ok(
+            mapOf(
+                "userId" to me.user.id,
+                "username" to me.user.username.value,
+                "email" to me.user.email.value,
+                "fName" to me.user.fName.value,
+                "lName" to me.user.lName.value,
+                "bio" to me.user.bio,
+                "profilePictureURL" to me.user.profilePictureURL,
+            ),
+        )
 
     @GetMapping(
         "/{id}",

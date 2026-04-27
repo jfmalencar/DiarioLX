@@ -1,6 +1,7 @@
 import { useContext, createContext } from 'react';
+import type { RegisterResponseDTO, User } from '@/shared/services/auth/auth.types';
 
-export type AuthUser = string | undefined;
+export type AuthUser = User | undefined;
 
 export type AuthenticationState = {
   user: AuthUser;
@@ -11,9 +12,12 @@ export type AuthenticationState = {
   logout: () => Promise<void>;
   register: (
     username: string,
+    email: string,
     password: string,
+    firstName: string,
+    lastName: string,
     inviteCode: string
-  ) => Promise<AuthUser>;
+  ) => Promise<RegisterResponseDTO | undefined>;
   refreshUser: () => Promise<AuthUser>;
 };
 

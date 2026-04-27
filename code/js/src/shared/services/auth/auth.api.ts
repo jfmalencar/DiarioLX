@@ -1,9 +1,9 @@
-import type { AuthService } from './auth.types';
+import type { AuthService, LoginResponseDTO, RegisterResponseDTO, User } from './auth.types';
 import { get, post } from '../http/client';
 
 export const authApiService: AuthService = {
   async authenticate(username, password) {
-    const result = await post<string>('/api/users/token', {
+    const result = await post<LoginResponseDTO>('/api/user/login', {
       username,
       password,
     });
@@ -12,28 +12,39 @@ export const authApiService: AuthService = {
       return undefined;
     }
 
-    return username;
+    return result.data;
   },
 
   async logout() {
-    await post('/api/users/logout', {});
+    await post('/api/user/logout', {});
   },
 
-  async register(username, password) {
-    const result = await post<string>('/api/users', {
-      username,
-      password,
-    });
+  async register(username, email, password, firstName, lastName, inviteCode) {
+    const result = await post<RegisterResponseDTO>(
+      '/api/user/signup',
+      {
+        username,
+        email,
+        password,
+        fName: firstName,
+        lName: lastName,
+      },
+      {
+        headers: {
+          Authorization: `Invite ${inviteCode}`,
+        },
+      }
+    );
 
     if (!result.success) {
       return undefined;
     }
 
-    return username;
+    return result.data;
   },
 
   async getCurrentUser() {
-    const result = await get<any>('/api/me');
+    const result = await get<User>('/api/user/me');
 
     if (!result.success) {
       return undefined;

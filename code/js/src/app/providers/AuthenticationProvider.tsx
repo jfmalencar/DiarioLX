@@ -5,6 +5,7 @@ import {
   type AuthenticationState,
   type AuthUser,
 } from '@/shared/hooks/useAuthentication'
+import type { RegisterResponseDTO } from '@/shared/services/auth/auth.types'
 
 type AuthProviderProps = {
   children: ReactNode
@@ -48,8 +49,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
           return undefined
         }
 
-        setUser(authenticatedUser)
-        return authenticatedUser
+        return await refreshUser()
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Login failed'
         setError(message)
@@ -77,18 +77,17 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
   }, [])
 
   const register = useCallback(
-    async (username: string, password: string): Promise<AuthUser> => {
+    async (username: string, email: string, password: string, firstName: string, lastName: string, inviteCode: string): Promise<RegisterResponseDTO | undefined> => {
       setLoading(true)
       setError(null)
 
       try {
-        const registeredUser = await authService.register(username, password)
+        const registeredUser = await authService.register(username, email, password, firstName, lastName, inviteCode)
         if (!registeredUser) {
           setError('Registration failed')
           setUser(undefined)
           return undefined
         }
-        setUser(registeredUser)
         return registeredUser
 
       } catch (err) {

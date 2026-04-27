@@ -76,7 +76,7 @@ class JdbiInviteRepository(
     override fun consumeInvite(id: Int): Boolean {
         val rowsAffected =
             handle.createUpdate(
-                "UPDATE invites SET used = true WHERE id = :id AND used = false",
+                "DELETE FROM invites WHERE id = :id",
             ).bind("id", id)
                 .execute()
         return rowsAffected > 0

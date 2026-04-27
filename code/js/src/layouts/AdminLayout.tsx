@@ -97,14 +97,14 @@ export function AdminLayout() {
           </div>
           <div className='d-flex align-items-center gap-3'>
             <div className='text-end'>
-              <div className='fw-semibold'>{user}</div>
+              <div className='fw-semibold'>{user?.username}</div>
               <div className='text-secondary small'>Super-Admin</div>
             </div>
             <div
               className='rounded-circle bg-dark text-white d-flex align-items-center justify-content-center'
               style={{ width: '44px', height: '44px' }}
             >
-              {user?.charAt(0).toUpperCase()}
+              {user?.username?.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>

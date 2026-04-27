@@ -8,8 +8,8 @@ import image from '@/assets/login.png';
 import logo from '@/assets/logo.svg';
 
 type State =
-  | { tag: 'editing'; error?: string; inputs: { email: string; password: string } }
-  | { tag: 'submitting'; email: string }
+  | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
+  | { tag: 'submitting'; username: string }
   | { tag: 'redirect' };
 
 type Action =
@@ -25,7 +25,7 @@ function reduce(state: State, action: Action): State {
         console.log(`Editing ${action.inputName} to ${action.inputValue}`);
         return { tag: 'editing', error: undefined, inputs: { ...state.inputs, [action.inputName]: action.inputValue } };
       } else if (action.type === 'submit') {
-        return { tag: 'submitting', email: state.inputs.email };
+        return { tag: 'submitting', username: state.inputs.username };
       } else {
         console.log(`Unexpected action ${action.type} in state ${state.tag}`);
         return state;
@@ -33,7 +33,7 @@ function reduce(state: State, action: Action): State {
 
     case 'submitting':
       if (action.type === 'success') return { tag: 'redirect' };
-      else if (action.type === 'error') return { tag: 'editing', error: action.message, inputs: { email: state.email, password: '' } };
+      else if (action.type === 'error') return { tag: 'editing', error: action.message, inputs: { username: state.username, password: '' } };
       else { console.log(`Unexpected action ${action.type} in state ${state.tag}`); return state; }
 
     case 'redirect':
@@ -43,7 +43,7 @@ function reduce(state: State, action: Action): State {
 }
 
 export function Login() {
-  const [state, dispatch] = useReducer(reduce, { tag: 'editing', inputs: { email: '', password: '' } });
+  const [state, dispatch] = useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
   const { login, error } = useAuthentication();
   const location = useLocation();
   const { t } = useI18n();
@@ -62,10 +62,10 @@ export function Login() {
     if (state.tag !== 'editing') return;
 
     dispatch({ type: 'submit' });
-    const email = state.inputs.email;
+    const username = state.inputs.username;
     const password = state.inputs.password;
 
-    const result = await login(email, password);
+    const result = await login(username, password);
     if (!result) {
       dispatch({ type: 'error', message: error || t('login.invalid_credentials') });
       return;
@@ -73,7 +73,7 @@ export function Login() {
     dispatch({ type: 'success' });
   }
 
-  const email = state.tag === 'submitting' ? state.email : state.inputs.email;
+  const username = state.tag === 'submitting' ? state.username : state.inputs.username;
   const password = state.tag === 'submitting' ? '' : state.inputs.password;
 
   return (
@@ -93,7 +93,7 @@ export function Login() {
             <p className='text-muted'>{t('login.subtitle')}</p>
             <form onSubmit={handleSubmit}>
               <div className='mb-4'>
-                <input data-testid='email-login' value={email} onChange={handleChange} type='email' name='email' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='email' />
+                <input data-testid='username-login' value={username} onChange={handleChange} type='text' name='username' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='username' />
               </div>
               <div className='mb-3'>
                 <input data-testid='password-login' value={password} onChange={handleChange} type='password' name='password' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='password' />
@@ -108,7 +108,7 @@ export function Login() {
               </button>
               <div className='text-center mt-4'>
                 <span className='text-muted'>{t('login.new_user')}</span>
-                <Link to='/register' state={{ source: location.state?.source || '/admin' }} replace={true} className='ms-2'>
+                <Link to='/admin/register' state={{ source: location.state?.source || '/admin' }} replace={true} className='ms-2'>
                   {t('login.create_account')}
                 </Link>
               </div>

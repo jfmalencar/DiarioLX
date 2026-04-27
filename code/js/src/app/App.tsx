@@ -18,6 +18,7 @@ import { Articles } from '@/modules/admin/Articles';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
 import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
+import { SignUp } from '@/modules/admin/SignUp';
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,13 @@ const router = createBrowserRouter([
       {
         path: 'login',
         element: <Login />,
+        handle: {
+          layout: 'none'
+        }
+      },
+      {
+        path: 'register',
+        element: <SignUp />,
         handle: {
           layout: 'none'
         }

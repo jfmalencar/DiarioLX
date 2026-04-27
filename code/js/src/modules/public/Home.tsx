@@ -7,7 +7,7 @@ export function Home() {
     return (
         <div>
             <h1>{t('home.title')}</h1>
-            <p>{user ? t('home.welcome.logged', { name: user }) : t('home.welcome')}</p>
+            <p>{user ? t('home.welcome.logged', { name: user.username }) : t('home.welcome')}</p>
         </div>
     );
 }
