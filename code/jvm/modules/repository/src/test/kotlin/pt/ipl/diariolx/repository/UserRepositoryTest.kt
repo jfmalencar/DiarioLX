@@ -226,7 +226,7 @@ class UserRepositoryTest {
     fun `getAll returns empty list for empty repository`() {
         val repo = createRepository()
 
-        val allUsers = repo.getAll(0, 10, true)
+        val allUsers = repo.getAll(0, 10, "", true)
 
         assertEquals(0, allUsers.size)
     }
@@ -239,7 +239,7 @@ class UserRepositoryTest {
             repo.create(createNewUser(username = "user$i"), now)
         }
 
-        val allUsers = repo.getAll(0, 10, true)
+        val allUsers = repo.getAll(0, 10, "", true)
 
         assertEquals(5, allUsers.size)
     }
@@ -252,7 +252,7 @@ class UserRepositoryTest {
             repo.create(createNewUser(username = "user$i"), now)
         }
 
-        val limitedUsers = repo.getAll(0, 3, true)
+        val limitedUsers = repo.getAll(0, 3, "", true)
 
         assertEquals(3, limitedUsers.size)
     }
@@ -265,7 +265,7 @@ class UserRepositoryTest {
             repo.create(createNewUser(username = "user$i"), now)
         }
 
-        val offsetUsers = repo.getAll(1, 2, true)
+        val offsetUsers = repo.getAll(1, 2, "", true)
 
         assertEquals(2, offsetUsers.size)
         assertEquals("user2", offsetUsers[0].username.value)
@@ -447,12 +447,12 @@ class UserRepositoryTest {
     fun `update does nothing when user does not exist`() {
         val repo = createRepository()
         val now = Clock.System.now()
-        val initialSize = repo.getAll(0, 100, true).size
+        val initialSize = repo.getAll(0, 100, "", true).size
 
         val updateUser = createUpdateUser()
         repo.update(updateUser, 999, now)
 
-        assertEquals(initialSize, repo.getAll(0, 100, true).size)
+        assertEquals(initialSize, repo.getAll(0, 100, "", true).size)
         assertNull(repo.getById(999))
     }
 

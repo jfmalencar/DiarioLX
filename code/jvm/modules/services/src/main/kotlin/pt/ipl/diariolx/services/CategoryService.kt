@@ -75,10 +75,11 @@ class CategoryService(
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
     ): List<Category> =
         transactionManager.run {
-            it.categoryRepository.getAll(page, limit, archived)
+            it.categoryRepository.getAll(page, limit, query, archived)
         }
 
     fun delete(id: Int): CategoryUpdateResult =

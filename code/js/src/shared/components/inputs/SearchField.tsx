@@ -8,16 +8,20 @@ type Option = {
 
 export const SearchField = ({
     value,
+    name,
     options,
     disabled,
     placeholder,
+    loading,
     onSearch,
     onSelect,
 }: {
     value: string;
+    name: string;
     disabled?: boolean;
     options: Option[];
     placeholder: string;
+    loading?: boolean;
     onSearch: (ev: React.FormEvent<HTMLInputElement>) => void;
     onSelect: (option: Option) => void;
 }) => {
@@ -48,10 +52,19 @@ export const SearchField = ({
     return (
         <div className='position-relative' ref={containerRef}>
             <div className='position-relative'>
-                <Search size={18} className='position-absolute top-50 translate-middle-y text-muted' style={{ left: 0 }} />
+                <div
+                    className='position-absolute top-50 translate-middle-y d-flex align-items-center justify-content-center'
+                    style={{ left: 0, width: 18, height: 18 }}
+                >
+                    {loading ? (
+                        <div className='spinner-border spinner-border-sm text-muted' />
+                    ) : (
+                        <Search size={18} className='text-muted' />
+                    )}
+                </div>
                 <input
                     value={value}
-                    name='parentSearch'
+                    name={name}
                     disabled={disabled}
                     onChange={onSearch}
                     onFocus={() => setIsOpen(true)}

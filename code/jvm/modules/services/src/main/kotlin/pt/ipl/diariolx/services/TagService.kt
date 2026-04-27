@@ -70,10 +70,11 @@ class TagService(
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
     ): List<Tag> =
         transactionManager.run {
-            it.tagRepository.getAll(page, limit, archived)
+            it.tagRepository.getAll(page, limit, query, archived)
         }
 
     fun delete(id: Int): TagUpdateResult =

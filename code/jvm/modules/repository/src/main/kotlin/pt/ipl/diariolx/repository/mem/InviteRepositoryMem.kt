@@ -22,9 +22,7 @@ class InviteRepositoryMem : InviteRepository {
         )
     private var currentId = 2
 
-    override fun get(invite: String): Invite? {
-        return invites.find { it.invite == invite }
-    }
+    override fun get(invite: String): Invite? = invites.find { it.invite == invite }
 
     override fun create(invite: NewInvite): Invite {
         val newInvite =

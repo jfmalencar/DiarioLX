@@ -14,6 +14,7 @@ object Uris {
         const val TOKEN = "$PREFIX/users/token"
         const val LOGOUT = "$PREFIX/logout"
         const val GET_BY_ID = "$PREFIX/users/{id}"
+        const val GET_ALL = "$PREFIX/users"
         const val HOME = "$PREFIX/me"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
@@ -50,5 +51,18 @@ object Uris {
     object Status {
         const val HOSTNAME = "$PREFIX/status/hostname"
         const val IP = "$PREFIX/status/ip"
+    }
+
+    object Files {
+        const val UPLOAD = "$PREFIX/media"
+        const val GET_ALL = "$PREFIX/media"
+        const val GET_SIGNED_URL = "$PREFIX/media/signed-url"
+        const val COMPLETE_UPLOAD = "$PREFIX/media/{id}"
+    }
+
+    object Articles {
+        const val CREATE = "$PREFIX/articles"
+        const val GET_BY_SLUG = "$PREFIX/articles/slug/{slug}"
+        const val GET_ALL = "$PREFIX/articles"
     }
 }

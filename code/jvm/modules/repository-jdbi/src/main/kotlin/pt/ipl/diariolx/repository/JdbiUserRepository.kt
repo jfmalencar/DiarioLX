@@ -28,12 +28,13 @@ class JdbiUserRepository(
         now: Instant,
     ): User {
         logger.info("New User: $newUser")
-        handle.createUpdate(
-            """
+        handle
+            .createUpdate(
+                """
             INSERT INTO users (username, email, password_hash, first_name, last_name, role, created_at, updated_at)
             VALUES (:username, :email, :password_hash, :first_name, :last_name, :role::user_role, :created_at, :updated_at)
             """,
-        ).bind("username", newUser.username.value)
+            ).bind("username", newUser.username.value)
             .bind("email", newUser.email.value)
             .bind("password_hash", newUser.passwordHash.value)
             .bind("first_name", newUser.fName.value)
@@ -43,12 +44,14 @@ class JdbiUserRepository(
             .bind("updated_at", now.epochSeconds)
             .execute()
 
-        return handle.createQuery(
-            "SELECT * FROM users WHERE username = :username",
-        ).bind("username", newUser.username.value)
+        return handle
+            .createQuery(
+                "SELECT * FROM users WHERE username = :username",
+            ).bind("username", newUser.username.value)
             .mapTo<UserDBModel>()
             .single()
-            .toUserDomain().also { logger.info("Created User: $it") }
+            .toUserDomain()
+            .also { logger.info("Created User: $it") }
     }
 
     override fun update(
@@ -56,8 +59,9 @@ class JdbiUserRepository(
         userId: Int,
         now: Instant,
     ) {
-        handle.createUpdate(
-            """
+        handle
+            .createUpdate(
+                """
             UPDATE users 
             SET username = :username, 
                 email = :email, 
@@ -69,7 +73,7 @@ class JdbiUserRepository(
                 updated_at = :updated_at
             WHERE id = :userId
             """,
-        ).bind("username", updateUser.username.value)
+            ).bind("username", updateUser.username.value)
             .bind("email", updateUser.email.value)
             .bind("password_hash", updateUser.password.value)
             .bind("first_name", updateUser.fName.value)
@@ -83,9 +87,10 @@ class JdbiUserRepository(
 
     override fun delete(id: Int): Boolean {
         val rowsAffected =
-            handle.createUpdate(
-                "DELETE FROM users WHERE id = :id",
-            ).bind("id", id)
+            handle
+                .createUpdate(
+                    "DELETE FROM users WHERE id = :id",
+                ).bind("id", id)
                 .execute()
         return rowsAffected > 0
     }
@@ -95,51 +100,67 @@ class JdbiUserRepository(
         now: Instant,
     ): Boolean {
         val rowsAffected =
-            handle.createUpdate(
-                "UPDATE users SET active_account = false, updated_at = :updated_at WHERE id = :id",
-            ).bind("id", id)
+            handle
+                .createUpdate(
+                    "UPDATE users SET active_account = false, updated_at = :updated_at WHERE id = :id",
+                ).bind("id", id)
                 .bind("updated_at", now.epochSeconds)
                 .execute()
         return rowsAffected > 0
     }
 
-    override fun getById(id: Int): User? {
-        return handle.createQuery(
-            "SELECT * FROM users WHERE id = :id",
-        ).bind("id", id)
+    override fun getById(id: Int): User? =
+        handle
+            .createQuery(
+                "SELECT * FROM users WHERE id = :id",
+            ).bind("id", id)
             .mapTo<UserDBModel>()
             .singleOrNull()
             ?.toUserDomain()
-    }
 
-    override fun getByEmail(email: Email): User? {
-        return handle.createQuery(
-            "SELECT * FROM users WHERE email = :email",
-        ).bind("email", email.value)
+    override fun getByEmail(email: Email): User? =
+        handle
+            .createQuery(
+                "SELECT * FROM users WHERE email = :email",
+            ).bind("email", email.value)
             .mapTo<UserDBModel>()
             .singleOrNull()
             ?.toUserDomain()
-    }
 
-    override fun getByUsername(username: Username): User? {
-        return handle.createQuery(
-            "SELECT * FROM users WHERE username = :username",
-        ).bind("username", username.value)
+    override fun getByUsername(username: Username): User? =
+        handle
+            .createQuery(
+                "SELECT * FROM users WHERE username = :username",
+            ).bind("username", username.value)
             .mapTo<UserDBModel>()
             .singleOrNull()
             ?.toUserDomain()
-    }
 
     override fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         deactivated: Boolean,
     ): List<User> {
-        val whereClause = if (deactivated) "" else "WHERE active_account = true"
-        return handle.createQuery(
-            "SELECT * FROM users $whereClause ORDER BY id OFFSET :offset LIMIT :limit",
-        ).bind("offset", page * limit)
+        val sql =
+            buildString {
+                append("select * from users WHERE 1 = 1".trimIndent())
+                when (deactivated) {
+                    true -> append(" AND active_account = false")
+                    false -> append(" AND active_account = true")
+                }
+                if (query != null) {
+                    append(" AND (first_name ILIKE :query OR last_name ILIKE :query OR username ILIKE :query)")
+                }
+                append(" ORDER BY id desc")
+                append(" LIMIT :limit OFFSET :offset")
+            }
+
+        return handle
+            .createQuery(sql)
+            .bind("offset", page * limit)
             .bind("limit", limit)
+            .bind("query", "%$query%")
             .mapTo<UserDBModel>()
             .list()
             .map { it.toUserDomain() }
@@ -150,8 +171,9 @@ class JdbiUserRepository(
         maxTokens: Int,
     ) {
         // Delete the oldest token when achieved the maximum number of tokens
-        handle.createUpdate(
-            """
+        handle
+            .createUpdate(
+                """
             DELETE FROM sessions 
             WHERE user_id = :user_id 
                 AND session_token IN (
@@ -161,17 +183,18 @@ class JdbiUserRepository(
                     OFFSET :offset
                 )
             """,
-        ).bind("user_id", newSession.userId)
+            ).bind("user_id", newSession.userId)
             .bind("offset", maxTokens - 1)
             .execute()
 
         // Insert the new session
-        handle.createUpdate(
-            """
+        handle
+            .createUpdate(
+                """
             INSERT INTO sessions (session_token, user_id, created_at, last_used_at)
             VALUES (:session_token, :user_id, :created_at, :last_used_at)
             """,
-        ).bind("session_token", newSession.sessionToken.value)
+            ).bind("session_token", newSession.sessionToken.value)
             .bind("user_id", newSession.userId)
             .bind("created_at", newSession.createdAt.epochSeconds)
             .bind("last_used_at", newSession.lastUsedAt.epochSeconds)
@@ -180,9 +203,10 @@ class JdbiUserRepository(
 
     override fun deleteSession(sessionToken: SessionToken): Boolean {
         val rowsAffected =
-            handle.createUpdate(
-                "DELETE FROM sessions WHERE session_token = :session_token",
-            ).bind("session_token", sessionToken.value)
+            handle
+                .createUpdate(
+                    "DELETE FROM sessions WHERE session_token = :session_token",
+                ).bind("session_token", sessionToken.value)
                 .execute()
         return rowsAffected > 0
     }
@@ -191,20 +215,22 @@ class JdbiUserRepository(
         session: Session,
         now: Instant,
     ) {
-        handle.createUpdate(
-            """
+        handle
+            .createUpdate(
+                """
             UPDATE sessions 
             SET last_used_at = :last_used_at
             WHERE session_token = :session_token
             """,
-        ).bind("last_used_at", now.epochSeconds)
+            ).bind("last_used_at", now.epochSeconds)
             .bind("session_token", session.sessionToken.value)
             .execute()
     }
 
-    override fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>? {
-        return handle.createQuery(
-            """
+    override fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>? =
+        handle
+            .createQuery(
+                """
             SELECT u.id, u.username, u.email, u.password_hash, u.role, u.first_name, u.last_name, 
                    u.bio, u.created_at, u.updated_at, u.profile_picture_url, u.active_account,
                    t.session_token, t.user_id, t.created_at as token_created_at, t.last_used_at
@@ -212,11 +238,10 @@ class JdbiUserRepository(
             JOIN sessions t ON u.id = t.user_id
             WHERE t.session_token = :session_token
             """,
-        ).bind("session_token", sessionToken.value)
+            ).bind("session_token", sessionToken.value)
             .map(UserAndSessionMapper())
             .findOne()
             .orElse(null)
-    }
 
     private data class UserDBModel(
         val id: Int,

@@ -120,14 +120,15 @@ class UserController(
         "/all",
     )
     fun getAllUsers(
-        me: AuthenticatedUser,
-        @RequestParam offset: Int,
-        @RequestParam limit: Int,
-        @RequestParam deactivated: Boolean = true,
+        // me: AuthenticatedUser,
+        @RequestParam offset: Int = 0,
+        @RequestParam limit: Int = 30,
+        @RequestParam query: String? = null,
+        @RequestParam deactivated: Boolean = false,
     ): ResponseEntity<*> =
         handleUserOperationResult(
             "/user/all",
-            userServices.getAll(me.user, offset, limit, deactivated),
+            userServices.getAll(offset, limit, query, deactivated),
         ) {
             mapOf(
                 "users" to

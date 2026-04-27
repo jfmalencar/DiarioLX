@@ -27,12 +27,6 @@ export const tagsMockService: TagsService = {
   async fetchAll() {
     return {
       tags: fakeTags,
-      _links: {
-        self: {
-          href: '/api/tags',
-          method: 'GET',
-        },
-      },
     };
   },
 
@@ -41,13 +35,15 @@ export const tagsMockService: TagsService = {
     if (!tag) {
       throw new Error('Tag not found');
     }
-    return { tag, _links: { self: { href: `/api/tags/${id}`, method: 'GET' } } };
+    return { tag };
   },
 
   async create(tag) {
     const newTag = {
-      ...tag,
       id: String(fakeTags.length + 1),
+      name: tag.name,
+      description: tag.description,
+      slug: tag.slug,
       count: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -66,7 +62,10 @@ export const tagsMockService: TagsService = {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     fakeTags[index] = {
       ...fakeTags[index],
-      ...tag,
+      id: tag.id,
+      name: tag.name,
+      description: tag.description,
+      slug: tag.slug,
       updatedAt: new Date().toISOString(),
     };
   },

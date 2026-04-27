@@ -10,11 +10,10 @@ class Sha256TokenEncoder : TokenEncoder {
 
     override fun createSessionToken(token: String): SessionToken = SessionToken(hash(token))
 
-    private fun hash(input: String): String {
-        return Base64.getUrlEncoder().encodeToString(
+    private fun hash(input: String): String =
+        Base64.getUrlEncoder().encodeToString(
             messageDigest.digest(
                 Charsets.UTF_8.encode(input).array(),
             ),
         )
-    }
 }

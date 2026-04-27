@@ -1,10 +1,10 @@
 
 import { useState, useCallback } from 'react';
-import { categoriesService } from '../services/categories/index';
-import type { Category, CategoryRequest } from '../services/categories/categories.types';
+import { categoriesService } from '@/shared/services/categories';
+import type { Category, CategoryFormValues } from '@/shared/services/categories/categories.types';
 import type { Query } from '@/shared/types/Query';
 
-export type { Category, CategoryRequest };
+export type { Category, CategoryFormValues };
 
 export const useCategories = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -48,7 +48,7 @@ export const useCategories = () => {
     )
 
     const create = useCallback(
-        async (category: CategoryRequest): Promise<string | undefined> => {
+        async (category: CategoryFormValues): Promise<string | undefined> => {
             setLoading(true)
             setError(null)
             try {
@@ -66,7 +66,7 @@ export const useCategories = () => {
     )
 
     const update = useCallback(
-        async (id: string, category: CategoryRequest): Promise<void> => {
+        async (id: string, category: CategoryFormValues): Promise<void> => {
             setLoading(true)
             setError(null)
             try {

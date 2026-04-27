@@ -1,21 +1,17 @@
-import React, { useEffect, useMemo, useReducer, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { Link, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { UnderlineTextArea } from '@/shared/components/inputs/UnderlineTextArea';
 import { SearchField } from '@/shared/components/inputs/SearchField';
+import { Pill } from '@/shared/components/Pill';
 import { Button } from '@/shared/components/Button';
 import { slugify } from '@/shared/utils/format';
 
-import { type Category, type CategoryRequest, useCategories } from '@/shared/hooks/useCategories';
+import { type Category, type CategoryFormValues, useCategories } from '@/shared/hooks/useCategories';
 
 import icon from '@/assets/icon.svg';
-
-type CategoryOption = {
-    id: string;
-    name: string;
-};
 
 type Inputs = {
     name: string;
@@ -39,13 +35,6 @@ type Action =
     | { type: 'error'; message: string }
     | { type: 'success' };
 
-const parentCategories: CategoryOption[] = [
-    { id: '1', name: 'Cultura' },
-    { id: '2', name: 'Política' },
-    { id: '3', name: 'Fotografia' },
-    { id: '4', name: 'Cidade' },
-    { id: '5', name: 'Podcast' },
-];
 
 const reduce = (state: State, action: Action): State => {
     switch (state.tag) {
@@ -106,7 +95,7 @@ const reduce = (state: State, action: Action): State => {
 }
 
 export const EditCategory = () => {
-    const { fetchOne, create, update } = useCategories();
+    const { fetchOne, fetchAll, categories, create, update } = useCategories();
     const [isColorOpen, setIsColorOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -123,6 +112,8 @@ export const EditCategory = () => {
         },
     });
 
+    const inputs = state.tag === 'submitting' || state.tag === 'editing' ? state.inputs : null;
+
     useEffect(() => {
         if (location.state?.category) {
             const category = location.state.category;
@@ -138,14 +129,14 @@ export const EditCategory = () => {
         }
     }, [location.state, fetchOne, params.id, navigate]);
 
-    const inputs = state.tag === 'submitting' || state.tag === 'editing' ? state.inputs : null;
+    useEffect(() => {
+        const timeout = setTimeout(async () => {
+            const search = inputs?.parentSearch.trim().toLowerCase() || '';
+            await fetchAll({ query: search });
+        }, 400);
 
-    const filteredParents = useMemo(() => {
-        if (!inputs) return parentCategories;
-        const search = inputs.parentSearch.trim().toLowerCase();
-        if (search.length === 0) return parentCategories;
-        return parentCategories.filter((option) => option.name.toLowerCase().includes(search));
-    }, [inputs]);
+        return () => clearTimeout(timeout);
+    }, [inputs?.parentSearch, fetchAll]);
 
     if (!inputs) {
         return <Navigate to='/admin/categorias' />;
@@ -167,7 +158,7 @@ export const EditCategory = () => {
 
         dispatch({ type: 'submit' });
 
-        const category: CategoryRequest = {
+        const category: CategoryFormValues = {
             id: params.id === 'nova' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,
@@ -232,16 +223,23 @@ export const EditCategory = () => {
                                 optional={true}
                                 description='As categorias, ao contrário das etiquetas, podem ter uma hierarquia. Totalmente opcional.'
                             >
-                                <SearchField
-                                    disabled={state.tag === 'submitting'}
-                                    value={inputs.parentSearch}
-                                    options={filteredParents}
-                                    placeholder='Pesquisar categoria superior'
-                                    onSearch={handleChange}
-                                    onSelect={(option) =>
-                                        dispatch({ type: 'select-parent', parentId: option.id, parentName: option.name })
-                                    }
-                                />
+                                {inputs.parentId ? (
+                                    <Pill
+                                        label={inputs.parentSearch}
+                                        onRemove={() => dispatch({ type: 'edit', inputName: 'parentId', inputValue: '' })}
+                                    />
+                                ) :
+                                    <SearchField
+                                        disabled={state.tag === 'submitting'}
+                                        value={inputs.parentSearch}
+                                        name='parentSearch'
+                                        options={categories}
+                                        placeholder='Pesquisar categoria superior'
+                                        onSearch={handleChange}
+                                        onSelect={(option) =>
+                                            dispatch({ type: 'select-parent', parentId: option.id, parentName: option.name })
+                                        }
+                                    />}
                             </FieldSection>
                             <FieldSection
                                 title='Descrição'

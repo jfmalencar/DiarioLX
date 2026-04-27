@@ -1,4 +1,4 @@
-import type { TagsService, TagsResponse, TagResponse } from './tags.types';
+import type { TagRequest, TagsService, TagsResponse, TagResponse } from './tags.types';
 import { get, post, put, remove } from '../http/client';
 
 export const tagsApiService: TagsService = {
@@ -20,7 +20,13 @@ export const tagsApiService: TagsService = {
   },
 
   async create(tag) {
-    const result = await post<string>('/api/tags', tag);
+    const request: TagRequest = {
+      id: tag.id,
+      name: tag.name,
+      description: tag.description,
+      slug: tag.slug
+    }
+    const result = await post<string>('/api/tags', request);
     if (!result.success) {
       throw new Error('Failed to create tag');
     }
@@ -28,7 +34,13 @@ export const tagsApiService: TagsService = {
   },
 
   async update(id, tag) {
-    const result = await put(`/api/tags/${id}`, tag);
+    const request: TagRequest = {
+      id: tag.id,
+      name: tag.name,
+      description: tag.description,
+      slug: tag.slug
+    }
+    const result = await put(`/api/tags/${id}`, request);
     if (!result.success) {
       throw new Error('Failed to update tag');
     }

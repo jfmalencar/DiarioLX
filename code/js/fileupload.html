@@ -1,0 +1,54 @@
+<div>
+    <input type="file" id="fileInput" />
+    <button id="uploadBtn">Upload</button>
+</div>
+
+<div style="margin-top: 16px;">
+    <img id="preview" style="max-width: 300px; display: none;" />
+</div>
+
+<script type="module">
+    const API_BASE_URL = "http://localhost:5173";
+
+    async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await fetch(`${API_BASE_URL}/files/upload`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error("Upload failed");
+        }
+
+        return response.json();
+    }
+
+    const input = document.getElementById("fileInput");
+    const button = document.getElementById("uploadBtn");
+    const preview = document.getElementById("preview");
+
+    button.addEventListener("click", async () => {
+        const file = input.files[0];
+
+        if (!file) {
+            alert("Escolhe um ficheiro primeiro!");
+            return;
+        }
+
+        try {
+            const result = await uploadFile(file);
+
+            console.log(result);
+
+            // mostra imagem retornada do backend
+            preview.src = result.url;
+            preview.style.display = "block";
+        } catch (err) {
+            console.error(err);
+            alert("Erro no upload");
+        }
+    });
+</script>

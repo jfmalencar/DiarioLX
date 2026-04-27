@@ -14,6 +14,7 @@ interface TagRepository {
     fun getAll(
         page: Int,
         limit: Int,
+        query: String?,
         archived: Boolean,
     ): List<Tag>
 
