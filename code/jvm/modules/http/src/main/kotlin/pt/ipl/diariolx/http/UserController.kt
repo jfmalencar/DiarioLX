@@ -91,6 +91,9 @@ class UserController(
                 "lName" to me.user.lName.value,
                 "bio" to me.user.bio,
                 "profilePictureURL" to me.user.profilePictureURL,
+                "createdAt" to me.user.createdAt,
+                "updatedAt" to me.user.updatedAt,
+                "isActive" to me.user.active,
             ),
         )
 
@@ -113,6 +116,9 @@ class UserController(
                 "lName" to it.lName.value,
                 "bio" to it.bio,
                 "profilePictureURL" to it.profilePictureURL,
+                "createdAt" to it.createdAt,
+                "updatedAt" to it.updatedAt,
+                "isActive" to it.active,
             )
         }
 
@@ -141,6 +147,9 @@ class UserController(
                             "lName" to user.lName.value,
                             "bio" to user.bio,
                             "profilePictureURL" to user.profilePictureURL,
+                            "createdAt" to user.createdAt,
+                            "updatedAt" to user.updatedAt,
+                            "isActive" to user.active,
                         )
                     },
             )
@@ -218,8 +227,12 @@ class UserController(
     @PostMapping(
         "/logout",
     )
-    fun logout(me: AuthenticatedUser): ResponseEntity<*> {
+    fun logout(
+        me: AuthenticatedUser,
+        response: HttpServletResponse,
+    ): ResponseEntity<*> {
         userServices.logout(me.token)
+        response.setHeader(HttpHeaders.SET_COOKIE, "token=; Max-Age=0; Path=/; HttpOnly")
         return ResponseEntity.ok(
             mapOf(
                 "message" to "Logout successful",

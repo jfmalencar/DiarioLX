@@ -16,16 +16,8 @@ type RouteHandle = {
 
 export function AdminLayout() {
   const navigate = useNavigate();
-  const { user } = useAuthentication();
+  const { user, hydrated } = useAuthentication();
   const { t } = useI18n();
-
-  const options = [
-    { key: 'new-article', label: 'Artigo', action: () => navigate('/admin/publicacoes/novo') },
-    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/admin/podcasts/novo') },
-    { key: 'new-video', label: 'Vídeo', action: () => navigate('/admin/videos/novo') },
-    { key: 'new-category', label: 'Categoria', action: () => navigate('/admin/categorias/nova') },
-    { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/admin/etiquetas/nova') },
-  ]
 
   const matches = useMatches()
   const currentMatch = matches[matches.length - 1]
@@ -39,6 +31,28 @@ export function AdminLayout() {
       </>
     )
   }
+
+  // Wait for authentication to hydrate before rendering dashboard
+  if (!hydrated) {
+    return (
+      <div className='d-flex justify-content-center align-items-center min-vh-100'>
+        <div className='text-center'>
+          <div className='spinner-border mb-3' role='status'>
+            <span className='visually-hidden'>Loading...</span>
+          </div>
+          <p className='text-muted'>{t('admin_layout.loading') || 'Loading...'}</p>
+        </div>
+      </div>
+    )
+  }
+
+  const options = [
+    { key: 'new-article', label: 'Artigo', action: () => navigate('/admin/publicacoes/novo') },
+    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/admin/podcasts/novo') },
+    { key: 'new-video', label: 'Vídeo', action: () => navigate('/admin/videos/novo') },
+    { key: 'new-category', label: 'Categoria', action: () => navigate('/admin/categorias/nova') },
+    { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/admin/etiquetas/nova') },
+  ]
   return (
     <div className='d-flex min-vh-100'>
       <aside
@@ -97,14 +111,14 @@ export function AdminLayout() {
           </div>
           <div className='d-flex align-items-center gap-3'>
             <div className='text-end'>
-              <div className='fw-semibold'>{user?.username}</div>
-              <div className='text-secondary small'>Super-Admin</div>
+              <div className='fw-semibold'>{user?.firstName} {user?.lastName}</div>
+              <div className='text-secondary small'>{user?.email}</div>
             </div>
             <div
               className='rounded-circle bg-dark text-white d-flex align-items-center justify-content-center'
               style={{ width: '44px', height: '44px' }}
             >
-              {user?.username?.charAt(0).toUpperCase()}
+              {user?.firstName?.charAt(0).toUpperCase()}
             </div>
           </div>
         </header>

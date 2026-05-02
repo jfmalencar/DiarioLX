@@ -9,7 +9,8 @@ import { isValidEmail, isValidName, isValidPassword } from '@/shared/services/au
 import image from '@/assets/login.png';
 import logo from '@/assets/logo.svg';
 
-type Inputs = {
+// State type
+type State = {
   firstName: string;
   lastName: string;
   username: string;
@@ -17,114 +18,143 @@ type Inputs = {
   password: string;
   confirmPassword: string;
   inviteCode: string;
-}
+  error: string | undefined;
+  stage: 'editing' | 'posting' | 'succeed' | 'failed';
+};
 
-type State =
-  | { tag: 'editing'; error?: string; inputs: Inputs }
-  | { tag: 'submitting'; inputs: Inputs }
-  | { tag: 'redirect' };
-
+// Action types
 type Action =
-  | { type: 'edit'; inputName: keyof Inputs; inputValue: string }
-  | { type: 'submit' }
-  | { type: 'error'; message: string }
-  | { type: 'success' };
+  | { type: 'input-change'; inputName: string; inputValue: string }
+  | { type: 'post' }
+  | { type: 'success' }
+  | { type: 'error'; message: string };
 
-function reduce(state: State, action: Action): State {
-  switch (state.tag) {
-    case 'editing':
-      if (action.type === 'edit') {
-        return { tag: 'editing', error: undefined, inputs: { ...state.inputs, [action.inputName]: action.inputValue } };
-      } else if (action.type === 'submit') {
-        return { tag: 'submitting', inputs: state.inputs };
-      } else {
-        return state;
-      }
-
-    case 'submitting':
-      if (action.type === 'success') return { tag: 'redirect' };
-      else if (action.type === 'error') return { tag: 'editing', error: action.message, inputs: state.inputs };
-      else { return state; }
-
-    case 'redirect':
+// Reducer function
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'input-change':
+      return {
+        ...state,
+        [action.inputName]: action.inputValue,
+      };
+    case 'post':
+      return {
+        ...state,
+        stage: 'posting',
+        error: undefined,
+      };
+    case 'success':
+      return {
+        firstName: '',
+        lastName: '',
+        username: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        inviteCode: '',
+        error: undefined,
+        stage: 'succeed',
+      };
+    case 'error':
+      return {
+        ...state,
+        stage: 'failed',
+        error: action.message,
+      };
+    default:
       return state;
   }
 }
 
+// Initial state
+const initialState: State = {
+  firstName: '',
+  lastName: '',
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  inviteCode: '',
+  error: undefined,
+  stage: 'editing',
+};
+
 export function SignUp() {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [showPassword, setShowPassword] = useState(false);
-  const [state, dispatch] = useReducer(reduce, {
-    tag: 'editing',
-    inputs: {
-      firstName: '',
-      lastName: '',
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      inviteCode: '',
-    },
-  });
   const { register, login, error } = useAuthentication();
   const location = useLocation();
   const { t } = useI18n();
 
-  if (state.tag === 'redirect') {
+  if (state.stage === 'succeed') {
     return <Navigate to={location.state?.source || '/admin'} replace={true} />;
   }
 
-  const canSubmit = state.tag === 'editing'
-    && isValidName(state.inputs.firstName)
-    && isValidName(state.inputs.lastName)
-    && state.inputs.password.length > 0
-    && state.inputs.password === state.inputs.confirmPassword
-    && isValidEmail(state.inputs.email)
-    && isValidPassword(state.inputs.password);
-
   function handleChange(ev: React.FormEvent<HTMLInputElement>) {
-    dispatch({ type: 'edit', inputName: ev.currentTarget.name as keyof Inputs, inputValue: ev.currentTarget.value });
+    const { name, value } = ev.currentTarget;
+    dispatch({ type: 'input-change', inputName: name, inputValue: value });
   }
 
   async function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
-    if (state.tag !== 'editing') return;
+    dispatch({ type: 'post' });
 
-    dispatch({ type: 'submit' });
-    const { firstName, lastName, username, password, inviteCode, confirmPassword } = state.inputs;
+    try {
+      // Validate inputs
+      if (!isValidName(state.firstName)) {
+        dispatch({ type: 'error', message: t('register.invalid_name') });
+        return;
+      }
 
-    if (!isValidName(firstName) || !isValidName(lastName)) {
-      dispatch({ type: 'error', message: t('register.invalid_name') });
-      return;
+      if (!isValidName(state.lastName)) {
+        dispatch({ type: 'error', message: t('register.invalid_name') });
+        return;
+      }
+
+      if (!isValidEmail(state.email)) {
+        dispatch({ type: 'error', message: t('register.invalid_email') });
+        return;
+      }
+
+      if (!isValidPassword(state.password)) {
+        dispatch({ type: 'error', message: t('register.invalid_password') });
+        return;
+      }
+
+      if (state.password !== state.confirmPassword) {
+        dispatch({ type: 'error', message: t('register.password_mismatch') });
+        return;
+      }
+
+      // Register user
+      const registerResult = await register(
+        state.username,
+        state.email,
+        state.password,
+        state.firstName,
+        state.lastName,
+        state.inviteCode
+      );
+
+      if (!registerResult) {
+        dispatch({ type: 'error', message: error || t('register.invalid_registration') });
+        return;
+      }
+
+      // Auto-login after registration
+      const loginResult = await login(state.username, state.password);
+      if (!loginResult) {
+        dispatch({ type: 'error', message: error || t('login.invalid_credentials') });
+        return;
+      }
+
+      dispatch({ type: 'success' });
+    } catch (err) {
+      dispatch({
+        type: 'error',
+        message: err instanceof Error ? err.message : t('register.invalid_registration'),
+      });
     }
-
-    if (password !== confirmPassword) {
-      dispatch({ type: 'error', message: t('register.password_mismatch') });
-      return;
-    }
-
-    if (!isValidEmail(state.inputs.email)) {
-      dispatch({ type: 'error', message: t('register.invalid_email') });
-      return;
-    }
-
-    if (!isValidPassword(password)) {
-      dispatch({ type: 'error', message: t('register.invalid_password') });
-      return;
-    }
-
-    const result = await register(username, state.inputs.email, password, firstName, lastName, inviteCode);
-    if (!result) {
-      dispatch({ type: 'error', message: error || t('register.invalid_registration') });
-      return;
-    }
-
-    const authenticatedUser = await login(username, password);
-    if (!authenticatedUser) {
-      dispatch({ type: 'error', message: error || t('login.invalid_credentials') });
-      return;
-    }
-
-    dispatch({ type: 'success' });
   }
 
   return (
@@ -145,35 +175,107 @@ export function SignUp() {
             <form onSubmit={handleSubmit}>
               <div className='row g-3 mb-3'>
                 <div className='col-6'>
-                  <input value={state.inputs.firstName} onChange={handleChange} type='text' name='firstName' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.first_name')} />
+                  <input
+                    value={state.firstName}
+                    onChange={handleChange}
+                    type='text'
+                    name='firstName'
+                    className='form-control border-0 border-bottom rounded-0 border-black'
+                    placeholder={t('register.first_name')}
+                    required
+                  />
                 </div>
                 <div className='col-6'>
-                  <input value={state.inputs.lastName} onChange={handleChange} type='text' name='lastName' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.last_name')} />
+                  <input
+                    value={state.lastName}
+                    onChange={handleChange}
+                    type='text'
+                    name='lastName'
+                    className='form-control border-0 border-bottom rounded-0 border-black'
+                    placeholder={t('register.last_name')}
+                    required
+                  />
                 </div>
               </div>
               <div className='mb-3'>
-                <input value={state.inputs.username} onChange={handleChange} type='text' name='username' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.username')} />
+                <input
+                  value={state.username}
+                  onChange={handleChange}
+                  type='text'
+                  name='username'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder={t('register.username')}
+                  required
+                />
               </div>
               <div className='mb-3'>
-                <input data-testid='email-register' value={state.inputs.email} onChange={handleChange} type='email' name='email' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.email')} />
+                <input
+                  data-testid='email-register'
+                  value={state.email}
+                  onChange={handleChange}
+                  type='email'
+                  name='email'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder={t('register.email')}
+                  required
+                />
               </div>
               <div className='mb-3 input-group'>
-                <input data-testid='password-register' value={state.inputs.password} onChange={handleChange} type={showPassword ? 'text' : 'password'} name='password' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.password')} />
-                <button type='button' className='input-group-text border-0 border-bottom rounded-0 border-black bg-transparent' onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? t('register.hide_password') : t('register.show_password')}>
+                <input
+                  data-testid='password-register'
+                  value={state.password}
+                  onChange={handleChange}
+                  type={showPassword ? 'text' : 'password'}
+                  name='password'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder={t('register.password')}
+                  required
+                />
+                <button
+                  type='button'
+                  className='input-group-text border-0 border-bottom rounded-0 border-black bg-transparent'
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? t('register.hide_password') : t('register.show_password')}
+                >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               <div className='mb-3 input-group'>
-                <input value={state.inputs.confirmPassword} onChange={handleChange} type={showPassword ? 'text' : 'password'} name='confirmPassword' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.confirm_password')} />
-                <button type='button' className='input-group-text border-0 border-bottom rounded-0 border-black bg-transparent' onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? t('register.hide_password') : t('register.show_password')}>
+                <input
+                  value={state.confirmPassword}
+                  onChange={handleChange}
+                  type={showPassword ? 'text' : 'password'}
+                  name='confirmPassword'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder={t('register.confirm_password')}
+                  required
+                />
+                <button
+                  type='button'
+                  className='input-group-text border-0 border-bottom rounded-0 border-black bg-transparent'
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? t('register.hide_password') : t('register.show_password')}
+                >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               <div className='mb-3'>
-                <input value={state.inputs.inviteCode} onChange={handleChange} type='text' name='inviteCode' className='form-control border-0 border-bottom rounded-0 border-black' placeholder={t('register.invite_code')} />
+                <input
+                  value={state.inviteCode}
+                  onChange={handleChange}
+                  type='text'
+                  name='inviteCode'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder={t('register.invite_code')}
+                />
               </div>
-              <button data-testid='submit-register' className='btn btn-outline-dark w-100 rounded-0' disabled={state.tag === 'submitting' || !canSubmit}>
-                {t('register.submit')}
+              {state.error && <div className='alert alert-danger mb-3'>{state.error}</div>}
+              <button
+                data-testid='submit-register'
+                className='btn btn-outline-dark w-100 rounded-0'
+                disabled={state.stage === 'posting'}
+              >
+                {state.stage === 'posting' ? t('register.loading') || 'Registering...' : t('register.submit')}
               </button>
               <div className='text-center mt-4'>
                 <Link to='/admin/login' className='small'>

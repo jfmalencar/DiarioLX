@@ -12,6 +12,18 @@ let fakeLoginResponse = {
 export const authMockService: AuthService = {
   async authenticate(username, password) {
     if (password === "test") {
+      fakeUser = {
+        id: 1,
+        username,
+        email: `${username}@diariqlx.pt`,
+        firstName: 'Test',
+        lastName: 'User',
+        bio: 'Test user bio',
+        profilePictureUrl: 'https://placehold.co/213x213',
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date().toISOString(),
+        isActive: true,
+      };
       return fakeLoginResponse;
     }
     return undefined;
@@ -22,7 +34,18 @@ export const authMockService: AuthService = {
   },
 
   async register(username, email, _password, firstName, lastName, _inviteCode) {
-    fakeUser = { id: 1, username, email, firstName, lastName, bio: '', profilePictureUrl: '' };
+    fakeUser = {
+      id: 1,
+      username,
+      email,
+      firstName,
+      lastName,
+      bio: '',
+      profilePictureUrl: 'https://placehold.co/213x213',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isActive: true,
+    };
     return { userId: fakeUserId };
   },
 

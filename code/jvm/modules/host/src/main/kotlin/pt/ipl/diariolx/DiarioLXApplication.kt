@@ -112,7 +112,7 @@ class DiarioLXApplication {
     @Bean
     fun inviteDomainConfig() =
         InviteDomainConfig(
-            inviteExpirationTime = 30.minutes,
+            inviteExpirationTime = 60.minutes,
         )
 
     @Bean

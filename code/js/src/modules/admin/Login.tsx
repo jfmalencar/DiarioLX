@@ -1,5 +1,6 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useState } from 'react';
 import { Navigate, useLocation, Link } from 'react-router';
+import { Eye, EyeOff } from 'lucide-react';
 
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
@@ -7,74 +8,100 @@ import { useI18n } from '@/shared/hooks/useI18n';
 import image from '@/assets/login.png';
 import logo from '@/assets/logo.svg';
 
-type State =
-  | { tag: 'editing'; error?: string; inputs: { username: string; password: string } }
-  | { tag: 'submitting'; username: string }
-  | { tag: 'redirect' };
+// State type
+type State = {
+  username: string;
+  password: string;
+  error: string | undefined;
+  stage: 'editing' | 'posting' | 'succeed' | 'failed';
+};
 
+// Action types
 type Action =
-  | { type: 'edit'; inputName: string; inputValue: string }
-  | { type: 'submit' }
-  | { type: 'error'; message: string }
-  | { type: 'success' };
+  | { type: 'input-change'; username: string; password: string }
+  | { type: 'post' }
+  | { type: 'success' }
+  | { type: 'error'; message: string };
 
-function reduce(state: State, action: Action): State {
-  switch (state.tag) {
-    case 'editing':
-      if (action.type === 'edit') {
-        console.log(`Editing ${action.inputName} to ${action.inputValue}`);
-        return { tag: 'editing', error: undefined, inputs: { ...state.inputs, [action.inputName]: action.inputValue } };
-      } else if (action.type === 'submit') {
-        return { tag: 'submitting', username: state.inputs.username };
-      } else {
-        console.log(`Unexpected action ${action.type} in state ${state.tag}`);
-        return state;
-      }
-
-    case 'submitting':
-      if (action.type === 'success') return { tag: 'redirect' };
-      else if (action.type === 'error') return { tag: 'editing', error: action.message, inputs: { username: state.username, password: '' } };
-      else { console.log(`Unexpected action ${action.type} in state ${state.tag}`); return state; }
-
-    case 'redirect':
-      console.log(`Unexpected action ${action.type} in state ${state.tag}`);
+// Reducer function
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'input-change':
+      return {
+        ...state,
+        username: action.username,
+        password: action.password,
+      };
+    case 'post':
+      return {
+        ...state,
+        stage: 'posting',
+        error: undefined,
+      };
+    case 'success':
+      return {
+        username: '',
+        password: '',
+        error: undefined,
+        stage: 'succeed',
+      };
+    case 'error':
+      return {
+        ...state,
+        stage: 'failed',
+        error: action.message,
+      };
+    default:
       return state;
   }
 }
 
+// Initial state
+const initialState: State = {
+  username: '',
+  password: '',
+  error: undefined,
+  stage: 'editing',
+};
+
 export function Login() {
-  const [state, dispatch] = useReducer(reduce, { tag: 'editing', inputs: { username: '', password: '' } });
+  const [state, dispatch] = useReducer(reducer, initialState);
   const { login, error } = useAuthentication();
+  const [showPassword, setShowPassword] = useState(false);
   const location = useLocation();
   const { t } = useI18n();
 
-  if (state.tag === 'redirect') {
+  if (state.stage === 'succeed') {
     return <Navigate to={location.state?.source || '/admin'} replace={true} />;
   }
 
   function handleChange(ev: React.FormEvent<HTMLInputElement>) {
-    console.log(ev.currentTarget.name, ev.currentTarget.value);
-    dispatch({ type: 'edit', inputName: ev.currentTarget.name, inputValue: ev.currentTarget.value });
+    const { name, value } = ev.currentTarget;
+    dispatch({
+      type: 'input-change',
+      username: name === 'username' ? value : state.username,
+      password: name === 'password' ? value : state.password,
+    });
   }
 
   async function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
-    if (state.tag !== 'editing') return;
+    dispatch({ type: 'post' });
 
-    dispatch({ type: 'submit' });
-    const username = state.inputs.username;
-    const password = state.inputs.password;
-
-    const result = await login(username, password);
-    if (!result) {
-      dispatch({ type: 'error', message: error || t('login.invalid_credentials') });
-      return;
+    try {
+      const result = await login(state.username, state.password);
+      if (!result) {
+        dispatch({ type: 'error', message: error || t('login.invalid_credentials') });
+        return;
+      }
+      dispatch({ type: 'success' });
+    } catch (err) {
+      dispatch({
+        type: 'error',
+        message: err instanceof Error ? err.message : t('login.invalid_credentials'),
+      });
     }
-    dispatch({ type: 'success' });
   }
-
-  const username = state.tag === 'submitting' ? state.username : state.inputs.username;
-  const password = state.tag === 'submitting' ? '' : state.inputs.password;
 
   return (
     <div className='container-fluid vh-100'>
@@ -93,18 +120,49 @@ export function Login() {
             <p className='text-muted'>{t('login.subtitle')}</p>
             <form onSubmit={handleSubmit}>
               <div className='mb-4'>
-                <input data-testid='username-login' value={username} onChange={handleChange} type='text' name='username' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='username' />
+                <input
+                  data-testid='username-login'
+                  value={state.username}
+                  onChange={handleChange}
+                  type='text'
+                  name='username'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder='username'
+                  required
+                />
               </div>
-              <div className='mb-3'>
-                <input data-testid='password-login' value={password} onChange={handleChange} type='password' name='password' className='form-control border-0 border-bottom rounded-0 border-black' placeholder='password' />
+              <div className='mb-3 input-group'>
+                <input
+                  data-testid='password-login'
+                  value={state.password}
+                  onChange={handleChange}
+                  type={showPassword ? 'text' : 'password'}
+                  name='password'
+                  className='form-control border-0 border-bottom rounded-0 border-black'
+                  placeholder='password'
+                  required
+                />
+                <button
+                  type='button'
+                  className='input-group-text border-0 border-bottom rounded-0 border-black bg-transparent'
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? t('register.hide_password') : t('register.show_password')}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
+              {state.error && <div className='alert alert-danger mb-3'>{state.error}</div>}
               <div className='text-end mb-4'>
                 <Link to='/admin/forgot-password' className='small'>
                   {t('login.forgot_password')}
                 </Link>
               </div>
-              <button data-testid='submit-login' className='btn btn-outline-dark w-100 rounded-0' disabled={state.tag === 'submitting'}>
-                {t('login.submit')}
+              <button
+                data-testid='submit-login'
+                className='btn btn-outline-dark w-100 rounded-0'
+                disabled={state.stage === 'posting'}
+              >
+                {state.stage === 'posting' ? t('login.loading') || 'Logging in...' : t('login.submit')}
               </button>
               <div className='text-center mt-4'>
                 <span className='text-muted'>{t('login.new_user')}</span>

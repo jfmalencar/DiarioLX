@@ -102,6 +102,30 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
     []
   )
 
+  const updateProfile = useCallback(
+    async (username?: string, email?: string, password?: string, firstName?: string, lastName?: string, bio?: string | null, profilePictureUrl?: string | null): Promise<AuthUser> => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const updatedUser = await authService.updateProfile(username, email, password, firstName, lastName, bio, profilePictureUrl)
+        if (!updatedUser) {
+          setError('Failed to update profile')
+          return undefined
+        }
+        setUser(updatedUser)
+        return updatedUser
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to update profile'
+        setError(message)
+        return undefined
+      } finally {
+        setLoading(false)
+      }
+    },
+    []
+  )
+
   useEffect(() => {
     void refreshUser()
   }, [refreshUser])
@@ -116,8 +140,9 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
       logout,
       register,
       refreshUser,
+      updateProfile,
     }),
-    [user, loading, hydrated, error, login, logout, register, refreshUser]
+    [user, loading, hydrated, error, login, logout, register, refreshUser, updateProfile]
   )
 
   return <AuthenticationContext.Provider value={value}>{children}</AuthenticationContext.Provider>

@@ -85,7 +85,7 @@ CREATE TABLE invites (
 );
 
 INSERT INTO invites (invite_token, role_assigned, created_at, expires_at) VALUES
-    ('SUPER-ADMIN-INVITE', 'ADMIN', extract(epoch from now())::bigint, extract(epoch from now() + interval '20 minutes')::bigint);
+    ('SUPER-ADMIN-INVITE', 'ADMIN', extract(epoch from now())::bigint, extract(epoch from now() + interval '60 minutes')::bigint);
 
 CREATE TABLE sessions (
      session_token VARCHAR(256) PRIMARY KEY ,

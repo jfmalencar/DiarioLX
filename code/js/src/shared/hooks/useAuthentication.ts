@@ -19,6 +19,15 @@ export type AuthenticationState = {
     inviteCode: string
   ) => Promise<RegisterResponseDTO | undefined>;
   refreshUser: () => Promise<AuthUser>;
+  updateProfile: (
+    username?: string,
+    email?: string,
+    password?: string,
+    firstName?: string,
+    lastName?: string,
+    bio?: string | null,
+    profilePictureUrl?: string | null
+  ) => Promise<AuthUser>;
 };
 
 export const AuthenticationContext = createContext<AuthenticationState | undefined>(undefined);

@@ -13,7 +13,7 @@ import { Categories as AdminCategories } from '@/modules/admin/categories/Catego
 import { Tags } from '@/modules/admin/tags/Tags';
 import { EditCategory } from '@/modules/admin/categories/EditCategory';
 import { EditTag } from '@/modules/admin/tags/EditTag';
-import { Users } from '@/modules/admin/Users';
+import { Users } from '@/modules/admin/users/Users';
 import { Articles } from '@/modules/admin/articles/Articles';
 import { EditArticle } from '@/modules/admin/articles/EditArticle';
 import { PublicLayout } from '@/layouts/PublicLayout';
@@ -23,6 +23,7 @@ import { SignUp } from '@/modules/admin/SignUp';
 
 import { FileUpload } from '@/modules/public/File';
 import { Article } from '@/modules/public/Article';
+import { MyProfile } from '@/modules/admin/myProfile/MyProfile';
 
 const router = createBrowserRouter([
   {
@@ -164,6 +165,19 @@ const router = createBrowserRouter([
           layout: 'none'
         }
       },
+      {
+        path: 'perfil',
+        element: (
+          <RequireAuthentication>
+            <MyProfile />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'admin_layout.my_profile',
+          subtitle: 'admin_layout.my_profile_subtitle',
+          layout: 'dashboard'
+        }
+      }
     ]
   }
 ]);
