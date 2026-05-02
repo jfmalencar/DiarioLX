@@ -63,9 +63,10 @@ INSERT INTO tags (name, slug, description) VALUES
 ('Media', 'media', 'Indústria dos media e comunicação');
 
 INSERT INTO users (username, email, role, password_hash, first_name, last_name, bio, profile_picture_url, active_account, created_at, updated_at) VALUES
-    ('tiago.costa', 'tiago@example.com', 'ADMIN', '$2b$10$fakehash1', 'Tiago', 'Costa', 'Full-stack developer.', 'https://i.pravatar.cc/150?img=1', TRUE, 1700000000000, 1700000000000),
-    ('ana.silva', 'ana@example.com', 'EDITOR', '$2b$10$fakehash2', 'Ana', 'Silva', 'UX designer.', 'https://i.pravatar.cc/150?img=2', TRUE, 1700000001000, 1700000001000),
-    ('joao.pereira', 'joao@example.com', 'CONTRIBUTOR', '$2b$10$fakehash3', 'Joao', 'Pereira', 'Writes tech articles.', 'https://i.pravatar.cc/150?img=11', TRUE, 1700000002000, 1700000002000),
-    ('maria.oliveira', 'maria@example.com', 'EDITOR', '$2b$10$fakehash4', 'Maria', 'Oliveira', 'Content strategist.', 'https://i.pravatar.cc/150?img=9', TRUE, 1700000003000, 1700000003000),
-    ('carlos.santos', 'carlos@example.com', 'CONTRIBUTOR', '$2b$10$fakehash5', 'Carlos', 'Santos', 'Backend developer.', 'https://i.pravatar.cc/150?img=7', TRUE, 1700000004000, 1700000004000),
-    ('lucia.rocha', 'lucia@example.com', 'ADMIN', '$2b$10$fakehash6', 'Lucia', 'Rocha', 'Project manager.', 'https://i.pravatar.cc/150?img=5', FALSE, 1700000005000, 1700000005000);
+    ('tiago.costa', 'tiago@example.com', 'ADMIN', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Tiago', 'Costa', 'Full-stack developer.', 'https://i.pravatar.cc/150?img=1', TRUE, 1700000000000, 1700000000000),
+    ('ana.silva', 'ana@example.com', 'EDITOR', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Ana', 'Silva', 'UX designer.', 'https://i.pravatar.cc/150?img=2', TRUE, 1700000001000, 1700000001000),
+    ('joao.pereira', 'joao@example.com', 'CONTRIBUTOR', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Joao', 'Pereira', 'Writes tech articles.', 'https://i.pravatar.cc/150?img=11', TRUE, 1700000002000, 1700000002000),
+    ('maria.oliveira', 'maria@example.com', 'EDITOR', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Maria', 'Oliveira', 'Content strategist.', 'https://i.pravatar.cc/150?img=9', TRUE, 1700000003000, 1700000003000),
+    ('carlos.santos', 'carlos@example.com', 'CONTRIBUTOR', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Carlos', 'Santos', 'Backend developer.', 'https://i.pravatar.cc/150?img=7', TRUE, 1700000004000, 1700000004000),
+    ('lucia.rocha', 'lucia@example.com', 'ADMIN', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Lucia', 'Rocha', 'Project manager.', 'https://i.pravatar.cc/150?img=5', FALSE, 1700000005000, 1700000005000),
+    ('admin', 'admin@diariolx.com', 'ADMIN', '$2a$10$M7ajQwhD7s.V7qAvg6TWiuGaPsTYkivIe87jUWWxOIPoTGDRHjKta', 'Jessé', 'Alencar', 'Administrator account.', '', TRUE, 1700000006000, 1700000006000);
