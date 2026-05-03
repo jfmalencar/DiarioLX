@@ -44,7 +44,14 @@ class FileService(
     }
 
     fun completeUpload(id: Int): Boolean {
-        if (fileStorage.exists("")) {
+        val media =
+            transactionManager.run {
+                return@run it.fileRepository.get(id)
+            }
+        if (media == null) {
+            return false
+        }
+        if (fileStorage.exists(media.url)) {
             transactionManager.run {
                 it.fileRepository.completeUpload(NewMedia(id, 123))
             }

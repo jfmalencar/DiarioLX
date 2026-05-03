@@ -50,12 +50,12 @@ Authorization: Invite {{adminInviteToken}}
 ### ===== STEP 2: ADMIN LOGIN =====
 
 ### Admin login
-POST {{baseUrl}}/user/login
+POST {{baseUrl}}/api/user/login
 Content-Type: application/json
 
 {
-  "username": "{{adminUsername}}",
-  "password": "{{adminPassword}}"
+  "username": "jlobato",
+  "password": "Julianne@1"
 }
 
 > {%
@@ -67,7 +67,7 @@ Content-Type: application/json
 ### ===== STEP 3: CREATE INVITES (AS ADMIN) =====
 
 ### Create EDITOR invite
-POST {{baseUrl}}/user/admin/create-invite
+POST {{baseUrl}}/api/user/admin/create-invite
 Content-Type: application/json
 Cookie: token={{adminToken}}
 

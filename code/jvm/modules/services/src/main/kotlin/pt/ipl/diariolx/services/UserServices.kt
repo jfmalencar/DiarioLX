@@ -106,6 +106,7 @@ class UserServices(
             val newUser = NewUser(username, email, password, fName, lName, invite.role)
             val user = tx.userRepository.create(newUser, clock.now())
             if (!tx.inviteRepository.consumeInvite(invite.id)) {
+                println("Invite not consumed")
                 return@run failure(UserError.InvalidInvite)
             }
             success(user.id)

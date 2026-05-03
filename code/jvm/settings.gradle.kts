@@ -36,3 +36,7 @@ project(":repository-jdbi").projectDir = file("modules/repository-jdbi")
 // The storage module
 include("storage")
 project(":storage").projectDir = file("modules/storage")
+
+// The storage-s3 module, with the S3 storage implementation
+include("storage-s3")
+project(":storage-s3").projectDir = file("modules/storage-s3")

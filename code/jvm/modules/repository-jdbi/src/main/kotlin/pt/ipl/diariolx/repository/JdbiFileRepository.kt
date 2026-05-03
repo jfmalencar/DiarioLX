@@ -51,6 +51,16 @@ class JdbiFileRepository(
             .list()
             .map { it.media }
 
+    override fun get(id: Int): Media? {
+        handle
+            .createQuery("select * from media where id = :id")
+            .bind("id", id)
+            .mapTo<MediaModel>()
+            .singleOrNull()
+            ?.let { return it.media }
+        return null
+    }
+
     override fun completeUpload(media: NewMedia): Boolean =
         handle
             .createUpdate(

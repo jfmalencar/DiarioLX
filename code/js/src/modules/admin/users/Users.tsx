@@ -55,7 +55,7 @@ const UsersTable = ({ filter }: Props) => {
                 <TableColumn className='col-lg-2' isHeader={true}>
                     {t('users.username')}
                 </TableColumn>
-                <TableColumn className='col-lg-2' isHeader={true}>
+                <TableColumn className='col-lg-3' isHeader={true}>
                     {t('users.email')}
                 </TableColumn>
                 <TableColumn className='col-lg-2 text-center' isHeader={true}>
@@ -93,7 +93,7 @@ const UsersTable = ({ filter }: Props) => {
                         <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.username')}</div>
                         <div className='text-secondary'>{row.username}</div>
                     </TableColumn>
-                    <TableColumn className='col-6 col-lg-2'>
+                    <TableColumn className='col-6 col-lg-3'>
                         <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
                         <div className='text-secondary'>{row.email}</div>
                     </TableColumn>

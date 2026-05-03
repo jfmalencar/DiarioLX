@@ -49,6 +49,7 @@ export const Header = () => {
                         style={{
                             width: isShrunk ? 95 : 135,
                             transition: 'width 300ms ease',
+                            filter: 'invert(1)'
                         }}
                     >
                         <Lottie

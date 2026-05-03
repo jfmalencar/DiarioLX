@@ -15,7 +15,7 @@
 ### ===== STEP 1: CREATE ADMIN USER WITH INVITE =====
 
 ### Create admin user
-POST {{baseUrl}}/user/signup
+POST {{baseUrl}}/api/user/signup
 Content-Type: application/json
 Authorization: Invite {{adminInviteToken}}
 

@@ -12,7 +12,7 @@ dependencies {
     // Module dependencies
     implementation(project(":http"))
     implementation(project(":services"))
-    implementation(project(":storage"))
+    implementation(project(":storage-s3"))
     implementation(project(":repository-jdbi"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")

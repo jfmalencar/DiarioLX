@@ -30,6 +30,8 @@ class FileRepositoryMem : FileRepository {
         return id
     }
 
+    override fun get(id: Int): Media? = medias.find { it.id == id }
+
     override fun getAll(
         page: Int,
         limit: Int,

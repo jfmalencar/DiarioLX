@@ -7,6 +7,8 @@ import pt.ipl.diariolx.domain.media.NewUpload
 interface FileRepository {
     fun create(upload: NewUpload): Int
 
+    fun get(id: Int): Media?
+
     fun getAll(
         page: Int,
         limit: Int,
