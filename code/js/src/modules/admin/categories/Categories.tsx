@@ -126,7 +126,7 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                                 </Link>
                             }
                             <button onClick={() => openModal(row)} className='btn btn-outline-dark rounded-2'>
-                                {row.archivedAt ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+                                {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
                             </button>
                         </div>
                     </TableColumn>
@@ -178,12 +178,14 @@ export function Categories() {
                         key: 'cancel',
                         label: 'Cancelar',
                         variant: 'secondary',
+                        dataTestId: 'cancel-button',
                         onClick: () => setOpen(null),
                     },
                     {
                         key: 'archive',
                         label: labelModal,
                         variant: 'primary',
+                        dataTestId: `confirm-${open?.archivedAt ? 'restore-button' : 'archive-button'}`,
                         onClick: () => actionModal(open!.id).then(() => { setOpen(null); navigate(redirectAfterAction); }),
                     },
                 ]}

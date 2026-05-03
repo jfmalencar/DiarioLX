@@ -56,4 +56,24 @@ test.describe('Categories', () => {
         await input.fill('cat');
         await expect(input).toHaveValue('cat');
     });
+
+    test('archive and restore category', async ({ page }) => {
+        await gotoCategories(page);
+
+        const archiveButton = page.getByTestId('archive-button-0').first();
+        await expect(archiveButton).toBeVisible();
+        await archiveButton.click();
+
+        const confirmButton = page.getByTestId('confirm-archive-button');
+        await expect(confirmButton).toBeVisible();
+        await confirmButton.click();
+
+        const restoreButton = page.getByTestId('restore-button-0').first();
+        await expect(restoreButton).toBeVisible();
+        await restoreButton.click();
+
+        const confirmRestoreButton = page.getByTestId('confirm-restore-button');
+        await expect(confirmRestoreButton).toBeVisible();
+        await confirmRestoreButton.click();
+    });
 });

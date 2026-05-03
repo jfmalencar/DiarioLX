@@ -7,6 +7,7 @@ export type ModalAction = {
     onClick: () => void;
     variant?: 'primary' | 'secondary' | 'danger';
     disabled?: boolean;
+    dataTestId?: string;
 };
 
 type Props = {
@@ -103,6 +104,7 @@ export const Modal = ({
                                 className={getButtonClassName(button.variant)}
                                 onClick={button.onClick}
                                 disabled={button.disabled}
+                                data-testid={button.dataTestId}
                             >
                                 {button.label}
                             </button>
