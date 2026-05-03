@@ -16,7 +16,7 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.12.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.1",
@@ -36,6 +36,7 @@
     "@tiptap/react": "^3.22.2",
     "@tiptap/starter-kit": "^3.22.2",
     "bootstrap": "^5.3.8",
+    "dotenv": "^17.4.2",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.577.0",
     "react": "^19.2.0",

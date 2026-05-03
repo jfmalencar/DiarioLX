@@ -1,13 +1,13 @@
 import type { AuthService } from './auth.types';
 import type { User } from './auth.types';
 
-let fakeUserId = 1;
-let fakeUser: User | undefined = undefined;
-let fakeLoginResponse = {
+const fakeUserId = 1;
+const fakeLoginResponse = {
   token: 'fake-token',
   expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
   message: 'Login successful',
 }
+let fakeUser: User | undefined = undefined;
 
 export const authMockService: AuthService = {
   async authenticate(username, password) {
@@ -24,16 +24,18 @@ export const authMockService: AuthService = {
         updatedAt: new Date().toISOString(),
         isActive: true,
       };
+      cookieStore.set('authUser', JSON.stringify(fakeUser));
       return fakeLoginResponse;
     }
     return undefined;
   },
 
   async logout() {
+    cookieStore.delete('authUser');
     fakeUser = undefined;
   },
 
-  async register(username, email, _password, firstName, lastName, _inviteCode) {
+  async register(username, email, _password, firstName, lastName) {
     fakeUser = {
       id: 1,
       username,
@@ -50,8 +52,12 @@ export const authMockService: AuthService = {
   },
 
   async getCurrentUser() {
-    const result = await cookieStore.get('authToken')
-    fakeUser = result ? fakeUser : undefined;
+    const result = await cookieStore.get('authUser')
+    fakeUser = result ? JSON.parse(result.value as string) : undefined;
     return fakeUser;
   },
+
+  async updateProfile() {
+    return undefined;
+  }
 };

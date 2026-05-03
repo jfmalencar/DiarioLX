@@ -59,7 +59,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    []
+    [refreshUser]
   )
 
   const logout = useCallback(async (): Promise<void> => {
