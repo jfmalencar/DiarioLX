@@ -94,8 +94,12 @@ class FileService(
         )
     }
 
-    private fun buildObjectName(extension: String, uploadType: UploadType = UploadType.ARTICLE_GALLERY, userId: Int? = null): String {
-        return if (uploadType == UploadType.ARTICLE_GALLERY) {
+    private fun buildObjectName(
+        extension: String,
+        uploadType: UploadType = UploadType.ARTICLE_GALLERY,
+        userId: Int? = null,
+    ): String =
+        if (uploadType == UploadType.ARTICLE_GALLERY) {
             val id = UUID.randomUUID().toString()
             if (extension.isBlank()) {
                 "${uploadType.path}/$id"
@@ -105,5 +109,4 @@ class FileService(
         } else {
             "${uploadType.path}/$userId"
         }
-    }
 }

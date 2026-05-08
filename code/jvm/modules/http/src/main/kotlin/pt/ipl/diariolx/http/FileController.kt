@@ -76,7 +76,7 @@ class FileController(
         val response =
             fileService.getUserSignedUrl(
                 body.contentType,
-                authenticatedUser.user.id
+                authenticatedUser.user.id,
             )
         if (response is Success) {
             return ResponseEntity.ok(response.value)
