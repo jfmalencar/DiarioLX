@@ -23,6 +23,10 @@ export type MediaFormValues = {
     photographerId: string;
 };
 
+export type UserMediaFormValues = {
+    file: File;
+};
+
 export type MediasResponse = {
     medias: Media[];
 };
@@ -32,12 +36,18 @@ export type SignedUpload = {
     signedUrl: string;
 }
 
+export type UserSignedUpload = {
+    signedUrl: string;
+}
+
 export type MediaService = {
     fetchAll: (params: Query) => Promise<MediasResponse>;
 
     upload: (media: MediaFormValues) => Promise<Media>;
 
     getSignedUrl: (media: MediaFormValues) => Promise<SignedUpload>;
+
+    getUserSignedUrl: (media: UserMediaFormValues) => Promise<UserSignedUpload>;
 
     completeUpload: (id: string) => Promise<void>;
 };

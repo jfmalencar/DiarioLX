@@ -6,9 +6,12 @@ import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
 import pt.ipl.diariolx.domain.media.SignedUrlResponse
+import pt.ipl.diariolx.domain.media.UploadType
+import pt.ipl.diariolx.domain.media.UserSignedUrlResponse
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.utils.MediaSignedUrlResult
+import pt.ipl.diariolx.utils.UserMediaSignedUrlResult
 import pt.ipl.diariolx.utils.success
 import java.util.UUID
 
@@ -41,6 +44,15 @@ class FileService(
             }
         val signedUrl = fileStorage.getUploadSignedUrl(objectName, upload.contentType)
         return success(SignedUrlResponse(id, signedUrl))
+    }
+
+    fun getUserSignedUrl(
+        contentType: String,
+        userId: Int,
+    ): UserMediaSignedUrlResult {
+        val objectName = buildObjectName("", UploadType.PROFILE_PICTURES, userId)
+        val signedUrl = fileStorage.getUploadSignedUrl(objectName, contentType)
+        return success(UserSignedUrlResponse(signedUrl))
     }
 
     fun completeUpload(id: Int): Boolean {
@@ -82,12 +94,16 @@ class FileService(
         )
     }
 
-    private fun buildObjectName(extension: String): String {
-        val id = UUID.randomUUID()
-        return if (extension.isBlank()) {
-            "$id"
+    private fun buildObjectName(extension: String, uploadType: UploadType = UploadType.ARTICLE_GALLERY, userId: Int? = null): String {
+        return if (uploadType == UploadType.ARTICLE_GALLERY) {
+            val id = UUID.randomUUID().toString()
+            if (extension.isBlank()) {
+                "${uploadType.path}/$id"
+            } else {
+                "${uploadType.path}/$id.$extension"
+            }
         } else {
-            "$id.$extension"
+            "${uploadType.path}/$userId"
         }
     }
 }

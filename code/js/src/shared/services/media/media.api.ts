@@ -1,5 +1,5 @@
 import { get, upload, post } from '../http/client';
-import type { Media, MediaService, MediasResponse, SignedUpload } from './media.types';
+import type { Media, MediaService, MediasResponse, SignedUpload, UserSignedUpload } from './media.types';
 
 export const mediaApiService: MediaService = {
 
@@ -33,6 +33,16 @@ export const mediaApiService: MediaService = {
     });
     if (!result.success) {
       throw new Error('Failed to get signed URL');
+    }
+    return result.data;
+  },
+
+  async getUserSignedUrl(media) {
+    const result = await post<UserSignedUpload>('/api/media/user-signed-url', {
+      contentType: media.file.type,
+    });
+    if (!result.success) {
+      throw new Error('Failed to get user signed URL');
     }
     return result.data;
   },

@@ -118,7 +118,12 @@ export function AdminLayout() {
               className='rounded-circle bg-dark text-white d-flex align-items-center justify-content-center'
               style={{ width: '44px', height: '44px' }}
             >
-              {user?.firstName?.charAt(0).toUpperCase()}
+              <img
+                src={user?.profilePictureUrl? user.profilePictureUrl : 'https://placehold.co/213x213/black/white?text=' + (user?.firstName?.charAt(0).toUpperCase() || 'U')}
+                alt={user?.firstName}
+                className='rounded-circle'
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
           </div>
         </header>

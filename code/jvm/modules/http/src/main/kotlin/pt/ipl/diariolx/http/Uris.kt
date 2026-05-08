@@ -55,9 +55,9 @@ object Uris {
 
     object Files {
         const val UPLOAD = "$PREFIX/media"
-        const val UPLOAD_PROFILE_PICTURE = "$PREFIX/media/profile-picture"
         const val GET_ALL = "$PREFIX/media"
         const val GET_SIGNED_URL = "$PREFIX/media/signed-url"
+        const val GET_USER_SIGNED_URL = "$PREFIX/media/user-signed-url"
         const val COMPLETE_UPLOAD = "$PREFIX/media/{id}"
     }
 

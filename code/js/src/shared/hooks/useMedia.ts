@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 
 import { mediaService } from '@/shared/services/media';
 import type { Query } from '@/shared/types/Query';
-import type { Media, MediaFormValues, SignedUpload } from '@/shared/services/media/media.types';
+import type { Media, MediaFormValues, SignedUpload, UserMediaFormValues, UserSignedUpload } from '@/shared/services/media/media.types';
 
 export type { Media, MediaFormValues, SignedUpload };
 
@@ -47,6 +47,23 @@ export const useMedia = () => {
         []
     )
 
+    const getUserSignedUrl = useCallback(
+        async (media: UserMediaFormValues): Promise<UserSignedUpload | undefined> => {
+            setLoading(true)
+            setError(null)
+            try {
+                return await mediaService.getUserSignedUrl(media)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to get signed URL for user profile upload'
+                setError(message)
+                return undefined
+            } finally {
+                setLoading(false)
+            }
+        },
+        []
+    )            
+
     const upload = useCallback(
         async (media: MediaFormValues): Promise<Media | undefined> => {
             setLoading(true)
@@ -86,6 +103,7 @@ export const useMedia = () => {
         medias,
         fetchAll,
         getSignedUrl,
+        getUserSignedUrl,
         completeUpload,
         upload,
     }

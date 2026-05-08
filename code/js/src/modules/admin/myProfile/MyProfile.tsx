@@ -25,7 +25,7 @@ export function MyProfile() {
     const [showPassword, setShowPassword] = useState(false);
     const { t } = useI18n();
     const navigate = useNavigate();
-    const { getSignedUrl, completeUpload } = useMedia();
+    const { getUserSignedUrl} = useMedia();
 
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editFormData, setEditFormData] = useState({
@@ -74,10 +74,8 @@ export function MyProfile() {
         setUploadLoading(true);
         try {
             // Get signed URL
-            const signedUpload = await getSignedUrl({
+            const signedUpload = await getUserSignedUrl({
                 file,
-                altText: `Profile picture for ${displayName}`,
-                photographerId: String(user?.id || ''),
             });
 
             if (!signedUpload) {
@@ -98,9 +96,6 @@ export function MyProfile() {
                 throw new Error('Upload failed');
             }
 
-            // Complete upload
-            await completeUpload(signedUpload.id);
-
             // Update profile with new image URL
             const fileUrl = signedUpload.signedUrl.split('?')[0]; // Remove query params
             await updateProfile(
@@ -113,8 +108,8 @@ export function MyProfile() {
                 fileUrl
             );
 
-            // Refresh user data to ensure all changes are reflected
-            await refreshUser();
+            // Force reload to update profile picture across the app
+            window.location.reload();
         } catch (err) {
             console.error(err);
             alert(t('common.upload_error') || 'Upload failed');

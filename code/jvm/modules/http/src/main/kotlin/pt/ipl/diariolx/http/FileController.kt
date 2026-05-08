@@ -8,9 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.http.model.FileResponse
 import pt.ipl.diariolx.http.model.MediaResponse
 import pt.ipl.diariolx.http.model.SignedUrlRequest
+import pt.ipl.diariolx.http.model.UserSignedUrlRequest
 import pt.ipl.diariolx.services.FileService
 import pt.ipl.diariolx.utils.Success
 
@@ -58,6 +60,23 @@ class FileController(
                 body.photographerId,
                 body.contentType,
                 body.originalFileName,
+            )
+        if (response is Success) {
+            return ResponseEntity.ok(response.value)
+        }
+        return ResponseEntity.badRequest().build<Unit>()
+    }
+
+    @PostMapping(Uris.Files.GET_USER_SIGNED_URL)
+    fun getUserSignedUrl(
+        authenticatedUser: AuthenticatedUser,
+        @RequestBody body: UserSignedUrlRequest,
+    ): ResponseEntity<*> {
+        println(body)
+        val response =
+            fileService.getUserSignedUrl(
+                body.contentType,
+                authenticatedUser.user.id
             )
         if (response is Success) {
             return ResponseEntity.ok(response.value)

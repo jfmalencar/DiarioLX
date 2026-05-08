@@ -2,6 +2,7 @@ package pt.ipl.diariolx.utils
 
 import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.SignedUrlResponse
+import pt.ipl.diariolx.domain.media.UserSignedUrlResponse
 
 data class MediaQuery(
     val page: Int = 1,
@@ -23,6 +24,8 @@ sealed class MediaError(
 typealias MediaResult = Either<MediaError, Media>
 
 typealias MediaSignedUrlResult = Either<MediaError, SignedUrlResponse>
+
+typealias UserMediaSignedUrlResult = Either<MediaError, UserSignedUrlResponse>
 
 typealias MediaCreateResult = Either<MediaError, Int>
 
