@@ -214,16 +214,16 @@ class UserServices(
         }
 
     fun getAll(
-        // me: User,
+        me: User,
         offset: Int,
         limit: Int,
         query: String?,
         deactivated: Boolean,
     ): UsersResult =
         transactionManager.run {
-            // if (!me.active) {
-            //     return@run failure(UserError.DeactivatedAccount)
-            // }
+            if (!me.active) {
+                return@run failure(UserError.DeactivatedAccount)
+            }
             logger.info("Getting all users: offset: $offset, limit: $limit, deactivated: $deactivated")
             val users = it.userRepository.getAll(offset, limit, query, deactivated)
             return@run if (users.isEmpty()) {

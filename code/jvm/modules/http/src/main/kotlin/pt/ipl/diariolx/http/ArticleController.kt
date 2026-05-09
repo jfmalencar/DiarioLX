@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.article.NewArticle
+import pt.ipl.diariolx.http.annotations.RequireLogin
 import pt.ipl.diariolx.http.model.ArticleResponse
 import pt.ipl.diariolx.services.ArticleService
 import pt.ipl.diariolx.utils.Failure
@@ -17,6 +18,7 @@ import pt.ipl.diariolx.utils.Success
 class ArticleController(
     private val articleService: ArticleService,
 ) {
+    @RequireLogin
     @GetMapping(Uris.Articles.GET_BY_SLUG)
     fun getBySlug(
         @PathVariable slug: String,
@@ -26,6 +28,7 @@ class ArticleController(
             is Failure -> ResponseEntity.notFound().build<Unit>()
         }
 
+    @RequireLogin
     @GetMapping(Uris.Articles.GET_ALL)
     fun getAllArticles(
         @RequestParam page: Int = 1,
@@ -38,6 +41,7 @@ class ArticleController(
         return ResponseEntity.ok(mapOf("articles" to articles))
     }
 
+    @RequireLogin
     @PostMapping(Uris.Articles.CREATE)
     fun createArticle(
         @RequestBody body: NewArticle,

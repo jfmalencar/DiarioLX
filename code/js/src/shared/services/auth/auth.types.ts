@@ -1,3 +1,5 @@
+import type { UserRole } from '../users/users.types';
+
 export interface AuthService {
   authenticate(username: string, password: string): Promise<LoginResponseDTO | undefined>;
 
@@ -37,6 +39,7 @@ export type UserApiResponse = {
   createdAt: { value$kotlinx_datetime: string } | string;
   updatedAt: { value$kotlinx_datetime: string } | string;
   isActive: boolean;
+  role: UserRole;
 };
 
 // Normalized user type
@@ -51,6 +54,7 @@ export type User = {
   createdAt: string;
   updatedAt: string;
   isActive: boolean;
+  role: UserRole;
 };
 
 export type LoginResponseDTO = {

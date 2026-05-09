@@ -53,7 +53,7 @@ export const categoriesApiService: CategoriesService = {
   },
 
   async delete(id) {
-    const result = await remove(`/api/categories/${id}/delete`, {});
+    const result = await remove(`/api/categories/${id}`, {});
     if (!result.success) {
       throw new Error('Failed to delete category');
     }

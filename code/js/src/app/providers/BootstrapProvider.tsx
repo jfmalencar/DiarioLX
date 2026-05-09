@@ -35,7 +35,7 @@ export function BootstrapProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <BootstrapContext value={{config, links, loading}}>
+    <BootstrapContext value={{ config, links, loading }}>
       {children}
     </BootstrapContext>
   );

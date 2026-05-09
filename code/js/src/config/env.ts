@@ -1,7 +1,8 @@
 export function getEnv(key: string) {
     // Vite (frontend)
     if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-        return (import.meta as any).env[key]
+        console.log(import.meta.env)
+        return import.meta.env[key]
     }
 
     // Node (Playwright/backend)

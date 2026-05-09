@@ -8,7 +8,10 @@ export type User = {
     lName: string;
     bio: string;
     profilePictureURL: string;
+    role: UserRole;
 }
+
+export type UserRole = 'ADMIN' | 'EDITOR' | 'CONTRIBUTOR';
 
 export type UsersResponse = {
     users: User[];

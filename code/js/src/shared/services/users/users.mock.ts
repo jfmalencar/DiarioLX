@@ -9,6 +9,7 @@ const fakeUsers: User[] = [
     lName: 'Doe',
     bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
     profilePictureURL: 'https://randomuser.me/api/portraits/men/1.jpg',
+    role: 'ADMIN',
   }
 ]
 

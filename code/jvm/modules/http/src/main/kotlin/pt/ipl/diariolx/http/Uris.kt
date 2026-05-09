@@ -10,40 +10,57 @@ object Uris {
     fun home(): URI = URI(HOME)
 
     object Users {
-        const val CREATE = "$PREFIX/users"
-        const val TOKEN = "$PREFIX/users/token"
-        const val LOGOUT = "$PREFIX/logout"
-        const val GET_BY_ID = "$PREFIX/users/{id}"
-        const val GET_ALL = "$PREFIX/users"
-        const val HOME = "$PREFIX/me"
+        const val ROOT = "$PREFIX/users"
+
+        const val CREATE = ROOT
+        const val GET_ALL = ROOT
+        const val GET_BY_ID = "$ROOT/{id}"
+        const val UPDATE = "$ROOT/me"
+        const val HOME = "$ROOT/me"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
+    }
 
-        fun login(): URI = URI(TOKEN)
+    object Invites {
+        const val ROOT = "$PREFIX/invites"
 
-        fun register(): URI = URI(CREATE)
+        const val CREATE = ROOT
+        const val GET_ALL = ROOT
+        const val GET_BY_ID = "$ROOT/{id}"
+    }
+
+    object Auth {
+        const val ROOT = "$PREFIX/auth"
+
+        const val SIGNUP = "$ROOT/signup"
+        const val LOGIN = "$ROOT/login"
+        const val LOGOUT = "$ROOT/logout"
     }
 
     object Categories {
-        const val GET_BY_ID = "$PREFIX/categories/{id}"
-        const val CREATE = "$PREFIX/categories"
-        const val UPDATE = "$PREFIX/categories/{id}"
-        const val DELETE = "$PREFIX/categories/{id}"
-        const val GET_ALL = "$PREFIX/categories"
-        const val ARCHIVE = "$PREFIX/categories/{id}/archive"
-        const val UNARCHIVE = "$PREFIX/categories/{id}/unarchive"
+        const val ROOT = "$PREFIX/categories"
+
+        const val GET_BY_ID = "$ROOT/{id}"
+        const val CREATE = ROOT
+        const val UPDATE = "$ROOT/{id}"
+        const val DELETE = "$ROOT/{id}"
+        const val GET_ALL = ROOT
+        const val ARCHIVE = "$ROOT/{id}/archive"
+        const val UNARCHIVE = "$ROOT/{id}/unarchive"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
     }
 
     object Tags {
-        const val GET_BY_ID = "$PREFIX/tags/{id}"
-        const val CREATE = "$PREFIX/tags"
-        const val UPDATE = "$PREFIX/tags/{id}"
-        const val DELETE = "$PREFIX/tags/{id}"
-        const val GET_ALL = "$PREFIX/tags"
-        const val ARCHIVE = "$PREFIX/tags/{id}/archive"
-        const val UNARCHIVE = "$PREFIX/tags/{id}/unarchive"
+        const val ROOT = "$PREFIX/tags"
+
+        const val GET_BY_ID = "$ROOT/{id}"
+        const val CREATE = ROOT
+        const val UPDATE = "$ROOT/{id}"
+        const val DELETE = "$ROOT/{id}"
+        const val GET_ALL = ROOT
+        const val ARCHIVE = "$ROOT/{id}/archive"
+        const val UNARCHIVE = "$ROOT/{id}/unarchive"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
     }

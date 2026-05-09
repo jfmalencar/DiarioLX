@@ -1,41 +1,87 @@
 package pt.ipl.diariolx.http.auth
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
+import pt.ipl.diariolx.http.annotations.RequireLogin
+import pt.ipl.diariolx.http.annotations.RequireRole
+import pt.ipl.diariolx.http.createProblemDetail
 
 @Component
 class AuthenticationInterceptor(
     private val authorizationHeaderProcessor: RequestTokenProcessor,
+    private val objectMapper: ObjectMapper,
 ) : HandlerInterceptor {
     override fun preHandle(
         request: HttpServletRequest,
         response: HttpServletResponse,
         handler: Any,
     ): Boolean {
-        if (handler is HandlerMethod &&
-            handler.methodParameters.any {
-                it.parameterType == AuthenticatedUser::class.java
-            }
-        ) {
+        if (handler !is HandlerMethod) return true
+
+        val requiresLogin =
+            handler.hasMethodOrClassAnnotation<RequireLogin>() ||
+                handler.hasMethodOrClassAnnotation<RequireRole>() ||
+                handler.methodParameters.any {
+                    it.parameterType == AuthenticatedUser::class.java
+                }
+
+        if (requiresLogin) {
             val token = extractTokenFromCookies(request)
-            // enforce authentication
-            val user =
+
+            val authUser =
                 token?.let {
                     authorizationHeaderProcessor.processCookieToken(it)
                 }
 
-            return if (user == null) {
+            if (authUser == null) {
                 response.status = 401
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
-                false
-            } else {
-                AuthenticatedUserArgumentResolver.addUserTo(user, request)
-                true
+                return false
             }
+
+            if (!authUser.user.active) {
+                response.status = 403
+                response.sendProblem(
+                    objectMapper,
+                    createProblemDetail(
+                        type = "https://api.example.com/errors/deactivated-account",
+                        title = "Deactivated account",
+                        status = HttpStatus.FORBIDDEN,
+                        detail = "The account associated with this user has been deactivated",
+                        instance = request.requestURI,
+                    ),
+                )
+                return false
+            }
+
+            val requiredRole = handler.findMethodOrClassAnnotation<RequireRole>()
+
+            println(authUser.user.role.name)
+            println(requiredRole?.value)
+
+            if (requiredRole != null && authUser.user.role.name != requiredRole.value) {
+                response.status = 403
+                response.sendProblem(
+                    objectMapper,
+                    createProblemDetail(
+                        type = "https://api.example.com/errors/forbidden",
+                        title = "Forbidden",
+                        status = HttpStatus.FORBIDDEN,
+                        detail = "The account associated with this user does not have the required permission",
+                        instance = request.requestURI,
+                    ),
+                )
+                return false
+            }
+
+            AuthenticatedUserArgumentResolver.addUserTo(authUser, request)
+            return true
         }
 
         return true

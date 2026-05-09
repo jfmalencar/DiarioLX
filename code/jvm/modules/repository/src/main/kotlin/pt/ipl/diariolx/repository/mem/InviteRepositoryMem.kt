@@ -24,6 +24,17 @@ class InviteRepositoryMem : InviteRepository {
 
     override fun get(invite: String): Invite? = invites.find { it.invite == invite }
 
+    override fun getAll(
+        page: Int,
+        limit: Int,
+        query: String?,
+        expired: Boolean?,
+    ): List<Invite> =
+        invites.filter {
+            (expired == null || it.expiresAt <= Clock.System.now() == expired) &&
+                if (query == null) true else it.invite.contains(query)
+        }
+
     override fun create(invite: NewInvite): Invite {
         val newInvite =
             Invite(

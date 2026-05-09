@@ -15,7 +15,7 @@ import pt.ipl.diariolx.utils.success
 import java.util.UUID
 
 @Named
-class InviteServices(
+class InviteService(
     private val transactionManager: TransactionManager,
     val config: InviteDomainConfig,
     private val clock: Clock.System,
@@ -28,6 +28,16 @@ class InviteServices(
             } else {
                 null
             }
+        }
+
+    fun getAllInvites(
+        page: Int,
+        limit: Int,
+        query: String?,
+        expired: Boolean?,
+    ): List<Invite> =
+        transactionManager.run {
+            return@run it.inviteRepository.getAll(page, limit, query, expired)
         }
 
     fun createInvite(
@@ -58,7 +68,18 @@ class InviteServices(
         }
     }
 
-    private fun generateInviteCode(): String = UUID.randomUUID().toString()
+    // private fun generateInviteCode(): String = UUID.randomUUID().toString()
+
+    private val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+    private fun generateInviteCode(length: Int = 8): String =
+        buildString(length) {
+            repeat(length) {
+                append(
+                    alphabet.random(),
+                )
+            }
+        }
 
     private fun Invite.isStillValid(clock: Clock): Boolean {
         val now = clock.now()

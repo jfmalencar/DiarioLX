@@ -7,40 +7,10 @@ import { Modal } from '@/shared/components/Modal';
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
-import { TableFilters } from '@/shared/components/table/TableFilters';
 import { Alert } from '@/shared/components/Alert';
-import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
 import { type Category, useCategories } from '@/shared/hooks/useCategories';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
-
-const sections: FilterSection[] = [ // Exemplo
-    {
-        key: 'estado',
-        title: 'ESTADO',
-        options: [
-            { value: 'pending', label: 'Pendente' },
-            { value: 'active', label: 'Ativo' },
-            { value: 'inactive', label: 'Inativo' },
-        ],
-    },
-    {
-        key: 'tipo',
-        title: 'TIPO',
-        options: [
-            { value: 'administrator', label: 'Administrador' },
-            { value: 'collaborator', label: 'Colaborador' },
-        ],
-    },
-    {
-        key: 'funcao',
-        title: 'FUNÇÃO',
-        options: [
-            { value: 'journalist', label: 'Jornalista' },
-            { value: 'photographer', label: 'Fotógrafo' },
-        ],
-    },
-];
 
 type Props = {
     filter: { archived: boolean };
@@ -156,7 +126,6 @@ export function Categories() {
                 toolbar={
                     <>
                         <TableSearch placeholder={t('categories.search_placeholder')} />
-                        <TableFilters sections={sections} />
                     </>
                 }
             >

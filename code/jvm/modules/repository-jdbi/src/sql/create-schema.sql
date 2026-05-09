@@ -239,6 +239,7 @@ SELECT
         'name', au.first_name || ' ' || au.last_name,
         'slug', au.username
             )
+        ORDER BY (aa.role = 'primary') DESC
     )
     FROM article_authors aa
       JOIN users au ON au.id = aa.author_id
@@ -290,13 +291,7 @@ SELECT
 FROM articles a
          JOIN categories c ON c.id = a.category_id
          LEFT JOIN media fm ON fm.id = a.featured_media_id
-         LEFT JOIN users mu ON mu.id = fm.contributor_id
-         LEFT JOIN users au ON au.id = (
-    SELECT aa.author_id
-    FROM article_authors aa
-    WHERE aa.article_id = a.id AND aa.role = 'primary'
-    LIMIT 1
-    );
+         LEFT JOIN users mu ON mu.id = fm.contributor_id;
 
 
 CREATE OR REPLACE VIEW v_articles_summary AS

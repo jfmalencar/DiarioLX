@@ -127,8 +127,35 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
   )
 
   useEffect(() => {
-    void refreshUser()
-  }, [refreshUser])
+    let cancelled = false
+
+    async function hydrateUser() {
+      setLoading(true)
+      setError(null)
+      try {
+        const currentUser = await authService.getCurrentUser()
+        if (!cancelled) {
+          setUser(currentUser)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : 'Failed to fetch current user'
+          setError(message)
+          setUser(undefined)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+          setHydrated(true)
+        }
+      }
+    }
+    void hydrateUser()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const value = useMemo<AuthenticationState>(
     () => ({

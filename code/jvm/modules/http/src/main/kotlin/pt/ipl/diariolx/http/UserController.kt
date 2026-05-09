@@ -6,20 +6,18 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.invites.Invite
-import pt.ipl.diariolx.domain.invites.InviteRole
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.domain.users.OperationOnUser
 import pt.ipl.diariolx.domain.users.dto.LoginUserDTO
 import pt.ipl.diariolx.domain.users.dto.NewUserDTO
 import pt.ipl.diariolx.domain.users.dto.UpdateUserDTO
-import pt.ipl.diariolx.services.InviteServices
 import pt.ipl.diariolx.services.UserServices
 import pt.ipl.diariolx.utils.Either
 import pt.ipl.diariolx.utils.Failure
@@ -28,22 +26,17 @@ import pt.ipl.diariolx.utils.Success
 import pt.ipl.diariolx.utils.UserError
 
 @RestController
-@RequestMapping("/api/user")
 class UserController(
     private val userServices: UserServices,
-    private val inviteServices: InviteServices,
     private val logger: Logger,
 ) {
-    @PostMapping(
-        "/signup",
-    )
+    @PostMapping(Uris.Auth.SIGNUP)
     fun createUser(
         invite: Invite,
         @RequestBody body: NewUserDTO,
-    ): ResponseEntity<*> {
-        logger.info("POST /signup $invite, $body")
-        return handleUserOperationResult(
-            "/user/signup",
+    ): ResponseEntity<*> =
+        handleUserOperationResult(
+            Uris.Auth.SIGNUP,
             userServices.create(body.username, body.email, body.password, body.fName, body.lName, invite),
             HttpStatus.CREATED,
         ) {
@@ -52,17 +45,14 @@ class UserController(
                 "userId" to it,
             )
         }
-    }
 
-    @PostMapping(
-        "/update",
-    )
+    @PatchMapping(Uris.Users.UPDATE)
     fun updateUser(
         me: AuthenticatedUser,
         @RequestBody body: UpdateUserDTO,
     ): ResponseEntity<*> =
         handleUserOperationResult(
-            "/user/update",
+            Uris.Users.UPDATE,
             userServices.update(
                 me.user,
                 body.username,
@@ -80,7 +70,7 @@ class UserController(
             )
         }
 
-    @GetMapping("/me")
+    @GetMapping(Uris.Users.HOME)
     fun getCurrentUser(me: AuthenticatedUser): ResponseEntity<*> =
         ResponseEntity.ok(
             mapOf(
@@ -94,18 +84,17 @@ class UserController(
                 "createdAt" to me.user.createdAt,
                 "updatedAt" to me.user.updatedAt,
                 "isActive" to me.user.active,
+                "role" to me.user.role,
             ),
         )
 
-    @GetMapping(
-        "/{id}",
-    )
+    @GetMapping(Uris.Users.GET_BY_ID)
     fun getUserById(
         me: AuthenticatedUser,
         @PathVariable id: Int,
     ): ResponseEntity<*> =
         handleUserOperationResult(
-            "/user/getInfo",
+            Uris.Users.GET_BY_ID,
             userServices.get(me.user, id),
         ) {
             mapOf(
@@ -119,14 +108,13 @@ class UserController(
                 "createdAt" to it.createdAt,
                 "updatedAt" to it.updatedAt,
                 "isActive" to it.active,
+                "role" to it.role,
             )
         }
 
-    @GetMapping(
-        "/all",
-    )
+    @GetMapping(Uris.Users.GET_ALL)
     fun getAllUsers(
-        // me: AuthenticatedUser,
+        me: AuthenticatedUser,
         @RequestParam offset: Int = 0,
         @RequestParam limit: Int = 30,
         @RequestParam query: String? = null,
@@ -134,7 +122,7 @@ class UserController(
     ): ResponseEntity<*> =
         handleUserOperationResult(
             "/user/all",
-            userServices.getAll(offset, limit, query, deactivated),
+            userServices.getAll(me.user, offset, limit, query, deactivated),
         ) {
             mapOf(
                 "users" to
@@ -150,6 +138,7 @@ class UserController(
                             "createdAt" to user.createdAt,
                             "updatedAt" to user.updatedAt,
                             "isActive" to user.active,
+                            "role" to user.role,
                         )
                     },
             )
@@ -185,25 +174,7 @@ class UserController(
             )
         }
 
-    @PostMapping("/admin/create-invite")
-    fun createInvite(
-        author: AuthenticatedUser,
-        @RequestBody body: InviteRole,
-    ): ResponseEntity<*> =
-        handleUserOperationResult(
-            "invite/create",
-            inviteServices.createInvite(author.user, body.role),
-            HttpStatus.CREATED,
-        ) {
-            mapOf(
-                "inviteToken" to it.invite,
-                "expiresAt" to it.expiresAt.toString(),
-            )
-        }
-
-    @PostMapping(
-        "/login",
-    )
+    @PostMapping(Uris.Auth.LOGIN)
     fun login(
         @RequestBody body: LoginUserDTO,
         response: HttpServletResponse,
@@ -224,9 +195,7 @@ class UserController(
         }
     }
 
-    @PostMapping(
-        "/logout",
-    )
+    @PostMapping(Uris.Auth.LOGOUT)
     fun logout(
         me: AuthenticatedUser,
         response: HttpServletResponse,

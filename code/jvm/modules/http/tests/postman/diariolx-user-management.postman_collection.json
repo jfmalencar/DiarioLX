@@ -41,9 +41,9 @@
               "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"fName\": \"{{adminFirstName}}\",\n  \"lName\": \"{{adminLastName}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/signup",
+              "raw": "{{baseUrl}}/users/signup",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "signup"]
+              "path": ["users", "signup"]
             }
           }
         },
@@ -74,9 +74,9 @@
               "raw": "{\n  \"username\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/login",
+              "raw": "{{baseUrl}}/users/login",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "login"]
+              "path": ["users", "login"]
             }
           }
         },
@@ -111,9 +111,9 @@
               "raw": "{\n  \"role\": \"EDITOR\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/admin/create-invite",
+              "raw": "{{baseUrl}}/users/admin/create-invite",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "admin", "create-invite"]
+              "path": ["users", "admin", "create-invite"]
             }
           }
         },
@@ -148,9 +148,9 @@
               "raw": "{\n  \"role\": \"CONTRIBUTOR\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/admin/create-invite",
+              "raw": "{{baseUrl}}/users/admin/create-invite",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "admin", "create-invite"]
+              "path": ["users", "admin", "create-invite"]
             }
           }
         },
@@ -165,9 +165,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/{{adminId}}",
+              "raw": "{{baseUrl}}/users/{{adminId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "{{adminId}}"]
+              "path": ["users", "{{adminId}}"]
             }
           }
         },
@@ -182,9 +182,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/all?offset=0&limit=10&deactivated=true",
+              "raw": "{{baseUrl}}/users?offset=0&limit=10&deactivated=true",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "all"],
+              "path": ["users"],
               "query": [
                 {
                   "key": "offset",
@@ -221,9 +221,9 @@
               "raw": "{\n  \"id\": 2\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/admin/deactivate-user",
+              "raw": "{{baseUrl}}/users/admin/deactivate-user",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "admin", "deactivate-user"]
+              "path": ["users", "admin", "deactivate-user"]
             }
           }
         },
@@ -246,9 +246,9 @@
               "raw": "{\n  \"id\": 3\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/admin/remove-user",
+              "raw": "{{baseUrl}}/users/admin/remove-user",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "admin", "remove-user"]
+              "path": ["users", "admin", "remove-user"]
             }
           }
         },
@@ -263,9 +263,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/logout",
+              "raw": "{{baseUrl}}/users/logout",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "logout"]
+              "path": ["users", "logout"]
             }
           }
         }
@@ -305,9 +305,9 @@
               "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\",\n  \"fName\": \"{{testFirstName}}\",\n  \"lName\": \"{{testLastName}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/signup",
+              "raw": "{{baseUrl}}/users/signup",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "signup"]
+              "path": ["users", "signup"]
             }
           }
         },
@@ -338,9 +338,9 @@
               "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/login",
+              "raw": "{{baseUrl}}/users/login",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "login"]
+              "path": ["users", "login"]
             }
           }
         },
@@ -355,9 +355,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/{{testUserId}}",
+              "raw": "{{baseUrl}}/users/{{testUserId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "{{testUserId}}"]
+              "path": ["users", "{{testUserId}}"]
             }
           }
         },
@@ -372,9 +372,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/all?offset=0&limit=10&deactivated=true",
+              "raw": "{{baseUrl}}/users?offset=0&limit=10&deactivated=true",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "all"],
+              "path": ["users"],
               "query": [
                 {
                   "key": "offset",
@@ -395,7 +395,7 @@
         {
           "name": "Update User Profile",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
@@ -411,16 +411,16 @@
               "raw": "{\n  \"username\": \"testuser_updated\",\n  \"email\": \"testuser.updated@diariolx.pt\",\n  \"password\": \"UpdatedPass123!\",\n  \"fName\": \"Test\",\n  \"lName\": \"Updated\",\n  \"bio\": \"Updated user bio\",\n  \"profilePictureURL\": \"https://example.com/avatar.jpg\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/update",
+              "raw": "{{baseUrl}}/users/me",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "update"]
+              "path": ["users", "me"]
             }
           }
         },
         {
           "name": "Update Only Bio",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
@@ -436,9 +436,9 @@
               "raw": "{\n  \"username\": null,\n  \"email\": null,\n  \"password\": null,\n  \"fName\": null,\n  \"lName\": null,\n  \"bio\": \"New bio for test user\",\n  \"profilePictureURL\": null\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/update",
+              "raw": "{{baseUrl}}/users/me",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "update"]
+              "path": ["users", "me"]
             }
           }
         },
@@ -453,9 +453,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/logout",
+              "raw": "{{baseUrl}}/users/logout",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "logout"]
+              "path": ["users", "logout"]
             }
           }
         }
@@ -495,9 +495,9 @@
               "raw": "{\n  \"username\": \"{{editorUsername}}\",\n  \"email\": \"{{editorEmail}}\",\n  \"password\": \"{{editorPassword}}\",\n  \"fName\": \"{{editorFirstName}}\",\n  \"lName\": \"{{editorLastName}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/signup",
+              "raw": "{{baseUrl}}/users/signup",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "signup"]
+              "path": ["users", "signup"]
             }
           }
         },
@@ -528,9 +528,9 @@
               "raw": "{\n  \"username\": \"{{editorUsername}}\",\n  \"password\": \"{{editorPassword}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/login",
+              "raw": "{{baseUrl}}/users/login",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "login"]
+              "path": ["users", "login"]
             }
           }
         },
@@ -545,16 +545,16 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/{{editorUserId}}",
+              "raw": "{{baseUrl}}/users/{{editorUserId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "{{editorUserId}}"]
+              "path": ["users", "{{editorUserId}}"]
             }
           }
         },
         {
           "name": "Update Editor Profile",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
@@ -570,9 +570,9 @@
               "raw": "{\n  \"username\": null,\n  \"email\": null,\n  \"password\": null,\n  \"fName\": null,\n  \"lName\": null,\n  \"bio\": \"I am an editor\",\n  \"profilePictureURL\": \"https://example.com/editor-avatar.jpg\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/update",
+              "raw": "{{baseUrl}}/users/me",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "update"]
+              "path": ["users", "me"]
             }
           }
         },
@@ -587,9 +587,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/user/logout",
+              "raw": "{{baseUrl}}/users/logout",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "logout"]
+              "path": ["users", "logout"]
             }
           }
         }
@@ -613,9 +613,9 @@
               "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"WrongPassword123!\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/login",
+              "raw": "{{baseUrl}}/users/login",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "login"]
+              "path": ["users", "login"]
             }
           }
         },
@@ -634,9 +634,9 @@
               "raw": "{\n  \"username\": \"noinviteuser\",\n  \"email\": \"noinvite@diariolx.pt\",\n  \"password\": \"NoInvitePass123!\",\n  \"fName\": \"No\",\n  \"lName\": \"Invite\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/signup",
+              "raw": "{{baseUrl}}/users/signup",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "signup"]
+              "path": ["users", "signup"]
             }
           }
         },
@@ -659,9 +659,9 @@
               "raw": "{\n  \"username\": null,\n  \"email\": \"{{adminEmail}}\",\n  \"password\": null,\n  \"fName\": null,\n  \"lName\": null,\n  \"bio\": null,\n  \"profilePictureURL\": null\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/update",
+              "raw": "{{baseUrl}}/users/me",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "update"]
+              "path": ["users", "me"]
             }
           }
         },
@@ -684,9 +684,9 @@
               "raw": "{\n  \"id\": 2\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/admin/deactivate-user",
+              "raw": "{{baseUrl}}/users/admin/deactivate-user",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "admin", "deactivate-user"]
+              "path": ["users", "admin", "deactivate-user"]
             }
           }
         },
@@ -709,9 +709,9 @@
               "raw": "{\n  \"username\": null,\n  \"email\": null,\n  \"password\": \"weak\",\n  \"fName\": null,\n  \"lName\": null,\n  \"bio\": null,\n  \"profilePictureURL\": null\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/user/update",
+              "raw": "{{baseUrl}}/users/me",
               "host": ["{{baseUrl}}"],
-              "path": ["user", "update"]
+              "path": ["users", "me"]
             }
           }
         }

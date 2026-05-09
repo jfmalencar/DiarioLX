@@ -15,7 +15,7 @@
 ### ===== STEP 1: CREATE ADMIN USER WITH INVITE =====
 
 ### Create admin user
-POST {{baseUrl}}/api/user/signup
+POST {{baseUrl}}/api/users/signup
 Content-Type: application/json
 Authorization: Invite {{adminInviteToken}}
 
@@ -37,7 +37,7 @@ Authorization: Invite {{adminInviteToken}}
 ### ===== STEP 2: ADMIN LOGIN =====
 
 ### Admin login
-POST {{baseUrl}}/user/login
+POST {{baseUrl}}/users/login
 Content-Type: application/json
 
 {
@@ -54,7 +54,7 @@ Content-Type: application/json
 ### ===== STEP 3: CREATE INVITES (AS ADMIN) =====
 
 ### Create EDITOR invite
-POST {{baseUrl}}/user/admin/create-invite
+POST {{baseUrl}}/users/admin/create-invite
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -70,7 +70,7 @@ Cookie: token={{adminToken}}
 
 ###
 ### Create CONTRIBUTOR invite 1
-POST {{baseUrl}}/user/admin/create-invite
+POST {{baseUrl}}/users/admin/create-invite
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -86,7 +86,7 @@ Cookie: token={{adminToken}}
 
 ###
 ### Create CONTRIBUTOR invite 2
-POST {{baseUrl}}/user/admin/create-invite
+POST {{baseUrl}}/users/admin/create-invite
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -103,24 +103,24 @@ Cookie: token={{adminToken}}
 ### ===== STEP 4: GET ADMIN INFO =====
 
 ### Get admin user info
-GET {{baseUrl}}/user/{{adminId}}
+GET {{baseUrl}}/users/{{adminId}}
 Cookie: token={{adminToken}}
 
 ### ===== STEP 5: LIST ALL USERS =====
 
 ### Get all users (include deactivated)
-GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=true
+GET {{baseUrl}}/users?offset=0&limit=10&deactivated=true
 Cookie: token={{adminToken}}
 
 ###
 ### Get all users (exclude deactivated)
-GET {{baseUrl}}/user/all?offset=0&limit=10&deactivated=false
+GET {{baseUrl}}/users?offset=0&limit=10&deactivated=false
 Cookie: token={{adminToken}}
 
 ### ===== STEP 6: ADMIN OPERATIONS - DEACTIVATE USER =====
 
 ### Deactivate a user (replace {{userId}} with actual ID)
-POST {{baseUrl}}/user/admin/deactivate-user
+POST {{baseUrl}}/users/admin/deactivate-user
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -130,7 +130,7 @@ Cookie: token={{adminToken}}
 
 ###
 ### Try to deactivate non-existent user (should fail - 404 NOT_FOUND)
-POST {{baseUrl}}/user/admin/deactivate-user
+POST {{baseUrl}}/users/admin/deactivate-user
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -141,7 +141,7 @@ Cookie: token={{adminToken}}
 ### ===== STEP 7: ADMIN OPERATIONS - REMOVE USER =====
 
 ### Remove user permanently (replace {{userId}} with actual ID)
-POST {{baseUrl}}/user/admin/remove-user
+POST {{baseUrl}}/users/admin/remove-user
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -151,7 +151,7 @@ Cookie: token={{adminToken}}
 
 ###
 ### Try to remove non-existent user (should fail - 404 NOT_FOUND)
-POST {{baseUrl}}/user/admin/remove-user
+POST {{baseUrl}}/users/admin/remove-user
 Content-Type: application/json
 Cookie: token={{adminToken}}
 
@@ -162,11 +162,11 @@ Cookie: token={{adminToken}}
 ### ===== STEP 8: ADMIN LOGOUT =====
 
 ### Admin logout
-POST {{baseUrl}}/user/logout
+POST {{baseUrl}}/users/logout
 Cookie: token={{adminToken}}
 
 ###
 ### Try to access after logout (should fail - 401 UNAUTHORIZED)
-GET {{baseUrl}}/user/{{adminId}}
+GET {{baseUrl}}/users/{{adminId}}
 Cookie: token={{adminToken}}
 

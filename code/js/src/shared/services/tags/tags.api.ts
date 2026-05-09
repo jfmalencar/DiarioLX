@@ -47,7 +47,7 @@ export const tagsApiService: TagsService = {
   },
 
   async delete(id) {
-    const result = await remove(`/api/tags/${id}/delete`, {});
+    const result = await remove(`/api/tags/${id}`, {});
     if (!result.success) {
       throw new Error('Failed to delete tag');
     }

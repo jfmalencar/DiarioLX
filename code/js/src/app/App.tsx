@@ -18,12 +18,15 @@ import { Articles } from '@/modules/admin/articles/Articles';
 import { EditArticle } from '@/modules/admin/articles/EditArticle';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { AdminLayout } from '@/layouts/AdminLayout';
-import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
 import { SignUp } from '@/modules/admin/SignUp';
+import { Invites } from '@/modules/admin/invites/Invites';
+import { MyProfile } from '@/modules/admin/myProfile/MyProfile';
 
 import { FileUpload } from '@/modules/public/File';
 import { Article } from '@/modules/public/Article';
-import { MyProfile } from '@/modules/admin/myProfile/MyProfile';
+
+import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
+import { RequireRole } from '@/shared/components/RequireRole';
 
 const router = createBrowserRouter([
   {
@@ -175,6 +178,19 @@ const router = createBrowserRouter([
         handle: {
           title: 'admin_layout.my_profile',
           subtitle: 'admin_layout.my_profile_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
+        path: 'convites',
+        element: (
+          <RequireRole role='ADMIN'>
+            <Invites />
+          </RequireRole>
+        ),
+        handle: {
+          title: 'admin_layout.invites',
+          subtitle: 'admin_layout.invites_subtitle',
           layout: 'dashboard'
         }
       }

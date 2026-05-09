@@ -7,6 +7,7 @@ import org.slf4j.Logger
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.invites.internal.NewInvite
 import pt.ipl.diariolx.domain.users.UserRole
+import pt.ipl.diariolx.repository.JdbiTagRepository.TagModel
 
 class JdbiInviteRepository(
     private val handle: Handle,
@@ -15,37 +16,51 @@ class JdbiInviteRepository(
     override fun get(invite: String): Invite? {
         logger.info("Looking for invite: $invite")
 
-        // First check if invite exists at all
-        val result =
-            handle
-                .createQuery(
-                    "SELECT id, invite_token, role_assigned, created_at, expires_at, used FROM invites WHERE invite_token = :invite_token",
-                ).bind("invite_token", invite)
-                .mapTo<InviteDBModel>()
-                .singleOrNull()
+        return handle
+            .createQuery(
+                """
+                        SELECT id, invite_token, role_assigned, created_at, expires_at, used
+                        FROM invites
+                        WHERE invite_token = :invite_token
+                        AND used = false
+                        AND expires_at > EXTRACT(EPOCH FROM NOW())
+                        """,
+            ).bind("invite_token", invite)
+            .mapTo<InviteDBModel>()
+            .singleOrNull()
+            ?.also { logger.info("Found invite: $it") }
+            ?.toInviteDomain()
+    }
 
-        if (result == null) {
-            logger.warn("Invite not found in database: $invite")
-            return null
-        }
-
-        logger.info("Found invite in DB: used=${result.used}, expires_at=${result.expiresAt}, now=${System.currentTimeMillis() / 1000}")
-
-        // Check if already used
-        if (result.used) {
-            logger.warn("Invite already used: $invite")
-            return null
-        }
-
-        // Check if expired
-        val now = System.currentTimeMillis() / 1000
-        if (now > result.expiresAt) {
-            logger.warn("Invite expired: $invite (expired at ${result.expiresAt}, now is $now)")
-            return null
-        }
-
-        logger.info("Invite valid and ready to use: $invite")
-        return result.toInviteDomain()
+    override fun getAll(
+        page: Int,
+        limit: Int,
+        query: String?,
+        expired: Boolean?,
+    ): List<Invite> {
+        val sql =
+            buildString {
+                append("select id, invite_token, role_assigned, created_at, expires_at, used from invites WHERE 1 = 1".trimIndent())
+                if (expired == false) {
+                    append(" AND expires_at > EXTRACT(EPOCH FROM NOW())")
+                }
+                if (expired == true) {
+                    append(" AND expires_at <= EXTRACT(EPOCH FROM NOW())")
+                }
+                if (query != null) {
+                    append(" AND (name ILIKE :query OR slug ILIKE :query)")
+                }
+                append(" ORDER BY id desc")
+                append(" LIMIT :limit OFFSET :offset")
+            }
+        return handle
+            .createQuery(sql)
+            .bind("limit", limit)
+            .bind("offset", (page - 1) * limit)
+            .bind("query", "%$query%")
+            .mapTo<InviteDBModel>()
+            .list()
+            .map { it.toInviteDomain() }
     }
 
     override fun create(invite: NewInvite): Invite {

@@ -3,11 +3,11 @@ package pt.ipl.diariolx.http.invite
 import org.slf4j.Logger
 import org.springframework.stereotype.Component
 import pt.ipl.diariolx.domain.invites.Invite
-import pt.ipl.diariolx.services.InviteServices
+import pt.ipl.diariolx.services.InviteService
 
 @Component
 class InviteProcessor(
-    val inviteService: InviteServices,
+    val inviteService: InviteService,
     val logger: Logger,
 ) {
     fun processorInviteHeaderValue(authorizationValue: String?): Invite? {

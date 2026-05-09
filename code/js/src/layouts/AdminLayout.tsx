@@ -91,8 +91,8 @@ export function AdminLayout() {
               <Link to='/admin/perfil' className='nav-link text-white p-0'>
                 {t('admin_layout.profile')}
               </Link>
-              <Link to='/admin/acessos' className='nav-link text-white p-0'>
-                {t('admin_layout.access')}
+              <Link to='/admin/convites' className='nav-link text-white p-0'>
+                {t('admin_layout.invites')}
               </Link>
             </nav>
           </div>

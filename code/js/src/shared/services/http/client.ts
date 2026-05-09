@@ -6,6 +6,10 @@ type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
+export function patch<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
+  return request<T>(url, { ...options, method: 'PATCH', body: JSON.stringify(body) }, onUnauthorized);
+}
+
 export function put<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
   return request<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }, onUnauthorized);
 }

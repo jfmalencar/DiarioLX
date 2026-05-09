@@ -1,9 +1,9 @@
 import type { AuthService, LoginResponseDTO, RegisterResponseDTO, User, UserApiResponse } from './auth.types';
-import { get, post } from '../http/client';
+import { get, post, patch } from '../http/client';
 
 export const authApiService: AuthService = {
   async authenticate(username, password) {
-    const result = await post<LoginResponseDTO>('/api/user/login', {
+    const result = await post<LoginResponseDTO>('/api/auth/login', {
       username,
       password,
     });
@@ -16,12 +16,12 @@ export const authApiService: AuthService = {
   },
 
   async logout() {
-    await post('/api/user/logout', {});
+    await post('/api/auth/logout', {});
   },
 
   async register(username, email, password, firstName, lastName, inviteCode) {
     const result = await post<RegisterResponseDTO>(
-      '/api/user/signup',
+      '/api/auth/signup',
       {
         username,
         email,
@@ -44,7 +44,7 @@ export const authApiService: AuthService = {
   },
 
   async getCurrentUser() {
-    const result = await get<UserApiResponse>('/api/user/me');
+    const result = await get<UserApiResponse>('/api/users/me');
 
     if (!result.success) {
       return undefined;
@@ -54,7 +54,7 @@ export const authApiService: AuthService = {
   },
 
   async updateProfile(username, email, password, firstName, lastName, bio, profilePictureUrl) {
-    const result = await post<UserApiResponse>('/api/user/update', {
+    const result = await patch<UserApiResponse>('/api/users/me', {
       username: username || null,
       email: email || null,
       password: password || null,
@@ -93,5 +93,6 @@ function normalizeUser(apiUser: UserApiResponse): User {
     createdAt: getDateString(apiUser.createdAt),
     updatedAt: getDateString(apiUser.updatedAt),
     isActive: apiUser.isActive,
+    role: apiUser.role,
   };
 };
