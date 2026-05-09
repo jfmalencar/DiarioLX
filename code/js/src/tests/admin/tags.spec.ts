@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const TAGS_URL = '/admin/etiquetas';
+const TAGS_URL = '/backoffice/etiquetas';
 
 async function goToTags(page: Page) {
     await page.goto(TAGS_URL);
@@ -73,7 +73,7 @@ test.describe('Tags', () => {
         await expect(archiveButton).toBeVisible();
         await archiveButton.click();
 
-        const confirmButton = page.getByTestId('confirm-archive-button');
+        const confirmButton = page.getByTestId('confirm-tag-button');
         await expect(confirmButton).toBeVisible();
         await confirmButton.click();
 
@@ -81,7 +81,7 @@ test.describe('Tags', () => {
         await expect(restoreButton).toBeVisible();
         await restoreButton.click();
 
-        const confirmRestoreButton = page.getByTestId('confirm-restore-button');
+        const confirmRestoreButton = page.getByTestId('confirm-tag-button');
         await expect(confirmRestoreButton).toBeVisible();
         await confirmRestoreButton.click();
     });

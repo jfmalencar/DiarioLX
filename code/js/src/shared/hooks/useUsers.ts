@@ -4,11 +4,13 @@ import { useState, useCallback } from 'react';
 import { usersService } from '@/shared/services/users';
 import type { User } from '@/shared/services/users/users.types';
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type { User };
 
 export const useUsers = () => {
     const [users, setUsers] = useState<User[]>([]);
+    const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -19,6 +21,7 @@ export const useUsers = () => {
             try {
                 const data = await usersService.fetchAll(params)
                 setUsers(data.users)
+                setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch users'
                 setError(message)
@@ -34,6 +37,7 @@ export const useUsers = () => {
         loading,
         error,
         users,
+        pagination,
         fetchAll,
     }
 }

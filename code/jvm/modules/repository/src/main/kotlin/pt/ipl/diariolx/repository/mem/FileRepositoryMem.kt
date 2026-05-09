@@ -33,9 +33,9 @@ class FileRepositoryMem : FileRepository {
     override fun get(id: Int): Media? = medias.find { it.id == id }
 
     override fun getAll(
-        page: Int,
         limit: Int,
-    ): List<Media> = medias
+        offset: Int,
+    ): List<Media> = medias.drop(offset).take(limit)
 
     override fun completeUpload(media: NewMedia): Boolean {
         TODO("Not yet implemented")

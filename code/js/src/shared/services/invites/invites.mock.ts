@@ -14,6 +14,12 @@ export const invitesMockService: InvitesService = {
   async fetchAll() {
     return {
       invites: fakeInvites,
+      pagination: {
+        page: 1,
+        size: 10,
+        hasPrevious: false,
+        hasNext: false,
+      }
     };
   },
 

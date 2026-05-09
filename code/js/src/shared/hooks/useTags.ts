@@ -4,10 +4,12 @@ import { useState, useCallback } from 'react';
 import { tagsService } from '@/shared/services/tags';
 import type { Tag, TagFormValues } from '@/shared/services/tags/tags.types';
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type { Tag, TagFormValues };
 
 export const useTags = () => {
+    const [pagination, setPagination] = useState<Pagination | null>(null)
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -37,6 +39,7 @@ export const useTags = () => {
             try {
                 const data = await tagsService.fetchAll(params)
                 setTags(data.tags)
+                setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch tags'
                 setError(message)
@@ -114,15 +117,33 @@ export const useTags = () => {
         []
     )
 
+    const remove = useCallback(
+        async (id: string): Promise<void> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await tagsService.delete(id)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to delete tag'
+                setError(message)
+            } finally {
+                setLoading(false)
+            }
+        },
+        []
+    )
+
     return {
         loading,
         error,
         tags,
+        pagination,
         fetchAll,
         fetchOne,
         create,
         update,
         archive,
-        unarchive
+        unarchive,
+        remove
     }
 }

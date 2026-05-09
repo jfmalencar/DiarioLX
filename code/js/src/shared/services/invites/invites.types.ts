@@ -1,5 +1,6 @@
 import type { Query } from '@/shared/types/Query';
 import type { UserRole } from '../users/users.types';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type Invite = {
   invite: string;
@@ -19,6 +20,7 @@ export type InviteRequest = {
 
 export type InvitesResponse = {
   invites: Invite[];
+  pagination: Pagination
 };
 
 export type InviteResponse = {

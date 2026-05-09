@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
+import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.domain.category.UpdateCategory
@@ -15,6 +16,7 @@ import pt.ipl.diariolx.utils.ColorValidator
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.SlugValidator
 import pt.ipl.diariolx.utils.failure
+import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
 
 @Named
@@ -74,12 +76,14 @@ class CategoryService(
 
     fun getAll(
         page: Int,
-        limit: Int,
+        size: Int,
         query: String?,
         archived: Boolean,
-    ): List<Category> =
+    ): PageResponse<Category> =
         transactionManager.run {
-            it.categoryRepository.getAll(page, limit, query, archived)
+            paginate(page, size) { limit, offset ->
+                it.categoryRepository.getAll(limit, offset, query, archived)
+            }
         }
 
     fun delete(id: Int): CategoryUpdateResult =

@@ -7,8 +7,8 @@ interface InviteRepository {
     fun get(invite: String): Invite?
 
     fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         expired: Boolean?,
     ): List<Invite>

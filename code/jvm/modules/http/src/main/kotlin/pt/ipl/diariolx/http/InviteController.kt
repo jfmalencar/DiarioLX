@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.invites.InviteRole
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
-import pt.ipl.diariolx.http.annotations.RequireLogin
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.services.InviteService
 import pt.ipl.diariolx.utils.Either
@@ -46,23 +45,28 @@ class InviteController(
         @RequestParam query: String? = null,
         @RequestParam expired: Boolean? = null,
     ): ResponseEntity<*> {
-        val invites = inviteServices.getAllInvites(page, limit, query, expired)
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                mapOf(
-                    "invites" to
-                        invites.map {
-                            mapOf(
-                                "id" to it.id,
-                                "invite" to it.invite,
-                                "createdAt" to it.createdAt.toString(),
-                                "expiresAt" to it.expiresAt.toString(),
-                                "role" to it.role.name,
-                            )
-                        },
-                ),
-            )
+        val response = inviteServices.getAllInvites(page, limit, query, expired)
+        return ResponseEntity.ok().body(
+            mapOf(
+                "invites" to
+                    response.items.map {
+                        mapOf(
+                            "id" to it.id,
+                            "invite" to it.invite,
+                            "createdAt" to it.createdAt.toString(),
+                            "expiresAt" to it.expiresAt.toString(),
+                            "role" to it.role.name,
+                        )
+                    },
+                "pagination" to
+                    mapOf(
+                        "hasPrevious" to response.hasPrevious,
+                        "hasNext" to response.hasNext,
+                        "page" to response.page,
+                        "size" to response.pageSize,
+                    ),
+            ),
+        )
     }
 
     private inline fun <T> handleUserOperationResult(

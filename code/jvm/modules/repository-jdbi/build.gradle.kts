@@ -52,8 +52,8 @@ kotlin {
 
 val composeFileDir: Directory by parent!!.extra
 val dockerComposePath = composeFileDir.file("docker-compose.yml").toString()
-// val dockerCmd = "docker"
-val dockerCmd = "/usr/local/bin/docker"
+val dockerCmd = "docker"
+// val dockerCmd = "/usr/local/bin/docker"
 
 tasks.register<Exec>("dbTestsUp") {
     commandLine(dockerCmd, "compose", "-f", dockerComposePath, "up", "-d", "--build", "--force-recreate", "db-tests")

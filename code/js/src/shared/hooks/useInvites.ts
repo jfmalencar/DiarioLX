@@ -4,11 +4,13 @@ import { useState, useCallback } from 'react';
 import { invitesService } from '@/shared/services/invites';
 import type { Invite, InviteFormValues } from '@/shared/services/invites/invites.types';
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type { Invite, InviteFormValues };
 
 export const useInvites = () => {
     const [invites, setInvites] = useState<Invite[]>([]);
+    const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -19,6 +21,7 @@ export const useInvites = () => {
             try {
                 const data = await invitesService.fetchAll(params)
                 setInvites(data.invites)
+                setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch invites'
                 setError(message)
@@ -70,6 +73,7 @@ export const useInvites = () => {
         loading,
         error,
         invites,
+        pagination,
         fetchAll,
         create,
         remove

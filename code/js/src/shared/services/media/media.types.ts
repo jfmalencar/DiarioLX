@@ -1,4 +1,5 @@
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type MediaType = 'image' | 'video' | 'audio';
 
@@ -29,6 +30,7 @@ export type UserMediaFormValues = {
 
 export type MediasResponse = {
     medias: Media[];
+    pagination: Pagination;
 };
 
 export type SignedUpload = {

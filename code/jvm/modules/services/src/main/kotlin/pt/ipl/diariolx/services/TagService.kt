@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
+import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.tag.NewTag
 import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
@@ -14,6 +15,7 @@ import pt.ipl.diariolx.utils.TagResult
 import pt.ipl.diariolx.utils.TagUpdateResult
 import pt.ipl.diariolx.utils.TagValidationResult
 import pt.ipl.diariolx.utils.failure
+import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
 
 @Named
@@ -69,12 +71,14 @@ class TagService(
 
     fun getAll(
         page: Int,
-        limit: Int,
+        size: Int,
         query: String?,
         archived: Boolean,
-    ): List<Tag> =
+    ): PageResponse<Tag> =
         transactionManager.run {
-            it.tagRepository.getAll(page, limit, query, archived)
+            paginate(page, size) { limit, offset ->
+                it.tagRepository.getAll(limit, offset, query, archived)
+            }
         }
 
     fun delete(id: Int): TagUpdateResult =

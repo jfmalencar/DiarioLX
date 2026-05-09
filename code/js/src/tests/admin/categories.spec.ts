@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-const CATEGORIES_URL = '/admin/categorias';
+const CATEGORIES_URL = '/backoffice/categorias';
 
 async function gotoCategories(page: Page) {
     await page.goto(CATEGORIES_URL);
@@ -64,7 +64,7 @@ test.describe('Categories', () => {
         await expect(archiveButton).toBeVisible();
         await archiveButton.click();
 
-        const confirmButton = page.getByTestId('confirm-archive-button');
+        const confirmButton = page.getByTestId('confirm-category-button');
         await expect(confirmButton).toBeVisible();
         await confirmButton.click();
 
@@ -72,7 +72,7 @@ test.describe('Categories', () => {
         await expect(restoreButton).toBeVisible();
         await restoreButton.click();
 
-        const confirmRestoreButton = page.getByTestId('confirm-restore-button');
+        const confirmRestoreButton = page.getByTestId('confirm-category-button');
         await expect(confirmRestoreButton).toBeVisible();
         await confirmRestoreButton.click();
     });

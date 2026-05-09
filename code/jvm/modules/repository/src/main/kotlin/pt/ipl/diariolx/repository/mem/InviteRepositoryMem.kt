@@ -25,8 +25,8 @@ class InviteRepositoryMem : InviteRepository {
     override fun get(invite: String): Invite? = invites.find { it.invite == invite }
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         expired: Boolean?,
     ): List<Invite> =

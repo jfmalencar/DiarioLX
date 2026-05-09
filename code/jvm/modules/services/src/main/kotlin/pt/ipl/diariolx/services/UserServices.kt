@@ -5,6 +5,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.slf4j.Logger
 import org.springframework.security.crypto.password.PasswordEncoder
+import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
@@ -18,8 +19,8 @@ import pt.ipl.diariolx.utils.UserCreateResult
 import pt.ipl.diariolx.utils.UserError
 import pt.ipl.diariolx.utils.UserResult
 import pt.ipl.diariolx.utils.UserUpdateResult
-import pt.ipl.diariolx.utils.UsersResult
 import pt.ipl.diariolx.utils.failure
+import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
 import pt.ipl.diariolx.utils.token.LoginResultOutput
 import pt.ipl.diariolx.utils.token.Session
@@ -106,7 +107,6 @@ class UserServices(
             val newUser = NewUser(username, email, password, fName, lName, invite.role)
             val user = tx.userRepository.create(newUser, clock.now())
             if (!tx.inviteRepository.consumeInvite(invite.id)) {
-                println("Invite not consumed")
                 return@run failure(UserError.InvalidInvite)
             }
             success(user.id)
@@ -214,22 +214,14 @@ class UserServices(
         }
 
     fun getAll(
-        me: User,
-        offset: Int,
-        limit: Int,
+        page: Int,
+        size: Int,
         query: String?,
         deactivated: Boolean,
-    ): UsersResult =
+    ): PageResponse<User> =
         transactionManager.run {
-            if (!me.active) {
-                return@run failure(UserError.DeactivatedAccount)
-            }
-            logger.info("Getting all users: offset: $offset, limit: $limit, deactivated: $deactivated")
-            val users = it.userRepository.getAll(offset, limit, query, deactivated)
-            return@run if (users.isEmpty()) {
-                failure(UserError.NoUserFound)
-            } else {
-                success(users)
+            paginate(page, size) { limit, offset ->
+                it.userRepository.getAll(limit, offset, query, deactivated)
             }
         }
 

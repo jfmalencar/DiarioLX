@@ -37,7 +37,22 @@ const fakeArticles: Article[] = [
 export const articlesMockService: ArticlesService = {
   async fetchAll() {
     return {
-      articles: fakeArticles,
+      articles: fakeArticles.map((art) => ({
+        id: art.id,
+        title: art.title,
+        slug: art.slug,
+        featuredImage: art.featuredImage ? art.featuredImage.url : '',
+        category: art.category.name,
+        authors: art.authors.map((author) => author.name),
+        createdAt: art.createdAt,
+        publishedAt: art.publishedAt,
+      })),
+      pagination: {
+        page: 1,
+        size: 10,
+        hasPrevious: false,
+        hasNext: false,
+      }
     };
   },
 
@@ -53,6 +68,21 @@ export const articlesMockService: ArticlesService = {
     const newArticle = {
       ...article,
       id: String(fakeArticles.length + 1),
+      category: {
+        id: article.category.id,
+        name: `Category ${article.category.id}`,
+        slug: `category-${article.category.id}`,
+      },
+      authors: article.authors.map((author) => ({
+        authorId: author.authorId,
+        name: `Author ${author.authorId}`,
+        slug: `author-${author.authorId}`,
+      })),
+      tags: article.tags.map((tag) => ({
+        tagId: tag.tagId,
+        name: `Tag ${tag.tagId}`,
+        slug: `tag-${tag.tagId}`,
+      })),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: null,
@@ -71,8 +101,8 @@ export const articlesMockService: ArticlesService = {
     }
     await new Promise((resolve) => setTimeout(resolve, 2000));
     fakeArticles[index] = {
-      ...fakeArticles[index],
       ...article,
+      ...fakeArticles[index],
       updatedAt: new Date().toISOString(),
     };
   },

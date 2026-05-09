@@ -81,12 +81,12 @@ class UserRepositoryMem : UserRepository {
     override fun getByUsername(username: Username): User? = users.find { it.username == username }
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         deactivated: Boolean,
     ): List<User> {
-        val users: List<User> = users.toList().drop((page * limit)).take(limit)
+        val users: List<User> = users.toList().drop(offset).take(limit)
         return users.filter {
             !deactivated ||
                 it.active &&

@@ -170,9 +170,9 @@ class CategoryServiceTest {
         service.create("Cultura", "cultura", null, "#ffffff", null)
         service.create("Sociedade", "sociedade", null, "#000000", null)
 
-        val result = service.getAll(page = 1, limit = 10, query = null, archived = false)
+        val result = service.getAll(page = 1, 10, query = null, archived = false)
 
-        assertEquals(2, result.size)
+        assertEquals(2, result.items.size)
     }
 
     @Test

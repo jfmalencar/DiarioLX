@@ -39,8 +39,8 @@ class JdbiTagRepository(
             .execute() > 0
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         archived: Boolean,
     ): List<Tag> {
@@ -60,7 +60,7 @@ class JdbiTagRepository(
         return handle
             .createQuery(sql)
             .bind("limit", limit)
-            .bind("offset", (page - 1) * limit)
+            .bind("offset", offset)
             .bind("query", "%$query%")
             .mapTo<TagModel>()
             .list()
@@ -69,7 +69,7 @@ class JdbiTagRepository(
 
     override fun delete(id: Int): Boolean =
         handle
-            .createUpdate("delete from categories where id = :id ")
+            .createUpdate("delete from tags where id = :id ")
             .bind("id", id)
             .execute() > 0
 

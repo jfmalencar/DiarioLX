@@ -7,7 +7,6 @@ import org.slf4j.Logger
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.invites.internal.NewInvite
 import pt.ipl.diariolx.domain.users.UserRole
-import pt.ipl.diariolx.repository.JdbiTagRepository.TagModel
 
 class JdbiInviteRepository(
     private val handle: Handle,
@@ -33,8 +32,8 @@ class JdbiInviteRepository(
     }
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         expired: Boolean?,
     ): List<Invite> {
@@ -48,7 +47,7 @@ class JdbiInviteRepository(
                     append(" AND expires_at <= EXTRACT(EPOCH FROM NOW())")
                 }
                 if (query != null) {
-                    append(" AND (name ILIKE :query OR slug ILIKE :query)")
+                    append(" AND invite_token ILIKE :query")
                 }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
@@ -56,7 +55,7 @@ class JdbiInviteRepository(
         return handle
             .createQuery(sql)
             .bind("limit", limit)
-            .bind("offset", (page - 1) * limit)
+            .bind("offset", offset)
             .bind("query", "%$query%")
             .mapTo<InviteDBModel>()
             .list()

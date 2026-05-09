@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import { AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react';
 
-type AlertVariant = 'warning' | 'danger' | 'info' | 'success';
+export type AlertVariant = 'warning' | 'danger' | 'info' | 'success';
 
 type Props = {
     variant?: AlertVariant;

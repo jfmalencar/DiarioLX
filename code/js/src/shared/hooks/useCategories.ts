@@ -3,10 +3,12 @@ import { useState, useCallback } from 'react';
 import { categoriesService } from '@/shared/services/categories';
 import type { Category, CategoryFormValues } from '@/shared/services/categories/categories.types';
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type { Category, CategoryFormValues };
 
 export const useCategories = () => {
+    const [pagination, setPagination] = useState<Pagination | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -36,6 +38,7 @@ export const useCategories = () => {
             try {
                 const data = await categoriesService.fetchAll(params)
                 setCategories(data.categories)
+                setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch categories'
                 setError(message)
@@ -114,15 +117,33 @@ export const useCategories = () => {
         []
     )
 
+    const remove = useCallback(
+        async (id: string): Promise<void> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await categoriesService.delete(id)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to delete category'
+                setError(message)
+            } finally {
+                setLoading(false)
+            }
+        },
+        []
+    )
+
     return {
         loading,
         error,
         categories,
+        pagination,
         fetchAll,
         fetchOne,
         create,
         update,
         archive,
-        unarchive
+        unarchive,
+        remove
     }
 }

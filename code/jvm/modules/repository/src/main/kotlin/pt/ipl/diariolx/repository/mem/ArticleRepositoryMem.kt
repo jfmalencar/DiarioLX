@@ -47,12 +47,11 @@ class ArticleRepositoryMem : ArticleRepository {
     }
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         archived: Boolean,
     ): List<ArticleSummary> =
-
         articles
             .filter {
                 !archived || it.archivedAt != null && (if (query == null) true else it.title.contains(query))

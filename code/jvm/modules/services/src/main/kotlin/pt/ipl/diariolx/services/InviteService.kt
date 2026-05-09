@@ -2,6 +2,7 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
+import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.invites.config.InviteDomainConfig
 import pt.ipl.diariolx.domain.invites.internal.NewInvite
@@ -11,8 +12,8 @@ import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.utils.Either
 import pt.ipl.diariolx.utils.UserError
 import pt.ipl.diariolx.utils.failure
+import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
-import java.util.UUID
 
 @Named
 class InviteService(
@@ -32,12 +33,14 @@ class InviteService(
 
     fun getAllInvites(
         page: Int,
-        limit: Int,
+        size: Int,
         query: String?,
         expired: Boolean?,
-    ): List<Invite> =
+    ): PageResponse<Invite> =
         transactionManager.run {
-            return@run it.inviteRepository.getAll(page, limit, query, expired)
+            paginate(page, size) { limit, offset ->
+                it.inviteRepository.getAll(limit, offset, query, expired)
+            }
         }
 
     fun createInvite(

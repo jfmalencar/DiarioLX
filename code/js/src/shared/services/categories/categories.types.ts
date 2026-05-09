@@ -1,4 +1,5 @@
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type Category = {
   id: string;
@@ -8,7 +9,7 @@ export type Category = {
   slug: string;
   parentId: string | null;
   parentName: string | null;
-  count: number;
+  quantity: number;
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
@@ -36,6 +37,7 @@ export type CategoryRequest = {
 
 export type CategoriesResponse = {
   categories: Category[];
+  pagination: Pagination
 };
 
 export type CategoryResponse = {

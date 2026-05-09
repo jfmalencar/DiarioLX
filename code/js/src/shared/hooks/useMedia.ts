@@ -4,11 +4,13 @@ import { useState, useCallback } from 'react';
 import { mediaService } from '@/shared/services/media';
 import type { Query } from '@/shared/types/Query';
 import type { Media, MediaFormValues, SignedUpload, UserMediaFormValues, UserSignedUpload } from '@/shared/services/media/media.types';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type { Media, MediaFormValues, SignedUpload };
 
 export const useMedia = () => {
     const [medias, setMedias] = useState<Media[]>([]);
+    const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -19,6 +21,7 @@ export const useMedia = () => {
             try {
                 const response = await mediaService.fetchAll(params)
                 setMedias(response.medias)
+                setPagination(response.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch articles'
                 setError(message)
@@ -62,7 +65,7 @@ export const useMedia = () => {
             }
         },
         []
-    )            
+    )
 
     const upload = useCallback(
         async (media: MediaFormValues): Promise<Media | undefined> => {
@@ -101,6 +104,7 @@ export const useMedia = () => {
         loading,
         error,
         medias,
+        pagination,
         fetchAll,
         getSignedUrl,
         getUserSignedUrl,

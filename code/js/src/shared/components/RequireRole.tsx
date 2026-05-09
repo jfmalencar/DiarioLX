@@ -15,5 +15,5 @@ export function RequireRole({ role, children }: RequireRoleProps) {
   const location = useLocation(); // from React Router
   if (!hydrated) return null; // wait for session check
   if (user && user.role === role) return children;
-  return <Navigate to="/admin" state={{ source: location.pathname }} replace={true} />;
+  return <Navigate to="/backoffice" state={{ source: location.pathname }} replace={true} />;
 }

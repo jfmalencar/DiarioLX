@@ -4,29 +4,34 @@ import { I18nProvider } from '@/app/providers/I18nProvider';
 import { AuthenticationProvider } from '@/app/providers/AuthenticationProvider';
 //import { BootstrapProvider } from '@/app/providers/BootstrapProvider';
 
+// Public
 import { Home } from '@/modules/public/Home';
 import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
-import { Login } from '@/modules/admin/Login';
-import { Homepage } from '@/modules/admin/Homepage';
-import { Categories as AdminCategories } from '@/modules/admin/categories/Categories';
-import { Tags } from '@/modules/admin/tags/Tags';
-import { EditCategory } from '@/modules/admin/categories/EditCategory';
-import { EditTag } from '@/modules/admin/tags/EditTag';
-import { Users } from '@/modules/admin/users/Users';
-import { Articles } from '@/modules/admin/articles/Articles';
-import { EditArticle } from '@/modules/admin/articles/EditArticle';
-import { PublicLayout } from '@/layouts/PublicLayout';
-import { AdminLayout } from '@/layouts/AdminLayout';
-import { SignUp } from '@/modules/admin/SignUp';
-import { Invites } from '@/modules/admin/invites/Invites';
-import { MyProfile } from '@/modules/admin/myProfile/MyProfile';
-
-import { FileUpload } from '@/modules/public/File';
 import { Article } from '@/modules/public/Article';
 
+// Backoffice
+import { Login } from '@/modules/backoffice/Login';
+import { Homepage } from '@/modules/backoffice/Homepage';
+import { Categories as BackofficeCategories } from '@/modules/backoffice/categories/Categories';
+import { Tags } from '@/modules/backoffice/tags/Tags';
+import { EditCategory } from '@/modules/backoffice/categories/EditCategory';
+import { EditTag } from '@/modules/backoffice/tags/EditTag';
+import { Users } from '@/modules/backoffice/users/Users';
+import { Articles } from '@/modules/backoffice/articles/Articles';
+import { EditArticle } from '@/modules/backoffice/articles/EditArticle';
+import { SignUp } from '@/modules/backoffice/SignUp';
+import { Invites } from '@/modules/backoffice/invites/Invites';
+import { MyProfile } from '@/modules/backoffice/myProfile/MyProfile';
+
+// Require Wrappers
 import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
 import { RequireRole } from '@/shared/components/RequireRole';
+
+// Layouts
+import { PublicLayout } from '@/layouts/PublicLayout';
+import { BackofficeLayout } from '@/layouts/BackofficeLayout';
+import { ErrorPage } from '@/layouts/ErrorPage';
 
 const router = createBrowserRouter([
   {
@@ -51,10 +56,10 @@ const router = createBrowserRouter([
       }
     ],
   },
-  { path: '/file-upload', element: <FileUpload /> },
   {
-    path: '/admin',
-    element: <AdminLayout />,
+    path: '/backoffice',
+    element: <BackofficeLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: 'login',
@@ -78,8 +83,8 @@ const router = createBrowserRouter([
           </RequireAuthentication>
         ),
         handle: {
-          title: 'admin_layout.homepage',
-          subtitle: 'admin_layout.homepage_subtitle',
+          title: 'backoffice_layout.homepage',
+          subtitle: 'backoffice_layout.homepage_subtitle',
           layout: 'dashboard'
         }
       },
@@ -87,12 +92,12 @@ const router = createBrowserRouter([
         path: 'categorias',
         element: (
           <RequireAuthentication>
-            <AdminCategories />
+            <BackofficeCategories />
           </RequireAuthentication>
         ),
         handle: {
-          title: 'admin_layout.categories',
-          subtitle: 'admin_layout.categories_subtitle',
+          title: 'backoffice_layout.categories',
+          subtitle: 'backoffice_layout.categories_subtitle',
           layout: 'dashboard'
         }
       },
@@ -115,8 +120,8 @@ const router = createBrowserRouter([
           </RequireAuthentication>
         ),
         handle: {
-          title: 'admin_layout.tags',
-          subtitle: 'admin_layout.tags_subtitle',
+          title: 'backoffice_layout.tags',
+          subtitle: 'backoffice_layout.tags_subtitle',
           layout: 'dashboard'
         }
       },
@@ -139,8 +144,8 @@ const router = createBrowserRouter([
           </RequireAuthentication>
         ),
         handle: {
-          title: 'admin_layout.users',
-          subtitle: 'admin_layout.users_subtitle',
+          title: 'backoffice_layout.users',
+          subtitle: 'backoffice_layout.users_subtitle',
           layout: 'dashboard'
         }
       },
@@ -152,8 +157,8 @@ const router = createBrowserRouter([
           </RequireAuthentication>
         ),
         handle: {
-          title: 'admin_layout.publications',
-          subtitle: 'admin_layout.publications_subtitle',
+          title: 'backoffice_layout.publications',
+          subtitle: 'backoffice_layout.publications_subtitle',
           layout: 'dashboard'
         }
       },
@@ -176,8 +181,8 @@ const router = createBrowserRouter([
           </RequireAuthentication>
         ),
         handle: {
-          title: 'admin_layout.my_profile',
-          subtitle: 'admin_layout.my_profile_subtitle',
+          title: 'backoffice_layout.my_profile',
+          subtitle: 'backoffice_layout.my_profile_subtitle',
           layout: 'dashboard'
         }
       },
@@ -189,11 +194,24 @@ const router = createBrowserRouter([
           </RequireRole>
         ),
         handle: {
-          title: 'admin_layout.invites',
-          subtitle: 'admin_layout.invites_subtitle',
+          title: 'backoffice_layout.invites',
+          subtitle: 'backoffice_layout.invites_subtitle',
           layout: 'dashboard'
         }
-      }
+      },
+      {
+        path: '*',
+        element: (
+          <RequireAuthentication>
+            <div>Page Not Found</div>
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: '',
+          subtitle: '',
+          layout: 'dashboard'
+        }
+      },
     ]
   }
 ]);

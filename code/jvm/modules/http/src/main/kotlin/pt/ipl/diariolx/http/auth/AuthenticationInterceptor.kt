@@ -62,9 +62,6 @@ class AuthenticationInterceptor(
 
             val requiredRole = handler.findMethodOrClassAnnotation<RequireRole>()
 
-            println(authUser.user.role.name)
-            println(requiredRole?.value)
-
             if (requiredRole != null && authUser.user.role.name != requiredRole.value) {
                 response.status = 403
                 response.sendProblem(

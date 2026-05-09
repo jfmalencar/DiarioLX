@@ -8,7 +8,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.returnResult
 import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.http.Uris
-import pt.ipl.diariolx.http.model.CategoryRequest
+import pt.ipl.diariolx.http.model.CategoryRequestDTO
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CategoryTests {
@@ -48,7 +48,7 @@ class CategoryTests {
 
         // when: editing the category
         val request =
-            CategoryRequest(
+            CategoryRequestDTO(
                 name = "Updated Category",
                 description = "Updated Description",
                 slug = "updated",

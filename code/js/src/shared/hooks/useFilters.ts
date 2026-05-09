@@ -122,6 +122,7 @@ export const useFilters = (sections: FilterSection[] = []): UseFiltersReturn => 
             }
         });
 
+        console.log('Built query:', result);
         return result;
     }, [searchParams]);
 

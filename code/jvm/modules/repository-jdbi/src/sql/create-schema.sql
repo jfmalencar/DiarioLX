@@ -1,3 +1,14 @@
+DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS invites CASCADE;
+DROP TABLE IF EXISTS sessions CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS articles CASCADE;
+DROP TYPE IF EXISTS user_role CASCADE;
+
+CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
+
 CREATE TABLE IF NOT EXISTS  categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -15,21 +26,6 @@ CREATE TABLE IF NOT EXISTS  categories (
         ON DELETE SET NULL
 );
 
-CREATE VIEW v_categories AS
-SELECT
-    c.id,
-    c.name,
-    c.slug,
-    c.description,
-    c.color,
-    c.parent_id,
-    p.name AS parentName,
-    0 AS quantity,
-    c.created_at,
-    c.updated_at,
-    c.archived_at
-FROM categories c LEFT JOIN categories p ON c.parent_id = p.id;
-
 CREATE TABLE IF NOT EXISTS tags (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -39,26 +35,6 @@ CREATE TABLE IF NOT EXISTS tags (
     updated_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
     archived_at BIGINT DEFAULT NULL
 );
-
-CREATE VIEW v_tags AS
-SELECT
-    t.id,
-    t.name,
-    t.slug,
-    t.description,
-    0 AS quantity,
-    t.created_at,
-    t.updated_at,
-    t.archived_at
-FROM tags t;
-
-DROP TABLE IF EXISTS profiles CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS invites CASCADE;
-DROP TABLE IF EXISTS sessions CASCADE;
-DROP TYPE IF EXISTS user_role CASCADE;
-
-CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
 
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -123,18 +99,12 @@ CREATE TABLE articles (
     updated_at        BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
-CREATE INDEX idx_articles_category_id ON articles(category_id);
-CREATE INDEX idx_articles_slug ON articles(slug);
-
 CREATE TABLE article_authors (
     article_id      INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     author_id       INTEGER NOT NULL REFERENCES users(id),
     role            VARCHAR(20) NOT NULL CHECK (role IN ('primary', 'secondary')),
     PRIMARY KEY (article_id, author_id)
 );
-
-CREATE INDEX idx_article_authors_article_id ON article_authors(article_id);
-CREATE INDEX idx_article_authors_author_id ON article_authors(author_id);
 
 CREATE TABLE article_blocks (
     id              SERIAL PRIMARY KEY,
@@ -155,159 +125,9 @@ CREATE TABLE article_blocks (
         )
 );
 
-CREATE INDEX idx_article_blocks_article_id ON article_blocks(article_id);
-CREATE INDEX idx_article_blocks_article_position ON article_blocks(article_id, position);
-
-CREATE UNIQUE INDEX uq_article_primary_author
-    ON article_authors(article_id)
-    WHERE role = 'primary';
-
 CREATE TABLE article_tags (
     article_id      INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     tag_id          INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
     role            VARCHAR(20) NOT NULL CHECK (role IN ('primary', 'secondary')),
     PRIMARY KEY (article_id, tag_id)
 );
-
-CREATE INDEX idx_article_tags_article_id ON article_tags(article_id);
-CREATE INDEX idx_article_tags_tag_id ON article_tags(tag_id);
-
-CREATE UNIQUE INDEX uq_article_primary_tag
-    ON article_tags(article_id)
-    WHERE role = 'primary';
-
-CREATE OR REPLACE VIEW v_articles AS
-SELECT
-    a.id,
-    a.title,
-    a.slug,
-    a.headline,
-    a.created_at AS "createdAt",
-    a.updated_at AS "updatedAt",
-    a.published_at AS "publishedAt",
-    NULL::BIGINT AS "archivedAt",
-
-    c.id AS "categoryId",
-    c.name AS "categoryName",
-    c.slug AS "categorySlug",
-
-    -- FEATURED IMAGE
-    CASE
-        WHEN fm.id IS NULL THEN NULL
-        ELSE json_build_object(
-    'id', fm.id,
-    'url', fm.bucket || '/' || fm.object_key,
-    'thumbnailUrl',
-    CASE
-        WHEN fm.thumbnail_object_key IS NOT NULL
-     THEN fm.thumbnail_bucket || '/' || fm.thumbnail_object_key
-        ELSE NULL
-        END,
-    'altText', fm.alt_text,
-    'photographer',
-    json_build_object(
-     'id', mu.id,
-     'name', mu.first_name || ' ' || mu.last_name,
-     'slug', mu.username
-    )
-             )
-        END AS "featuredImage",
-
-    -- TAGS
-    COALESCE(
-            (
-    SELECT json_agg(
-            json_build_object(
-        'id', t.id,
-        'name', t.name,
-        'slug', t.slug
-            )
-    )
-    FROM article_tags at
-            JOIN tags t ON t.id = at.tag_id
-            WHERE at.article_id = a.id
-        ),
-        '[]'::json
-    )::text AS tags,
-
-    -- AUTHORS
-    COALESCE(
-            (
-    SELECT json_agg(
-            json_build_object(
-        'id', au.id,
-        'name', au.first_name || ' ' || au.last_name,
-        'slug', au.username
-            )
-        ORDER BY (aa.role = 'primary') DESC
-    )
-    FROM article_authors aa
-      JOIN users au ON au.id = aa.author_id
-    WHERE aa.article_id = a.id
-            ),
-            '[]'::json
-    )::text AS authors,
-
-    -- BLOCKS
-    COALESCE(
-            (
-    SELECT json_agg(
-            json_build_object(
-        'id', ab.id,
-        'type', ab.type,
-        'content', ab.content,
-        'media',
-        CASE
-            WHEN m.id IS NULL THEN NULL
-            ELSE json_build_object(
-             'id', m.id,
-             'url', m.bucket || '/' || m.object_key,
-             'thumbnailUrl',
-             CASE
-     WHEN m.thumbnail_object_key IS NOT NULL
-         THEN m.thumbnail_bucket || '/' || m.thumbnail_object_key
-     ELSE NULL
-     END,
-             'altText', m.alt_text,
-             'photographer',
-             json_build_object(
-         'id', pa.id,
-         'name', pa.first_name || ' ' || pa.last_name,
-         'slug', pa.username
-             )
-          )
-            END
-            )
-    ORDER BY ab.position
-    )
-    FROM article_blocks ab
-      LEFT JOIN media m ON m.id = ab.media_id
-      LEFT JOIN users pa ON pa.id = m.contributor_id
-    WHERE ab.article_id = a.id
-            ),
-            '[]'::json
-    )::text AS blocks
-
-FROM articles a
-         JOIN categories c ON c.id = a.category_id
-         LEFT JOIN media fm ON fm.id = a.featured_media_id
-         LEFT JOIN users mu ON mu.id = fm.contributor_id;
-
-
-CREATE OR REPLACE VIEW v_articles_summary AS
-SELECT
-    a.id,
-    a.title,
-    a.slug,
-    c.name AS "categoryName",
-    fm.bucket || '/' || fm.object_key AS "featuredImage",
-    COALESCE(authors.names, '') AS authors,
-    a.created_at AS "createdAt"
-FROM articles a
-    JOIN categories c ON c.id = a.category_id
-    LEFT JOIN media fm ON fm.id = a.featured_media_id
-    LEFT JOIN LATERAL (
-        SELECT string_agg(concat_ws(' ', u.first_name, u.last_name), ', ' ORDER BY u.first_name) AS names
-FROM article_authors aa
-    JOIN users u ON u.id = aa.author_id
-WHERE aa.article_id = a.id) authors ON true;

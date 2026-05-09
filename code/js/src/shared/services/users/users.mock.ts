@@ -17,6 +17,12 @@ export const usersMockService: UsersService = {
   async fetchAll() {
     return {
       users: fakeUsers,
+      pagination: {
+        page: 1,
+        size: 1,
+        hasPrevious: false,
+        hasNext: false,
+      }
     };
   },
 };

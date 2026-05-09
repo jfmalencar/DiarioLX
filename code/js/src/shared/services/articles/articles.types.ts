@@ -1,5 +1,6 @@
 import type { Query } from '@/shared/types/Query';
 import type { Media } from '@/shared/services/media/media.types';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type Article = {
     id: string;
@@ -37,7 +38,7 @@ export type ArticleSummary = {
     category: string
     authors: string[]
     createdAt: string
-    isPublished: boolean
+    publishedAt: string | null
 }
 
 type ArticleBlockBase = {
@@ -106,6 +107,7 @@ export type ArticleRequest = {
 
 export type ArticlesResponse = {
     articles: ArticleSummary[];
+    pagination: Pagination
 };
 
 export type ArticleResponse = {

@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.http.model.TagRequest
+import pt.ipl.diariolx.http.model.TagRequestDTO
+import pt.ipl.diariolx.http.model.TagResponseDTO
 import pt.ipl.diariolx.services.TagService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -37,13 +38,25 @@ class TagController(
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
         val limit = if (limit > 30) 30 else limit
-        val tags = tagService.getAll(page, limit, query, archived)
-        return ResponseEntity.ok(mapOf("tags" to tags))
+        val response = tagService.getAll(page, limit, query, archived)
+        return ResponseEntity.ok().body(
+            mapOf(
+                "tags" to
+                    response.items.map { TagResponseDTO.from(it) },
+                "pagination" to
+                    mapOf(
+                        "hasPrevious" to response.hasPrevious,
+                        "hasNext" to response.hasNext,
+                        "page" to response.page,
+                        "size" to response.pageSize,
+                    ),
+            ),
+        )
     }
 
     @PostMapping(Uris.Tags.CREATE)
     fun createTag(
-        @RequestBody body: TagRequest,
+        @RequestBody body: TagRequestDTO,
     ): ResponseEntity<*> =
         when (val res = tagService.create(body.name, body.slug, body.description)) {
             is Success ->
@@ -59,7 +72,7 @@ class TagController(
     @PutMapping(Uris.Tags.UPDATE)
     fun updateTag(
         @PathVariable id: String,
-        @RequestBody body: TagRequest,
+        @RequestBody body: TagRequestDTO,
     ): ResponseEntity<*> {
         val id = id.toInt()
         return when (tagService.update(id, body.name, body.slug, body.description)) {

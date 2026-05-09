@@ -1,11 +1,12 @@
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type Tag = {
   id: string;
   name: string;
   description: string;
   slug: string;
-  count: number;
+  quantity: number;
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
@@ -27,6 +28,7 @@ export type TagRequest = {
 
 export type TagsResponse = {
   tags: Tag[];
+  pagination: Pagination
 };
 
 export type TagResponse = {

@@ -6,7 +6,7 @@ const fakeTags: Tag[] = [
     name: 'Tag 1',
     description: 'Description 1',
     slug: 'tag-1',
-    count: 10,
+    quantity: 10,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
     archivedAt: null,
@@ -16,7 +16,7 @@ const fakeTags: Tag[] = [
     name: 'Tag 2',
     description: 'Description 2',
     slug: 'tag-2',
-    count: 5,
+    quantity: 5,
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
     archivedAt: null,
@@ -27,6 +27,12 @@ export const tagsMockService: TagsService = {
   async fetchAll() {
     return {
       tags: fakeTags,
+      pagination: {
+        page: 1,
+        size: 10,
+        hasPrevious: false,
+        hasNext: false,
+      }
     };
   },
 
@@ -44,7 +50,7 @@ export const tagsMockService: TagsService = {
       name: tag.name,
       description: tag.description,
       slug: tag.slug,
-      count: 0,
+      quantity: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       archivedAt: null,

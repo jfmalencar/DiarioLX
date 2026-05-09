@@ -12,8 +12,8 @@ interface CategoryRepository {
     fun getBySlug(slug: String): Category?
 
     fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         archived: Boolean,
     ): List<Category>

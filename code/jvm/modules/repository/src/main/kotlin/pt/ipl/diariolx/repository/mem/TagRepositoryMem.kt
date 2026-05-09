@@ -47,8 +47,8 @@ class TagRepositoryMem : TagRepository {
     }
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         archived: Boolean,
     ): List<Tag> =

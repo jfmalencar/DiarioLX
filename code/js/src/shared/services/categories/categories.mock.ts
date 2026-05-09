@@ -8,7 +8,7 @@ const fakeCategories: Category[] = [
     slug: 'category-1',
     parentId: null,
     parentName: null,
-    count: 10,
+    quantity: 10,
     color: '#ec6b43',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',
@@ -21,7 +21,7 @@ const fakeCategories: Category[] = [
     slug: 'category-2',
     parentId: null,
     parentName: null,
-    count: 5,
+    quantity: 5,
     color: '#43a1ec',
     createdAt: '2024-01-02T00:00:00Z',
     updatedAt: '2024-01-02T00:00:00Z',
@@ -33,6 +33,12 @@ export const categoriesMockService: CategoriesService = {
   async fetchAll() {
     return {
       categories: fakeCategories,
+      pagination: {
+        page: 1,
+        size: 10,
+        hasPrevious: false,
+        hasNext: false,
+      }
     };
   },
 
@@ -51,7 +57,7 @@ export const categoriesMockService: CategoriesService = {
       parentName: category.parentId
         ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
         : null,
-      count: 0,
+      quantity: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       archivedAt: null,

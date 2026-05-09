@@ -10,8 +10,8 @@ interface FileRepository {
     fun get(id: Int): Media?
 
     fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
     ): List<Media>
 
     fun completeUpload(media: NewMedia): Boolean

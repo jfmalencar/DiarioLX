@@ -28,7 +28,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
     const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
 
     const load = useCallback(async () => {
-        const params = buildQuery({ p: 'page', total: 'limit' });
+        const params = buildQuery({ p: 'page', total: 'size' });
         await fetchAll(params);
     }, [fetchAll, buildQuery]);
 

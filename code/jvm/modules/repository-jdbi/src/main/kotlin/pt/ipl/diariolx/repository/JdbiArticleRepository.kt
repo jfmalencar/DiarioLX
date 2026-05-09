@@ -51,8 +51,8 @@ class JdbiArticleRepository(
             ?.article
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         archived: Boolean,
     ): List<ArticleSummary> {
@@ -68,7 +68,7 @@ class JdbiArticleRepository(
         return handle
             .createQuery(sql)
             .bind("limit", limit)
-            .bind("offset", (page - 1) * limit)
+            .bind("offset", offset)
             .bind("query", "%$query%")
             .mapTo<ArticleSummaryModel>()
             .list()

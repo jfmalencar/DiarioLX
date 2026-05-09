@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
+import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.StoredFile
 import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
@@ -12,6 +13,7 @@ import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.utils.MediaSignedUrlResult
 import pt.ipl.diariolx.utils.UserMediaSignedUrlResult
+import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
 import java.util.UUID
 
@@ -73,10 +75,12 @@ class FileService(
 
     fun getAll(
         page: Int,
-        limit: Int,
-    ): List<Media> =
+        size: Int,
+    ): PageResponse<Media> =
         transactionManager.run {
-            it.fileRepository.getAll(page, limit)
+            paginate(page, size) { limit, offset ->
+                it.fileRepository.getAll(limit, offset)
+            }
         }
 
     fun execute(

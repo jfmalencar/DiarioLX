@@ -4,10 +4,12 @@ import { articlesService } from '../services/articles';
 
 import type { Article, ArticleRequest, ArticleSummary } from '../services/articles/articles.types';
 import type { Query } from '@/shared/types/Query';
+import type { Pagination } from '@/shared/types/Pagination';
 
 export type { Article, ArticleSummary, ArticleRequest };
 
 export const useArticles = () => {
+    const [pagination, setPagination] = useState<Pagination | null>(null);
     const [articles, setArticles] = useState<ArticleSummary[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -37,6 +39,7 @@ export const useArticles = () => {
             try {
                 const data = await articlesService.fetchAll(params)
                 setArticles(data.articles)
+                setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch articles'
                 setError(message)
@@ -118,6 +121,7 @@ export const useArticles = () => {
         loading,
         error,
         articles,
+        pagination,
         fetchAll,
         fetchOne,
         create,

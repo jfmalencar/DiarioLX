@@ -72,8 +72,8 @@ val dockerImageTagJvm = "diariolx-jvm"
 val dockerImageTagNginx = "diariolx-nginx"
 val dockerImageTagPostgresTest = "diariolx-postgres-test"
 val dockerImageTagUbuntu = "diariolx-ubuntu"
-// val dockerCmd = "docker"
-val dockerCmd = "/usr/local/bin/docker"
+val dockerCmd = "docker"
+// val dockerCmd = "/usr/local/bin/docker"
 
 tasks.register<Exec>("buildImageJvm") {
     dependsOn("extractUberJar")

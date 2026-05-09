@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.domain.users.OperationOnUser
-import pt.ipl.diariolx.domain.users.dto.LoginUserDTO
-import pt.ipl.diariolx.domain.users.dto.NewUserDTO
-import pt.ipl.diariolx.domain.users.dto.UpdateUserDTO
+import pt.ipl.diariolx.http.model.LoginUserDTO
+import pt.ipl.diariolx.http.model.NewUserDTO
+import pt.ipl.diariolx.http.model.UpdateUserDTO
 import pt.ipl.diariolx.services.UserServices
 import pt.ipl.diariolx.utils.Either
 import pt.ipl.diariolx.utils.Failure
@@ -115,18 +115,24 @@ class UserController(
     @GetMapping(Uris.Users.GET_ALL)
     fun getAllUsers(
         me: AuthenticatedUser,
-        @RequestParam offset: Int = 0,
-        @RequestParam limit: Int = 30,
+        @RequestParam page: Int = 1,
+        @RequestParam size: Int = 30,
         @RequestParam query: String? = null,
         @RequestParam deactivated: Boolean = false,
-    ): ResponseEntity<*> =
-        handleUserOperationResult(
-            "/user/all",
-            userServices.getAll(me.user, offset, limit, query, deactivated),
-        ) {
+    ): ResponseEntity<*> {
+        val size = if (size > 30) 30 else size
+        val response = userServices.getAll(page, size, query, deactivated)
+        return ResponseEntity.ok().body(
             mapOf(
+                "pagination" to
+                    mapOf(
+                        "hasNext" to response.hasNext,
+                        "hasPrevious" to response.hasPrevious,
+                        "page" to response.page,
+                        "size" to response.pageSize,
+                    ),
                 "users" to
-                    it.map { user ->
+                    response.items.map { user ->
                         mapOf(
                             "userId" to user.id,
                             "username" to user.username.value,
@@ -141,8 +147,9 @@ class UserController(
                             "role" to user.role,
                         )
                     },
-            )
-        }
+            ),
+        )
+    }
 
     @PostMapping("/admin/remove-user")
     fun removeUser(

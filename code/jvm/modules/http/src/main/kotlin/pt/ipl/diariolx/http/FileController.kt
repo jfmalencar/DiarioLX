@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
-import pt.ipl.diariolx.http.model.FileResponse
-import pt.ipl.diariolx.http.model.MediaResponse
-import pt.ipl.diariolx.http.model.SignedUrlRequest
-import pt.ipl.diariolx.http.model.UserSignedUrlRequest
+import pt.ipl.diariolx.http.model.FileResponseDTO
+import pt.ipl.diariolx.http.model.MediaResponseDTO
+import pt.ipl.diariolx.http.model.SignedUrlRequestDTO
+import pt.ipl.diariolx.http.model.UserSignedUrlRequestDTO
 import pt.ipl.diariolx.services.FileService
 import pt.ipl.diariolx.utils.Success
 
@@ -23,17 +23,28 @@ class FileController(
     @GetMapping(Uris.Files.GET_ALL)
     fun getAllFiles(
         @RequestParam page: Int = 1,
-        @RequestParam limit: Int = 10,
+        @RequestParam size: Int = 10,
     ): ResponseEntity<*> {
-        val limit = if (limit > 30) 30 else limit
-        val medias = fileService.getAll(page, limit).map { MediaResponse.from(it) }
-        return ResponseEntity.ok(mapOf("medias" to medias))
+        val size = if (size > 30) 30 else size
+        val response = fileService.getAll(page, size)
+        return ResponseEntity.ok().body(
+            mapOf(
+                "medias" to response.items.map { MediaResponseDTO.from(it) },
+                "pagination" to
+                    mapOf(
+                        "hasPrevious" to response.hasPrevious,
+                        "hasNext" to response.hasNext,
+                        "page" to response.page,
+                        "size" to response.pageSize,
+                    ),
+            ),
+        )
     }
 
     @PostMapping(Uris.Files.UPLOAD)
     fun upload(
         @RequestParam("file") file: MultipartFile,
-    ): ResponseEntity<FileResponse> {
+    ): ResponseEntity<FileResponseDTO> {
         val storedFile =
             fileService.execute(
                 bytes = file.bytes,
@@ -42,7 +53,7 @@ class FileController(
             )
 
         return ResponseEntity.ok(
-            FileResponse(
+            FileResponseDTO(
                 objectName = storedFile.objectName,
                 url = storedFile.url,
             ),
@@ -51,9 +62,8 @@ class FileController(
 
     @PostMapping(Uris.Files.GET_SIGNED_URL)
     fun getSignedUrl(
-        @RequestBody body: SignedUrlRequest,
+        @RequestBody body: SignedUrlRequestDTO,
     ): ResponseEntity<*> {
-        println(body)
         val response =
             fileService.getSignedUrl(
                 body.altText,
@@ -70,9 +80,8 @@ class FileController(
     @PostMapping(Uris.Files.GET_USER_SIGNED_URL)
     fun getUserSignedUrl(
         authenticatedUser: AuthenticatedUser,
-        @RequestBody body: UserSignedUrlRequest,
+        @RequestBody body: UserSignedUrlRequestDTO,
     ): ResponseEntity<*> {
-        println(body)
         val response =
             fileService.getUserSignedUrl(
                 body.contentType,

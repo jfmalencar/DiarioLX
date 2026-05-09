@@ -1,6 +1,10 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import { Button } from '../Button'
+
 type TableProps = {
     children: React.ReactNode;
     emptyMessage?: string;
@@ -23,7 +27,12 @@ type TableColumnProps = {
     isHeader?: boolean;
 };
 
-export function Table({ children, isEmpty, emptyMessage = 'Sem dados', dataTestId }: TableProps) {
+type TablePaginationProps = {
+    hasPrevious: boolean;
+    hasNext: boolean;
+};
+
+export const Table = ({ children, isEmpty, emptyMessage = 'Sem dados', dataTestId }: TableProps) => {
     if (isEmpty) {
         return (
             <div className='row' data-testid={dataTestId}>
@@ -36,7 +45,7 @@ export function Table({ children, isEmpty, emptyMessage = 'Sem dados', dataTestI
     return <div data-testid={dataTestId}>{children}</div>;
 }
 
-export function TableHeader({ children }: TableHeaderProps) {
+export const TableHeader = ({ children }: TableHeaderProps) => {
     return (
         <div
             className='row d-none d-lg-flex text-uppercase text-muted small border-bottom pb-2 mb-0 position-sticky top-0 bg-light'
@@ -47,49 +56,32 @@ export function TableHeader({ children }: TableHeaderProps) {
     );
 }
 
-export function TableRow({ children }: TableRowProps) {
+export const TableRow = ({ children }: TableRowProps) => {
     return <div className='row align-items-center border-bottom py-4 g-3'>{children}</div>;
 }
 
-export function TableColumn({ children, className, isHeader }: TableColumnProps) {
+export const TableColumn = ({ children, className, isHeader }: TableColumnProps) => {
     return <div className={className || (isHeader ? 'col' : 'col-12')}>{children}</div>;
 }
 
-export function TablePagination() {
-    /*
-    Componente pra testar paginação, mas versão final deve ser
-    mais complexa, com indicação de página atual, total de páginas,
-    etc. Deve também ser possível receber total de páginas e ir
-    para uma página específica.
-    */
+export const TablePagination = ({ hasPrevious, hasNext }: TablePaginationProps) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const goToNext = () => {
-        const page = parseInt(searchParams.get('p') || '1', 10);
-        goToPage(page + 1);
-    }
-
-    const goToPrevious = () => {
-        const page = parseInt(searchParams.get('p') || '1', 10);
-        goToPage(page - 1);
-    }
+    const currentPage = parseInt(searchParams.get('p') || '1', 10);
 
     const goToPage = (page: number) => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('p', page.toString());
-        setSearchParams(params);
-    }
+        searchParams.set('p', page.toString());
+        setSearchParams(searchParams);
+    };
 
     return (
-        <div className='d-flex align-items-center gap-3 mt-4'>
-            <div className='btn-group' role='group'>
-                <button type='button' onClick={() => goToPrevious()} className='btn btn-outline-secondary btn-sm' >
-                    Anterior
-                </button>
-                <button type='button' onClick={() => goToNext()} className='btn btn-outline-secondary btn-sm' >
-                    Seguinte
-                </button>
-            </div>
+        <div className='d-flex w-100 mt-4 align-items-center justify-content-between'>
+            <Button onClick={() => goToPage(currentPage - 1)} color='secondary' disabled={!hasPrevious}>
+                <ChevronLeft size={16} />
+            </Button>
+            <Button onClick={() => goToPage(currentPage + 1)} color='secondary' disabled={!hasNext}>
+                <ChevronRight size={16} />
+            </Button>
         </div>
     );
 }

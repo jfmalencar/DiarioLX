@@ -11,5 +11,5 @@ export function RequireAuthentication({ children }: RequireAuthenticationProps) 
   const location = useLocation(); // from React Router
   if (!hydrated) return null; // wait for session check
   if (user) return children;
-  return <Navigate to="/admin/login" state={{ source: location.pathname }} replace={true} />;
+  return <Navigate to="/backoffice/login" state={{ source: location.pathname }} replace={true} />;
 }

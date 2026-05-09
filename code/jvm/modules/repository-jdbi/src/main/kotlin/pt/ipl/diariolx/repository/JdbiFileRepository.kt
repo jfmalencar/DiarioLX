@@ -31,8 +31,8 @@ class JdbiFileRepository(
             .one()
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
     ): List<Media> =
         handle
             .createQuery(
@@ -45,7 +45,7 @@ class JdbiFileRepository(
                 limit :limit offset :offset
             """,
             ).bind("limit", limit)
-            .bind("offset", (page - 1) * limit)
+            .bind("offset", offset)
             .bind("status", "pending")
             .mapTo<MediaModel>()
             .list()

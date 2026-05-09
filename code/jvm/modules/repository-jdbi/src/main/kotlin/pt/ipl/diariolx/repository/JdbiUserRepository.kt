@@ -137,8 +137,8 @@ class JdbiUserRepository(
             ?.toUserDomain()
 
     override fun getAll(
-        page: Int,
         limit: Int,
+        offset: Int,
         query: String?,
         deactivated: Boolean,
     ): List<User> {
@@ -158,7 +158,7 @@ class JdbiUserRepository(
 
         return handle
             .createQuery(sql)
-            .bind("offset", page * limit)
+            .bind("offset", offset)
             .bind("limit", limit)
             .bind("query", "%$query%")
             .mapTo<UserDBModel>()

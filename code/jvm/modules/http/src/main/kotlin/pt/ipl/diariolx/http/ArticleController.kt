@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.article.NewArticle
 import pt.ipl.diariolx.http.annotations.RequireLogin
-import pt.ipl.diariolx.http.model.ArticleResponse
+import pt.ipl.diariolx.http.model.ArticleResponseDTO
 import pt.ipl.diariolx.services.ArticleService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -24,7 +24,7 @@ class ArticleController(
         @PathVariable slug: String,
     ): ResponseEntity<*> =
         when (val response = articleService.getBySlug(slug)) {
-            is Success -> ResponseEntity.ok(mapOf("article" to ArticleResponse.from(response.value)))
+            is Success -> ResponseEntity.ok(mapOf("article" to ArticleResponseDTO.from(response.value)))
             is Failure -> ResponseEntity.notFound().build<Unit>()
         }
 
@@ -32,13 +32,24 @@ class ArticleController(
     @GetMapping(Uris.Articles.GET_ALL)
     fun getAllArticles(
         @RequestParam page: Int = 1,
-        @RequestParam limit: Int = 10,
+        @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
-        val limit = if (limit > 30) 30 else limit
-        val articles = articleService.getAll(page, limit, query, archived)
-        return ResponseEntity.ok(mapOf("articles" to articles))
+        val size = if (size > 30) 30 else size
+        val response = articleService.getAll(page, size, query, archived)
+        return ResponseEntity.ok().body(
+            mapOf(
+                "articles" to response.items,
+                "pagination" to
+                    mapOf(
+                        "hasNext" to response.hasNext,
+                        "hasPrevious" to response.hasPrevious,
+                        "page" to response.page,
+                        "size" to response.pageSize,
+                    ),
+            ),
+        )
     }
 
     @RequireLogin
