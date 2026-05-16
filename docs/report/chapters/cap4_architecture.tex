@@ -1,0 +1,90 @@
+%
+% Chapter 4 — Architecture
+%
+\chapter{Architecture} \label{cap:architecture}
+
+\section{Overview} \label{sec:arch_overview}
+
+The Diário LX platform follows a client-server architecture. The system is composed of a browser-executed client application and a server-side infrastructure responsible for business logic and data management. Figure~\ref{fig:architecture} illustrates the high-level architecture of the system.
+
+% TODO: inserir figura da arquitetura
+\begin{figure}[H]
+  \begin{center}
+    % \resizebox{130mm}{!}{\includegraphics{./figures/architecture.png}}
+    \framebox[130mm]{\rule{0pt}{60mm} Architecture Diagram (Figure placeholder)}
+  \end{center}
+  \caption{High-level system architecture.}
+  \label{fig:architecture}
+\end{figure}
+
+The system comprises the following main components:
+
+\begin{itemize}
+  \item \textbf{React Client}: A single-page application (SPA) running in the browser, responsible for rendering the public website and the backoffice interface.
+  \item \textbf{Reverse Proxy}: Serves static assets and routes HTTP requests to the appropriate backend service.
+  \item \textbf{Spring Boot API}: The backend application, developed in Kotlin, responsible for all business logic, authentication, and data access.
+  \item \textbf{PostgreSQL Database}: Relational database storing structured data (articles, users, categories, tags).
+  \item \textbf{Media Storage}: Dedicated storage system for multimedia files (images, audio, video). The specific provider is to be decided.
+\end{itemize}
+
+\section{Technology Stack} \label{sec:arch_stack}
+
+Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
+
+\begin{table}[H]
+  \centering
+  \caption{Technology stack.}
+  \label{tab:tech_stack}
+  \begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Layer} & \textbf{Technology}  & \textbf{Rationale}                                                      \\
+    \midrule
+    Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support            \\
+
+    Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety \\
+
+    Database       & PostgreSQL           & Relational model well-suited for editorial and multimedia data          \\
+
+    Reverse Proxy  & Nginx                & Standard and performant reverse proxy and static asset serving          \\
+
+    Media Storage  & SeaweedFS            & S3-compatible distributed storage with low operational overhead         \\
+
+    Authentication & Bearer Tokens        & Server-side token invalidation and simplified session management        \\
+
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\section{API Design} \label{sec:arch_api}
+
+Communication between the frontend and backend is handled through a RESTful HTTP API. All endpoints are prefixed with \texttt{/api/v1/}. The API follows standard HTTP conventions for resource naming and status codes.
+
+% TODO: listar ou referenciar os principais grupos de endpoints (artigos, utilizadores, categorias, etc.)
+
+\section{Authentication and Authorization} \label{sec:arch_auth}
+
+Authentication is implemented using a token-based mechanism (JWT). Upon successful login, the server issues a signed token that the client includes in subsequent requests via the \texttt{Authorization} header. Role-based access control (RBAC) is enforced at the API level: each endpoint validates the token and the caller's role before executing the requested operation.
+
+\section{Editorial Workflow} \label{sec:arch_workflow}
+
+Figure~\ref{fig:workflow} illustrates the publication lifecycle of a content item within the system.
+
+% TODO: inserir figura do workflow
+\begin{figure}[H]
+  \begin{center}
+    \framebox[130mm]{\rule{0pt}{50mm} Editorial Workflow Diagram (Figure placeholder)}
+  \end{center}
+  \caption{Publication workflow state machine.}
+  \label{fig:workflow}
+\end{figure}
+
+Content transitions between the following states:
+
+\begin{description}
+  \item[Draft] Initial state. The content is only visible to its author.
+  \item[Pending Approval] The author submits the content for review. It becomes visible to Editors.
+  \item[Published] An Editor approves the content; it becomes publicly accessible.
+  \item[Rejected] An Editor rejects the content, optionally providing revision comments. The author may edit and resubmit.
+\end{description}
+
+Editors and Administrators bypass the approval step and may publish content directly.

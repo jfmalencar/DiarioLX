@@ -1,0 +1,42 @@
+%
+% Chapter 9 — Conclusion
+%
+\chapter{Conclusion} \label{cap:conclusion}
+
+\section{Accomplished Work} \label{sec:conc_accomplished}
+
+% TODO: preencher com o que foi efectivamente implementado até à versão beta
+This beta report documents the progress achieved in the development of the Diário LX platform. The following components have been implemented or are in an advanced state of development:
+
+\begin{itemize}
+  \item System architecture and technology stack definition.
+  \item Database schema design and initial migration scripts.
+  \item Backend API: authentication, user management, content CRUD, and editorial workflow endpoints.
+  \item Frontend: application structure, routing, authentication flow, and initial page implementations.
+\end{itemize}
+
+\section{Challenges} \label{sec:conc_challenges}
+
+% TODO: descrever os desafios encontrados
+Several challenges were encountered during the beta phase:
+
+\begin{itemize}
+  \item \textbf{Rich text editor integration}: Implementing a rich text editor that supports inline images, subtitles, and highlights within the article body proved more complex than initially anticipated.
+  \item \textbf{Media storage}: The decision regarding the multimedia storage solution depends on infrastructure availability from IPL, which introduces an external dependency on the project timeline.
+  \item \textbf{Editorial workflow}: Correctly modelling and enforcing the full set of state transitions and permission rules required careful design of both the backend and frontend layers.
+\end{itemize}
+
+\section{Future Work} \label{sec:conc_future}
+
+% TODO: actualizar com o planeamento restante até à versão final
+The following items remain to be addressed before the final version:
+
+\begin{itemize}
+  \item Complete implementation of all frontend pages and backoffice screens.
+  \item Finalise media storage solution and integration.
+  \item Implement comment submission and moderation.
+  \item Complete the responsive design across all viewports.
+  \item Expand automated test coverage (unit and integration).
+  \item Deploy the application to the IPL server infrastructure.
+  \item Address optional requirements: scheduled publication, advanced search filters, and reader account registration.
+\end{itemize}

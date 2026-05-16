@@ -1,0 +1,24 @@
+%
+% Chapter 8 — Tests
+%
+\chapter{Tests} \label{cap:tests}
+
+This chapter describes the testing strategy adopted for the Diário LX platform, covering both backend and frontend components.
+
+\section{Backend Tests} \label{sec:tests_backend}
+
+\subsection{Unit Tests} \label{sec:tests_be_unit}
+
+% TODO: descrever os testes unitários do backend (lógica de negócio, transições de estado, etc.)
+Unit tests target the service layer, validating business logic in isolation from the database and HTTP layer. The publication workflow state machine is a primary focus, ensuring that invalid transitions are correctly rejected and that role-based permission checks behave as expected.
+
+\subsection{Integration Tests} \label{sec:tests_be_integration}
+
+% TODO: descrever os testes de integração (API endpoints, base de dados)
+Integration tests validate the full request-response cycle of the API, including database interactions. A dedicated test database instance is used to avoid interference with development data.
+
+\section{Frontend Tests} \label{sec:tests_frontend}
+Frontend end-to-end testing is implemented using Playwright~\cite{playwright}, a browser automation framework that supports testing across Chromium, Firefox, and WebKit. Playwright tests simulate real user interactions against the running application, covering the main workflows of both the public website and the backoffice.
+
+\section{Manual Testing} \label{sec:tests_manual}
+In addition to automated Playwright tests, exploratory manual testing was carried out to validate edge cases and visual behaviour not easily captured by automated scripts, including responsive layout across mobile and desktop viewports.

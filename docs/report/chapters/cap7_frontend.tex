@@ -1,0 +1,94 @@
+%
+% Chapter 7 — Frontend
+%
+\chapter{Frontend} \label{cap:frontend}
+
+\section{Technology} \label{sec:fe_technology}
+
+The frontend is developed as a single-page application (SPA) using \textbf{React} with \textbf{TypeScript}. React's component-based model facilitates the construction of reusable UI elements and enables clear separation between the public website and the backoffice interface. TypeScript was adopted to improve code maintainability and reduce runtime errors through static type checking.
+
+\subsection{Libraries} \label{sec:fe_libraries}
+
+% TODO: listar as principais bibliotecas utilizadas e a justificação
+The following libraries were adopted:
+
+\begin{itemize}
+  \item \textbf{React Router} — client-side routing, enabling slug-based navigation (e.g.\ \texttt{/politica/orcamento-estado-2026})~\cite{react_router}.
+
+  \item \textbf{Fetch API} — HTTP communication with the backend API~\cite{mdn_fetch}.
+
+  \item \textbf{TipTap} — rich text editor framework used to implement the block-based article editor in the backoffice~\cite{tiptap}.
+
+  \item \textbf{Bootstrap} — responsive CSS framework used for layout structuring and interface styling~\cite{bootstrap}.
+
+  \item \textbf{Lucide React} — icon library used throughout the interface to provide consistent and lightweight SVG-based icons~\cite{lucide}.
+\end{itemize}
+
+\section{Organisation} \label{sec:fe_organisation}
+
+% TODO: descrever a estrutura de directorias e módulos do frontend
+The project is structured as follows:
+
+\begin{verbatim}
+src/
+  components/       # Reusable UI components
+  pages/            # Page-level components (public site)
+  backoffice/       # Backoffice-specific pages and components
+  hooks/            # Custom React hooks
+  services/         # API communication layer
+  context/          # React context providers (auth, theme)
+  types/            # TypeScript type definitions
+  utils/            # Utility functions
+\end{verbatim}
+
+\section{Navigation} \label{sec:fe_navigation}
+
+The application uses client-side routing based on React Router. URL slugs follow the pattern \texttt{/<category>/<article-slug>}, as required by the specification. Category and tag listing pages are dynamically generated based on data fetched from the API.
+
+\section{Authentication} \label{sec:fe_auth}
+
+% TODO: descrever o fluxo de autenticação no lado do cliente (Julianne)
+The frontend manages authentication state using a React context provider. On successful login, the JWT token is stored (e.g.\ in memory or a secure cookie) and attached to all subsequent API requests. Protected routes redirect unauthenticated users to the login page.
+
+\section{Public Website} \label{sec:fe_public}
+
+\subsection{Homepage} \label{sec:fe_homepage}
+
+% TODO: descrever a implementação e mostrar capturas de ecrã (Julianne)
+The homepage presents four featured articles and the four most recent articles, fetched from the API on page load. The main navigation menu provides access to all editorial sections and institutional pages.
+
+\subsection{Article Page} \label{sec:fe_article}
+
+% TODO: descrever a página de artigo (Jessé)
+Each article is rendered on a dedicated page at its canonical URL. The page displays the full article content, a comment section, and four related articles.
+
+\subsection{Category and Tag Pages} \label{sec:fe_category}
+
+% TODO: descrever (Jessé)
+Category pages display one featured article followed by remaining articles in reverse chronological order. Tag pages list all articles associated with the tag.
+
+\subsection{Podcast Page} \label{sec:fe_podcast}
+
+% TODO: descrever o layout diferenciado para podcasts
+
+\section{Backoffice} \label{sec:fe_backoffice}
+
+\subsection{Content Management} \label{sec:fe_content_mgmt}
+
+% TODO: descrever o editor de conteúdos, fluxo de submissão e aprovação
+
+\subsection{User Management} \label{sec:fe_user_mgmt}
+
+% TODO: descrever a gestão de utilizadores (Jessé)
+
+\subsection{Category and Tag Management} \label{sec:fe_cat_mgmt}
+
+% TODO: descrever a gestão de categorias e tags (Julianne)
+
+\section{Responsive Design} \label{sec:fe_responsive}
+
+The interface is fully responsive, adapting to mobile, tablet, and desktop viewports as required. Layout breakpoints follow standard responsive design conventions.
+
+\section{Tests} \label{sec:fe_tests}
+
+Frontend testing is addressed in Chapter~\ref{cap:tests}.

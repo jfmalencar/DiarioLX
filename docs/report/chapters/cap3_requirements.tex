@@ -1,0 +1,128 @@
+%
+% Chapter 3 — System Requirements
+%
+\chapter{System Requirements} \label{cap:requirements}
+
+This chapter presents the functional and non-functional requirements of the Diário LX platform, derived from the project specification and validated with the editorial team.
+
+\section{Functional Requirements} \label{sec:req_functional}
+
+\subsection{Content Management} \label{sec:req_content}
+
+The system must provide a full content management lifecycle supporting the following content types: \textbf{articles}, \textbf{podcasts}, \textbf{videos}, and \textbf{photo essays}. Each content item must include the following attributes:
+
+\begin{itemize}
+  \item Title
+  \item Body text (supporting inline subtitles, highlights, and captioned images)
+  \item Lead paragraph (\textit{entrada})
+  \item Author(s) and photo author
+  \item Creation and publication date
+  \item Featured image
+  \item Category and subcategory
+  \item Tags
+\end{itemize}
+
+Content must progress through a defined workflow:
+
+\begin{enumerate}
+  \item \textbf{Draft} — created and edited by a Contributor.
+  \item \textbf{Pending Approval} — submitted for editorial review.
+  \item \textbf{Published} — approved and publicly visible.
+  \item \textbf{Rejected} — returned to the author with revision comments.
+\end{enumerate}
+
+It must be possible to archive and permanently delete content. Media file uploads are limited to 2\,GB. It must be possible to mark content as featured for display on the homepage.
+
+\subsection{Categories, Subcategories, and Tags} \label{sec:req_categories}
+
+Content must be organised using categories and subcategories. The main editorial sections are:
+
+\begin{itemize}
+  \item Lisboa, Cidade Aberta
+  \item A Fundo
+  \item Secções (Mundo, Política, Sociedade, Economia, Cultura e Media, Bem-Viver, Desporto)
+  \item Especiais
+  \item Fotografia
+  \item Podcasts
+  \item Vídeos
+\end{itemize}
+
+Each category must support a name, an associated colour, and an automatically generated listing page. Tags must also have dedicated listing pages. The system must allow the creation, editing, and deletion of categories and tags.
+
+\subsection{User Management and Permissions} \label{sec:req_users}
+
+The system defines three user roles:
+
+\begin{description}
+  \item[Administrator] Full system control: manages users, system settings, approves or rejects content and new accounts, and has access to all backoffice areas.
+  \item[Editor] Can approve or reject submitted content, manage contributor accounts, and deactivate users.
+  \item[Contributor] Can create and submit content for approval. Cannot publish directly.
+\end{description}
+
+Each user profile includes: name, email, profile photograph, active/inactive status, professional function (journalist or photographer), and role.
+
+\subsection{Backoffice} \label{sec:req_backoffice}
+
+The backoffice must provide:
+
+\begin{itemize}
+  \item Account creation for Editors and Contributors.
+  \item Login and logout for all profiles.
+  \item Listing and search of all articles and users.
+  \item Profile editing (own profile for all; any profile for Administrators).
+  \item Comment moderation (approve, reject, hide) by Administrators and Editors.
+\end{itemize}
+
+\subsection{Public Website} \label{sec:req_frontend}
+
+\subsubsection{Homepage}
+The homepage must display:
+\begin{itemize}
+  \item 4 featured articles (defined in the backoffice).
+  \item The 4 most recent articles.
+  \item Navigation to main editorial sections.
+  \item Links to institutional pages: Team, Editorial Statute, and Code of Ethics.
+\end{itemize}
+
+\subsubsection{Other Pages}
+\begin{itemize}
+  \item \textbf{Category page}: one featured article (defined in the backoffice) and remaining articles in reverse chronological order.
+  \item \textbf{Tag page}: list of associated articles.
+  \item \textbf{Article page}: full article view, reader comments, and 4 related articles.
+  \item \textbf{Team page}.
+  \item \textbf{Podcast page}: dedicated layout distinct from other category pages.
+\end{itemize}
+
+\subsection{Search and Navigation} \label{sec:req_search}
+
+\begin{itemize}
+  \item Full-text keyword search across articles.
+  \item Human-readable, slugified URLs (e.g. \texttt{/politica/orcamento-estado-2026}).
+\end{itemize}
+
+\subsection{Compatibility} \label{sec:req_compat}
+
+The system must be compatible with modern browsers and fully functional on mobile devices (responsive design for mobile, tablet, and desktop viewports).
+
+\section{Non-Functional Requirements} \label{sec:req_nonfunctional}
+
+\begin{itemize}
+  \item \textbf{Security}: Authentication via token-based mechanism; role-based access control enforced at the API level.
+  \item \textbf{Performance}: Pages must load within acceptable response times under expected editorial team and reader load.
+  \item \textbf{Maintainability}: Codebase organised to allow independent evolution of frontend and backend.
+  \item \textbf{Media storage}: Support for images, audio (podcasts), and video files up to 2\,GB per upload.
+  \item \textbf{Scalability}: Architecture must support growth in both content volume and concurrent users.
+\end{itemize}
+
+\section{Optional Requirements} \label{sec:req_optional}
+
+The following features are considered optional and may be addressed in future iterations:
+
+\begin{itemize}
+  \item Scheduled publication of content.
+  \item Advanced search filters (by date, category, author, tag) in both backoffice and public site.
+  \item User search filters in the backoffice (by role, function, status).
+  \item Reader account registration and commenting.
+  \item Audiodescription support for visually impaired users.
+  \item Multilingual support (Portuguese and English).
+\end{itemize}

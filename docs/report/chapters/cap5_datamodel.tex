@@ -1,0 +1,70 @@
+%
+% Chapter 5 — Data Model
+%
+\chapter{Data Model} \label{cap:datamodel}
+
+\section{Entity-Relationship Diagram} \label{sec:dm_er}
+
+Figure~\ref{fig:er_diagram} presents the conceptual Entity-Relationship (ER) diagram of the Diário LX system, capturing the main entities and their associations.
+
+% TODO: inserir figura do diagrama ER
+\begin{figure}[H]
+  \begin{center}
+    \framebox[130mm]{\rule{0pt}{80mm} Entity-Relationship Diagram (Figure placeholder)}
+  \end{center}
+  \caption{Conceptual Entity-Relationship diagram.}
+  \label{fig:er_diagram}
+\end{figure}
+
+\subsection{Relationship Overview} \label{sec:dm_relationships}
+
+The main entities and their relationships are described below.
+
+\subsubsection{User}
+Represents an authenticated system user. A user has a role (\textit{Admin}, \textit{Editor}, or \textit{Contributor}) and a function (\textit{Journalist} or \textit{Photographer}). A user may author multiple content items; a content item may have multiple authors.
+
+\subsubsection{Content}
+The central entity of the system. A content item has a type (Article, Podcast, Video, or Photo Essay), a publication state, and references to its authors, categories, and tags. The body of a text article is stored as structured rich text, supporting inline images, subtitles, and highlights.
+
+\subsubsection{Category and Subcategory}
+Content is classified into a two-level category hierarchy. Each category has a name and an associated colour. A content item belongs to exactly one category (and optionally one subcategory).
+
+\subsubsection{Tag}
+Tags provide cross-cutting thematic classification. A content item may be associated with multiple tags; each tag has a dedicated listing page on the public site.
+
+\subsubsection{Comment}
+Readers (if registered) may submit comments on article pages. Comments are moderated by Editors and Administrators.
+
+\section{Physical Data Model} \label{sec:dm_physical}
+
+The physical data model maps the conceptual ER diagram to a relational schema in PostgreSQL. Table~\ref{tab:db_tables} lists the main database tables and their purpose.
+
+\begin{table}[H]
+  \centering
+  \caption{Main database tables.}
+  \label{tab:db_tables}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Table}            & \textbf{Description}                                         \\
+    \midrule
+    \texttt{users}            & System users (journalists, editors, admins)                  \\
+    \texttt{content}          & All content items (articles, podcasts, videos, photo essays) \\
+    \texttt{content\_authors} & Many-to-many: content items and their authors                \\
+    \texttt{categories}       & Editorial categories with associated colours                 \\
+    \texttt{subcategories}    & Subcategories linked to parent categories                    \\
+    \texttt{tags}             & Thematic tags                                                \\
+    \texttt{content\_tags}    & Many-to-many: content items and tags                         \\
+    \texttt{comments}         & Reader comments on published articles                        \\
+    \texttt{media}            & Metadata for uploaded media files                            \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+% TODO: incluir DDL ou diagrama do modelo físico
+\subsection{Key Design Decisions} \label{sec:dm_decisions}
+
+\begin{itemize}
+  \item \textbf{Unified content table}: All content types (articles, podcasts, videos, photo essays) share a common \texttt{content} table with a \texttt{type} discriminator column. Type-specific attributes are stored in separate extension tables.
+  \item \textbf{State machine in the database}: The publication state of a content item is stored as an enumerated column in the \texttt{content} table, enforcing valid transitions at the application layer.
+  \item \textbf{Media metadata separation}: Binary media files are not stored in the database; only their metadata (URL, size, MIME type) is persisted in the \texttt{media} table, with the actual files residing in the dedicated media storage system.
+\end{itemize}

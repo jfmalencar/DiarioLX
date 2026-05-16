@@ -1,0 +1,82 @@
+%
+% Chapter 6 — Backend
+%
+\chapter{Backend} \label{cap:backend}
+
+\section{Technology} \label{sec:be_technology}
+
+The backend is developed in \textbf{Kotlin} using the \textbf{Spring Boot} framework. Kotlin was chosen for its conciseness, null-safety guarantees, and full interoperability with the JVM ecosystem. Spring Boot provides a mature foundation for building REST APIs, including dependency injection, declarative configuration, and robust support for data access and security.
+
+\section{Organisation} \label{sec:be_organisation}
+
+The backend follows a layered architecture, inspired by the hexagonal (ports and adapters) pattern. The main layers are:
+
+\begin{description}
+  \item[HTTP Layer] Defines the REST controllers that expose the API endpoints. Each controller is responsible for a bounded domain area (e.g., \texttt{ContentController}, \texttt{UserController}, \texttt{CategoryController}).
+  \item[Service Layer] Contains the business logic. Services orchestrate operations across repositories and enforce domain rules (e.g., publication workflow transitions, permission checks).
+  \item[Repository Layer] Abstracts data access using JDBI. Each repository provides CRUD operations and query methods for its corresponding entity.
+  \item[Domain Layer] Defines the domain entities and value objects (e.g., \texttt{Content}, \texttt{User}, \texttt{PublicationState}).
+\end{description}
+
+% TODO: inserir figura do diagrama de pacotes / organização de módulos
+\begin{figure}[H]
+  \begin{center}
+    \framebox[120mm]{\rule{0pt}{50mm} Backend Layer Diagram (Figure placeholder)}
+  \end{center}
+  \caption{Backend layered architecture.}
+  \label{fig:backend_layers}
+\end{figure}
+
+\section{HTTP API Endpoints} \label{sec:be_api}
+
+% TODO: listar e descrever os principais endpoints
+The API is organised around the following resource groups:
+
+\begin{itemize}
+  \item \texttt{/api/v1/auth} — Authentication (login, logout, token refresh)
+  \item \texttt{/api/v1/users} — User management (CRUD, role assignment)
+  \item \texttt{/api/v1/content} — Content management (create, edit, submit, approve, reject, publish, archive, delete)
+  \item \texttt{/api/v1/categories} — Category and subcategory management
+  \item \texttt{/api/v1/tags} — Tag management
+  \item \texttt{/api/v1/comments} — Comment submission and moderation
+  \item \texttt{/api/v1/search} — Full-text keyword search
+\end{itemize}
+
+\section{Authentication} \label{sec:be_auth}
+
+Authentication is implemented using JSON Web Tokens (JWT). The token is generated upon successful login and must be included in the \texttt{Authorization: Bearer <token>} header of all subsequent authenticated requests. The token encodes the user's identifier and role, allowing the server to perform authorization checks without additional database queries.
+
+% TODO: detalhar a implementação do mecanismo de tokens (Julianne)
+
+\section{Authorization} \label{sec:be_authorization}
+
+Role-based access control (RBAC) is enforced at the HTTP layer via Spring Security. Each endpoint is annotated with the required minimum role. The three roles (\textit{Contributor}, \textit{Editor}, \textit{Admin}) form a hierarchical permission model in which each role inherits the permissions of the roles below it.
+
+\section{Content Workflow} \label{sec:be_workflow}
+
+The publication workflow is enforced by the service layer. Valid state transitions are:
+
+\begin{itemize}
+  \item \textit{Draft} $\rightarrow$ \textit{Pending Approval} (Contributor: submit for review)
+  \item \textit{Draft} $\rightarrow$ \textit{Published} (Editor/Admin: direct publish)
+  \item \textit{Pending Approval} $\rightarrow$ \textit{Published} (Editor/Admin: approve)
+  \item \textit{Pending Approval} $\rightarrow$ \textit{Rejected} (Editor/Admin: reject with comment)
+  \item \textit{Rejected} $\rightarrow$ \textit{Draft} (Contributor: edit and resubmit)
+\end{itemize}
+
+Invalid transitions are rejected with an appropriate HTTP error response.
+
+\section{Error Handling} \label{sec:be_errors}
+
+% TODO: descrever a estratégia de tratamento de erros
+
+\section{Database Access} \label{sec:be_database}
+
+Data access is handled through JDBI, a lightweight SQL convenience library for the JVM. Unlike ORM-based approaches, JDBI provides direct control over SQL queries, mapping result sets to domain objects explicitly. This choice favours simplicity and transparency of database interactions over the abstraction overhead of a full ORM.
+
+% TODO: detalhar queries relevantes ou padrões de acesso a dados
+
+\section{Tests} \label{sec:be_tests}
+
+% TODO: descrever os testes de backend (unitários, integração)
+Backend testing is addressed in Chapter~\ref{cap:tests}.

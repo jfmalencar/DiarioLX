@@ -1,0 +1,40 @@
+%
+% Chapter 1 — Introduction
+%
+\chapter{Introduction} \label{cap:intro}
+
+\section{Context} \label{sec:intro_context}
+
+In a media ecosystem increasingly marked by misinformation and the erosion of journalistic standards, Diário LX emerges as a digital journalism initiative committed to editorial ethics, slow journalism, and proximity to local communities. The project is developed within the Journalism Trends Laboratory (\textit{Laboratório de Tendência no Jornalismo}), a structure affiliated with LIACOM (Applied Research Laboratory in Communication and Media) at the Escola Superior de Comunicação Social (ESCS) of the Instituto Politécnico de Lisboa (IPL).
+
+The platform targets a young audience aged 18 to 35 years, with higher education backgrounds, and places a particular emphasis on the Greater Lisbon region. Editorially, it promotes visual journalism, long-form reporting, and investigative content, while deliberately avoiding clickbait-driven content strategies. The project has no commercial purpose and carries no advertising, operating instead with civic, educational, and scientific goals, co-funded by FCT (Fundação para a Ciência e Tecnologia).
+
+\section{Motivation} \label{sec:intro_motivation}
+
+A proof of concept was initially implemented using WordPress to validate the editorial structure and workflow. However, this approach revealed significant limitations in terms of architectural control, customisation, and long-term scalability. The need to build a purpose-built platform that fully supports the editorial lifecycle — from content creation and review to publication and archival — motivated the development of this system from the ground up.
+
+\section{Solution Overview} \label{sec:intro_solution}
+
+The resulting system, Diário LX, is a web-based content management and publication platform organised around two distinct areas:
+
+\begin{itemize}
+  \item \textbf{Backoffice}: A restricted editorial management interface, accessible only to authenticated users (Administrators, Editors, and Contributors), supporting content creation, revision, approval, and publishing workflows.
+  \item \textbf{Public Website}: A reader-facing interface providing access to published articles, multimedia content (podcasts, videos, photo essays), organised by category, tag, and editorial section.
+\end{itemize}
+
+The system enforces a structured editorial workflow in which content progresses through defined states — \textit{draft}, \textit{pending approval}, \textit{published}, and \textit{rejected} — ensuring editorial oversight before any content reaches the public.
+
+\section{Report Organisation} \label{sec:intro_organisation}
+
+The remainder of this report is organised as follows:
+
+\begin{itemize}
+  \item Chapter~\ref{cap:background} presents the context, related work, and existing solutions analysed during the project.
+  \item Chapter~\ref{cap:requirements} details the functional and non-functional requirements of the system.
+  \item Chapter~\ref{cap:architecture} describes the system architecture and technology choices.
+  \item Chapter~\ref{cap:datamodel} presents the data model.
+  \item Chapter~\ref{cap:backend} covers the backend implementation.
+  \item Chapter~\ref{cap:frontend} covers the frontend implementation.
+  \item Chapter~\ref{cap:tests} describes the testing approach and results.
+  \item Chapter~\ref{cap:conclusion} concludes the report and outlines future work.
+\end{itemize}
