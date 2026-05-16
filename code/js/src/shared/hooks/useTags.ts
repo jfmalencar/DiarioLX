@@ -20,7 +20,7 @@ export const useTags = () => {
             setError(null)
             try {
                 const data = await tagsService.fetchOne(id)
-                return data.tag
+                return data
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch tag'
                 setError(message)
@@ -38,7 +38,7 @@ export const useTags = () => {
             setError(null)
             try {
                 const data = await tagsService.fetchAll(params)
-                setTags(data.tags)
+                setTags(data.items)
                 setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch tags'

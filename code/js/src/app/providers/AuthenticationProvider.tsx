@@ -5,7 +5,6 @@ import {
   type AuthenticationState,
   type AuthUser,
 } from '@/shared/hooks/useAuthentication'
-import type { RegisterResponseDTO } from '@/shared/services/auth/auth.types'
 
 type AuthProviderProps = {
   children: ReactNode
@@ -77,7 +76,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
   }, [])
 
   const register = useCallback(
-    async (username: string, email: string, password: string, firstName: string, lastName: string, inviteCode: string): Promise<RegisterResponseDTO | undefined> => {
+    async (username: string, email: string, password: string, firstName: string, lastName: string, inviteCode: string): Promise<boolean> => {
       setLoading(true)
       setError(null)
 
@@ -86,7 +85,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         if (!registeredUser) {
           setError('Registration failed')
           setUser(undefined)
-          return undefined
+          return false
         }
         return registeredUser
 
@@ -94,7 +93,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         const message = err instanceof Error ? err.message : 'Registration failed'
         setError(message)
         setUser(undefined)
-        return undefined
+        return false
       } finally {
         setLoading(false)
       }

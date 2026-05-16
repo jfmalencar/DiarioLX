@@ -1,7 +1,6 @@
 import type { AuthService } from './auth.types';
 import type { User } from './auth.types';
 
-const fakeUserId = 1;
 const fakeLoginResponse = {
   token: 'fake-token',
   expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
@@ -22,6 +21,7 @@ export const authMockService: AuthService = {
         profilePictureUrl: 'https://placehold.co/213x213',
         createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         updatedAt: new Date().toISOString(),
+        role: 'EDITOR',
         isActive: true,
       };
       cookieStore.set('authUser', JSON.stringify(fakeUser));
@@ -46,9 +46,10 @@ export const authMockService: AuthService = {
       profilePictureUrl: 'https://placehold.co/213x213',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      role: 'CONTRIBUTOR',
       isActive: true,
     };
-    return { userId: fakeUserId };
+    return true
   },
 
   async getCurrentUser() {

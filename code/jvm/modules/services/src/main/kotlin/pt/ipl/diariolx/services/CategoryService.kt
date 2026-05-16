@@ -3,7 +3,6 @@ package pt.ipl.diariolx.services
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.domain.category.UpdateCategory
 import pt.ipl.diariolx.repository.Transaction
 import pt.ipl.diariolx.repository.TransactionManager
@@ -37,8 +36,7 @@ class CategoryService(
             validateData(tx, null, slug, parentId).let {
                 if (it is Failure) return@run it
             }
-            val newCategory = NewCategory(name!!, slug!!, description, color!!, parentId)
-            val categoryId = tx.categoryRepository.create(newCategory)
+            val categoryId = tx.categoryRepository.create(name!!, slug!!, description, color!!, parentId)
             success(categoryId)
         }
     }

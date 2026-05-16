@@ -20,10 +20,10 @@ export const useMedia = () => {
             setError(null)
             try {
                 const response = await mediaService.fetchAll(params)
-                setMedias(response.medias)
+                setMedias(response.items)
                 setPagination(response.pagination)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to fetch articles'
+                const message = err instanceof Error ? err.message : 'Failed to fetch contents'
                 setError(message)
                 setMedias([])
             } finally {

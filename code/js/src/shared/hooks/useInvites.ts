@@ -20,7 +20,7 @@ export const useInvites = () => {
             setError(null)
             try {
                 const data = await invitesService.fetchAll(params)
-                setInvites(data.invites)
+                setInvites(data.items)
                 setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch invites'

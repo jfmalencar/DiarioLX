@@ -27,13 +27,11 @@ export type TagRequest = {
 }
 
 export type TagsResponse = {
-  tags: Tag[];
+  items: Tag[];
   pagination: Pagination
 };
 
-export type TagResponse = {
-  tag: Tag;
-}
+export type TagResponse = Tag
 
 export interface TagsService {
   fetchAll(params: Query): Promise<TagsResponse>;

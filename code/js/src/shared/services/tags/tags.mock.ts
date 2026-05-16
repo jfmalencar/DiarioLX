@@ -26,7 +26,7 @@ const fakeTags: Tag[] = [
 export const tagsMockService: TagsService = {
   async fetchAll() {
     return {
-      tags: fakeTags,
+      items: fakeTags,
       pagination: {
         page: 1,
         size: 10,
@@ -41,7 +41,7 @@ export const tagsMockService: TagsService = {
     if (!tag) {
       throw new Error('Tag not found');
     }
-    return { tag };
+    return tag;
   },
 
   async create(tag) {

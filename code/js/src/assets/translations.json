@@ -48,7 +48,7 @@
         "register.invalid_name": "Please enter a valid first and last name.",
         "register.invalid_password": "Please enter a valid password.",
         "users.title": "User Management",
-        "articles.title": "Articles Management",
+        "contents.title": "Contents Management",
         "homepage.title": "Homepage Management",
         "categories.search_placeholder": "Search categories",
         "categories.name": "Category",
@@ -175,7 +175,7 @@
         "users.editor": "Editor",
         "users.admin": "Administrador",
         "users.contributor": "Colaborador",
-        "articles.title": "Gerir Publicações",
+        "contents.title": "Gerir Publicações",
         "homepage.title": "Gerir Página Inicial",
         "categories.search_placeholder": "Pesquisar categorias",
         "categories.name": "Categoria",
@@ -244,6 +244,17 @@
         "backoffice_layout.loading": "A carregar",
         "backoffice_layout.my_profile": "O meu perfil",
         "backoffice_layout.my_profile_subtitle": "Aqui podes verificar e editar as tuas informações pessoais e de acesso.",
-        "login.loading": "A carregar"
+        "login.loading": "A carregar",
+        "register.loading": "A criar conta",
+        "posts.create.content": "Criação de Artigo",
+        "posts.create.video": "Criação de Vídeo",
+        "posts.create.photo": "Criação de Fotografia",
+        "posts.create.podcast": "Criação de Podcast",
+        "posts.create.episode": "Criação de Episódio",
+        "posts.edit.content": "Edição de Artigo",
+        "posts.edit.video": "Edição de Vídeo",
+        "posts.edit.photo": "Edição de Fotografia",
+        "posts.edit.podcast": "Edição de Podcast",
+        "posts.edit.episode": "Edição de Episódio"
     }
 }

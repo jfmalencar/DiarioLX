@@ -37,7 +37,7 @@ export const useCategories = () => {
             setError(null)
             try {
                 const data = await categoriesService.fetchAll(params)
-                setCategories(data.categories)
+                setCategories(data.items)
                 setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch categories'

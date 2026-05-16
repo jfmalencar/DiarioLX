@@ -12,6 +12,7 @@ interface FileRepository {
     fun getAll(
         limit: Int,
         offset: Int,
+        type: String? = null,
     ): List<Media>
 
     fun completeUpload(media: NewMedia): Boolean

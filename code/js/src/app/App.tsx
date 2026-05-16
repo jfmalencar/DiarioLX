@@ -8,7 +8,7 @@ import { AuthenticationProvider } from '@/app/providers/AuthenticationProvider';
 import { Home } from '@/modules/public/Home';
 import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
-import { Article } from '@/modules/public/Article';
+import { Content } from '@/modules/public/Content';
 
 // Backoffice
 import { Login } from '@/modules/backoffice/Login';
@@ -18,8 +18,8 @@ import { Tags } from '@/modules/backoffice/tags/Tags';
 import { EditCategory } from '@/modules/backoffice/categories/EditCategory';
 import { EditTag } from '@/modules/backoffice/tags/EditTag';
 import { Users } from '@/modules/backoffice/users/Users';
-import { Articles } from '@/modules/backoffice/articles/Articles';
-import { EditArticle } from '@/modules/backoffice/articles/EditArticle';
+import { Contents } from '@/modules/backoffice/publications/Contents';
+import { EditContent } from '@/modules/backoffice/publications/EditContent';
 import { SignUp } from '@/modules/backoffice/SignUp';
 import { Invites } from '@/modules/backoffice/invites/Invites';
 import { MyProfile } from '@/modules/backoffice/myProfile/MyProfile';
@@ -52,7 +52,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'p/:slug',
-        element: <Article />,
+        element: <Content />,
       }
     ],
   },
@@ -153,7 +153,7 @@ const router = createBrowserRouter([
         path: 'publicacoes',
         element: (
           <RequireAuthentication>
-            <Articles />
+            <Contents />
           </RequireAuthentication>
         ),
         handle: {
@@ -166,7 +166,7 @@ const router = createBrowserRouter([
         path: 'publicacoes/:id',
         element: (
           <RequireAuthentication>
-            <EditArticle />
+            <EditContent />
           </RequireAuthentication>
         ),
         handle: {

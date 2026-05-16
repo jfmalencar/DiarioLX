@@ -1,11 +1,16 @@
 package pt.ipl.diariolx.repository
 
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.domain.category.UpdateCategory
 
 interface CategoryRepository {
-    fun create(category: NewCategory): Int
+    fun create(
+        name: String,
+        slug: String,
+        description: String? = null,
+        color: String,
+        parentId: Int? = null,
+    ): Int
 
     fun getById(id: Int): Category?
 

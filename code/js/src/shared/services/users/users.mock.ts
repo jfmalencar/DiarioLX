@@ -5,8 +5,8 @@ const fakeUsers: User[] = [
     userId: '1',
     username: 'johndoe',
     email: 'johndoe@test.pt',
-    fName: 'John',
-    lName: 'Doe',
+    firstName: 'John',
+    lastName: 'Doe',
     bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
     profilePictureURL: 'https://randomuser.me/api/portraits/men/1.jpg',
     role: 'ADMIN',
@@ -16,7 +16,7 @@ const fakeUsers: User[] = [
 export const usersMockService: UsersService = {
   async fetchAll() {
     return {
-      users: fakeUsers,
+      items: fakeUsers,
       pagination: {
         page: 1,
         size: 1,

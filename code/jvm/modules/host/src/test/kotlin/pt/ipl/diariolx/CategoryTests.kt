@@ -6,9 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.returnResult
-import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.http.Uris
-import pt.ipl.diariolx.http.model.CategoryRequestDTO
+import pt.ipl.diariolx.http.dto.category.CreateUpdateCategoryRequestDTO
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CategoryTests {
@@ -26,7 +25,8 @@ class CategoryTests {
     @Test
     fun `can create and edit category`() {
         // given: an HTTP client and a category payload
-        val category = NewCategory(name = "Test Category", description = "Test Description", slug = "test", color = "#ec6b43")
+        val category =
+            CreateUpdateCategoryRequestDTO(name = "Test Category", description = "Test Description", slug = "test", color = "#ec6b43")
 
         // when: creating a category
         // then: the response is a 201
@@ -48,7 +48,7 @@ class CategoryTests {
 
         // when: editing the category
         val request =
-            CategoryRequestDTO(
+            CreateUpdateCategoryRequestDTO(
                 name = "Updated Category",
                 description = "Updated Description",
                 slug = "updated",

@@ -8,7 +8,7 @@ fun <T> paginate(
     fetchItems: (limit: Int, offset: Int) -> List<T>,
 ): PageResponse<T> {
     val safePage = page.coerceAtLeast(1)
-    val safeSize = size.coerceAtLeast(1)
+    val safeSize = size.coerceAtLeast(1).coerceAtMost(30)
 
     val limit = safeSize + 1
     val offset = (safePage - 1) * safeSize

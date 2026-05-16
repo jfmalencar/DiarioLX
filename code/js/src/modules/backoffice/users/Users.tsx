@@ -72,7 +72,7 @@ const UsersTable = ({ filter }: Props) => {
                             >
                                 {row.profilePictureURL ?
                                     <img src={row.profilePictureURL}
-                                        alt={`${row.fName} ${row.lName}`}
+                                        alt={`${row.firstName} ${row.lastName}`}
                                         className='rounded-circle'
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     /> :
@@ -81,7 +81,7 @@ const UsersTable = ({ filter }: Props) => {
                             </div>
                             <div>
                                 <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
-                                    {row.fName} {row.lName}
+                                    {row.firstName} {row.lastName}
                                 </div>
                                 <div className='text-muted small mt-1'>
                                     {row.bio || '-'}

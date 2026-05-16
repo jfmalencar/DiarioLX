@@ -11,12 +11,13 @@ import { Button } from './Button';
 import { Pill } from './Pill';
 
 type MediaGalleryProps = {
+    mediaType: 'image' | 'video' | 'audio';
     isOpen: boolean;
     onClose: () => void;
     onSelect: (media: Media) => void;
 };
 
-export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
+export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGalleryProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -28,9 +29,9 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
     const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
 
     const load = useCallback(async () => {
-        const params = buildQuery({ p: 'page', total: 'size' });
+        const params = buildQuery({ p: 'page', total: 'size' }, { type: mediaType });
         await fetchAll(params);
-    }, [fetchAll, buildQuery]);
+    }, [fetchAll, buildQuery, mediaType]);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -77,22 +78,17 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
 
         try {
             setIsUploading(true);
-            const response = await getSignedUrl({
-                file: selectedFile,
-                photographerId: photographer.id,
-                altText,
-            });
+            const response = await getSignedUrl({ file: selectedFile, photographerId: photographer.id, altText });
             if (!response) {
                 throw new Error('Failed to upload media');
             }
 
-            const { signedUrl, id } = response;
+            console.log('Received signed URL response:', response);
 
+            const { signedUrl, id } = response;
             const uploadResult = await fetch(signedUrl, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': selectedFile.type,
-                },
+                headers: { 'Content-Type': selectedFile.type },
                 body: selectedFile,
             });
 
@@ -156,7 +152,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                                         <div className='col-12'>
                                             <input
                                                 type='file'
-                                                accept='image/*'
+                                                accept={`${mediaType}/*`}
                                                 className='form-control'
                                                 onChange={handleFileChange}
                                             />
@@ -175,7 +171,7 @@ export function MediaGallery({ isOpen, onClose, onSelect }: MediaGalleryProps) {
                                                         name='photographer'
                                                         options={users.map((user) => ({
                                                             id: user.userId,
-                                                            name: user.fName + ' ' + user.lName,
+                                                            name: user.firstName + ' ' + user.lastName,
                                                         }))}
                                                         placeholder='Pesquisar fotógrafo...'
                                                         onSearch={(e) =>

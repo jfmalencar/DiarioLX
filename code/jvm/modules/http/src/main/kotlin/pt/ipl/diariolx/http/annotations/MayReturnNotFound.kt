@@ -1,0 +1,14 @@
+package pt.ipl.diariolx.http.annotations
+
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import pt.ipl.diariolx.http.problems.ProblemDetail
+
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@ApiResponse(
+    responseCode = "404",
+    content = [Content(schema = Schema(implementation = ProblemDetail::class))],
+)
+annotation class MayReturnNotFound

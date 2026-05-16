@@ -15,7 +15,10 @@ object Uris {
         const val CREATE = ROOT
         const val GET_ALL = ROOT
         const val GET_BY_ID = "$ROOT/{id}"
+        const val DELETE = "$ROOT/{id}"
         const val UPDATE = "$ROOT/me"
+        const val DEACTIVATE = "$ROOT/{id}/deactivate"
+
         const val HOME = "$ROOT/me"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
@@ -78,9 +81,9 @@ object Uris {
         const val COMPLETE_UPLOAD = "$PREFIX/media/{id}"
     }
 
-    object Articles {
-        const val CREATE = "$PREFIX/articles"
-        const val GET_BY_SLUG = "$PREFIX/articles/slug/{slug}"
-        const val GET_ALL = "$PREFIX/articles"
+    object Content {
+        const val CREATE = "$PREFIX/contents"
+        const val GET_BY_SLUG = "$PREFIX/contents/{slug}"
+        const val GET_ALL = "$PREFIX/contents"
     }
 }

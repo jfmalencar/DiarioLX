@@ -12,7 +12,7 @@ export interface AuthService {
     firstName: string,
     lastName: string,
     inviteCode: string
-  ): Promise<RegisterResponseDTO | undefined>;
+  ): Promise<boolean>;
 
   getCurrentUser(): Promise<User | undefined>;
 
@@ -32,12 +32,12 @@ export type UserApiResponse = {
   userId: number;
   username: string;
   email: string;
-  fName: string;
-  lName: string;
+  firstName: string;
+  lastName: string;
   bio: string | null;
   profilePictureURL: string | null;
-  createdAt: { value$kotlinx_datetime: string } | string;
-  updatedAt: { value$kotlinx_datetime: string } | string;
+  createdAt: string;
+  updatedAt: string;
   isActive: boolean;
   role: UserRole;
 };
@@ -61,8 +61,4 @@ export type LoginResponseDTO = {
   token: string;
   expiresAt: string;
   message: string;
-}
-
-export type RegisterResponseDTO = {
-  userId: number;
 }

@@ -5,8 +5,8 @@ export type User = {
     userId: string;
     username: string;
     email: string;
-    fName: string;
-    lName: string;
+    firstName: string;
+    lastName: string;
     bio: string;
     profilePictureURL: string;
     role: UserRole;
@@ -15,7 +15,7 @@ export type User = {
 export type UserRole = 'ADMIN' | 'EDITOR' | 'CONTRIBUTOR';
 
 export type UsersResponse = {
-    users: User[];
+    items: User[];
     pagination: Pagination;
 };
 

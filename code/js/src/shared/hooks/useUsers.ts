@@ -20,7 +20,7 @@ export const useUsers = () => {
             setError(null)
             try {
                 const data = await usersService.fetchAll(params)
-                setUsers(data.users)
+                setUsers(data.items)
                 setPagination(data.pagination)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch users'

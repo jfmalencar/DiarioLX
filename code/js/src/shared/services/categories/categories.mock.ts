@@ -32,7 +32,7 @@ const fakeCategories: Category[] = [
 export const categoriesMockService: CategoriesService = {
   async fetchAll() {
     return {
-      categories: fakeCategories,
+      items: fakeCategories,
       pagination: {
         page: 1,
         size: 10,

@@ -6,7 +6,7 @@ SELECT
     t.description,
     (
     SELECT COUNT(*)
-     FROM article_tags
+     FROM content_tags
         at
         WHERE at.tag_id = t.id
     ) AS quantity,
@@ -26,7 +26,7 @@ SELECT
     p.name AS parentName,
     (
         SELECT COUNT(*)
-        FROM articles a
+        FROM contents a
         WHERE a.category_id = c.id
     ) AS quantity,
     c.created_at,
@@ -36,8 +36,8 @@ FROM categories c
 LEFT JOIN categories p
 ON p.id = c.parent_id;
 
--- Articles
-CREATE OR REPLACE VIEW v_articles AS
+-- Content
+CREATE OR REPLACE VIEW v_contents AS
 SELECT
     a.id,
     a.title,
@@ -84,9 +84,9 @@ SELECT
                                        'slug', t.slug
                                )
                        )
-                FROM article_tags at
+                FROM content_tags at
             JOIN tags t ON t.id = at.tag_id
-            WHERE at.article_id = a.id
+            WHERE at.content_id = a.id
         ),
         '[]'::json
     )::text AS tags,
@@ -102,9 +102,9 @@ SELECT
                                )
                                    ORDER BY (aa.role = 'primary') DESC
                        )
-                FROM article_authors aa
+                FROM content_authors aa
                          JOIN users au ON au.id = aa.author_id
-                WHERE aa.article_id = a.id
+                WHERE aa.content_id = a.id
             ),
             '[]'::json
     )::text AS authors,
@@ -141,21 +141,21 @@ SELECT
                                )
                                    ORDER BY ab.position
                        )
-                FROM article_blocks ab
+                FROM content_blocks ab
                          LEFT JOIN media m ON m.id = ab.media_id
                          LEFT JOIN users pa ON pa.id = m.contributor_id
-                WHERE ab.article_id = a.id
+                WHERE ab.content_id = a.id
             ),
             '[]'::json
     )::text AS blocks
 
-FROM articles a
+FROM contents a
          JOIN categories c ON c.id = a.category_id
          LEFT JOIN media fm ON fm.id = a.featured_media_id
          LEFT JOIN users mu ON mu.id = fm.contributor_id;
 
--- Articles summary
-CREATE OR REPLACE VIEW v_articles_summary AS
+-- content summary
+CREATE OR REPLACE VIEW v_contents_summary AS
 SELECT
     a.id,
     a.title,
@@ -164,11 +164,11 @@ SELECT
     fm.bucket || '/' || fm.object_key AS "featuredImage",
     COALESCE(authors.names, '') AS authors,
     a.created_at AS "createdAt"
-FROM articles a
+FROM contents a
          JOIN categories c ON c.id = a.category_id
          LEFT JOIN media fm ON fm.id = a.featured_media_id
          LEFT JOIN LATERAL (
     SELECT string_agg(concat_ws(' ', u.first_name, u.last_name), ', ' ORDER BY u.first_name) AS names
-FROM article_authors aa
+FROM content_authors aa
     JOIN users u ON u.id = aa.author_id
-WHERE aa.article_id = a.id) authors ON true;
+WHERE aa.content_id = a.id) authors ON true;

@@ -2,7 +2,6 @@ package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.domain.category.UpdateCategory
 import pt.ipl.diariolx.repository.CategoryRepository
 
@@ -10,15 +9,21 @@ class CategoryRepositoryMem : CategoryRepository {
     private val categories = mutableListOf<Category>()
     private var currentId = 0
 
-    override fun create(category: NewCategory): Int {
+    override fun create(
+        name: String,
+        slug: String,
+        description: String?,
+        color: String,
+        parentId: Int?,
+    ): Int {
         val id = ++currentId
         val newCategory =
             Category(
                 id = id,
-                name = category.name,
-                description = category.description,
-                color = category.color,
-                slug = category.slug,
+                name = name,
+                description = description,
+                color = color,
+                slug = slug,
                 quantity = 0,
                 createdAt = Clock.System.now(),
                 updatedAt = Clock.System.now(),

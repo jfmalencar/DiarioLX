@@ -15,8 +15,8 @@ class JdbiFileRepository(
         handle
             .createQuery(
                 """
-                insert into media (type, original_file_name, bucket, object_key, alt_text, mime_type,status, contributor_id)
-                values (:type, :original_file_name, :bucket, :object_key, :alt_text, :mime_type, :status, :contributor_id)
+                insert into media (type, original_file_name, bucket, object_key, thumbnail_bucket, thumbnail_object_key,alt_text, mime_type,status, contributor_id)
+                values (:type, :original_file_name, :bucket, :object_key, :bucket, :object_key, :alt_text, :mime_type, :status, :contributor_id)
                 returning id
                 """.trimIndent(),
             ).bind("type", "image")
@@ -33,7 +33,38 @@ class JdbiFileRepository(
     override fun getAll(
         limit: Int,
         offset: Int,
-    ): List<Media> =
+        type: String?,
+    ): List<Media> {
+        val sql =
+            buildString {
+                append(
+                    """
+                    select media.*, users.id as user_id,
+                    concat(users.first_name, ' ', users.last_name) as full_name,
+                    users.username as username from media
+                    left join users on users.id = media.contributor_id
+                    where status = :status
+                    """.trimIndent(),
+                )
+                if (type != null) {
+                    append(" AND mime_type ILIKE :type")
+                }
+                append(" ORDER BY id desc")
+                append(" LIMIT :limit OFFSET :offset")
+            }
+
+        return handle
+            .createQuery(sql)
+            .bind("limit", limit)
+            .bind("offset", offset)
+            .bind("type", "$type%")
+            .bind("status", "ready")
+            .mapTo<MediaModel>()
+            .list()
+            .map { it.media }
+    }
+
+    override fun get(id: Int): Media? {
         handle
             .createQuery(
                 """
@@ -41,20 +72,9 @@ class JdbiFileRepository(
                 concat(users.first_name, ' ', users.last_name) as full_name,
                 users.username as username from media
                 left join users on users.id = media.contributor_id
-                where status = :status
-                limit :limit offset :offset
-            """,
-            ).bind("limit", limit)
-            .bind("offset", offset)
-            .bind("status", "pending")
-            .mapTo<MediaModel>()
-            .list()
-            .map { it.media }
-
-    override fun get(id: Int): Media? {
-        handle
-            .createQuery("select * from media where id = :id")
-            .bind("id", id)
+                where media.id = :id
+                """,
+            ).bind("id", id)
             .mapTo<MediaModel>()
             .singleOrNull()
             ?.let { return it.media }
@@ -96,8 +116,10 @@ class JdbiFileRepository(
             get() =
                 Media(
                     id = id,
-                    url = "http://localhost:8333/$bucket/$objectKey",
-                    thumbnailUrl = thumbnailBucket?.let { "http://localhost:8333/$it/$thumbnailObjectKey" } ?: "",
+                    bucket = bucket,
+                    objectKey = objectKey,
+                    thumbnailBucket = thumbnailBucket,
+                    thumbnailObjectKey = thumbnailObjectKey,
                     altText = altText,
                     mimeType = mimeType,
                     status = status,

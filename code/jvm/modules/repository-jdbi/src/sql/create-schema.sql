@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS invites CASCADE;
 DROP TABLE IF EXISTS sessions CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
-DROP TABLE IF EXISTS articles CASCADE;
+DROP TABLE IF EXISTS content CASCADE;
 DROP TYPE IF EXISTS user_role CASCADE;
 
 CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
@@ -87,7 +87,7 @@ CREATE TABLE media (
     uploaded_at           BIGINT DEFAULT NULL
 );
 
-CREATE TABLE articles (
+CREATE TABLE contents (
     id    SERIAL PRIMARY KEY,
     title             VARCHAR(255) NOT NULL,
     headline          TEXT,
@@ -99,16 +99,16 @@ CREATE TABLE articles (
     updated_at        BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
 );
 
-CREATE TABLE article_authors (
-    article_id      INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+CREATE TABLE content_authors (
+    content_id      INTEGER NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
     author_id       INTEGER NOT NULL REFERENCES users(id),
     role            VARCHAR(20) NOT NULL CHECK (role IN ('primary', 'secondary')),
-    PRIMARY KEY (article_id, author_id)
+    PRIMARY KEY (content_id, author_id)
 );
 
-CREATE TABLE article_blocks (
+CREATE TABLE content_blocks (
     id              SERIAL PRIMARY KEY,
-    article_id      INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+    content_id      INTEGER NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
     type            VARCHAR(20) NOT NULL CHECK (type IN ('text', 'quote', 'image')),
     content         TEXT NULL,
     media_id        INTEGER NULL REFERENCES media(id),
@@ -117,17 +117,17 @@ CREATE TABLE article_blocks (
     created_at      BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
     updated_at      BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
 
-    CONSTRAINT uq_article_blocks_article_position UNIQUE (article_id, position),
-    CONSTRAINT chk_article_blocks_content CHECK (
+    CONSTRAINT uq_content_blocks_content_position UNIQUE (content_id, position),
+    CONSTRAINT chk_content_blocks_content CHECK (
         (type IN ('text', 'quote') AND content IS NOT NULL)
             OR
         (type = 'image' AND media_id IS NOT NULL)
         )
 );
 
-CREATE TABLE article_tags (
-    article_id      INTEGER NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+CREATE TABLE content_tags (
+    content_id      INTEGER NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
     tag_id          INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
     role            VARCHAR(20) NOT NULL CHECK (role IN ('primary', 'secondary')),
-    PRIMARY KEY (article_id, tag_id)
+    PRIMARY KEY (content_id, tag_id)
 );

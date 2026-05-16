@@ -36,7 +36,7 @@ export type CategoryRequest = {
 }
 
 export type CategoriesResponse = {
-  categories: Category[];
+  items: Category[];
   pagination: Pagination
 };
 

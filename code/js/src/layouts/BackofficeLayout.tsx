@@ -23,6 +23,8 @@ export const BackofficeLayout = () => {
   const currentMatch = matches[matches.length - 1]
   const handle = currentMatch?.handle as RouteHandle
 
+  console.log('user => ', user)
+
   if (handle.layout === 'none') {
     return (
       <>
@@ -47,9 +49,10 @@ export const BackofficeLayout = () => {
   }
 
   const options = [
-    { key: 'new-article', label: 'Artigo', action: () => navigate('/backoffice/publicacoes/novo') },
-    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/podcasts/novo') },
-    { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/videos/novo') },
+    { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/publicacoes/nova?tipo=artigo') },
+    { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/publicacoes/nova?tipo=video') },
+    { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/publicacoes/nova?tipo=episodio') },
+    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/podcasts/nova') },
     { key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categorias/nova') },
     { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/etiquetas/nova') },
   ]

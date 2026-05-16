@@ -1,4 +1,4 @@
-import type { AuthService, LoginResponseDTO, RegisterResponseDTO, User, UserApiResponse } from './auth.types';
+import type { AuthService, LoginResponseDTO, User, UserApiResponse } from './auth.types';
 import { get, post, patch } from '../http/client';
 
 export const authApiService: AuthService = {
@@ -20,14 +20,14 @@ export const authApiService: AuthService = {
   },
 
   async register(username, email, password, firstName, lastName, inviteCode) {
-    const result = await post<RegisterResponseDTO>(
+    const result = await post<undefined>(
       '/api/auth/signup',
       {
         username,
         email,
         password,
-        fName: firstName,
-        lName: lastName,
+        firstName: firstName,
+        lastName: lastName,
       },
       {
         headers: {
@@ -35,12 +35,10 @@ export const authApiService: AuthService = {
         },
       }
     );
-
     if (!result.success) {
-      return undefined;
+      return false
     }
-
-    return result.data;
+    return true;
   },
 
   async getCurrentUser() {
@@ -50,6 +48,8 @@ export const authApiService: AuthService = {
       return undefined;
     }
 
+    console.log(result.data)
+
     return normalizeUser(result.data);
   },
 
@@ -58,8 +58,8 @@ export const authApiService: AuthService = {
       username: username || null,
       email: email || null,
       password: password || null,
-      fName: firstName || null,
-      lName: lastName || null,
+      firstName: firstName || null,
+      lastName: lastName || null,
       bio: bio || null,
       profilePictureURL: profilePictureUrl || null,
     });
@@ -74,24 +74,16 @@ export const authApiService: AuthService = {
 
 // Helper function to transform API response to normalized User type
 function normalizeUser(apiUser: UserApiResponse): User {
-  const getDateString = (date: unknown): string => {
-    if (typeof date === 'string') return date;
-    if (date && typeof date === 'object' && 'value$kotlinx_datetime' in date) {
-      return (date as { value$kotlinx_datetime: string }).value$kotlinx_datetime;
-    }
-    return new Date().toISOString();
-  };
-
   return {
     id: apiUser.userId,
     username: apiUser.username,
     email: apiUser.email,
-    firstName: apiUser.fName,
-    lastName: apiUser.lName,
+    firstName: apiUser.firstName,
+    lastName: apiUser.lastName,
     bio: apiUser.bio || null,
     profilePictureUrl: apiUser.profilePictureURL || null,
-    createdAt: getDateString(apiUser.createdAt),
-    updatedAt: getDateString(apiUser.updatedAt),
+    createdAt: apiUser.createdAt,
+    updatedAt: apiUser.updatedAt,
     isActive: apiUser.isActive,
     role: apiUser.role,
   };

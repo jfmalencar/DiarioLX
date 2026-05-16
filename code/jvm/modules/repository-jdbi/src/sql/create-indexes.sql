@@ -1,19 +1,19 @@
-CREATE INDEX idx_articles_category_id ON articles(category_id);
-CREATE INDEX idx_articles_slug ON articles(slug);
+CREATE INDEX idx_content_category_id ON contents(category_id);
+CREATE INDEX idx_content_slug ON contents(slug);
 
-CREATE INDEX idx_article_authors_article_id ON article_authors(article_id);
-CREATE INDEX idx_article_authors_author_id ON article_authors(author_id);
+CREATE INDEX idx_content_authors_content_id ON content_authors(content_id);
+CREATE INDEX idx_content_authors_author_id ON content_authors(author_id);
 
-CREATE INDEX idx_article_blocks_article_id ON article_blocks(article_id);
-CREATE INDEX idx_article_blocks_article_position ON article_blocks(article_id, position);
+CREATE INDEX idx_content_blocks_content_id ON content_blocks(content_id);
+CREATE INDEX idx_content_blocks_content_position ON content_blocks(content_id, position);
 
-CREATE INDEX idx_article_tags_article_id ON article_tags(article_id);
-CREATE INDEX idx_article_tags_tag_id ON article_tags(tag_id);
+CREATE INDEX idx_content_tags_content_id ON content_tags(content_id);
+CREATE INDEX idx_content_tags_tag_id ON content_tags(tag_id);
 
-CREATE UNIQUE INDEX uq_article_primary_author
-    ON article_authors(article_id)
+CREATE UNIQUE INDEX uq_content_primary_author
+    ON content_authors(content_id)
     WHERE role = 'primary';
 
-CREATE UNIQUE INDEX uq_article_primary_tag
-    ON article_tags(article_id)
+CREATE UNIQUE INDEX uq_content_primary_tag
+    ON content_tags(content_id)
     WHERE role = 'primary';

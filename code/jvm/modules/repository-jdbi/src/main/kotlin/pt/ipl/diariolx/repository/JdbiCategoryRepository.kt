@@ -4,13 +4,18 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.NewCategory
 import pt.ipl.diariolx.domain.category.UpdateCategory
 
 class JdbiCategoryRepository(
     private val handle: Handle,
 ) : CategoryRepository {
-    override fun create(category: NewCategory): Int =
+    override fun create(
+        name: String,
+        slug: String,
+        description: String?,
+        color: String,
+        parentId: Int?,
+    ): Int =
         handle
             .createQuery(
                 """
@@ -18,11 +23,11 @@ class JdbiCategoryRepository(
                 values (:name, :slug, :description, :color, :parent_id)
                 returning id
                 """.trimIndent(),
-            ).bind("name", category.name)
-            .bind("slug", category.slug)
-            .bind("description", category.description)
-            .bind("color", category.color)
-            .bind("parent_id", category.parentId)
+            ).bind("name", name)
+            .bind("slug", slug)
+            .bind("description", description)
+            .bind("color", color)
+            .bind("parent_id", parentId)
             .mapTo<Int>()
             .one()
 

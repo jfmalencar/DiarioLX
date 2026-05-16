@@ -2,12 +2,6 @@ package pt.ipl.diariolx.utils
 
 import pt.ipl.diariolx.domain.tag.Tag
 
-data class TagQuery(
-    val page: Int = 1,
-    val limit: Int = 20,
-    val archived: Boolean = false,
-)
-
 sealed class TagError(
     val message: String,
 ) {

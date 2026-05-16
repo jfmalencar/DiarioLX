@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.storage
 
-import pt.ipl.diariolx.domain.StoredFile
+import pt.ipl.diariolx.domain.media.StoredFile
+import pt.ipl.diariolx.domain.media.StoredObjectInfo
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
@@ -65,6 +66,25 @@ class S3FileStorage(
             false
         } catch (_: Exception) {
             false
+        }
+
+    override fun getObjectInfo(objectName: String): StoredObjectInfo? =
+        try {
+            val response =
+                s3Client.headObject(
+                    HeadObjectRequest
+                        .builder()
+                        .bucket(bucket)
+                        .key(objectName)
+                        .build(),
+                )
+
+            StoredObjectInfo(
+                objectName = objectName,
+                sizeBytes = response.contentLength(),
+            )
+        } catch (_: NoSuchKeyException) {
+            null
         }
 
     override fun getUrl(objectName: String): String = "$publicEndpoint/$bucket/$objectName"

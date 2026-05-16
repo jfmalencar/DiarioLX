@@ -8,9 +8,8 @@ import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
-import pt.ipl.diariolx.http.annotations.RequireLogin
 import pt.ipl.diariolx.http.annotations.RequireRole
-import pt.ipl.diariolx.http.createProblemDetail
+import pt.ipl.diariolx.http.problems.createProblemDetail
 
 @Component
 class AuthenticationInterceptor(
@@ -24,9 +23,9 @@ class AuthenticationInterceptor(
     ): Boolean {
         if (handler !is HandlerMethod) return true
 
+        val requiredRole = handler.findMethodOrClassAnnotation<RequireRole>()
         val requiresLogin =
-            handler.hasMethodOrClassAnnotation<RequireLogin>() ||
-                handler.hasMethodOrClassAnnotation<RequireRole>() ||
+            requiredRole != null ||
                 handler.methodParameters.any {
                     it.parameterType == AuthenticatedUser::class.java
                 }
@@ -60,9 +59,7 @@ class AuthenticationInterceptor(
                 return false
             }
 
-            val requiredRole = handler.findMethodOrClassAnnotation<RequireRole>()
-
-            if (requiredRole != null && authUser.user.role.name != requiredRole.value) {
+            if (requiredRole != null && authUser.user.role < requiredRole.value) {
                 response.status = 403
                 response.sendProblem(
                     objectMapper,

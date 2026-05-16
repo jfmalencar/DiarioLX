@@ -9,10 +9,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
-import pt.ipl.diariolx.http.model.FileResponseDTO
-import pt.ipl.diariolx.http.model.MediaResponseDTO
-import pt.ipl.diariolx.http.model.SignedUrlRequestDTO
-import pt.ipl.diariolx.http.model.UserSignedUrlRequestDTO
+import pt.ipl.diariolx.http.dto.media.MediaResponseDTO
+import pt.ipl.diariolx.http.dto.media.SignedUrlRequestDTO
+import pt.ipl.diariolx.http.dto.media.UploadCompleteResponseDTO
+import pt.ipl.diariolx.http.dto.media.UserSignedUrlRequestDTO
+import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
+import pt.ipl.diariolx.http.dto.pagination.Pagination
 import pt.ipl.diariolx.services.FileService
 import pt.ipl.diariolx.utils.Success
 
@@ -24,19 +26,18 @@ class FileController(
     fun getAllFiles(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
+        @RequestParam type: String? = null,
     ): ResponseEntity<*> {
-        val size = if (size > 30) 30 else size
-        val response = fileService.getAll(page, size)
+        val response = fileService.getAll(page, size, type)
         return ResponseEntity.ok().body(
-            mapOf(
-                "medias" to response.items.map { MediaResponseDTO.from(it) },
-                "pagination" to
-                    mapOf(
-                        "hasPrevious" to response.hasPrevious,
-                        "hasNext" to response.hasNext,
-                        "page" to response.page,
-                        "size" to response.pageSize,
-                    ),
+            PaginatedResponseDTO(
+                response.items.map { MediaResponseDTO.from(it) },
+                Pagination(
+                    response.page,
+                    response.pageSize,
+                    response.hasPrevious,
+                    response.hasNext,
+                ),
             ),
         )
     }
@@ -44,7 +45,7 @@ class FileController(
     @PostMapping(Uris.Files.UPLOAD)
     fun upload(
         @RequestParam("file") file: MultipartFile,
-    ): ResponseEntity<FileResponseDTO> {
+    ): ResponseEntity<UploadCompleteResponseDTO> {
         val storedFile =
             fileService.execute(
                 bytes = file.bytes,
@@ -53,7 +54,7 @@ class FileController(
             )
 
         return ResponseEntity.ok(
-            FileResponseDTO(
+            UploadCompleteResponseDTO(
                 objectName = storedFile.objectName,
                 url = storedFile.url,
             ),

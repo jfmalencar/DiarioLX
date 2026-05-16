@@ -9,8 +9,18 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.http.model.TagRequestDTO
-import pt.ipl.diariolx.http.model.TagResponseDTO
+import pt.ipl.diariolx.domain.users.UserRole
+import pt.ipl.diariolx.http.annotations.MayReturnNotFound
+import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
+import pt.ipl.diariolx.http.annotations.MayReturnTagOk
+import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
+import pt.ipl.diariolx.http.annotations.RequireRole
+import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
+import pt.ipl.diariolx.http.dto.pagination.Pagination
+import pt.ipl.diariolx.http.dto.tag.CreateUpdateTagRequestDTO
+import pt.ipl.diariolx.http.dto.tag.TagResponseDTO
+import pt.ipl.diariolx.http.problems.Problem
+import pt.ipl.diariolx.http.problems.toProblem
 import pt.ipl.diariolx.services.TagService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -19,60 +29,63 @@ import pt.ipl.diariolx.utils.Success
 class TagController(
     private val tagService: TagService,
 ) {
+    @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Tags.GET_BY_ID)
+    @MayReturnTagOk
+    @MayReturnUnauthorized
+    @MayReturnNotFound
     fun getTagById(
-        @PathVariable id: String,
-    ): ResponseEntity<*> {
-        val id = id.toInt()
-        return when (val result = tagService.get(id)) {
-            is Success -> ResponseEntity.ok(mapOf("tag" to result.value))
-            is Failure -> ResponseEntity.notFound().build<Unit>()
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val result = tagService.get(id)) {
+            is Success -> ResponseEntity.ok(TagResponseDTO.from(result.value))
+            is Failure ->
+                Problem.response(
+                    result.value.toProblem(),
+                    Uris.Tags.GET_BY_ID,
+                )
         }
-    }
 
+    @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Tags.GET_ALL)
+    @MayReturnPaginationOk
+    @MayReturnUnauthorized
     fun getAllTags(
         @RequestParam page: Int = 1,
-        @RequestParam limit: Int = 10,
+        @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
-        val limit = if (limit > 30) 30 else limit
-        val response = tagService.getAll(page, limit, query, archived)
+        val response = tagService.getAll(page, size, query, archived)
         return ResponseEntity.ok().body(
-            mapOf(
-                "tags" to
-                    response.items.map { TagResponseDTO.from(it) },
-                "pagination" to
-                    mapOf(
-                        "hasPrevious" to response.hasPrevious,
-                        "hasNext" to response.hasNext,
-                        "page" to response.page,
-                        "size" to response.pageSize,
-                    ),
+            PaginatedResponseDTO(
+                response.items.map { TagResponseDTO.from(it) },
+                Pagination(
+                    response.page,
+                    response.pageSize,
+                    response.hasPrevious,
+                    response.hasNext,
+                ),
             ),
         )
     }
 
     @PostMapping(Uris.Tags.CREATE)
     fun createTag(
-        @RequestBody body: TagRequestDTO,
+        @RequestBody body: CreateUpdateTagRequestDTO,
     ): ResponseEntity<*> =
         when (val res = tagService.create(body.name, body.slug, body.description)) {
             is Success ->
                 ResponseEntity
-                    .status(201)
-                    .header(
-                        "Location",
-                        Uris.Tags.byId(res.value).toASCIIString(),
-                    ).build<Unit>()
+                    .created(Uris.Tags.byId(res.value))
+                    .build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }
 
     @PutMapping(Uris.Tags.UPDATE)
     fun updateTag(
         @PathVariable id: String,
-        @RequestBody body: TagRequestDTO,
+        @RequestBody body: CreateUpdateTagRequestDTO,
     ): ResponseEntity<*> {
         val id = id.toInt()
         return when (tagService.update(id, body.name, body.slug, body.description)) {

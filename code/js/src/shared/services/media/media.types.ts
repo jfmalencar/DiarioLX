@@ -29,7 +29,7 @@ export type UserMediaFormValues = {
 };
 
 export type MediasResponse = {
-    medias: Media[];
+    items: Media[];
     pagination: Pagination;
 };
 

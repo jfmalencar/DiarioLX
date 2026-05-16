@@ -17,8 +17,9 @@ class FileRepositoryMem : FileRepository {
         val newMedia =
             Media(
                 id = id,
-                url = "$baseUrl/${upload.bucket}/${upload.objectKey}",
-                thumbnailUrl = null,
+                bucket = upload.bucket,
+                objectKey = upload.objectKey,
+                thumbnailObjectKey = null,
                 altText = upload.altText,
                 photographer = Author(upload.photographerId, "Photographer name"),
                 mimeType = upload.contentType,
@@ -35,6 +36,7 @@ class FileRepositoryMem : FileRepository {
     override fun getAll(
         limit: Int,
         offset: Int,
+        type: String?,
     ): List<Media> = medias.drop(offset).take(limit)
 
     override fun completeUpload(media: NewMedia): Boolean {

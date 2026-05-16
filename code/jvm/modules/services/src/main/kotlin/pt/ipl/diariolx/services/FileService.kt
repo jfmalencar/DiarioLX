@@ -2,11 +2,11 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
-import pt.ipl.diariolx.domain.StoredFile
 import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
 import pt.ipl.diariolx.domain.media.SignedUrlResponse
+import pt.ipl.diariolx.domain.media.StoredFile
 import pt.ipl.diariolx.domain.media.UploadType
 import pt.ipl.diariolx.domain.media.UserSignedUrlResponse
 import pt.ipl.diariolx.repository.TransactionManager
@@ -29,7 +29,7 @@ class FileService(
         originalFileName: String,
     ): MediaSignedUrlResult {
         val extension = originalFileName.substringAfterLast('.', "")
-        val objectName = buildObjectName(extension)
+        val objectName = buildObjectName(extension = extension)
         val upload =
             NewUpload(
                 "images",
@@ -52,7 +52,7 @@ class FileService(
         contentType: String,
         userId: Int,
     ): UserMediaSignedUrlResult {
-        val objectName = buildObjectName("", UploadType.PROFILE_PICTURES, userId)
+        val objectName = buildObjectName(userId.toString(), UploadType.PROFILE_PICTURES)
         val signedUrl = fileStorage.getUploadSignedUrl(objectName, contentType)
         return success(UserSignedUrlResponse(signedUrl))
     }
@@ -65,9 +65,10 @@ class FileService(
         if (media == null) {
             return false
         }
-        if (fileStorage.exists(media.url)) {
+        val info = fileStorage.getObjectInfo(media.objectKey)
+        if (info !== null) {
             transactionManager.run {
-                it.fileRepository.completeUpload(NewMedia(id, 123))
+                it.fileRepository.completeUpload(NewMedia(id, info.sizeBytes))
             }
         }
         return true
@@ -76,10 +77,12 @@ class FileService(
     fun getAll(
         page: Int,
         size: Int,
+        type: String?,
     ): PageResponse<Media> =
         transactionManager.run {
             paginate(page, size) { limit, offset ->
-                it.fileRepository.getAll(limit, offset)
+                val type = type?.let { normalizeMimeTypeFilter(type) }
+                it.fileRepository.getAll(limit, offset, type)
             }
         }
 
@@ -99,18 +102,20 @@ class FileService(
     }
 
     private fun buildObjectName(
-        extension: String,
-        uploadType: UploadType = UploadType.ARTICLE_GALLERY,
-        userId: Int? = null,
+        id: String = UUID.randomUUID().toString(),
+        uploadType: UploadType = UploadType.CONTENT_GALLERY,
+        extension: String? = null,
     ): String =
-        if (uploadType == UploadType.ARTICLE_GALLERY) {
-            val id = UUID.randomUUID().toString()
-            if (extension.isBlank()) {
-                "${uploadType.path}/$id"
-            } else {
-                "${uploadType.path}/$id.$extension"
-            }
+        if (extension.isNullOrBlank()) {
+            "${uploadType.path}/$id"
         } else {
-            "${uploadType.path}/$userId"
+            "${uploadType.path}/$id.$extension"
+        }
+
+    private fun normalizeMimeTypeFilter(type: String): String =
+        when {
+            type.endsWith("/*") -> type.removeSuffix("*")
+            !type.contains("/") -> "$type/"
+            else -> type
         }
 }

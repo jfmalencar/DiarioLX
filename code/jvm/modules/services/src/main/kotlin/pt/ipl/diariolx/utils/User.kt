@@ -14,8 +14,6 @@ sealed class UserError(
 
     object InvalidName : UserError("Invalid name format")
 
-    object InvalidRole : UserError("Invalid role")
-
     object InvalidProfilePictureURL : UserError("Invalid profile picture URL")
 
     object InvalidInvite : UserError("Invalid invite code")
@@ -35,12 +33,12 @@ sealed class UserError(
     object DeactivatedAccount : UserError("Your account is deactivated")
 }
 
-sealed class LoginError(
+sealed class AuthError(
     val message: String,
 ) {
-    object InvalidCredentials : LoginError("Invalid credentials")
+    object InvalidCredentials : AuthError("Invalid credentials")
 
-    object DeactivatedAccount : LoginError("Your account is deactivated")
+    object DeactivatedAccount : AuthError("Your account is deactivated")
 }
 
 typealias UserCreateResult = Either<UserError, Int>
@@ -51,6 +49,6 @@ typealias UserResult = Either<UserError, User>
 
 typealias UsersResult = Either<UserError, List<User>>
 
-typealias LoginResult = Either<LoginError, LoginResultOutput>
+typealias LoginResult = Either<AuthError, LoginResultOutput>
 
 typealias UserValidationResult = Either<UserError, Unit>

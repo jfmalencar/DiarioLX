@@ -13,7 +13,7 @@ const fakeInvites: Invite[] = [
 export const invitesMockService: InvitesService = {
   async fetchAll() {
     return {
-      invites: fakeInvites,
+      items: fakeInvites,
       pagination: {
         page: 1,
         size: 10,

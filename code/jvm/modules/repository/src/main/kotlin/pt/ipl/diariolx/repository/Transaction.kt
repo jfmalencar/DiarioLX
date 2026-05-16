@@ -5,7 +5,7 @@ interface Transaction {
     val tagRepository: TagRepository
     val userRepository: UserRepository
     val inviteRepository: InviteRepository
-    val articleRepository: ArticleRepository
+    val contentRepository: ContentRepository
     val fileRepository: FileRepository
 
     // other repository types

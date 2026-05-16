@@ -1,29 +1,23 @@
 package pt.ipl.diariolx.utils
 
-import pt.ipl.diariolx.domain.article.Article
+import pt.ipl.diariolx.domain.content.Content
 
-data class ArticleQuery(
-    val page: Int = 1,
-    val limit: Int = 20,
-    val archived: Boolean = false,
-)
-
-sealed class ArticleError(
+sealed class ContentError(
     val message: String,
 ) {
-    object EmptyName : ArticleError("Article name cannot be empty")
+    object EmptyName : ContentError("Content name cannot be empty")
 
-    object InvalidSlug : ArticleError("Article slug must be unique")
+    object InvalidSlug : ContentError("Content slug must be unique")
 
-    object SlugAlreadyExists : ArticleError("Article slug already exists")
+    object SlugAlreadyExists : ContentError("Content slug already exists")
 
-    object ArticleNotFound : ArticleError("Article not found")
+    object ContentNotFound : ContentError("Content not found")
 }
 
-typealias ArticleResult = Either<ArticleError, Article>
+typealias ContentResult = Either<ContentError, Content>
 
-typealias ArticleUpdateResult = Either<ArticleError, Unit>
+typealias ContentUpdateResult = Either<ContentError, Unit>
 
-typealias ArticleCreateResult = Either<ArticleError, Int>
+typealias ContentCreateResult = Either<ContentError, Int>
 
-typealias ArticleValidationResult = Either<ArticleError, Unit>
+typealias ContentValidationResult = Either<ContentError, Unit>

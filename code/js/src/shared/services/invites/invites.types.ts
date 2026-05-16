@@ -19,7 +19,7 @@ export type InviteRequest = {
 }
 
 export type InvitesResponse = {
-  invites: Invite[];
+  items: Invite[];
   pagination: Pagination
 };
 

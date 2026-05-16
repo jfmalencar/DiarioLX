@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.http.model.CategoryRequestDTO
-import pt.ipl.diariolx.http.model.CategoryResponseDTO
+import pt.ipl.diariolx.http.dto.category.CategoryResponseDTO
+import pt.ipl.diariolx.http.dto.category.CreateUpdateCategoryRequestDTO
+import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
+import pt.ipl.diariolx.http.dto.pagination.Pagination
 import pt.ipl.diariolx.services.CategoryService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -37,41 +39,36 @@ class CategoryController(
         @RequestParam query: String? = null,
         @RequestParam archived: Boolean = false,
     ): ResponseEntity<*> {
-        val size = if (size > 30) 30 else size
         val response = categoryService.getAll(page, size, query, archived)
         return ResponseEntity.ok().body(
-            mapOf(
-                "categories" to response.items.map { CategoryResponseDTO.from(it) },
-                "pagination" to
-                    mapOf(
-                        "hasPrevious" to response.hasPrevious,
-                        "hasNext" to response.hasNext,
-                        "page" to response.page,
-                        "size" to response.pageSize,
-                    ),
+            PaginatedResponseDTO(
+                response.items.map { CategoryResponseDTO.from(it) },
+                Pagination(
+                    response.page,
+                    response.pageSize,
+                    response.hasPrevious,
+                    response.hasNext,
+                ),
             ),
         )
     }
 
     @PostMapping(Uris.Categories.CREATE)
     fun createCategory(
-        @RequestBody body: CategoryRequestDTO,
+        @RequestBody body: CreateUpdateCategoryRequestDTO,
     ): ResponseEntity<*> =
         when (val res = categoryService.create(body.name, body.slug, body.description, body.color, body.parentId)) {
             is Success ->
                 ResponseEntity
-                    .status(201)
-                    .header(
-                        "Location",
-                        Uris.Categories.byId(res.value).toASCIIString(),
-                    ).build<Unit>()
+                    .created(Uris.Categories.byId(res.value))
+                    .build<Unit>()
             is Failure -> ResponseEntity.badRequest().build<Unit>()
         }
 
     @PutMapping(Uris.Categories.UPDATE)
     fun updateCategory(
         @PathVariable id: String,
-        @RequestBody body: CategoryRequestDTO,
+        @RequestBody body: CreateUpdateCategoryRequestDTO,
     ): ResponseEntity<*> {
         val id = id.toInt()
         return when (categoryService.update(id, body.name, body.slug, body.description, body.color, body.parentId)) {

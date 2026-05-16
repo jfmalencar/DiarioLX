@@ -9,8 +9,8 @@ import pt.ipl.diariolx.domain.invites.internal.NewInvite
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.repository.TransactionManager
-import pt.ipl.diariolx.utils.Either
-import pt.ipl.diariolx.utils.UserError
+import pt.ipl.diariolx.utils.InviteCreateResult
+import pt.ipl.diariolx.utils.InviteError
 import pt.ipl.diariolx.utils.failure
 import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
@@ -46,15 +46,15 @@ class InviteService(
     fun createInvite(
         author: User,
         role: String,
-    ): Either<UserError, Invite> {
+    ): InviteCreateResult {
         if (author.role != UserRole.ADMIN) {
-            return failure(UserError.Unauthorized)
+            return failure(InviteError.Unauthorized)
         }
         val userRole =
             try {
                 UserRole.valueOf(role.uppercase())
             } catch (e: IllegalArgumentException) {
-                return failure(UserError.InvalidRole)
+                return failure(InviteError.InvalidRole)
             }
         return transactionManager.run {
             val inviteCode = generateInviteCode()

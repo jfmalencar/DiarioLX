@@ -12,7 +12,7 @@ class TransactionManagerMem(
     userRepository: UserRepository = UserRepositoryMem(),
     inviteRepository: InviteRepository = InviteRepositoryMem(),
     tagRepository: TagRepository,
-    articleRepository: ArticleRepositoryMem,
+    contentRepository: ContentRepositoryMem,
     fileRepository: FileRepositoryMem,
 ) : TransactionManager {
     private val transaction =
@@ -21,7 +21,7 @@ class TransactionManagerMem(
             userRepository,
             inviteRepository,
             tagRepository,
-            articleRepository,
+            contentRepository,
             fileRepository,
         )
 

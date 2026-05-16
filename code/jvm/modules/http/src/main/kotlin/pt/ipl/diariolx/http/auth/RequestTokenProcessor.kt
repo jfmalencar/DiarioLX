@@ -2,11 +2,11 @@ package pt.ipl.diariolx.http.auth
 
 import org.springframework.stereotype.Component
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
-import pt.ipl.diariolx.services.UserServices
+import pt.ipl.diariolx.services.UserService
 
 @Component
 class RequestTokenProcessor(
-    val usersService: UserServices,
+    val usersService: UserService,
 ) {
     fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedUser? {
         if (authorizationValue == null) {
