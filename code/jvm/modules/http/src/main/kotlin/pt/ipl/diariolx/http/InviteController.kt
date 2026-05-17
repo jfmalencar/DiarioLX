@@ -1,5 +1,6 @@
 package pt.ipl.diariolx.http
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,6 +21,7 @@ import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
 
 @RestController
+@Tag(name = "Invites", description = "APIs for managing invites")
 class InviteController(
     private val inviteServices: InviteService,
 ) {

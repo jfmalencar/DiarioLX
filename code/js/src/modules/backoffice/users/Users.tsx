@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router';
 import { UserIcon, Trash } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
-import { Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
+import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { TableFilters } from '@/shared/components/table/TableFilters';
 import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
@@ -17,7 +17,7 @@ const sections: FilterSection[] = [ // Exemplo
         title: 'TIPO',
         options: [
             { value: 'ADMIN', label: 'Administrador' },
-            { value: 'COLABORATOR', label: 'Colaborador' },
+            { value: 'CONTRIBUTOR', label: 'Colaborador' },
             { value: 'EDITOR', label: 'Editor' },
         ],
     },
@@ -37,7 +37,7 @@ type Props = {
 
 const UsersTable = ({ filter }: Props) => {
     const { t } = useI18n();
-    const { users, pagination, fetchAll } = useUsers();
+    const { loading, users, pagination, fetchAll } = useUsers();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
 
@@ -47,67 +47,71 @@ const UsersTable = ({ filter }: Props) => {
     }, [fetchAll, searchParams, filter, buildQuery]);
 
     return (
-        <Table dataTestId='users-table' isEmpty={users.length === 0} emptyMessage='Nenhum usuário encontrado.'>
-            <TableHeader>
-                <TableColumn className='col-lg-5' isHeader={true}>
-                    {t('users.name')}
-                </TableColumn>
-                <TableColumn className='col-lg-2' isHeader={true}>
-                    {t('users.username')}
-                </TableColumn>
-                <TableColumn className='col-lg-3' isHeader={true}>
-                    {t('users.email')}
-                </TableColumn>
-                <TableColumn className='col-lg-2 text-center' isHeader={true}>
-                    {t('common.actions')}
-                </TableColumn>
-            </TableHeader>
-            {users.map((row) => (
-                <TableRow key={row.userId}>
-                    <TableColumn className='col-lg-5'>
-                        <div className='d-flex align-items-center gap-3'>
-                            <div
-                                className='d-flex align-items-center justify-content-center rounded-circle border border-dark flex-shrink-0'
-                                style={{ width: 64, height: 64 }}
-                            >
-                                {row.profilePictureURL ?
-                                    <img src={row.profilePictureURL}
-                                        alt={`${row.firstName} ${row.lastName}`}
-                                        className='rounded-circle'
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    /> :
-                                    <UserIcon size={32} />
-                                }
-                            </div>
-                            <div>
-                                <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
-                                    {row.firstName} {row.lastName}
+        <>
+            <Table dataTestId='users-table'>
+                <TableHeader>
+                    <TableColumn className='col-lg-5' isHeader={true}>
+                        {t('users.name')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2' isHeader={true}>
+                        {t('users.username')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-3' isHeader={true}>
+                        {t('users.email')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2 text-center' isHeader={true}>
+                        {t('common.actions')}
+                    </TableColumn>
+                </TableHeader>
+                <TableBody cols={4} loading={loading} isEmpty={users.length === 0} emptyMessage='Nenhum usuário encontrado.'>
+                    {users.map((row) => (
+                        <TableRow key={row.userId}>
+                            <TableColumn className='col-lg-5'>
+                                <div className='d-flex align-items-center gap-3'>
+                                    <div
+                                        className='d-flex align-items-center justify-content-center rounded-circle border border-dark flex-shrink-0'
+                                        style={{ width: 64, height: 64 }}
+                                    >
+                                        {row.profilePictureURL ?
+                                            <img src={row.profilePictureURL}
+                                                alt={`${row.firstName} ${row.lastName}`}
+                                                className='rounded-circle'
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            /> :
+                                            <UserIcon size={32} />
+                                        }
+                                    </div>
+                                    <div>
+                                        <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
+                                            {row.firstName} {row.lastName}
+                                        </div>
+                                        <div className='text-muted small mt-1'>
+                                            {row.bio || '-'}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className='text-muted small mt-1'>
-                                    {row.bio || '-'}
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.username')}</div>
+                                <div className='text-secondary'>{row.username}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-3'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
+                                <div className='text-secondary'>{row.email}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2 text-lg-end'>
+                                <div className='d-flex d-lg-flex justify-content-center gap-2'>
+                                    <button onClick={() => alert('TO-DO')} className='btn btn-dark rounded-2'>
+                                        <Trash size={16} />
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-2'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.username')}</div>
-                        <div className='text-secondary'>{row.username}</div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-3'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                        <div className='text-secondary'>{row.email}</div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-2 text-lg-end'>
-                        <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                            <button onClick={() => alert('TO-DO')} className='btn btn-dark rounded-2'>
-                                <Trash size={16} />
-                            </button>
-                        </div>
-                    </TableColumn>
-                </TableRow>
-            ))}
+                            </TableColumn>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
             {pagination && <TablePagination hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} />}
-        </Table>
+        </>
     );
 }
 

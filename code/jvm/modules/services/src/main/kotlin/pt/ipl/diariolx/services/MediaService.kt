@@ -2,6 +2,7 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
+import pt.ipl.diariolx.domain.media.Credit
 import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
@@ -18,13 +19,13 @@ import pt.ipl.diariolx.utils.success
 import java.util.UUID
 
 @Named
-class FileService(
+class MediaService(
     private val fileStorage: FileStorage,
     private val transactionManager: TransactionManager,
 ) {
     fun getSignedUrl(
         altText: String,
-        photographerId: Int,
+        credits: List<Credit>,
         contentType: String,
         originalFileName: String,
     ): MediaSignedUrlResult {
@@ -35,14 +36,14 @@ class FileService(
                 "images",
                 objectName,
                 altText,
-                photographerId,
+                credits,
                 originalFileName,
                 contentType,
             )
 
         val id =
             transactionManager.run {
-                it.fileRepository.create(upload)
+                it.mediaRepository.create(upload)
             }
         val signedUrl = fileStorage.getUploadSignedUrl(objectName, upload.contentType)
         return success(SignedUrlResponse(id, signedUrl))
@@ -60,16 +61,11 @@ class FileService(
     fun completeUpload(id: Int): Boolean {
         val media =
             transactionManager.run {
-                return@run it.fileRepository.get(id)
-            }
-        if (media == null) {
-            return false
-        }
-        val info = fileStorage.getObjectInfo(media.objectKey)
-        if (info !== null) {
-            transactionManager.run {
-                it.fileRepository.completeUpload(NewMedia(id, info.sizeBytes))
-            }
+                return@run it.mediaRepository.get(id)
+            } ?: return false
+        val info = fileStorage.getObjectInfo(media.objectKey) ?: return false
+        transactionManager.run {
+            it.mediaRepository.completeUpload(NewMedia(id, info.sizeBytes))
         }
         return true
     }
@@ -82,7 +78,7 @@ class FileService(
         transactionManager.run {
             paginate(page, size) { limit, offset ->
                 val type = type?.let { normalizeMimeTypeFilter(type) }
-                it.fileRepository.getAll(limit, offset, type)
+                it.mediaRepository.getAll(limit, offset, type)
             }
         }
 

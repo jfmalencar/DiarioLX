@@ -8,7 +8,7 @@ import { RichTextToolbar } from '@/shared/components/richtext/RichTextToolbar';
 import { RichTextBlock } from '@/shared/components/richtext/RichTextBlock';
 import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
-import { MediaGallery } from '@/shared/components/MediaGallery';
+import { MediaGallery } from '@/shared/components/media/MediaGallery';
 import { SearchField } from '@/shared/components/inputs/SearchField';
 import { Pill } from '@/shared/components/Pill';
 
@@ -48,6 +48,19 @@ const ImageBlock = ({ url, alt = '', width = 400 }: ImageBlockProps) => {
         </div>
     );
 };
+
+const VideoBlock = ({ url }: { url: string }) => {
+    return (
+        <div className='mb-4'>
+            <video
+                src={`${url}#t=1`}
+                controls
+                preload='metadata'
+                className='w-100 rounded'
+            />
+        </div>
+    );
+}
 
 export const EditContent = () => {
     const navigate = useNavigate();
@@ -97,8 +110,9 @@ export const EditContent = () => {
     const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        await create({
+        const result = await create({
             id: 'nova',
+            type: type,
             title: content.title,
             slug: content.slug,
             headline: content.headline,
@@ -117,7 +131,9 @@ export const EditContent = () => {
             blocks: state.blocks,
         });
 
-        navigate('/p/' + content.slug);
+        if (result) {
+            navigate('/p/' + content.slug);
+        }
     };
 
     return (
@@ -213,11 +229,11 @@ export const EditContent = () => {
                     />
                     {content.featuredMedia ? (
                         <div className='mb-4 position-relative' style={{ width: 600 }}>
-                            <ImageBlock
-                                width={600}
-                                url={content.featuredMedia.url}
-                                alt={content.featuredMedia.altText}
-                            />
+                            {content.featuredMedia.mimeType.startsWith('video') ? (
+                                <VideoBlock url={content.featuredMedia.url} />
+                            ) : (
+                                <ImageBlock url={content.featuredMedia.url} alt={content.featuredMedia.altText} />
+                            )}
                             <button
                                 type='button'
                                 className='btn btn-dark position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center'

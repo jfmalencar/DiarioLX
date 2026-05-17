@@ -19,7 +19,7 @@ export function Content() {
     const title = content?.title
     const headline = content?.headline
     const authors = content?.authors.map(author => author.name) || []
-    const photographer = content?.featuredImage?.photographer || { name: 'Unknown' };
+    const credits = content?.featuredImage?.credits || []
     const date = content ? formatNewsDate(content.createdAt) : ''
 
     useEffect(() => {
@@ -37,15 +37,24 @@ export function Content() {
             <div className='container px-4 px-md-5'>
                 <section className='row g-4 g-lg-5 align-items-start mb-5'>
                     <div className='col-12 col-lg-6'>
-                        <img
-                            src={heroImageUrl}
-                            alt={title}
-                            className='img-fluid w-100'
-                            style={{
-                                objectFit: 'cover',
-                                maxHeight: 520,
-                            }}
-                        />
+                        {content?.type == 'video' ? (
+                            <video
+                                src={`${heroImageUrl}#t=1`}
+                                controls
+                                preload='metadata'
+                                className='w-100 rounded'
+                            />
+                        ) :
+                            < img
+                                src={heroImageUrl}
+                                alt={title}
+                                className='img-fluid w-100'
+                                style={{
+                                    objectFit: 'cover',
+                                    maxHeight: 520,
+                                }}
+                            />
+                        }
                     </div>
 
                     <div className='col-12 col-lg-6 d-flex flex-column justify-content-start pt-lg-4'>
@@ -114,9 +123,8 @@ export function Content() {
                                 className='text-uppercase mb-4'
                                 style={{ fontSize: '0.9rem', lineHeight: 1.3 }}
                             >
-                                FOTOGRAFIA POR <span className='fw-semibold'>{photographer.name}</span>
+                                {credits.map(credit => `${credit.role.toUpperCase()}: ${credit.name}`).join(' | ')}
                             </div>
-
                             <div className='d-flex gap-3'>
                                 {['𝕏', 'f', '◎', '↻'].map((icon, index) => (
                                     <button
@@ -154,7 +162,11 @@ export function Content() {
                                                 className='text-uppercase mb-4'
                                                 style={{ fontSize: '0.9rem', lineHeight: 1.3, fontFamily: 'Sora' }}
                                             >
-                                                FOTOGRAFIA POR <span className='fw-semibold'>{block.media.photographer.name}</span>
+                                                {block.media.credits.map(credit =>
+                                                (
+                                                    credit.role === 'photographer' ? `FOTOGRAFIA POR ${credit.name}` : `CRÉDITOS: ${credit.name} (${credit.role})`
+                                                )
+                                                )}
                                             </div>
                                         </>
                                     );

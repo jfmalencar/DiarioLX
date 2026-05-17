@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.http
 
 import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -29,6 +30,7 @@ import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
 
 @RestController
+@Tag(name = "Contents", description = "APIs for managing contents")
 class ContentController(
     private val contentService: ContentService,
 ) {

@@ -1,90 +1,50 @@
-import type { AuthService, LoginResponseDTO, User, UserApiResponse } from './auth.types';
-import { get, post, patch } from '../http/client';
+import { useMemo } from 'react';
 
-export const authApiService: AuthService = {
-  async authenticate(username, password) {
-    const result = await post<LoginResponseDTO>('/api/auth/login', {
-      username,
-      password,
-    });
+import type { AuthService, LoginResponseDTO } from './auth.types';
+import { post } from '../http/client';
+import { useBootstrap } from '@/shared/hooks/useBootstrap';
 
-    if (!result.success) {
-      return undefined;
-    }
+export const useAuthApiService = (): AuthService => {
+  const { endpoints } = useBootstrap()
 
-    return result.data;
-  },
-
-  async logout() {
-    await post('/api/auth/logout', {});
-  },
-
-  async register(username, email, password, firstName, lastName, inviteCode) {
-    const result = await post<undefined>(
-      '/api/auth/signup',
-      {
+  return useMemo<AuthService>(() => ({
+    async authenticate(username, password) {
+      const result = await post<LoginResponseDTO>(endpoints.auth.login.href, {
         username,
-        email,
         password,
-        firstName: firstName,
-        lastName: lastName,
-      },
-      {
-        headers: {
-          Authorization: `Invite ${inviteCode}`,
-        },
+      });
+
+      if (!result.success) {
+        return undefined;
       }
-    );
-    if (!result.success) {
-      return false
-    }
-    return true;
-  },
 
-  async getCurrentUser() {
-    const result = await get<UserApiResponse>('/api/users/me');
+      return result.data;
+    },
 
-    if (!result.success) {
-      return undefined;
-    }
+    async logout() {
+      await post(endpoints.auth.logout.href, {});
+    },
 
-    console.log(result.data)
-
-    return normalizeUser(result.data);
-  },
-
-  async updateProfile(username, email, password, firstName, lastName, bio, profilePictureUrl) {
-    const result = await patch<UserApiResponse>('/api/users/me', {
-      username: username || null,
-      email: email || null,
-      password: password || null,
-      firstName: firstName || null,
-      lastName: lastName || null,
-      bio: bio || null,
-      profilePictureURL: profilePictureUrl || null,
-    });
-
-    if (!result.success) {
-      return undefined;
-    }
-
-    return normalizeUser(result.data);
-  },
-};
-
-// Helper function to transform API response to normalized User type
-function normalizeUser(apiUser: UserApiResponse): User {
-  return {
-    id: apiUser.userId,
-    username: apiUser.username,
-    email: apiUser.email,
-    firstName: apiUser.firstName,
-    lastName: apiUser.lastName,
-    bio: apiUser.bio || null,
-    profilePictureUrl: apiUser.profilePictureURL || null,
-    createdAt: apiUser.createdAt,
-    updatedAt: apiUser.updatedAt,
-    isActive: apiUser.isActive,
-    role: apiUser.role,
-  };
-};
+    async register(username, email, password, firstName, lastName, inviteCode) {
+      const result = await post<undefined>(
+        endpoints.auth.register.href,
+        {
+          username,
+          email,
+          password,
+          firstName: firstName,
+          lastName: lastName,
+        },
+        {
+          headers: {
+            Authorization: `Invite ${inviteCode}`,
+          },
+        }
+      );
+      if (!result.success) {
+        return false
+      }
+      return true;
+    },
+  }), [endpoints]);
+}

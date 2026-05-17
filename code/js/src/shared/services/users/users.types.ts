@@ -1,17 +1,6 @@
 import type { Pagination } from '@/shared/types/Pagination';
 import type { Query } from '@/shared/types/Query';
 
-export type User = {
-    userId: string;
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    bio: string;
-    profilePictureURL: string;
-    role: UserRole;
-}
-
 export type UserRole = 'ADMIN' | 'EDITOR' | 'CONTRIBUTOR';
 
 export type UsersResponse = {
@@ -19,6 +8,34 @@ export type UsersResponse = {
     pagination: Pagination;
 };
 
+export type UserApiResponse = User
+
+export type User = {
+    userId: string;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    bio: string | null;
+    profilePictureURL: string | null;
+    createdAt: string;
+    updatedAt: string;
+    isActive: boolean;
+    role: UserRole;
+};
+
 export interface UsersService {
     fetchAll(params: Query): Promise<UsersResponse>;
+
+    getCurrentUser(): Promise<UserApiResponse | undefined>;
+
+    updateProfile(
+        username?: string,
+        email?: string,
+        password?: string,
+        firstName?: string,
+        lastName?: string,
+        bio?: string | null,
+        profilePictureURL?: string | null
+    ): Promise<UserApiResponse | undefined>;
 }

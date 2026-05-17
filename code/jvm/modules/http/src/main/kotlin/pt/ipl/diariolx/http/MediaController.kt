@@ -1,5 +1,6 @@
 package pt.ipl.diariolx.http
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import pt.ipl.diariolx.domain.media.Credit
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.http.dto.media.MediaResponseDTO
 import pt.ipl.diariolx.http.dto.media.SignedUrlRequestDTO
@@ -15,20 +17,21 @@ import pt.ipl.diariolx.http.dto.media.UploadCompleteResponseDTO
 import pt.ipl.diariolx.http.dto.media.UserSignedUrlRequestDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
-import pt.ipl.diariolx.services.FileService
+import pt.ipl.diariolx.services.MediaService
 import pt.ipl.diariolx.utils.Success
 
 @RestController
-class FileController(
-    private val fileService: FileService,
+@Tag(name = "Medias", description = "APIs for managing medias")
+class MediaController(
+    private val mediaService: MediaService,
 ) {
-    @GetMapping(Uris.Files.GET_ALL)
+    @GetMapping(Uris.Media.GET_ALL)
     fun getAllFiles(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
         @RequestParam type: String? = null,
     ): ResponseEntity<*> {
-        val response = fileService.getAll(page, size, type)
+        val response = mediaService.getAll(page, size, type)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { MediaResponseDTO.from(it) },
@@ -42,12 +45,12 @@ class FileController(
         )
     }
 
-    @PostMapping(Uris.Files.UPLOAD)
+    @PostMapping(Uris.Media.UPLOAD)
     fun upload(
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<UploadCompleteResponseDTO> {
         val storedFile =
-            fileService.execute(
+            mediaService.execute(
                 bytes = file.bytes,
                 originalFileName = file.originalFilename ?: "file",
                 contentType = file.contentType ?: "application/octet-stream",
@@ -61,14 +64,14 @@ class FileController(
         )
     }
 
-    @PostMapping(Uris.Files.GET_SIGNED_URL)
+    @PostMapping(Uris.Media.GET_SIGNED_URL)
     fun getSignedUrl(
         @RequestBody body: SignedUrlRequestDTO,
     ): ResponseEntity<*> {
         val response =
-            fileService.getSignedUrl(
+            mediaService.getSignedUrl(
                 body.altText,
-                body.photographerId,
+                body.credits.map { Credit(it.userId, it.role) },
                 body.contentType,
                 body.originalFileName,
             )
@@ -78,13 +81,13 @@ class FileController(
         return ResponseEntity.badRequest().build<Unit>()
     }
 
-    @PostMapping(Uris.Files.GET_USER_SIGNED_URL)
+    @PostMapping(Uris.Media.GET_USER_SIGNED_URL)
     fun getUserSignedUrl(
         authenticatedUser: AuthenticatedUser,
         @RequestBody body: UserSignedUrlRequestDTO,
     ): ResponseEntity<*> {
         val response =
-            fileService.getUserSignedUrl(
+            mediaService.getUserSignedUrl(
                 body.contentType,
                 authenticatedUser.user.id,
             )
@@ -94,11 +97,11 @@ class FileController(
         return ResponseEntity.badRequest().build<Unit>()
     }
 
-    @PostMapping(Uris.Files.COMPLETE_UPLOAD)
+    @PostMapping(Uris.Media.COMPLETE_UPLOAD)
     fun completeUpload(
         @PathVariable id: Int,
     ): ResponseEntity<*> {
-        fileService.completeUpload(id)
+        mediaService.completeUpload(id)
         return ResponseEntity.ok().build<Unit>()
     }
 }

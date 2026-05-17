@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { authService } from '@/shared/services/auth'
+import { useAuthService } from '@/shared/services/auth'
+import { useUsersService } from '@/shared/services/users'
 import {
   AuthenticationContext,
   type AuthenticationState,
@@ -11,6 +12,8 @@ type AuthProviderProps = {
 }
 
 export function AuthenticationProvider({ children }: AuthProviderProps) {
+  const authService = useAuthService()
+  const usersService = useUsersService()
   const [user, setUser] = useState<AuthUser>(undefined)
   const [loading, setLoading] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -21,7 +24,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
     setError(null)
 
     try {
-      const currentUser = await authService.getCurrentUser()
+      const currentUser = await usersService.getCurrentUser()
       setUser(currentUser)
       return currentUser
     } catch (err) {
@@ -33,7 +36,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
       setLoading(false)
       setHydrated(true)
     }
-  }, [])
+  }, [usersService])
 
   const login = useCallback(
     async (username: string, password: string): Promise<AuthUser> => {
@@ -58,7 +61,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    [refreshUser]
+    [authService, refreshUser]
   )
 
   const logout = useCallback(async (): Promise<void> => {
@@ -73,7 +76,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
       setUser(undefined)
       setLoading(false)
     }
-  }, [])
+  }, [authService])
 
   const register = useCallback(
     async (username: string, email: string, password: string, firstName: string, lastName: string, inviteCode: string): Promise<boolean> => {
@@ -98,16 +101,16 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    []
+    [authService]
   )
 
   const updateProfile = useCallback(
-    async (username?: string, email?: string, password?: string, firstName?: string, lastName?: string, bio?: string | null, profilePictureUrl?: string | null): Promise<AuthUser> => {
+    async (username?: string, email?: string, password?: string, firstName?: string, lastName?: string, bio?: string | null, profilePictureURL?: string | null): Promise<AuthUser> => {
       setLoading(true)
       setError(null)
 
       try {
-        const updatedUser = await authService.updateProfile(username, email, password, firstName, lastName, bio, profilePictureUrl)
+        const updatedUser = await usersService.updateProfile(username, email, password, firstName, lastName, bio, profilePictureURL)
         if (!updatedUser) {
           setError('Failed to update profile')
           return undefined
@@ -122,7 +125,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    []
+    [usersService]
   )
 
   useEffect(() => {
@@ -132,7 +135,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
       setLoading(true)
       setError(null)
       try {
-        const currentUser = await authService.getCurrentUser()
+        const currentUser = await usersService.getCurrentUser()
         if (!cancelled) {
           setUser(currentUser)
         }
@@ -154,7 +157,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [usersService])
 
   const value = useMemo<AuthenticationState>(
     () => ({

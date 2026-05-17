@@ -9,6 +9,7 @@ import pt.ipl.diariolx.domain.tag.TagSummary
 data class Content(
     val id: Int,
     val title: String,
+    val type: String,
     val slug: String,
     val headline: String,
     val featuredImage: MediaSummary?,

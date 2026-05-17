@@ -23,6 +23,7 @@ export const contentsApiService: ContentsService = {
     const request = {
       title: content.title,
       headline: content.headline,
+      type: content.type,
       slug: content.slug,
       featuredMediaId: content.featuredMediaId,
       categoryId: content.category.id,

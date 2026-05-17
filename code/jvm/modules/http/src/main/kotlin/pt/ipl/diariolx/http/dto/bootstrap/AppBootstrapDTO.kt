@@ -1,0 +1,6 @@
+package pt.ipl.diariolx.http.dto.bootstrap
+
+data class AppBootstrapDTO(
+    val version: String,
+    val api: ApiEndpointsDTO,
+)

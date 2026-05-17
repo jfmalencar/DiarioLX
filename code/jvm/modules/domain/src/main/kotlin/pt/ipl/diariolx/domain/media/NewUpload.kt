@@ -4,7 +4,7 @@ data class NewUpload(
     val bucket: String,
     val objectKey: String,
     val altText: String,
-    val photographerId: Int,
+    val credits: List<Credit>,
     val originalFileName: String,
     val contentType: String,
 )

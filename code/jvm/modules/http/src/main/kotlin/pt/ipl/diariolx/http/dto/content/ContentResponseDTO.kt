@@ -11,6 +11,7 @@ data class ContentResponseDTO(
     val id: Int,
     val title: String,
     val slug: String,
+    val type: String,
     val headline: String,
     val featuredImage: MediaSummary?,
     val category: CategorySummary,
@@ -24,6 +25,7 @@ data class ContentResponseDTO(
             ContentResponseDTO(
                 id = content.id,
                 title = content.title,
+                type = content.type,
                 slug = content.slug,
                 headline = content.headline,
                 featuredImage = content.featuredImage,

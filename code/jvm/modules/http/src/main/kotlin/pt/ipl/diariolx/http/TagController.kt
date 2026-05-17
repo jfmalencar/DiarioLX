@@ -1,5 +1,6 @@
 package pt.ipl.diariolx.http
 
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,6 +27,7 @@ import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
 
 @RestController
+@Tag(name = "Tags", description = "APIs for managing tags")
 class TagController(
     private val tagService: TagService,
 ) {

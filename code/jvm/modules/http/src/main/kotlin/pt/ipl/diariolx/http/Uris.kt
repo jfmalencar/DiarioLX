@@ -73,12 +73,12 @@ object Uris {
         const val IP = "$PREFIX/status/ip"
     }
 
-    object Files {
-        const val UPLOAD = "$PREFIX/media"
-        const val GET_ALL = "$PREFIX/media"
-        const val GET_SIGNED_URL = "$PREFIX/media/signed-url"
-        const val GET_USER_SIGNED_URL = "$PREFIX/media/user-signed-url"
-        const val COMPLETE_UPLOAD = "$PREFIX/media/{id}"
+    object Media {
+        const val UPLOAD = "$PREFIX/medias"
+        const val GET_ALL = "$PREFIX/medias"
+        const val GET_SIGNED_URL = "$PREFIX/medias/signed-url"
+        const val GET_USER_SIGNED_URL = "$PREFIX/medias/user-signed-url"
+        const val COMPLETE_UPLOAD = "$PREFIX/medias/{id}"
     }
 
     object Content {

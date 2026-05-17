@@ -1,13 +1,13 @@
 package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
-import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.media.Media
+import pt.ipl.diariolx.domain.media.MediaCredit
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
-import pt.ipl.diariolx.repository.FileRepository
+import pt.ipl.diariolx.repository.MediaRepository
 
-class FileRepositoryMem : FileRepository {
+class MediaRepositoryMem : MediaRepository {
     private val baseUrl = "http://localhost:8333"
     private val medias = mutableListOf<Media>()
     private var currentId = 0
@@ -21,7 +21,7 @@ class FileRepositoryMem : FileRepository {
                 objectKey = upload.objectKey,
                 thumbnailObjectKey = null,
                 altText = upload.altText,
-                photographer = Author(upload.photographerId, "Photographer name"),
+                credits = upload.credits.map { MediaCredit(it.userId, "Photographer name", "PHOTOGRAPHER", "author") },
                 mimeType = upload.contentType,
                 status = "ready",
                 sizeBytes = 0,

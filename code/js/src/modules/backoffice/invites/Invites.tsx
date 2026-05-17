@@ -5,7 +5,7 @@ import { UserPen, ShieldUser, Trash, UserRoundCheck } from 'lucide-react';
 import type { UserRole } from '@/shared/services/users/users.types';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
-import { Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
+import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { useInvites } from '@/shared/hooks/useInvites';
 import { useI18n } from '@/shared/hooks/useI18n';
@@ -56,7 +56,7 @@ const RoleCard = ({ role, title, description, icon, onGenerate }: { role: UserRo
 
 const InvitesTable = ({ filter }: Props) => {
     const { t } = useI18n();
-    const { invites, pagination, fetchAll } = useInvites();
+    const { loading, invites, pagination, fetchAll } = useInvites();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
 
@@ -66,64 +66,68 @@ const InvitesTable = ({ filter }: Props) => {
     }, [fetchAll, searchParams, filter, buildQuery]);
 
     return (
-        <Table dataTestId='invites-table' isEmpty={invites.length === 0} emptyMessage='Nenhum convite encontrado.'>
-            <TableHeader>
-                <TableColumn className='col-lg-2' isHeader={true}>
-                    Código
-                </TableColumn>
-                <TableColumn className='col-lg-2' isHeader={true}>
-                    Função
-                </TableColumn>
-                <TableColumn className='col-lg-3' isHeader={true}>
-                    Criado em
-                </TableColumn>
-                <TableColumn className='col-lg-3' isHeader={true}>
-                    Expira em
-                </TableColumn>
-                <TableColumn className='col-lg-2 text-center' isHeader={true}>
-                    {t('common.actions')}
-                </TableColumn>
-            </TableHeader>
-            {invites.map((row) => (
-                <TableRow key={row.invite}>
-                    <TableColumn className='col-6 col-lg-2'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.username')}</div>
-                        <div className='text-secondary'>{row.invite}</div>
+        <>
+            <Table dataTestId='invites-table'>
+                <TableHeader>
+                    <TableColumn className='col-lg-2' isHeader={true}>
+                        Código
                     </TableColumn>
-                    <TableColumn className='col-6 col-lg-2'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                        <div className='text-secondary'>
-                            <div
-                                className='badge rounded-pill px-3 py-2 fw-medium'
-                                style={{
-                                    backgroundColor: `${COLORS[row.role]}${OPACITY}`,
-                                }}
-                            >
-                                <span className='text-sm font-weight-bold' style={{ color: COLORS[row.role] }}>
-                                    {t(`users.${row.role.toLowerCase()}`).toUpperCase()}
-                                </span>
-                            </div>
-                        </div>
+                    <TableColumn className='col-lg-2' isHeader={true}>
+                        Função
                     </TableColumn>
-                    <TableColumn className='col-6 col-lg-3'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                        <div className='text-secondary'>{new Date(row.createdAt).toLocaleString()}</div>
+                    <TableColumn className='col-lg-3' isHeader={true}>
+                        Criado em
                     </TableColumn>
-                    <TableColumn className='col-6 col-lg-3'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                        <div className='text-secondary'>{new Date(row.expiresAt).toLocaleString()}</div>
+                    <TableColumn className='col-lg-3' isHeader={true}>
+                        Expira em
                     </TableColumn>
-                    <TableColumn className='col-6 col-lg-2 text-lg-end'>
-                        <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                            <button onClick={() => alert('TO-DO')} className='btn btn-dark rounded-2'>
-                                <Trash size={16} />
-                            </button>
-                        </div>
+                    <TableColumn className='col-lg-2 text-center' isHeader={true}>
+                        {t('common.actions')}
                     </TableColumn>
-                </TableRow>
-            ))}
+                </TableHeader>
+                <TableBody cols={5} loading={loading} isEmpty={invites.length === 0} emptyMessage='Nenhum convite encontrado.'>
+                    {invites.map((row) => (
+                        <TableRow key={row.invite}>
+                            <TableColumn className='col-6 col-lg-2'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.username')}</div>
+                                <div className='text-secondary'>{row.invite}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
+                                <div className='text-secondary'>
+                                    <div
+                                        className='badge rounded-pill px-3 py-2 fw-medium'
+                                        style={{
+                                            backgroundColor: `${COLORS[row.role]}${OPACITY}`,
+                                        }}
+                                    >
+                                        <span className='text-sm font-weight-bold' style={{ color: COLORS[row.role] }}>
+                                            {t(`users.${row.role.toLowerCase()}`).toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-3'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
+                                <div className='text-secondary'>{new Date(row.createdAt).toLocaleString()}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-3'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
+                                <div className='text-secondary'>{new Date(row.expiresAt).toLocaleString()}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2 text-lg-end'>
+                                <div className='d-flex d-lg-flex justify-content-center gap-2'>
+                                    <button onClick={() => alert('TO-DO')} className='btn btn-dark rounded-2'>
+                                        <Trash size={16} />
+                                    </button>
+                                </div>
+                            </TableColumn>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
             {pagination && <TablePagination hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} />}
-        </Table>
+        </>
     );
 }
 

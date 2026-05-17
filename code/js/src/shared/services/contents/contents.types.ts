@@ -6,6 +6,7 @@ export type Content = {
     id: string;
     title: string;
     slug: string;
+    type: string;
     headline: string;
     featuredImage: Media | null;
     blocks: ContentBlock[];
@@ -33,6 +34,7 @@ export type Content = {
 export type ContentSummary = {
     id: string;
     title: string;
+    type: string;
     slug: string;
     featuredImage: string
     category: string
@@ -73,6 +75,7 @@ export type ContentFormValues = {
     id: string;
     title: string;
     slug: string;
+    type: string;
     headline: string;
     featuredMediaId: string | null;
     blocks: ContentBlock[];
@@ -92,6 +95,7 @@ export type ContentRequest = {
     title: string;
     slug: string;
     headline: string;
+    type: string;
     featuredMediaId: string | null;
     blocks: ContentBlock[];
     tags: {

@@ -2,7 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router';
 
 import { I18nProvider } from '@/app/providers/I18nProvider';
 import { AuthenticationProvider } from '@/app/providers/AuthenticationProvider';
-//import { BootstrapProvider } from '@/app/providers/BootstrapProvider';
+import { BootstrapProvider } from '@/app/providers/BootstrapProvider';
 
 // Public
 import { Home } from '@/modules/public/Home';
@@ -18,8 +18,8 @@ import { Tags } from '@/modules/backoffice/tags/Tags';
 import { EditCategory } from '@/modules/backoffice/categories/EditCategory';
 import { EditTag } from '@/modules/backoffice/tags/EditTag';
 import { Users } from '@/modules/backoffice/users/Users';
-import { Contents } from '@/modules/backoffice/publications/Contents';
-import { EditContent } from '@/modules/backoffice/publications/EditContent';
+import { Contents } from '@/modules/backoffice/contents/Contents';
+import { EditContent } from '@/modules/backoffice/contents/EditContent';
 import { SignUp } from '@/modules/backoffice/SignUp';
 import { Invites } from '@/modules/backoffice/invites/Invites';
 import { MyProfile } from '@/modules/backoffice/myProfile/MyProfile';
@@ -218,12 +218,12 @@ const router = createBrowserRouter([
 
 export function App() {
   return (
-    //<BootstrapProvider>
-    <I18nProvider>
-      <AuthenticationProvider>
-        <RouterProvider router={router} />
-      </AuthenticationProvider>
-    </I18nProvider>
-    //</BootstrapProvider>
+    <BootstrapProvider>
+      <I18nProvider>
+        <AuthenticationProvider>
+          <RouterProvider router={router} />
+        </AuthenticationProvider>
+      </I18nProvider>
+    </BootstrapProvider>
   );
 }

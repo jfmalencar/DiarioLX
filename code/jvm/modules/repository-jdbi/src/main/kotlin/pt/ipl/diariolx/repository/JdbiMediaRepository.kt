@@ -1,34 +1,41 @@
 package pt.ipl.diariolx.repository
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.ipl.diariolx.domain.author.Author
+import pt.ipl.diariolx.domain.media.Credit
 import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
 
-class JdbiFileRepository(
+class JdbiMediaRepository(
     private val handle: Handle,
-) : FileRepository {
-    override fun create(upload: NewUpload): Int =
-        handle
-            .createQuery(
-                """
-                insert into media (type, original_file_name, bucket, object_key, thumbnail_bucket, thumbnail_object_key,alt_text, mime_type,status, contributor_id)
-                values (:type, :original_file_name, :bucket, :object_key, :bucket, :object_key, :alt_text, :mime_type, :status, :contributor_id)
-                returning id
-                """.trimIndent(),
-            ).bind("type", "image")
-            .bind("bucket", upload.bucket)
-            .bind("original_file_name", upload.originalFileName)
-            .bind("object_key", upload.objectKey)
-            .bind("alt_text", upload.altText)
-            .bind("mime_type", upload.contentType)
-            .bind("status", "pending")
-            .bind("contributor_id", upload.photographerId)
-            .mapTo<Int>()
-            .one()
+) : MediaRepository {
+    override fun create(upload: NewUpload): Int {
+        val mediaId =
+            handle
+                .createQuery(
+                    """
+                    insert into medias (type, original_file_name, bucket, object_key, thumbnail_bucket, thumbnail_object_key,alt_text, mime_type,status)
+                    values (:type, :original_file_name, :bucket, :object_key, :bucket, :object_key, :alt_text, :mime_type, :status)
+                    returning id
+                    """.trimIndent(),
+                ).bind("type", "image")
+                .bind("bucket", upload.bucket)
+                .bind("original_file_name", upload.originalFileName)
+                .bind("object_key", upload.objectKey)
+                .bind("alt_text", upload.altText)
+                .bind("mime_type", upload.contentType)
+                .bind("status", "pending")
+                .mapTo<Int>()
+                .one()
+
+        insertCredits(mediaId, upload.credits)
+        return mediaId
+    }
 
     override fun getAll(
         limit: Int,
@@ -37,15 +44,7 @@ class JdbiFileRepository(
     ): List<Media> {
         val sql =
             buildString {
-                append(
-                    """
-                    select media.*, users.id as user_id,
-                    concat(users.first_name, ' ', users.last_name) as full_name,
-                    users.username as username from media
-                    left join users on users.id = media.contributor_id
-                    where status = :status
-                    """.trimIndent(),
-                )
+                append("select * from v_medias where status = :status")
                 if (type != null) {
                     append(" AND mime_type ILIKE :type")
                 }
@@ -66,15 +65,8 @@ class JdbiFileRepository(
 
     override fun get(id: Int): Media? {
         handle
-            .createQuery(
-                """
-                select media.*, users.id as user_id,
-                concat(users.first_name, ' ', users.last_name) as full_name,
-                users.username as username from media
-                left join users on users.id = media.contributor_id
-                where media.id = :id
-                """,
-            ).bind("id", id)
+            .createQuery("select * from v_medias where id = :id")
+            .bind("id", id)
             .mapTo<MediaModel>()
             .singleOrNull()
             ?.let { return it.media }
@@ -85,7 +77,7 @@ class JdbiFileRepository(
         handle
             .createUpdate(
                 """
-                update media
+                update medias
                 set status = :status, size_bytes = :size_bytes, uploaded_at = EXTRACT(EPOCH FROM NOW())
                 where id = :id
                 """.trimIndent(),
@@ -93,6 +85,30 @@ class JdbiFileRepository(
             .bind("status", "ready")
             .bind("size_bytes", media.sizeBytes)
             .execute() > 0
+
+    private fun insertCredits(
+        mediaId: Int,
+        credits: List<Credit>,
+    ) {
+        if (credits.isEmpty()) return
+        val batch =
+            handle.prepareBatch(
+                """
+                insert into media_credits (media_id, user_id, role)
+                values (:media_id, :user_id, :role::credit_role)
+                """.trimIndent(),
+            )
+
+        credits.forEach { user ->
+            batch
+                .bind("media_id", mediaId)
+                .bind("user_id", user.userId)
+                .bind("role", user.role)
+                .add()
+        }
+
+        batch.execute()
+    }
 
     private data class MediaModel(
         val id: Int,
@@ -108,10 +124,13 @@ class JdbiFileRepository(
         val sizeBytes: Long,
         val createdAt: Long,
         val uploadedAt: Long?,
-        val userId: Int,
-        val fullName: String,
-        val username: String,
+        val credits: String,
     ) {
+        private inline fun <reified T> parseJson(json: String): T {
+            val objectMapper = ObjectMapper().registerKotlinModule()
+            return objectMapper.readValue(json)
+        }
+
         val media: Media
             get() =
                 Media(
@@ -124,7 +143,7 @@ class JdbiFileRepository(
                     mimeType = mimeType,
                     status = status,
                     sizeBytes = sizeBytes,
-                    photographer = Author(userId, fullName, username),
+                    credits = parseJson(credits),
                     createdAt = Instant.fromEpochSeconds(createdAt),
                     uploadedAt = uploadedAt?.let { Instant.fromEpochSeconds(it) },
                 )

@@ -4,6 +4,7 @@ data class NewContent(
     val title: String,
     val headline: String,
     val slug: String,
+    val type: String,
     val categoryId: Int,
     val featuredMediaId: Int,
     val publishedAt: String?,

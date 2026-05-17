@@ -5,7 +5,7 @@ import { Edit, Archive, ArchiveRestore, Trash } from 'lucide-react';
 
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { Tabs, Tab } from '@/shared/components/Tabs';
-import { Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
+import { Table, TableBody, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { TableFilters } from '@/shared/components/table/TableFilters';
 import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
@@ -20,9 +20,11 @@ type Props = {
     openModal: (action: ModalAction | null, tag: Tag) => void;
 };
 
+type ModalAction = 'archive' | 'unarchive' | 'delete';
+
 const TagsTable = ({ filter, openModal }: Props) => {
     const { t } = useI18n();
-    const { tags, pagination, fetchAll } = useTags();
+    const { loading, tags, pagination, fetchAll } = useTags();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
 
@@ -32,72 +34,74 @@ const TagsTable = ({ filter, openModal }: Props) => {
     }, [fetchAll, searchParams, filter, buildQuery]);
 
     return (
-        <Table dataTestId='tags-table' isEmpty={tags.length === 0} emptyMessage='Nenhuma tag encontrada.'>
-            <TableHeader>
-                <TableColumn className='col-lg-5' isHeader={true}>
-                    {t('tags.name')}
-                </TableColumn>
-                <TableColumn className='col-lg-3' isHeader={true}>
-                    {t('common.slug')}
-                </TableColumn>
-                <TableColumn className='col-lg-2' isHeader={true}>
-                    {t('common.count')}
-                </TableColumn>
-                <TableColumn className='col-lg-2 text-center' isHeader={true}>
-                    {t('common.actions')}
-                </TableColumn>
-            </TableHeader>
-            {tags.map((row, index) => (
-                <TableRow key={row.id}>
-                    <TableColumn className='col-lg-5'>
-                        <div className='d-flex align-items-center gap-3'>
-                            <div>
-                                <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
-                                    {row.name}
+        <>
+            <Table dataTestId='tags-table' >
+                <TableHeader>
+                    <TableColumn className='col-lg-5' isHeader={true}>
+                        {t('tags.name')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-3' isHeader={true}>
+                        {t('common.slug')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2' isHeader={true}>
+                        {t('common.count')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2 text-center' isHeader={true}>
+                        {t('common.actions')}
+                    </TableColumn>
+                </TableHeader>
+                <TableBody cols={4} loading={loading} isEmpty={tags.length === 0} emptyMessage='Nenhuma tag encontrada.'>
+                    {tags.map((row, index) => (
+                        <TableRow key={row.id}>
+                            <TableColumn className='col-lg-5'>
+                                <div className='d-flex align-items-center gap-3'>
+                                    <div>
+                                        <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
+                                            {row.name}
+                                        </div>
+                                        <div className='text-muted small mt-1'>
+                                            {row.description || '-'}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className='text-muted small mt-1'>
-                                    {row.description || '-'}
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-3'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.slug')}</div>
+                                <div className='text-secondary'>{row.slug}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.count')}</div>
+                                <div className='text-secondary'>{row.quantity}</div>
+                            </TableColumn>
+                            <TableColumn className='col-lg-2 text-lg-end'>
+                                <div className='d-flex d-lg-flex justify-content-center gap-2'>
+                                    {row.archivedAt ?
+                                        <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
+                                            <Trash size={16} />
+                                        </button>
+                                        :
+                                        <Link
+                                            to={`/backoffice/etiquetas/${row.id}`}
+                                            state={{ tag: row }}
+                                            className='btn btn-dark rounded-2'
+                                            data-testid={`manage-tag-button-${index}`}
+                                        >
+                                            <Edit size={16} />
+                                        </Link>
+                                    }
+                                    <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
+                                        {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-3'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.slug')}</div>
-                        <div className='text-secondary'>{row.slug}</div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-2'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.count')}</div>
-                        <div className='text-secondary'>{row.quantity}</div>
-                    </TableColumn>
-                    <TableColumn className='col-lg-2 text-lg-end'>
-                        <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                            {row.archivedAt ?
-                                <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
-                                    <Trash size={16} />
-                                </button>
-                                :
-                                <Link
-                                    to={`/backoffice/etiquetas/${row.id}`}
-                                    state={{ tag: row }}
-                                    className='btn btn-dark rounded-2'
-                                    data-testid={`manage-tag-button-${index}`}
-                                >
-                                    <Edit size={16} />
-                                </Link>
-                            }
-                            <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
-                                {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
-                            </button>
-                        </div>
-                    </TableColumn>
-                </TableRow>
-            ))}
+                            </TableColumn>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
             {pagination && <TablePagination hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} />}
-        </Table>
+        </>
     );
 }
-
-type ModalAction = 'archive' | 'unarchive' | 'delete';
 
 export const Tags = () => {
     const { t } = useI18n();

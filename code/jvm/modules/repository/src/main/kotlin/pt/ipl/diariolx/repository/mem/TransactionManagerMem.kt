@@ -13,7 +13,7 @@ class TransactionManagerMem(
     inviteRepository: InviteRepository = InviteRepositoryMem(),
     tagRepository: TagRepository,
     contentRepository: ContentRepositoryMem,
-    fileRepository: FileRepositoryMem,
+    fileRepository: MediaRepositoryMem,
 ) : TransactionManager {
     private val transaction =
         TransactionMem(

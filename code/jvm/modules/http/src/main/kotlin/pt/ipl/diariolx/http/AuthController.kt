@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.http
 
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.springframework.http.HttpHeaders
@@ -28,6 +29,7 @@ import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
 
 @RestController
+@Tag(name = "Auth", description = "APIs for managing authentication")
 class AuthController(
     private val userService: UserService,
     private val logger: Logger,
@@ -39,7 +41,7 @@ class AuthController(
         @Parameter(hidden = true)invite: Invite,
         @RequestBody body: CreateUserRequestDTO,
     ): ResponseEntity<*> =
-        when (val response = userService.create(body.username, body.email, body.password, body.fName, body.lName, invite)) {
+        when (val response = userService.create(body.username, body.email, body.password, body.firstName, body.lastName, invite)) {
             is Success ->
                 ResponseEntity
                     .created(Uris.Users.byId(response.value))

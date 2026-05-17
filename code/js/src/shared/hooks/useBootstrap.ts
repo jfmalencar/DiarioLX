@@ -2,27 +2,71 @@ import { useContext } from 'react';
 import { createContext } from 'react';
 
 export type BootstrapState = {
-  config: Config;
-  links: Links;
+  endpoints: Endpoints;
   loading: boolean;
 };
 
-export type Config = object;
+export type Link = {
+  href: string;
+  method: string;
+}
 
-export type Links = {
-  [key: string]: {
-    href: string;
-    method: string;
+export type Endpoints = {
+  auth: {
+    register: Link;
+    login: Link;
+    logout: Link;
+  }
+  users: {
+    me: Link;
+    list: Link;
+    create: Link;
+    update: Link;
+    delete: Link;
+  }
+  tags: {
+    list: Link;
+    create: Link;
+    update: Link;
+    delete: Link;
+    archive: Link;
+    unarchive: Link;
+  };
+  categories: {
+    list: Link;
+    create: Link;
+    update: Link;
+    delete: Link;
+    archive: Link;
+    unarchive: Link;
+  };
+  contents: {
+    list: Link;
+    create: Link;
+    update: Link;
+    delete: Link;
+    archive: Link;
+    unarchive: Link;
+  };
+  invites: {
+    list: Link;
+    create: Link;
+  }
+  medias: {
+    list: Link;
+    create: Link;
+    signedUrl: Link;
+    userSignedUrl: Link;
+    completeUpload: Link;
   };
 };
 
-export const BootstrapContext = createContext<BootstrapState>({
-  config: {},
-  links: {},
-  loading: true
-});
+export const BootstrapContext = createContext<BootstrapState | null>(null);
 
 export function useBootstrap(): BootstrapState {
-  const state: BootstrapState = useContext(BootstrapContext);
-  return state;
+  const context = useContext(BootstrapContext);
+  if (!context) {
+    throw new Error('useBootstrap must be used inside BootstrapProvider');
+  }
+  return context;
 }

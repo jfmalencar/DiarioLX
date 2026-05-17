@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.http
 
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.slf4j.Logger
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -32,6 +33,7 @@ import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
 
 @RestController
+@Tag(name = "Users", description = "APIs for managing users")
 class UserController(
     private val userService: UserService,
     private val logger: Logger,

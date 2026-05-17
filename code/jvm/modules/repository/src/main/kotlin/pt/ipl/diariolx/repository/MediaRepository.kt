@@ -4,7 +4,7 @@ import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
 
-interface FileRepository {
+interface MediaRepository {
     fun create(upload: NewUpload): Int
 
     fun get(id: Int): Media?

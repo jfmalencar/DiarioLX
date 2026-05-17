@@ -1,12 +1,14 @@
 import { Link, Outlet, useMatches } from 'react-router';
 import { useNavigate } from 'react-router';
 import { FloatingActionMenu } from '@/shared/components/FloatingActionMenu';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
 
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { ScrollToTop } from '@/shared/components/ScrollToTop';
 
 import logo from '@/assets/logo.svg';
+import { useState } from 'react';
 
 type RouteHandle = {
   title: string
@@ -17,13 +19,12 @@ type RouteHandle = {
 export const BackofficeLayout = () => {
   const navigate = useNavigate();
   const { user, hydrated } = useAuthentication();
+  const [ready, setReady] = useState(false);
   const { t } = useI18n();
 
   const matches = useMatches()
   const currentMatch = matches[matches.length - 1]
   const handle = currentMatch?.handle as RouteHandle
-
-  console.log('user => ', user)
 
   if (handle.layout === 'none') {
     return (
@@ -35,23 +36,14 @@ export const BackofficeLayout = () => {
   }
 
   // Wait for authentication to hydrate before rendering dashboard
-  if (!hydrated) {
-    return (
-      <div className='d-flex justify-content-center align-items-center min-vh-100'>
-        <div className='text-center'>
-          <div className='spinner-border mb-3' role='status'>
-            <span className='visually-hidden'>Loading...</span>
-          </div>
-          <p className='text-muted'>{t('backoffice_layout.loading') || 'Loading...'}</p>
-        </div>
-      </div>
-    )
+  if (!hydrated || !ready) {
+    return <LoadingScreen onReady={() => setReady(true)} startProgress={50} endProgress={100} />
   }
 
   const options = [
-    { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/publicacoes/nova?tipo=artigo') },
+    { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/publicacoes/nova?tipo=article') },
     { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/publicacoes/nova?tipo=video') },
-    { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/publicacoes/nova?tipo=episodio') },
+    { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/publicacoes/nova?tipo=episode') },
     { key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/podcasts/nova') },
     { key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categorias/nova') },
     { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/etiquetas/nova') },
@@ -122,7 +114,7 @@ export const BackofficeLayout = () => {
               style={{ width: '44px', height: '44px' }}
             >
               <img
-                src={user?.profilePictureUrl ? user.profilePictureUrl : 'https://placehold.co/213x213/black/white?text=' + (user?.firstName?.charAt(0).toUpperCase() || 'U')}
+                src={user?.profilePictureURL ? user.profilePictureURL : 'https://placehold.co/213x213/black/white?text=' + (user?.firstName?.charAt(0).toUpperCase() || 'U')}
                 alt={user?.firstName}
                 className='rounded-circle'
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}

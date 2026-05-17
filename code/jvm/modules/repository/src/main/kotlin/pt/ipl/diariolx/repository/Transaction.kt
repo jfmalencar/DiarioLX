@@ -6,7 +6,7 @@ interface Transaction {
     val userRepository: UserRepository
     val inviteRepository: InviteRepository
     val contentRepository: ContentRepository
-    val fileRepository: FileRepository
+    val mediaRepository: MediaRepository
 
     // other repository types
     fun rollback()

@@ -44,7 +44,7 @@ export function MyProfile() {
     const firstName = user?.firstName?.trim() || '';
     const lastName = user?.lastName?.trim() || '';
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || t('myprofile.profile_name');
-    const imageUrl = user?.profilePictureUrl?.trim() || 'https://placehold.co/213x213/black/white?text=' + (displayName.charAt(0).toUpperCase() || 'U');
+    const imageUrl = user?.profilePictureURL?.trim() || 'https://placehold.co/213x213/black/white?text=' + (displayName.charAt(0).toUpperCase() || 'U');
     const email = user?.email || t('common.no_email');
     const createdAtDate = user?.createdAt ? formatDate(user.createdAt) : t('common.not_available');
     const role = user?.username?.toUpperCase() || t('common.not_available');
@@ -128,7 +128,7 @@ export function MyProfile() {
                 editFormData.firstName,
                 editFormData.lastName,
                 editFormData.bio || null,
-                user?.profilePictureUrl || null
+                user?.profilePictureURL || null
             );
 
             // Refresh user data to ensure all changes are reflected

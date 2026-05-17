@@ -12,7 +12,7 @@ class JdbiTransaction(
     override val inviteRepository: InviteRepository = JdbiInviteRepository(handle, logger)
     override val userRepository: UserRepository = JdbiUserRepository(handle, logger)
     override val contentRepository: ContentRepository = JdbiContentRepository(handle)
-    override val fileRepository: FileRepository = JdbiFileRepository(handle)
+    override val mediaRepository: MediaRepository = JdbiMediaRepository(handle)
 
     override fun rollback() {
         handle.rollback()

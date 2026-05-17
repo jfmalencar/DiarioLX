@@ -5,7 +5,7 @@ import { Edit, Archive, ArchiveRestore, Trash } from 'lucide-react';
 
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { Tabs, Tab } from '@/shared/components/Tabs';
-import { Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
+import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { type Category, useCategories } from '@/shared/hooks/useCategories';
 import { useI18n } from '@/shared/hooks/useI18n';
@@ -18,7 +18,7 @@ type Props = {
 
 const CategoriesTable = ({ filter, openModal }: Props) => {
     const { t } = useI18n();
-    const { categories, pagination, fetchAll } = useCategories();
+    const { loading, categories, pagination, fetchAll } = useCategories();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
 
@@ -28,81 +28,85 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
     }, [fetchAll, searchParams, filter, buildQuery]);
 
     return (
-        <Table dataTestId='categories-table' isEmpty={categories.length === 0} emptyMessage='Nenhuma categoria encontrada.'>
-            <TableHeader>
-                <TableColumn className='col-lg-5' isHeader={true}>
-                    {t('categories.name')}
-                </TableColumn>
-                <TableColumn className='col-lg-2' isHeader={true}>
-                    {t('common.slug')}
-                </TableColumn>
-                <TableColumn className='col-lg-2' isHeader={true}>
-                    {t('categories.hierarchy')}
-                </TableColumn>
-                <TableColumn className='col-lg-1' isHeader={true}>
-                    {t('common.count')}
-                </TableColumn>
-                <TableColumn className='col-lg-2 text-center' isHeader={true}>
-                    {t('common.actions')}
-                </TableColumn>
-            </TableHeader>
-            {categories.map((row, index) => (
-                <TableRow key={row.id}>
-                    <TableColumn className='col-lg-5'>
-                        <div className='d-flex align-items-center gap-3'>
-                            <div
-                                className='d-flex align-items-center justify-content-center rounded-circle border border-dark flex-shrink-0'
-                                style={{ width: 64, height: 64 }}
-                            >
-                                <div className='rounded-circle' style={{ width: 28, height: 28, backgroundColor: row.color }} />
-                            </div>
-                            <div>
-                                <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
-                                    {row.name}
+        <>
+            <Table dataTestId='categories-table'>
+                <TableHeader>
+                    <TableColumn className='col-lg-5' isHeader={true}>
+                        {t('categories.name')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2' isHeader={true}>
+                        {t('common.slug')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2' isHeader={true}>
+                        {t('categories.hierarchy')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-1' isHeader={true}>
+                        {t('common.count')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-2 text-center' isHeader={true}>
+                        {t('common.actions')}
+                    </TableColumn>
+                </TableHeader>
+                <TableBody cols={5} loading={loading} isEmpty={categories.length === 0} emptyMessage='Nenhuma categoria encontrada.'>
+                    {categories.map((row, index) => (
+                        <TableRow key={row.id}>
+                            <TableColumn className='col-lg-5'>
+                                <div className='d-flex align-items-center gap-3'>
+                                    <div
+                                        className='d-flex align-items-center justify-content-center rounded-circle border border-dark flex-shrink-0'
+                                        style={{ width: 64, height: 64 }}
+                                    >
+                                        <div className='rounded-circle' style={{ width: 28, height: 28, backgroundColor: row.color }} />
+                                    </div>
+                                    <div>
+                                        <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
+                                            {row.name}
+                                        </div>
+                                        <div className='text-muted small mt-1'>
+                                            {row.description || '-'}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className='text-muted small mt-1'>
-                                    {row.description || '-'}
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.slug')}</div>
+                                <div className='text-secondary'>{row.slug}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('categories.hierarchy')}</div>
+                                <div className='text-secondary'>{row.parentName || 'Principal'}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-1'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.count')}</div>
+                                <div className='text-secondary'>{row.quantity}</div>
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-2 text-lg-end'>
+                                <div className='d-flex d-lg-flex justify-content-center gap-2'>
+                                    {row.archivedAt ?
+                                        <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
+                                            <Trash size={16} />
+                                        </button>
+                                        :
+                                        <Link
+                                            to={`/backoffice/categorias/${row.id}`}
+                                            state={{ category: row }}
+                                            className='btn btn-dark rounded-2'
+                                            data-testid={`manage-category-button-${index}`}
+                                        >
+                                            <Edit size={16} />
+                                        </Link>
+                                    }
+                                    <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
+                                        {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-2'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.slug')}</div>
-                        <div className='text-secondary'>{row.slug}</div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-2'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('categories.hierarchy')}</div>
-                        <div className='text-secondary'>{row.parentName || 'Principal'}</div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-1'>
-                        <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.count')}</div>
-                        <div className='text-secondary'>{row.quantity}</div>
-                    </TableColumn>
-                    <TableColumn className='col-6 col-lg-2 text-lg-end'>
-                        <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                            {row.archivedAt ?
-                                <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
-                                    <Trash size={16} />
-                                </button>
-                                :
-                                <Link
-                                    to={`/backoffice/categorias/${row.id}`}
-                                    state={{ category: row }}
-                                    className='btn btn-dark rounded-2'
-                                    data-testid={`manage-category-button-${index}`}
-                                >
-                                    <Edit size={16} />
-                                </Link>
-                            }
-                            <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
-                                {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
-                            </button>
-                        </div>
-                    </TableColumn>
-                </TableRow>
-            ))}
+                            </TableColumn>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
             {pagination ? <TablePagination hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} /> : null}
-        </Table>
+        </>
     );
 }
 

@@ -3,8 +3,8 @@ package pt.ipl.diariolx.services
 import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.repository.mem.CategoryRepositoryMem
 import pt.ipl.diariolx.repository.mem.ContentRepositoryMem
-import pt.ipl.diariolx.repository.mem.FileRepositoryMem
 import pt.ipl.diariolx.repository.mem.InviteRepositoryMem
+import pt.ipl.diariolx.repository.mem.MediaRepositoryMem
 import pt.ipl.diariolx.repository.mem.TagRepositoryMem
 import pt.ipl.diariolx.repository.mem.TransactionManagerMem
 import pt.ipl.diariolx.repository.mem.UserRepositoryMem
@@ -293,7 +293,7 @@ class CategoryServiceTest {
             userRepo: UserRepositoryMem = UserRepositoryMem(),
             inviteRepo: InviteRepositoryMem = InviteRepositoryMem(),
             contentRepo: ContentRepositoryMem = ContentRepositoryMem(),
-            fileRepo: FileRepositoryMem = FileRepositoryMem(),
+            fileRepo: MediaRepositoryMem = MediaRepositoryMem(),
         ): CategoryService = CategoryService(TransactionManagerMem(repo, userRepo, inviteRepo, tagRepo, contentRepo, fileRepo))
     }
 }

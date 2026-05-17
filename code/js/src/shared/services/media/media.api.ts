@@ -4,7 +4,7 @@ import type { Media, MediaService, MediasResponse, SignedUpload, UserSignedUploa
 export const mediaApiService: MediaService = {
 
   async fetchAll(params) {
-    const result = await get<MediasResponse>('/api/media?' + new URLSearchParams(params as Record<string, string>).toString());
+    const result = await get<MediasResponse>('/api/medias?' + new URLSearchParams(params as Record<string, string>).toString());
     if (!result.success) {
       throw new Error('Failed to fetch media');
     }
@@ -15,9 +15,9 @@ export const mediaApiService: MediaService = {
     const formData = new FormData();
     formData.append('file', media.file);
     formData.append('altText', media.altText);
-    formData.append('photographerId', media.photographerId);
+    formData.append('credits', JSON.stringify(media.credits));
 
-    const result = await upload<Media>('/api/media', formData);
+    const result = await upload<Media>('/api/medias', formData);
     if (!result.success) {
       throw new Error('Failed to upload media');
     }
@@ -25,9 +25,14 @@ export const mediaApiService: MediaService = {
   },
 
   async getSignedUrl(media) {
-    const result = await post<SignedUpload>('/api/media/signed-url', {
+    const result = await post<SignedUpload>('/api/medias/signed-url', {
       altText: media.altText,
-      photographerId: media.photographerId,
+      credits: media.credits.map(
+        (credit) => ({
+          userId: credit.userId,
+          role: credit.role,
+        })
+      ),
       originalFileName: media.file.name,
       contentType: media.file.type,
     });
@@ -38,7 +43,7 @@ export const mediaApiService: MediaService = {
   },
 
   async getUserSignedUrl(media) {
-    const result = await post<UserSignedUpload>('/api/media/user-signed-url', {
+    const result = await post<UserSignedUpload>('/api/medias/user-signed-url', {
       contentType: media.file.type,
     });
     if (!result.success) {
@@ -48,7 +53,7 @@ export const mediaApiService: MediaService = {
   },
 
   async completeUpload(id) {
-    const result = await post(`/api/media/${id}`, {});
+    const result = await post(`/api/medias/${id}`, {});
     if (!result.success) {
       throw new Error('Failed to complete upload');
     }

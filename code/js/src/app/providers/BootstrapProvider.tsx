@@ -1,21 +1,21 @@
-import {
-  useEffect,
-  useState,
-} from 'react';
+import { useEffect, useState } from 'react';
 
-import { BootstrapContext, type Config, type Links } from '@/shared/hooks/useBootstrap';
+import { BootstrapContext, type Endpoints } from '@/shared/hooks/useBootstrap';
+import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { bootstrapService } from '@/shared/services/bootstrap';
 
-export function BootstrapProvider({ children }: { children: React.ReactNode }) {
-  const [config, setConfig] = useState<Config | null>(null);
-  const [links, setLinks] = useState<Links | null>(null);
+export const BootstrapProvider = ({ children }: { children: React.ReactNode }) => {
+  const [endpoints, setEndpoints] = useState<Endpoints | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
+
+  console.log('BootstrapProvider rendered with endpoints:', endpoints);
 
   useEffect(() => {
     async function loadConfig() {
       try {
-        const { config, links } = await (await fetch('/api')).json();
-        setConfig(config);
-        setLinks(links);
+        const { endpoints } = await bootstrapService.fetchBootstrapData();
+        setEndpoints(endpoints);
       } catch (error) {
         console.error('Erro ao carregar configurações do site', error);
       } finally {
@@ -26,16 +26,16 @@ export function BootstrapProvider({ children }: { children: React.ReactNode }) {
     loadConfig();
   }, []);
 
-  if (loading) {
-    return <div>Carregando configurações...</div>;
+  if (!ready || loading) {
+    return <LoadingScreen onReady={() => setReady(true)} endProgress={50} />;
   }
 
-  if (!config || !links) {
+  if (!endpoints) {
     return <div>Erro ao carregar configurações do site</div>;
   }
 
   return (
-    <BootstrapContext value={{ config, links, loading }}>
+    <BootstrapContext value={{ endpoints, loading }}>
       {children}
     </BootstrapContext>
   );

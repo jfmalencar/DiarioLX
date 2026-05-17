@@ -20,11 +20,12 @@ class JdbiContentRepository(
             handle
                 .createQuery(
                     """
-                    insert into contents (title, headline, featured_media_id, slug, category_id)
-                    values (:title, :headline,:featured_media_id, :slug, :category_id)
+                    insert into contents (type, title, headline, featured_media_id, slug, category_id)
+                    values (:type::content_type, :title, :headline,:featured_media_id, :slug, :category_id)
                     returning id
                     """.trimIndent(),
-                ).bind("title", content.title)
+                ).bind("type", content.type)
+                .bind("title", content.title)
                 .bind("headline", content.headline)
                 .bind("featured_media_id", content.featuredMediaId)
                 .bind("slug", content.slug)
@@ -167,6 +168,7 @@ class JdbiContentRepository(
         val id: Int,
         val title: String,
         val slug: String,
+        val type: String,
         val headline: String,
         val categoryId: Int,
         val categoryName: String,
@@ -191,6 +193,7 @@ class JdbiContentRepository(
                     id = id,
                     title = title,
                     slug = slug,
+                    type = type,
                     headline = headline,
                     category =
                         CategorySummary(

@@ -8,11 +8,12 @@ export type Media = {
     type: MediaType;
     url: string;
     thumbnailUrl: string | null;
-    photographer: {
+    credits: {
         id: string
         name: string;
+        role: string
         slug: string
-    };
+    }[];
     altText: string;
     mimeType: string;
     createdAt: string;
@@ -21,7 +22,10 @@ export type Media = {
 export type MediaFormValues = {
     file: File;
     altText: string;
-    photographerId: string;
+    credits: {
+        userId: string;
+        role: string;
+    }[];
 };
 
 export type UserMediaFormValues = {
