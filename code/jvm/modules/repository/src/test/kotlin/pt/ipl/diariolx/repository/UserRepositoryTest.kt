@@ -7,11 +7,11 @@ import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
+import pt.ipl.diariolx.domain.users.value.Email
+import pt.ipl.diariolx.domain.users.value.Name
 import pt.ipl.diariolx.domain.users.value.PasswordHash
+import pt.ipl.diariolx.domain.users.value.Username
 import pt.ipl.diariolx.repository.mem.UserRepositoryMem
-import pt.ipl.diariolx.utils.user.Email
-import pt.ipl.diariolx.utils.user.Name
-import pt.ipl.diariolx.utils.user.Username
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
