@@ -53,13 +53,13 @@
 
 \date{
 \begin{tabular}{ll}
-  {Orientadores:} & *Artur Ferreira* \\
-                  & *Filipe Freitas*\\
-                  & *Fátima Cardoso (ESCS)*\\
+  {Orientadores:} & Artur Ferreira \\
+                  & Filipe Freitas\\
+                  & Fátima Cardoso (ESCS)\\
 \end{tabular}\\[10mm]
 Relatório do projeto realizado no âmbito de Projecto e Seminário\\
 Licenciatura em Engenharia Informática e de Computadores\\[20mm]
-*Junho* de 2026}
+Junho de 2026}
 
 \begin{document}
 \pagenumbering{roman}
@@ -91,14 +91,14 @@ Licenciatura em Engenharia Informática e de Computadores\\[20mm]
   \end{tabular}\\[10mm]
 
   \begin{tabular}{rl}
-    Orientadores: & Artur Ferreira     \\[10mm]
-                  & \rule{75mm}{0.5pt} \\[5mm]
+    Orientadores: & Artur Ferreira        \\[10mm]
+                  & \rule{75mm}{0.5pt}    \\[5mm]
 
-                  & Filipe Freitas     \\[10mm]
-                  & \rule{75mm}{0.5pt} \\[5mm]
+                  & Filipe Freitas        \\[10mm]
+                  & \rule{75mm}{0.5pt}    \\[5mm]
 
-                  & Fátima (ESCS)      \\[10mm]
-                  & \rule{75mm}{0.5pt} \\
+                  & Fátima Cardoso (ESCS) \\[10mm]
+                  & \rule{75mm}{0.5pt}    \\
   \end{tabular}\\[10mm]
 
   Relatório do projeto realizado no âmbito de Projecto e Seminário\\
@@ -112,7 +112,73 @@ Licenciatura em Engenharia Informática e de Computadores\\[20mm]
 \cleardoublepage
 \chapter*{Resumo}
 
-Resumo do projeto.
+O Diário LX é uma plataforma de jornalismo digital desenvolvida em colaboração com
+a Escola Superior de Comunicação Social (ESCS) e a unidade de investigação LIACOM,
+com o objetivo de suportar a criação, gestão e publicação de conteúdo editorial.
+Foram avaliadas soluções existentes de gestão de conteúdos, nomeadamente o WordPress
+e o Ghost; contudo, as suas arquitecturas e fluxos editoriais não satisfaziam
+integralmente os requisitos do projeto, em particular o controlo de acessos baseado
+em papéis, um fluxo de publicação estruturado, a integração de conteúdos multimédia
+e uma arquitectura de aplicação desacoplada.
+
+A solução proposta segue uma arquitectura cliente-servidor composta por um frontend
+em React e um backend em Spring Boot implementado em Kotlin. O PostgreSQL foi adoptado
+para a persistência de dados estruturados, enquanto os assets multimédia são
+armazenados num serviço compatível com S3 auto-hospedado (SeaweedFS). A comunicação
+entre componentes é realizada através de uma API REST, com respostas de erro a seguir
+o standard Problem Details for HTTP APIs (RFC 9457).
+
+A plataforma suporta um fluxo editorial no qual o conteúdo progride por estados
+definidos --- rascunho, pendente de aprovação, publicado e rejeitado --- aplicado
+por um modelo de permissões baseado em três níveis de utilizador: Colaborador,
+Editor e Administrador. A autenticação é implementada através de JSON
+Web Tokens (JWT), com tokens de acesso de curta duração e tokens de actualização de
+longa duração armazenados em cookies \texttt{HttpOnly}, garantindo validação stateless
+e mitigação de ataques XSS.
+
+Este relatório descreve a versão beta do sistema, cobrindo as decisões de
+arquitectura, modelo de dados, implementação do backend e frontend, e os testes
+realizados até à data. A plataforma desenvolvida demonstra a viabilidade de uma
+solução dedicada, adaptada aos fluxos editoriais e requisitos técnicos do Diário LX.
+
+\vspace{5mm}
+\textbf{Palavras-chave:} Jornalismo Digital; Sistemas de Gestão de Conteúdos;
+Desenvolvimento Web; API REST; React; Spring Boot; Fluxo Editorial.
+
+\cleardoublepage
+\chapter*{Abstract}
+
+Diário LX is a digital journalism platform developed in collaboration with the
+Escola Superior de Comunicação Social (ESCS) and the LIACOM research unit, aimed
+at supporting the creation, management, and publication of editorial content.
+Existing content management systems such as WordPress and Ghost were evaluated as
+potential solutions; however, their architectures and editorial workflows did not
+fully address the project requirements, namely fine-grained role-based access
+control, a structured publication workflow, multimedia integration, and a decoupled
+application architecture.
+
+The proposed solution follows a client-server architecture composed of a React-based
+frontend and a Spring Boot backend implemented in Kotlin. PostgreSQL was adopted for
+structured data persistence, while multimedia assets are stored through a self-hosted
+S3-compatible service (SeaweedFS). Communication between components is performed
+through a RESTful API, with error responses following the Problem Details for HTTP
+APIs standard (RFC 9457).
+
+The platform supports an editorial workflow in which content progresses through
+defined states --- draft, pending approval, published, and rejected --- enforced by
+a role-based permission model with three user levels: Contributor, Editor,
+and Administrator. Authentication is implemented using JSON Web Tokens (JWT),
+with short-lived access tokens and long-lived refresh tokens stored as \texttt{HttpOnly}
+cookies, ensuring stateless validation and mitigation of XSS attacks.
+
+This report describes the beta version of the system, covering the architectural
+decisions, data model, backend and frontend implementation, and the testing carried
+out to date. The resulting platform demonstrates the feasibility of a purpose-built
+solution tailored to the editorial workflows and technical requirements of Diário LX.
+
+\vspace{5mm}
+\textbf{Keywords:} Digital Journalism; Content Management Systems; Web Development;
+REST API; React; Spring Boot; Editorial Workflow.
 
 % IA
 \cleardoublepage
@@ -165,11 +231,8 @@ All final architectural, implementation, and validation decisions were made by t
 % Capítulo 7 — Frontend
 \include{chapters/cap7_frontend}
 
-% Capítulo 8 — Testes
-\include{chapters/cap8_tests}
-
-% Capítulo 9 — Conclusão
-\include{chapters/cap9_conclusion}
+% Capítulo 8 — Conclusão
+\include{chapters/cap8_conclusion}
 
 % =========================
 % REFERÊNCIAS

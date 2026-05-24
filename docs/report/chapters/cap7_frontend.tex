@@ -5,90 +5,350 @@
 
 \section{Technology} \label{sec:fe_technology}
 
-The frontend is developed as a single-page application (SPA) using \textbf{React} with \textbf{TypeScript}. React's component-based model facilitates the construction of reusable UI elements and enables clear separation between the public website and the backoffice interface. TypeScript was adopted to improve code maintainability and reduce runtime errors through static type checking.
+The frontend is developed as a single-page application (SPA) using \textbf{React}
+with \textbf{TypeScript}. React's component-based model facilitates the construction
+of reusable UI elements and enables clear separation between the public website and
+the backoffice interface. TypeScript was adopted to improve code maintainability and
+reduce runtime errors through static type checking.
 
 \subsection{Libraries} \label{sec:fe_libraries}
 
-% TODO: listar as principais bibliotecas utilizadas e a justificação
 The following libraries were adopted:
 
 \begin{itemize}
-  \item \textbf{React Router} — client-side routing, enabling slug-based navigation (e.g.\ \texttt{/politica/orcamento-estado-2026})~\cite{react_router}.
+  \item \textbf{React Router}~\cite{react_router} --- client-side routing, enabling
+        slug-based navigation.
 
-  \item \textbf{Fetch API} — HTTP communication with the backend API~\cite{mdn_fetch}.
+  \item \textbf{Fetch API}~\cite{mdn_fetch} --- HTTP communication with the backend
+        API, wrapped in a custom \texttt{useApi} hook.
 
-  \item \textbf{TipTap} — rich text editor framework used to implement the block-based article editor in the backoffice~\cite{tiptap}.
+  \item \textbf{TipTap}~\cite{tiptap} --- rich text editor framework used to implement
+        the block-based article editor in the backoffice.
 
-  \item \textbf{Bootstrap} — responsive CSS framework used for layout structuring and interface styling~\cite{bootstrap}.
+  \item \textbf{Bootstrap}~\cite{bootstrap} --- responsive CSS framework used for
+        layout structuring and interface styling.
 
-  \item \textbf{Lucide React} — icon library used throughout the interface to provide consistent and lightweight SVG-based icons~\cite{lucide}.
+  \item \textbf{Lucide React}~\cite{lucide} --- icon library providing consistent
+        and lightweight SVG-based icons throughout the interface.
 \end{itemize}
 
 \section{Organization} \label{sec:fe_organization}
 
-% TODO: descrever a estrutura de directorias e módulos do frontend
-The project is structured as follows:
+The frontend follows a modular architecture inspired by the separation of concerns
+principle. Figure~\ref{fig:frontend_diagram} illustrates the internal organisation
+of the frontend and its relationship with the backend API.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/frontend_module_diagram.png}}
+  \end{center}
+  \caption{Frontend module organization.}
+  \label{fig:frontend_diagram}
+\end{figure}
+
+The source tree is organised as follows:
 
 \begin{verbatim}
 src/
-  components/       # Reusable UI components
-  pages/            # Page-level components (public site)
-  backoffice/       # Backoffice-specific pages and components
-  hooks/            # Custom React hooks
-  services/         # API communication layer
-  context/          # React context providers (auth, theme)
-  types/            # TypeScript type definitions
-  utils/            # Utility functions
+  app/
+    providers/        # React context providers (auth, bootstrap)
+    App.tsx           # Root component and router setup
+  assets/             # Static assets (images, fonts)
+  config/             # Application configuration
+  layouts/            # Shared page layout components
+  modules/
+    backoffice/       # Backoffice-specific pages and components
+    public/           # Public website pages and components
+  shared/
+    components/       # Reusable UI components
+    hooks/            # Custom React hooks
+    services/         # API communication layer
+    types/            # TypeScript type definitions
+    utils/            # Utility functions
+  tests/              # Playwright end-to-end tests
 \end{verbatim}
+
+The main modules are:
+
+\begin{description}
+  \item[UI Components] Reusable presentation components with no business logic,
+        shared across the backoffice and public modules.
+
+  \item[Hooks] Custom React hooks encapsulating state management and side effects.
+        Hooks communicate with the backend exclusively through the \texttt{Services}
+        interface.
+
+  \item[Services] An interface defining the API communication contract, implemented
+        by the \texttt{API Client}. This abstraction decouples the application logic
+        from the HTTP communication layer.
+
+  \item[API Client] The concrete implementation of the \texttt{Services} interface,
+        built on the Fetch API and encapsulated in the \texttt{useApi} hook.
+
+  \item[Domain] TypeScript type definitions representing the shared data model
+        (content, users, categories, tags).
+\end{description}
+
+\section{Bootstrap and Configuration} \label{sec:fe_bootstrap}
+
+On application startup, the \texttt{useBootstrap} hook fetches the initial
+configuration from the backend, including the API endpoint definitions. This avoids
+hardcoding API URLs in the frontend codebase, allowing the backend base URL to be
+configured via environment variables without recompiling the frontend.
 
 \section{Navigation} \label{sec:fe_navigation}
 
-The application uses client-side routing based on React Router. URL slugs follow the pattern \texttt{/<category>/<article-slug>}, as required by the specification. Category and tag listing pages are dynamically generated based on data fetched from the API.
+Client-side routing is handled by React Router. URL slugs follow the pattern
+\texttt{/<category>/<slug>}. Category and tag listing pages are dynamically
+generated based on data fetched from the API.
 
 \section{Authentication} \label{sec:fe_auth}
 
-% TODO: descrever o fluxo de autenticação no lado do cliente (Julianne)
-The frontend manages authentication state using a React context provider. On successful login, the JWT token is stored (e.g.\ in memory or a secure cookie) and attached to all subsequent API requests. Protected routes redirect unauthenticated users to the login page.
+Authentication state is managed via a React context provider, which stores the
+authenticated user's identity and role after a successful login. Since tokens are
+stored in \texttt{HttpOnly} cookies and managed by the browser, the frontend does
+not handle token storage directly.
 
-\section{Public Website} \label{sec:fe_public}
+The \texttt{useApi} hook wraps all API calls and handles token expiry transparently:
+when a request returns \texttt{401 Unauthorized}, the hook automatically attempts a
+token refresh via \texttt{POST /api/auth/refresh}. If the refresh succeeds, the
+original request is retried; otherwise, the user is redirected to the login page.
+To avoid duplicate refresh requests when multiple concurrent calls expire
+simultaneously, a shared \texttt{refreshPromise} ensures that only one refresh
+attempt is made at a time.
 
-\subsection{Homepage} \label{sec:fe_homepage}
-
-% TODO: descrever a implementação e mostrar capturas de ecrã (Julianne)
-The homepage presents four featured articles and the four most recent articles, fetched from the API on page load. The main navigation menu provides access to all editorial sections and institutional pages.
-
-\subsection{Article Page} \label{sec:fe_article}
-
-% TODO: descrever a página de artigo (Jessé)
-Each article is rendered on a dedicated page at its canonical URL. The page displays the full article content, a comment section, and four related articles.
-
-\subsection{Category and Tag Pages} \label{sec:fe_category}
-
-% TODO: descrever (Jessé)
-Category pages display one featured article followed by remaining articles in reverse chronological order. Tag pages list all articles associated with the tag.
-
-\subsection{Podcast Page} \label{sec:fe_podcast}
-
-% TODO: descrever o layout diferenciado para podcasts
+Protected routes redirect unauthenticated users to the login page.
 
 \section{Backoffice} \label{sec:fe_backoffice}
 
-\subsection{Content Management} \label{sec:fe_content_mgmt}
+The backoffice is the editorial management interface, accessible only to
+authenticated users. It provides tools for user administration, category and tag
+management, and invitation-based onboarding. Content management and the editorial
+review workflow are currently under active development.
 
-% TODO: descrever o editor de conteúdos, fluxo de submissão e aprovação
+\subsection{Authentication Pages} \label{sec:fe_auth_pages}
+
+Access to the backoffice is restricted to invited users. The authentication flow
+comprises two pages: a login page for returning users and a registration page for
+new users who have received an invitation code.
+
+The registration form collects the user's first and last name, username, email,
+password, and invitation code. The invitation code is validated server-side and
+determines the role assigned to the new account. Both pages share a split layout
+--- a full-height cover image with the Diário LX branding on the left, and the
+form on the right.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/register.png}}
+  \end{center}
+  \caption{Backoffice registration page.}
+  \label{fig:fe_register}
+\end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/login.png}}
+  \end{center}
+  \caption{Backoffice login page.}
+  \label{fig:fe_login}
+\end{figure}
 
 \subsection{User Management} \label{sec:fe_user_mgmt}
 
-% TODO: descrever a gestão de utilizadores (Jessé)
+The user management page lists all active and deactivated users, displaying their
+name, username, email, and profile picture. Administrators can delete users and
+create new ones via the invitation system.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/users.png}}
+  \end{center}
+  \caption{Backoffice --- user management page.}
+  \label{fig:fe_users}
+\end{figure}
 
 \subsection{Category and Tag Management} \label{sec:fe_cat_mgmt}
 
-% TODO: descrever a gestão de categorias e tags (Julianne)
+The category management page lists all active and archived categories, displaying
+their name, slug, associated colour, parent category (hierarchy), and content count.
+Each category can be edited or deleted. The tag management page follows the same
+structure, listing tags with their slug and associated content count.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/categories.png}}
+  \end{center}
+  \caption{Backoffice --- category management page.}
+  \label{fig:fe_categories}
+\end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/tags.png}}
+  \end{center}
+  \caption{Backoffice --- tag management page.}
+  \label{fig:fe_tags}
+\end{figure}
+
+Editing a tag opens a dedicated page with fields for name, slug, and an optional
+description.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/edit-tag.png}}
+  \end{center}
+  \caption{Backoffice --- tag edit page.}
+  \label{fig:fe_edit_tag}
+\end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/edit-category.png}}
+  \end{center}
+  \caption{Backoffice --- category edit page.}
+  \label{fig:fe_edit_category}
+\end{figure}
+
+\subsection{Invitations} \label{sec:fe_invites}
+
+The invitations page allows Administrators to generate invitation codes for new
+users. Codes are scoped to a specific role --- Contributor, Editor, or
+Administrator --- and expire after one hour. Active and expired invitations are
+displayed in separate tabs.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/invites.png}}
+  \end{center}
+  \caption{Backoffice --- invitation management page.}
+  \label{fig:fe_invites}
+\end{figure}
+
+\subsection{User Profile} \label{sec:fe_profile}
+
+Each user has access to their own profile page, displaying their name, email,
+username, account creation date, and active status. Users can edit their profile
+or log out from this page.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/profile.png}}
+  \end{center}
+  \caption{Backoffice --- user profile page.}
+  \label{fig:fe_profile}
+\end{figure}
+
+\subsection{Content Management} \label{sec:fe_content_mgmt}
+
+The content listing page displays all published content items with their featured
+image, title, creation date, and authors. Each item can be opened for viewing. A floating action button, present throughout the backoffice, allows users
+to create new content items and select the type --- article, video, episode,
+podcast, category, or tag.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/contents.png}}
+  \end{center}
+  \caption{Backoffice --- content listing page.}
+  \label{fig:fe_contents}
+\end{figure}
+
+The content editor provides a split interface: a block-based writing area on the
+left, powered by TipTap, and a settings panel on the right. The writing area
+supports text and image blocks, with inline formatting (bold, italic, underline,
+link). The settings panel allows the author to define the slug, category, primary
+and secondary tags, and primary and secondary authors.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content-0.png}}
+  \end{center}
+  \caption{Backoffice --- content editor (empty state).}
+  \label{fig:fe_editor_empty}
+\end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content.png}}
+  \end{center}
+  \caption{Backoffice --- content editor with a published article.}
+  \label{fig:fe_editor}
+\end{figure}
+
+Image blocks are inserted via a media gallery modal, which lists all uploaded media
+items with their credits and accessible description. New images can be uploaded
+directly from the modal.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/medias.png}}
+  \end{center}
+  \caption{Backoffice --- media gallery modal.}
+  \label{fig:fe_media_gallery}
+\end{figure}
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-media.png}}
+  \end{center}
+  \caption{Backoffice --- media upload form with credits and accessible description.}
+  \label{fig:fe_media_upload}
+\end{figure}
+
+\subsection{Homepage Management} \label{sec:fe_homepage_mgmt}
+
+The homepage management page will allow Administrators to configure the featured content
+displayed on the public website's homepage. The selection of featured articles is
+currently under development.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/homepage.png}}
+  \end{center}
+  \caption{Backoffice --- homepage management page (under development).}
+  \label{fig:fe_homepage_mgmt}
+\end{figure}
+
+\section{Public Website} \label{sec:fe_public}
+
+The public website is the reader-facing interface of Diário LX, providing access
+to published content organised by category, tag, and editorial section. It is
+designed to reflect the editorial identity of the publication, with a clean layout
+that prioritises long-form reading and visual journalism.
+
+At the current beta stage, the public website is still under active development.
+The article page is the primary implemented view; the remaining pages are planned
+and will be completed in the final version.
+
+\subsection{Article Page} \label{sec:fe_article}
+
+Each content item is rendered on a dedicated public page at its canonical URL.
+The page displays the featured image, category, publication date, title, headline,
+author credits, and the full block-based body. Social sharing links are displayed
+below the author information.
+
+\begin{figure}[H]
+  \begin{center}
+    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/article.png}}
+  \end{center}
+  \caption{Public website --- article page.}
+  \label{fig:fe_article_page}
+\end{figure}
 
 \section{Responsive Design} \label{sec:fe_responsive}
 
-The interface is fully responsive, adapting to mobile, tablet, and desktop viewports as required. Layout breakpoints follow standard responsive design conventions.
+The interface is built on Bootstrap's responsive grid system, adapting layouts
+to mobile, tablet, and desktop viewports through standard Bootstrap breakpoints.
+Responsive design is currently in an initial phase, with full coverage planned
+for the final version.
 
 \section{Tests} \label{sec:fe_tests}
 
-Frontend testing is addressed in Chapter~\ref{cap:tests}.
+Frontend end-to-end testing is implemented using Playwright~\cite{playwright}, a
+browser automation framework that supports testing across Chromium, Firefox, and
+WebKit. Playwright tests simulate real user interactions against the running
+application, covering the main workflows of both the public website and the
+backoffice. The test suite is currently in an early phase and is integrated into
+the continuous integration pipeline via GitHub Actions~\cite{github_actions},
+running automatically on every push.

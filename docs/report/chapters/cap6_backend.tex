@@ -3,168 +3,179 @@
 %
 \chapter{Backend} \label{cap:backend}
 
-\section{Technology} \label{sec:be_technology}
-
-The backend is developed in \textbf{Kotlin} using the \textbf{Spring Boot} framework. Kotlin was chosen for its conciseness, null-safety guarantees, and full interoperability with the JVM ecosystem. Spring Boot provides a mature foundation for building REST APIs, including dependency injection, declarative configuration, and robust support for data access and security.
-
 \section{Organization} \label{sec:be_organization}
-
-The backend follows a layered architecture, inspired by the hexagonal (ports and adapters) pattern. The main layers are:
 
 The backend is organised into the following modules:
 
 \begin{description}
-  \item[HTTP] Defines the REST controllers that expose the API endpoints, each
-        responsible for a bounded domain area (e.g., \texttt{ContentController},
-        \texttt{UserController}, \texttt{CategoryController}). Also contains the
-        authentication interceptor, argument resolvers, and Problem+JSON error handling.
+      \item[HTTP] Defines the REST controllers that expose the API endpoints, each
+            responsible for a bounded domain area (e.g., \texttt{ContentController},
+            \texttt{UserController}, \texttt{CategoryController}). Also contains the
+            authentication interceptor, argument resolvers, and Problem+JSON error handling.
 
-  \item[Services] Contains the business logic, orchestrating operations across
-        repositories and enforcing domain rules such as publication workflow transitions
-        and permission checks.
+      \item[Services] Contains the business logic, orchestrating operations across
+            repositories and enforcing domain rules such as publication workflow transitions
+            and permission checks.
 
-  \item[Domain] Defines the core domain entities and value objects
-        (e.g., \texttt{Content}, \texttt{User}, \texttt{PublicationState}). This module
-        has no dependencies on any other module, ensuring the domain model remains
-        isolated from infrastructure concerns.
+      \item[Domain] Defines the core domain entities and value objects. This module
+            has no dependencies on any other module, ensuring the domain model remains
+            isolated from infrastructure concerns.
 
-  \item[Repository] Defines the repository interfaces through which the service
-        layer accesses persistent data. The concrete implementation, \texttt{Repository JDBI},
-        implements these interfaces using JDBI, mapping SQL result sets to domain objects.
-        This abstraction allows the persistence layer to be replaced without affecting
-        business logic.
+      \item[Repository] Defines the repository interfaces through which the service
+            layer accesses persistent data. The concrete implementation, \texttt{Repository JDBI},
+            implements these interfaces using JDBI, mapping SQL result sets to domain objects.
+            This abstraction allows the persistence layer to be replaced without affecting
+            business logic.
 
-  \item[Storage] Defines the storage interface for multimedia files. The concrete
-        implementation, \texttt{Storage S3}, integrates with SeaweedFS~\cite{seaweedfs} for binary file
-        storage using the AWS S3 SDK~\cite{aws_s3_sdk}, as SeaweedFS exposes an S3-compatible API. SeaweedFS
-        was chosen as it can be self-hosted at no cost, which was a requirement given the
-        project's academic and non-commercial nature.
+      \item[Storage] Defines the storage interface for multimedia files. The concrete
+            implementation, \texttt{Storage S3}, integrates with SeaweedFS~\cite{seaweedfs}
+            for binary file storage using the AWS S3 SDK~\cite{aws_s3_sdk}, as SeaweedFS
+            exposes an S3-compatible API. SeaweedFS was chosen as it can be self-hosted at
+            no cost, which was a requirement given the project's academic and non-commercial
+            nature.
 
-  \item[Host] The root composition module, responsible for assembling the full
-        application. It contains the Spring Boot entry point, all bean definitions, and
-        the application configuration (database connection, storage credentials, server
-        settings). No business logic resides here --- its sole purpose is wiring all
-        modules together and bootstrapping the application.
+      \item[Host] The root composition module, responsible for assembling the full
+            application. It contains the Spring Boot entry point, all bean definitions, and
+            the application configuration (database connection, storage credentials, server
+            settings). No business logic resides here --- its sole purpose is wiring all
+            modules together and bootstrapping the application.
 \end{description}
 
 The external systems used by the backend are \textbf{PostgreSQL}, accessed via the
 JDBI repository implementation, and \textbf{SeaweedFS}, accessed via the S3 storage
 implementation.
 
-% TODO: inserir figura do diagrama de pacotes / organização de módulos
 \begin{figure}[H]
-  \begin{center}
-    \framebox[120mm]{\rule{0pt}{50mm} Backend Layer Diagram (Figure placeholder)}
-  \end{center}
-  \caption{Backend layered architecture.}
-  \label{fig:backend_layers}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/backend_module_diagram.png}}
+      \end{center}
+      \caption{Backend module organization.}
+      \label{fig:backend_layers}
 \end{figure}
-
-\section{HTTP API Endpoints} \label{sec:be_api}
-
-% TODO: listar e descrever os principais endpoints
-The API is organised around the following resource groups:
-
-\begin{itemize}
-  \item \texttt{/api/v1/auth} — Authentication (login, logout, token refresh)
-  \item \texttt{/api/v1/users} — User management (CRUD, role assignment)
-  \item \texttt{/api/v1/content} — Content management (create, edit, submit, approve, reject, publish, archive, delete)
-  \item \texttt{/api/v1/categories} — Category and subcategory management
-  \item \texttt{/api/v1/tags} — Tag management
-  \item \texttt{/api/v1/comments} — Comment submission and moderation
-  \item \texttt{/api/v1/search} — Full-text keyword search
-\end{itemize}
 
 \section{Authentication} \label{sec:be_auth}
 
-Authentication is implemented using an opaque token mechanism. Upon successful login,
-a cryptographically random token is generated and stored in a \texttt{sessions} table
-in the database, associated with the authenticated user. The token is then issued to
-the client as an \texttt{HttpOnly} cookie, preventing client-side JavaScript from
-accessing it and mitigating XSS attacks.
+The authentication mechanism is described in Section~\ref{sec:arch_auth}. This
+section covers the implementation details.
 
-On each subsequent request, the token is extracted from the cookie and looked up in
-the database to retrieve the associated user and validate the session. If the token
-is not found or the session has expired, the request is rejected with
-\texttt{401 Unauthorized}.
+\subsection{JwtTokenGenerator} \label{sec:be_jwt}
 
-During the development of this system, the use of JSON Web Tokens (JWT) was evaluated
-as an alternative. JWT would allow stateless validation of the token without a database
-lookup, with the user's identity and role encoded directly in the signed token. However,
-given the nature of the system --- a single backend serving a small editorial team ---
-the benefits of JWT did not justify the added complexity. In particular, token revocation
-would require an additional revoked tokens table, partially negating the stateless
-advantage. The opaque token approach with a sessions table provides immediate revocation,
-simpler reasoning about session state, and is well suited to the scale of this system.
+Token generation and validation are handled by the \texttt{JwtTokenGenerator} class,
+which encapsulates all JWT logic. Access tokens are signed with HMAC-SHA256 using a
+configurable secret key loaded at startup via \texttt{JwtConfig}. The signing key is
+initialised lazily and reused across requests. Refresh tokens are generated as
+cryptographically random 32-byte strings encoded in Base64URL format using
+\texttt{java.security.SecureRandom}.
 
 \subsection{AuthenticationInterceptor} \label{sec:be_auth_interceptor}
 
 The \texttt{AuthenticationInterceptor} implements Spring's \texttt{HandlerInterceptor}
 interface, running before each request reaches a controller via the \texttt{preHandle}
-method. It is responsible for three sequential checks:
+method. It performs the following sequential checks:
 
 \begin{enumerate}
-  \item \textbf{Token extraction}: the interceptor reads the session token from the
-        request cookies. If the endpoint requires authentication --- determined by the
-        presence of \texttt{@RequireRole}, or an
-        \texttt{AuthenticatedUser} parameter --- and no token is found, the request is
-        rejected with \texttt{401 Unauthorized}.
+      \item \textbf{Token extraction}: the interceptor reads the access token from the
+            request cookies. If the endpoint requires authentication --- determined by the
+            presence of a \texttt{@RequireRole} annotation or an \texttt{AuthenticatedUser}
+            parameter --- and no valid token is found, the request is rejected with
+            \texttt{401 Unauthorized}.
 
-  \item \textbf{Account status}: if a valid token is found but the associated user
-        account is deactivated, the request is rejected with a \texttt{403 Forbidden}
-        Problem+JSON response.
-
-  \item \textbf{Role verification}: if the endpoint is annotated with
-        \texttt{@RequireRole}, the authenticated user's role is compared against the
-        required role. A mismatch results in a \texttt{403 Forbidden} response.
+      \item \textbf{Role verification}: if the endpoint is annotated with
+            \texttt{@RequireRole}, the role claim extracted from the JWT is compared against
+            the required role without a database lookup. A mismatch results in a
+            \texttt{403 Forbidden} response.
 \end{enumerate}
 
-If all checks pass, the authenticated user is injected into the request context via
-\texttt{AuthenticatedUserArgumentResolver}, making it available as a parameter in
-controller methods. Endpoints without any authentication annotation are passed through
-without restriction.
+If both checks pass, and the controller declares an \texttt{AuthenticatedUser}
+parameter, the user is fetched from the database by the identifier in the JWT claims
+and injected via \texttt{AuthenticatedUserArgumentResolver}. Endpoints that do not
+declare this parameter incur no database lookup during authentication.
 
-\section{Authorization} \label{sec:be_authorization}
+\section{Authorization} \label{sec:be_authorisation}
 
-Role-based access control (RBAC) is enforced at the HTTP layer via Spring Security. Each endpoint is annotated with the required minimum role. The three roles (\textit{Contributor}, \textit{Editor}, \textit{Admin}) form a hierarchical permission model in which each role inherits the permissions of the roles below it.
-
-\section{Content Workflow} \label{sec:be_workflow}
-
-The publication workflow is enforced by the service layer. Valid state transitions are:
-
-\begin{itemize}
-  \item \textit{Draft} $\rightarrow$ \textit{Pending Approval} (Contributor: submit for review)
-  \item \textit{Draft} $\rightarrow$ \textit{Published} (Editor/Admin: direct publish)
-  \item \textit{Pending Approval} $\rightarrow$ \textit{Published} (Editor/Admin: approve)
-  \item \textit{Pending Approval} $\rightarrow$ \textit{Rejected} (Editor/Admin: reject with comment)
-  \item \textit{Rejected} $\rightarrow$ \textit{Draft} (Contributor: edit and resubmit)
-\end{itemize}
-
-Invalid transitions are rejected with an appropriate HTTP error response.
+Role-based access control (RBAC) is enforced at the HTTP layer via the
+\texttt{@RequireRole} annotation. Each endpoint declares the minimum role required
+to access it. The three roles --- \textit{Contributor}, \textit{Editor}, and
+\textit{Administrator} --- form a strict permission hierarchy where each role inherits
+all permissions of the roles below it, as described in
+Section~\ref{sec:req_users}.
 
 \section{Error Handling} \label{sec:be_errors}
 
 Error responses follow the \textbf{Problem Details for HTTP APIs} standard~\cite{rfc9457},
-defined in RFC 9457. All error responses return a \texttt{application/problem+json}
-content type with a JSON body containing the following fields:
+defined in RFC 9457. All error responses are returned with the
+\texttt{application/problem+json} content type and contain the following fields:
 
 \begin{itemize}
-  \item \texttt{type} --- a URI identifying the problem type.
-  \item \texttt{title} --- a short, human-readable summary.
-  \item \texttt{status} --- the HTTP status code.
-  \item \texttt{detail} --- a human-readable explanation specific to the occurrence.
+      \item \texttt{type} --- a URI identifying the problem type, pointing to the
+            project's documentation at \texttt{github.com/jfmalencar/DiarioLX}.
+      \item \texttt{title} --- a short, human-readable summary.
+      \item \texttt{status} --- the HTTP status code.
+      \item \texttt{detail} --- a human-readable explanation specific to the occurrence.
 \end{itemize}
 
-This approach provides a consistent and machine-readable error format across all API
-endpoints, simplifying error handling on the client side.
+All problem instances are defined as static constants in the \texttt{Problem} class,
+ensuring consistency across the codebase. Each problem carries a unique \texttt{type}
+URI, a \texttt{title}, a \texttt{detail}, and an HTTP status code. Controllers invoke
+\texttt{Problem.response()} to produce the appropriate \texttt{ResponseEntity} directly,
+without relying on a centralised exception handler.
 
 \section{Database Access} \label{sec:be_database}
 
-Data access is handled through JDBI, a lightweight SQL convenience library for the JVM. Unlike ORM-based approaches, JDBI provides direct control over SQL queries, mapping result sets to domain objects explicitly. This choice favours simplicity and transparency of database interactions over the abstraction overhead of a full ORM.
+Data access is handled through JDBI~\cite{jdbi}, a lightweight SQL convenience library
+for the JVM. Unlike ORM-based approaches, JDBI provides direct control over SQL queries,
+mapping result sets to domain objects explicitly. This choice favours simplicity and
+transparency of database interactions over the abstraction overhead of a full ORM.
 
-% TODO: detalhar queries relevantes ou padrões de acesso a dados
+\subsection{Transaction Management} \label{sec:be_transactions}
+
+Database operations are executed within transactions managed by the
+\texttt{TransactionManager} interface. Each call to \texttt{run\{\}} opens a JDBI
+transaction, instantiates all repositories sharing the same database handle, and
+ensures atomicity across multi-step operations. Rollback is handled automatically
+by JDBI when an exception propagates.
+
+\begin{lstlisting}[language=Java, caption={JdbiTransactionManager implementation.}]
+@Named
+class JdbiTransactionManager(
+    private val jdbi: Jdbi,
+    private val logger: Logger,
+) : TransactionManager {
+    override fun <R> run(block: (Transaction) -> R): R =
+        jdbi.inTransaction<R, Exception> { handle ->
+            val transaction = JdbiTransaction(handle, logger)
+            block(transaction)
+        }
+}
+\end{lstlisting}
+
+\section{API Documentation} \label{sec:be_apidocs}
+
+The API is documented using the OpenAPI standard, generated automatically by
+\texttt{springdoc-openapi}~\cite{springdoc} and served via Scalar~\cite{scalar},
+a modern API reference UI. Custom annotations (\texttt{@MayReturnNotFound},
+\texttt{@MayReturnBadRequest}, etc.) were defined to reduce boilerplate in
+controller declarations while maintaining accurate schema documentation. The
+documentation is available at \texttt{/docs} when the application is running.
 
 \section{Tests} \label{sec:be_tests}
 
-% TODO: descrever os testes de backend (unitários, integração)
-Backend testing is addressed in Chapter~\ref{cap:tests}.
+Testing is organised by module, with dedicated test suites for the repository,
+service, and HTTP layers. At the current beta stage, the test suites are in an
+early phase and do not yet provide full coverage.
+
+The backend test suite is integrated into the project's continuous integration
+pipeline via GitHub Actions, running automatically on every push.
+
+\subsection{Unit Tests} \label{sec:tests_be_unit}
+
+Unit tests cover the repository and service layers in isolation. Repository tests
+validate SQL queries and result set mappings against a dedicated test database
+instance. Service tests validate business logic, including publication workflow
+state transitions and permission checks, independently of the HTTP and persistence
+layers.
+
+\subsection{Integration Tests} \label{sec:tests_be_integration}
+
+Integration tests validate the full request-response cycle of the API, exercising
+the HTTP, service, and repository layers together.

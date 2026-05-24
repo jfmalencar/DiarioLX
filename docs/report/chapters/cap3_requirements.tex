@@ -31,7 +31,7 @@ Content must progress through a defined workflow:
   \item \textbf{Rejected} — returned to the author with revision comments.
 \end{enumerate}
 
-It must be possible to archive and permanently delete content. Media file uploads are limited to 2\,GB. It must be possible to mark content as featured for display on the homepage.
+It must be possible to archive and permanently delete content. It must be possible to mark content as featured for display on the homepage.
 
 \subsection{Categories, Subcategories, and Tags} \label{sec:req_categories}
 
@@ -54,10 +54,18 @@ Each category must support a name, an associated colour, and an automatically ge
 The system defines three user roles:
 
 \begin{description}
-  \item[Administrator] Full system control: manages users, system settings, approves or rejects content and new accounts, and has access to all backoffice areas.
-  \item[Editor] Can approve or reject submitted content, manage contributor accounts, and deactivate users.
-  \item[Contributor] Can create and submit content for approval. Cannot publish directly.
+  \item[Administrator] The highest privilege level. Inherits all Editor and Contributor
+        permissions. Additionally manages user accounts and generates invitation codes for
+        new users to register on the platform.
+  \item[Editor] Inherits all Contributor permissions. Can approve or reject content
+        submitted for review.
+  \item[Contributor] The base role. Can create content and submit it for editorial
+        review. Cannot publish directly.
 \end{description}
+
+The three roles form a strict permission hierarchy:
+\textbf{Contributor} $\subset$ \textbf{Editor} $\subset$ \textbf{Administrator},
+where each role inherits all permissions of the roles below it.
 
 Each user profile includes: name, email, profile photograph, active/inactive status, professional function (journalist or photographer), and role.
 
@@ -66,11 +74,11 @@ Each user profile includes: name, email, profile photograph, active/inactive sta
 The backoffice must provide:
 
 \begin{itemize}
-  \item Account creation for Editors and Contributors.
+  \item Account creation for Editors, Contributors and Administrators via invitation codes.
   \item Login and logout for all profiles.
-  \item Listing and search of all articles and users.
+  \item Listing and search of all content and users.
   \item Profile editing (own profile for all; any profile for Administrators).
-  \item Comment moderation (approve, reject, hide) by Administrators and Editors.
+  \item Category and tag management (create, edit, delete) by Administrators.
 \end{itemize}
 
 \subsection{Public Website} \label{sec:req_frontend}
@@ -100,18 +108,19 @@ The homepage must display:
   \item Human-readable, slugified URLs (e.g. \texttt{/politica/orcamento-estado-2026}).
 \end{itemize}
 
-\subsection{Compatibility} \label{sec:req_compat}
-
-The system must be compatible with modern browsers and fully functional on mobile devices (responsive design for mobile, tablet, and desktop viewports).
-
 \section{Non-Functional Requirements} \label{sec:req_nonfunctional}
 
 \begin{itemize}
-  \item \textbf{Security}: Authentication via token-based mechanism; role-based access control enforced at the API level.
-  \item \textbf{Performance}: Pages must load within acceptable response times under expected editorial team and reader load.
-  \item \textbf{Maintainability}: Codebase organised to allow independent evolution of frontend and backend.
-  \item \textbf{Media storage}: Support for images, audio (podcasts), and video files up to 2\,GB per upload.
-  \item \textbf{Scalability}: Architecture must support growth in both content volume and concurrent users.
+  \item \textbf{Security}: Authentication via JSON Web Tokens (JWT) with short-lived
+        access tokens and long-lived refresh tokens stored as \texttt{HttpOnly} cookies.
+        Role-based access control enforced at the API level.
+
+  \item \textbf{Maintainability}: The system is organised into independent modules
+        (HTTP, Services, Domain, Repository, Storage) allowing the frontend and backend
+        to evolve independently.
+
+  \item \textbf{Compatibility}: The public website must be fully functional on mobile,
+        tablet, and desktop viewports. The backoffice is optimised for desktop use.
 \end{itemize}
 
 \section{Optional Requirements} \label{sec:req_optional}
@@ -121,7 +130,6 @@ The following features are considered optional and may be addressed in future it
 \begin{itemize}
   \item Scheduled publication of content.
   \item Advanced search filters (by date, category, author, tag) in both backoffice and public site.
-  \item User search filters in the backoffice (by role, function, status).
   \item Reader account registration and commenting.
   \item Audiodescription support for visually impaired users.
   \item Multilingual support (Portuguese and English).
