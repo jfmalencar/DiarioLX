@@ -4,11 +4,6 @@ import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.SignedUrlResponse
 import pt.ipl.diariolx.domain.media.UserSignedUrlResponse
 
-data class MediaQuery(
-    val page: Int = 1,
-    val limit: Int = 20,
-)
-
 sealed class MediaError(
     val message: String,
 ) {

@@ -1,7 +1,7 @@
 package pt.ipl.diariolx.utils
 
+import pt.ipl.diariolx.domain.auth.UserTokens
 import pt.ipl.diariolx.domain.users.User
-import pt.ipl.diariolx.utils.token.LoginResultOutput
 
 sealed class UserError(
     val message: String,
@@ -49,6 +49,6 @@ typealias UserResult = Either<UserError, User>
 
 typealias UsersResult = Either<UserError, List<User>>
 
-typealias LoginResult = Either<AuthError, LoginResultOutput>
+typealias LoginResult = Either<AuthError, UserTokens>
 
 typealias UserValidationResult = Either<UserError, Unit>

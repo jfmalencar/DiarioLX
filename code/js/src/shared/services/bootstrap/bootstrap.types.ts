@@ -1,5 +1,5 @@
 export type BootstrapData = {
-    endpoints: Endpoints;
+    api: Endpoints;
 };
 
 export type Link = {
@@ -12,6 +12,7 @@ export type Endpoints = {
         register: Link;
         login: Link;
         logout: Link;
+        refresh: Link;
     }
     users: {
         me: Link;
@@ -22,6 +23,7 @@ export type Endpoints = {
     }
     tags: {
         list: Link;
+        get: Link;
         create: Link;
         update: Link;
         delete: Link;
@@ -30,6 +32,7 @@ export type Endpoints = {
     };
     categories: {
         list: Link;
+        get: Link;
         create: Link;
         update: Link;
         delete: Link;
@@ -38,6 +41,7 @@ export type Endpoints = {
     };
     contents: {
         list: Link;
+        get: Link;
         create: Link;
         update: Link;
         delete: Link;
@@ -47,6 +51,7 @@ export type Endpoints = {
     invites: {
         list: Link;
         create: Link;
+        delete: Link;
     }
     medias: {
         list: Link;

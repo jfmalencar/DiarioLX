@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 
-import { contentsService } from '../services/contents';
+import { useContentsService } from '../services/contents';
 
 import type { Content, ContentRequest, ContentSummary } from '../services/contents/contents.types';
 import type { Query } from '@/shared/types/Query';
@@ -14,6 +14,7 @@ export const useContents = () => {
     const [contents, setContents] = useState<ContentSummary[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const contentsService = useContentsService()
 
     const fetchOne = useCallback(
         async (slug: string): Promise<Content | undefined> => {
@@ -30,7 +31,7 @@ export const useContents = () => {
                 setLoading(false)
             }
         },
-        []
+        [contentsService]
     )
 
     const fetchAll = useCallback(
@@ -49,7 +50,7 @@ export const useContents = () => {
                 setLoading(false)
             }
         },
-        []
+        [contentsService]
     )
 
     const create = useCallback(
@@ -67,7 +68,7 @@ export const useContents = () => {
                 setLoading(false)
             }
         },
-        []
+        [contentsService]
     )
 
     const update = useCallback(
@@ -83,7 +84,7 @@ export const useContents = () => {
                 setLoading(false)
             }
         },
-        []
+        [contentsService]
     )
 
     const archive = useCallback(
@@ -99,7 +100,7 @@ export const useContents = () => {
                 setLoading(false)
             }
         },
-        []
+        [contentsService]
     )
 
     const unarchive = useCallback(
@@ -115,7 +116,7 @@ export const useContents = () => {
                 setLoading(false)
             }
         },
-        []
+        [contentsService]
     )
 
     return {

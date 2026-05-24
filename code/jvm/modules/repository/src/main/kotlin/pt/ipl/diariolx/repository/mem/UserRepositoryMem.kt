@@ -1,14 +1,14 @@
 package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Instant
+import pt.ipl.diariolx.domain.auth.RefreshToken
+import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
+import pt.ipl.diariolx.domain.users.value.Email
+import pt.ipl.diariolx.domain.users.value.Username
 import pt.ipl.diariolx.repository.UserRepository
-import pt.ipl.diariolx.utils.token.Session
-import pt.ipl.diariolx.utils.token.SessionToken
-import pt.ipl.diariolx.utils.user.Email
-import pt.ipl.diariolx.utils.user.Username
 
 class UserRepositoryMem : UserRepository {
     private val users = mutableListOf<User>()
@@ -118,23 +118,7 @@ class UserRepositoryMem : UserRepository {
         sessions.add(newSession)
     }
 
-    override fun deleteSession(sessionToken: SessionToken): Boolean = sessions.removeIf { it.sessionToken == sessionToken }
+    override fun getSessionByRefreshToken(refreshToken: RefreshToken): Session? = sessions.find { it.refreshToken == refreshToken }
 
-    override fun updateSessionTokenUsage(
-        session: Session,
-        now: Instant,
-    ) {
-        sessions.find { it.sessionToken == session.sessionToken }?.let {
-            val updatedSession = it.copy(lastUsedAt = now)
-            sessions.remove(it)
-            sessions.add(updatedSession)
-        }
-    }
-
-    override fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>? =
-        sessions.find { it.sessionToken == sessionToken }?.let { session ->
-            users.find { user -> user.id == session.userId }?.let { user ->
-                user to session
-            }
-        }
+    override fun deleteSession(refreshToken: RefreshToken): Boolean = sessions.removeIf { it.refreshToken == refreshToken }
 }

@@ -6,4 +6,5 @@ data class CreateUserRequestDTO(
     val password: String,
     val firstName: String,
     val lastName: String,
+    val inviteCode: String,
 )

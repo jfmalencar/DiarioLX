@@ -16,10 +16,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import pt.ipl.diariolx.domain.auth.JwtConfig
 import pt.ipl.diariolx.domain.invites.config.InviteDomainConfig
 import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
 import pt.ipl.diariolx.http.auth.AuthenticatedUserArgumentResolver
 import pt.ipl.diariolx.http.auth.AuthenticationInterceptor
+import pt.ipl.diariolx.http.auth.RefreshTokenArgumentResolver
 import pt.ipl.diariolx.http.invite.InviteArgumentResolver
 import pt.ipl.diariolx.http.invite.InviteInterceptor
 import pt.ipl.diariolx.repository.JdbiTransactionManager
@@ -36,6 +38,7 @@ class PipelineConfigurer(
     private val authenticationInterceptor: AuthenticationInterceptor,
     private val inviteInterceptor: InviteInterceptor,
     private val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
+    private val refreshTokenArgumentResolver: RefreshTokenArgumentResolver,
     private val inviteArgumentResolver: InviteArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
@@ -45,6 +48,7 @@ class PipelineConfigurer(
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(authenticatedUserArgumentResolver)
+        resolvers.add(refreshTokenArgumentResolver)
         resolvers.add(inviteArgumentResolver)
     }
 }
@@ -129,6 +133,13 @@ class DiarioLXApplication {
     ): FileStorage =
         FileStorageFactory()
             .create(url, region, accessKey, secretKey, bucket, pathStyleAccess)
+
+    @Bean
+    fun jwtConfig(
+        @Value("\${jwt.secret}") secret: String,
+        @Value("\${jwt.access-token-expiration-ms}") accessTokenExpirationMs: Long,
+        @Value("\${jwt.refresh-token-expiration-ms}") refreshTokenExpirationMs: Long,
+    ): JwtConfig = JwtConfig(secret, accessTokenExpirationMs, refreshTokenExpirationMs)
 }
 
 private val logger = LoggerFactory.getLogger("main")

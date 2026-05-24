@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
-import pt.ipl.diariolx.domain.users.OperationOnUser
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
@@ -72,7 +71,9 @@ class UserController(
     @GetMapping(Uris.Users.HOME)
     @MayReturnUserOk
     @MayReturnUnauthorized
-    fun getCurrentUser(me: AuthenticatedUser): ResponseEntity<*> = ResponseEntity.ok(UserResponseDTO.from(me.user))
+    fun getCurrentUser(
+        @Parameter(hidden = true) me: AuthenticatedUser,
+    ): ResponseEntity<*> = ResponseEntity.ok(UserResponseDTO.from(me.user))
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Users.GET_BY_ID)
@@ -117,9 +118,9 @@ class UserController(
     @DeleteMapping(Uris.Users.DELETE)
     fun removeUser(
         @Parameter(hidden = true) author: AuthenticatedUser,
-        @RequestBody body: OperationOnUser,
+        @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (val response = userService.delete(author.user, body.id)) {
+        when (val response = userService.delete(author.user, id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure ->
                 Problem.response(
@@ -132,9 +133,9 @@ class UserController(
     @PostMapping(Uris.Users.DEACTIVATE)
     fun deactivateUser(
         @Parameter(hidden = true) author: AuthenticatedUser,
-        @RequestBody body: OperationOnUser,
+        @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (val response = userService.deactivate(author.user, body.id)) {
+        when (val response = userService.deactivate(author.user, id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure ->
                 Problem.response(

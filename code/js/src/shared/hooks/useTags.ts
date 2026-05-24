@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 
-import { tagsService } from '@/shared/services/tags';
+import { useTagsService } from '@/shared/services/tags';
 import type { Tag, TagFormValues } from '@/shared/services/tags/tags.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
@@ -13,6 +13,7 @@ export const useTags = () => {
     const [tags, setTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const tagsService = useTagsService()
 
     const fetchOne = useCallback(
         async (id: string): Promise<Tag | undefined> => {
@@ -29,7 +30,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     const fetchAll = useCallback(
@@ -48,7 +49,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     const create = useCallback(
@@ -66,7 +67,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     const update = useCallback(
@@ -82,7 +83,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     const archive = useCallback(
@@ -98,7 +99,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     const unarchive = useCallback(
@@ -114,7 +115,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     const remove = useCallback(
@@ -130,7 +131,7 @@ export const useTags = () => {
                 setLoading(false)
             }
         },
-        []
+        [tagsService]
     )
 
     return {

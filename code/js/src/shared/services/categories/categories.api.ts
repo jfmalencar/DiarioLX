@@ -1,75 +1,83 @@
+import { useMemo } from 'react'
+
+import { useBootstrap } from '@/shared/hooks/useBootstrap';
+
 import type { CategoryRequest, CategoriesService, CategoriesResponse, CategoryResponse } from './categories.types';
-import { get, post, put, remove } from '../http/client';
+import { useApi } from '../http/client';
 
-export const categoriesApiService: CategoriesService = {
+export const useCategoriesApiService = (): CategoriesService => {
+  const { get, post, put, remove } = useApi()
+  const { endpoints } = useBootstrap()
 
-  async fetchAll(params) {
-    const result = await get<CategoriesResponse>('/api/categories?' + new URLSearchParams(params as Record<string, string>).toString());
-    if (!result.success) {
-      throw new Error('Failed to fetch categories');
-    }
-    return result.data;
-  },
+  return useMemo<CategoriesService>(() => ({
+    async fetchAll(params) {
+      const result = await get<CategoriesResponse>(`${endpoints.categories.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      if (!result.success) {
+        throw new Error('Failed to fetch categories');
+      }
+      return result.data;
+    },
 
-  async fetchOne(id) {
-    const result = await get<CategoryResponse>(`/api/categories/${id}`);
-    if (!result.success) {
-      throw new Error('Failed to fetch category');
-    }
-    return result.data;
-  },
+    async fetchOne(id) {
+      const result = await get<CategoryResponse>(endpoints.categories.get.href.replace('{id}', id));
+      if (!result.success) {
+        throw new Error('Failed to fetch category');
+      }
+      return result.data;
+    },
 
-  async create(category) {
-    const request: CategoryRequest = {
-      id: category.id,
-      name: category.name,
-      description: category.description,
-      color: category.color,
-      slug: category.slug,
-      parentId: category.parentId,
-      parentName: category.parentName
-    }
-    const result = await post<string>('/api/categories', request);
-    if (!result.success) {
-      throw new Error('Failed to create category');
-    }
-    return result.data;
-  },
+    async create(category) {
+      const request: CategoryRequest = {
+        id: category.id,
+        name: category.name,
+        description: category.description,
+        color: category.color,
+        slug: category.slug,
+        parentId: category.parentId,
+        parentName: category.parentName
+      }
+      const result = await post<string>(endpoints.categories.create.href, request);
+      if (!result.success) {
+        throw new Error('Failed to create category');
+      }
+      return result.data;
+    },
 
-  async update(id, category) {
-    const request: CategoryRequest = {
-      id: category.id,
-      name: category.name,
-      description: category.description,
-      color: category.color,
-      slug: category.slug,
-      parentId: category.parentId,
-      parentName: category.parentName
-    }
-    const result = await put(`/api/categories/${id}`, request);
-    if (!result.success) {
-      throw new Error('Failed to update category');
-    }
-  },
+    async update(id, category) {
+      const request: CategoryRequest = {
+        id: category.id,
+        name: category.name,
+        description: category.description,
+        color: category.color,
+        slug: category.slug,
+        parentId: category.parentId,
+        parentName: category.parentName
+      }
+      const result = await put(endpoints.categories.update.href.replace('{id}', id), request);
+      if (!result.success) {
+        throw new Error('Failed to update category');
+      }
+    },
 
-  async delete(id) {
-    const result = await remove(`/api/categories/${id}`, {});
-    if (!result.success) {
-      throw new Error('Failed to delete category');
-    }
-  },
+    async delete(id) {
+      const result = await remove(endpoints.categories.delete.href.replace('{id}', id), {});
+      if (!result.success) {
+        throw new Error('Failed to delete category');
+      }
+    },
 
-  async archive(id) {
-    const result = await post(`/api/categories/${id}/archive`, {});
-    if (!result.success) {
-      throw new Error('Failed to archive category');
-    }
-  },
+    async archive(id) {
+      const result = await post(endpoints.categories.archive.href.replace('{id}', id), {});
+      if (!result.success) {
+        throw new Error('Failed to archive category');
+      }
+    },
 
-  async unarchive(id) {
-    const result = await post(`/api/categories/${id}/unarchive`, {});
-    if (!result.success) {
-      throw new Error('Failed to unarchive category');
+    async unarchive(id) {
+      const result = await post(endpoints.categories.unarchive.href.replace('{id}', id), {});
+      if (!result.success) {
+        throw new Error('Failed to unarchive category');
+      }
     }
-  },
+  }), [get, post, put, remove, endpoints])
 };

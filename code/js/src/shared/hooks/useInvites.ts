@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 
-import { invitesService } from '@/shared/services/invites';
+import { useInvitesService } from '@/shared/services/invites';
 import type { Invite, InviteFormValues } from '@/shared/services/invites/invites.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
@@ -13,6 +13,7 @@ export const useInvites = () => {
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const invitesService = useInvitesService()
 
     const fetchAll = useCallback(
         async (params: Query): Promise<undefined> => {
@@ -30,7 +31,7 @@ export const useInvites = () => {
                 setLoading(false)
             }
         },
-        []
+        [invitesService]
     )
 
     const create = useCallback(
@@ -48,7 +49,7 @@ export const useInvites = () => {
                 setLoading(false)
             }
         },
-        []
+        [invitesService]
     )
 
     const remove = useCallback(
@@ -66,7 +67,7 @@ export const useInvites = () => {
                 setLoading(false)
             }
         },
-        []
+        [invitesService]
     )
 
     return {

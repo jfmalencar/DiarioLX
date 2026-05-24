@@ -2,15 +2,15 @@ package pt.ipl.diariolx.repository
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import pt.ipl.diariolx.domain.auth.RefreshToken
+import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
+import pt.ipl.diariolx.domain.users.value.PasswordHash
 import pt.ipl.diariolx.repository.mem.UserRepositoryMem
-import pt.ipl.diariolx.utils.token.Session
-import pt.ipl.diariolx.utils.token.SessionToken
 import pt.ipl.diariolx.utils.user.Email
 import pt.ipl.diariolx.utils.user.Name
-import pt.ipl.diariolx.utils.user.PasswordHash
 import pt.ipl.diariolx.utils.user.Username
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -70,10 +70,10 @@ class UserRepositoryTest {
         now: Instant = Clock.System.now(),
     ): Session =
         Session(
-            sessionToken = SessionToken(tokenValue),
+            refreshToken = RefreshToken(tokenValue),
             userId = userId,
             createdAt = now,
-            lastUsedAt = now,
+            expiresAt = now,
         )
 
     // ======================== CREATE Tests ========================
@@ -461,12 +461,12 @@ class UserRepositoryTest {
     fun `createSession successfully adds a session`() {
         val repo = createRepository()
         val now = Clock.System.now()
-        val user = repo.create(createNewUser(), now)
+        repo.create(createNewUser(), now)
         val session = createSession(userId = 1)
 
         repo.createSession(session, 5)
 
-        val retrieved = repo.getUserAndSessionByToken(session.sessionToken)
+        val retrieved = repo.getSessionByRefreshToken(session.refreshToken)
         assertNotNull(retrieved)
     }
 
@@ -478,17 +478,17 @@ class UserRepositoryTest {
         val session = createSession(userId = user.id)
 
         repo.createSession(session, 5)
-        val result = repo.deleteSession(session.sessionToken)
+        val result = repo.deleteSession(session.refreshToken)
 
         assertTrue(result)
-        assertNull(repo.getUserAndSessionByToken(session.sessionToken))
+        assertNull(repo.getSessionByRefreshToken(session.refreshToken))
     }
 
     @Test
     fun `deleteSession returns false for non-existent session`() {
         val repo = createRepository()
 
-        val result = repo.deleteSession(SessionToken("nonexistent"))
+        val result = repo.deleteSession(RefreshToken("nonexistent"))
 
         assertFalse(result)
     }
@@ -501,24 +501,24 @@ class UserRepositoryTest {
         val session = createSession(userId = user.id)
 
         repo.createSession(session, 5)
-        val retrieved = repo.getUserAndSessionByToken(session.sessionToken)
+        val retrieved = repo.getSessionByRefreshToken(session.refreshToken)
 
         assertNotNull(retrieved)
-        assertEquals(user.id, retrieved.first.id)
-        assertEquals(user.username.value, retrieved.first.username.value)
-        assertEquals(session.sessionToken, retrieved.second.sessionToken)
+        assertEquals(user.id, retrieved.userId)
+        assertEquals(session.refreshToken, retrieved.refreshToken)
     }
 
     @Test
     fun `getUserAndSessionByToken returns null for non-existent token`() {
         val repo = createRepository()
 
-        val retrieved = repo.getUserAndSessionByToken(SessionToken("nonexistent"))
+        val retrieved = repo.getSessionByRefreshToken(RefreshToken("nonexistent"))
 
         assertNull(retrieved)
     }
 
-    @Test
+    /*
+    @Test TO-DO: Implement this test but with refresh
     fun `updateSessionTokenUsage updates last used timestamp`() {
         val repo = createRepository()
         val now = Clock.System.now()
@@ -534,6 +534,7 @@ class UserRepositoryTest {
         assertNotNull(retrieved)
         // The timestamp should be updated (or at least not changed unexpectedly)
     }
+     */
 
     // ======================== Integration Tests ========================
 
@@ -589,13 +590,13 @@ class UserRepositoryTest {
         repo.createSession(session3, 10)
 
         // Verify sessions
-        val retrieved1 = repo.getUserAndSessionByToken(session1.sessionToken)
-        val retrieved3 = repo.getUserAndSessionByToken(session3.sessionToken)
+        val retrieved1 = repo.getSessionByRefreshToken(session1.refreshToken)
+        val retrieved3 = repo.getSessionByRefreshToken(session3.refreshToken)
 
         assertNotNull(retrieved1)
         assertNotNull(retrieved3)
-        assertEquals(user1.id, retrieved1.first.id)
-        assertEquals(user2.id, retrieved3.first.id)
+        assertEquals(user1.id, retrieved1.userId)
+        assertEquals(user2.id, retrieved3.userId)
     }
 
     @Test

@@ -3,14 +3,17 @@ package pt.ipl.diariolx.repository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.ipl.diariolx.domain.tag.NewTag
 import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
 
 class JdbiTagRepository(
     private val handle: Handle,
 ) : TagRepository {
-    override fun create(tag: NewTag): Int =
+    override fun create(
+        name: String,
+        slug: String,
+        description: String?,
+    ): Int =
         handle
             .createQuery(
                 """
@@ -18,9 +21,9 @@ class JdbiTagRepository(
                 values (:name, :slug, :description)
                 returning id
                 """.trimIndent(),
-            ).bind("name", tag.name)
-            .bind("slug", tag.slug)
-            .bind("description", tag.description)
+            ).bind("name", name)
+            .bind("slug", slug)
+            .bind("description", description)
             .mapTo<Int>()
             .one()
 

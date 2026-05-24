@@ -1,48 +1,63 @@
+import { useCallback } from 'react';
+
+import { useBootstrap } from '@/shared/hooks/useBootstrap';
+
 type JSONValue = string | number | boolean | null | JSONObject | JSONArray | undefined;
-type JSONObject = { [key: string]: JSONValue }
+type JSONObject = { [key: string]: JSONValue };
 type JSONArray = Array<JSONValue> | JSONValue[];
 
-type ApiResult<T> =
+export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: string };
 
-export function patch<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
-  return request<T>(url, { ...options, method: 'PATCH', body: JSON.stringify(body) }, onUnauthorized);
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshToken(refreshUri: string): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = fetch(refreshUri, {
+    method: 'POST',
+    credentials: 'include',
+  })
+    .then((res) => res.ok)
+    .catch(() => false)
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
 }
 
-export function put<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
-  return request<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }, onUnauthorized);
-}
-
-export function post<T>(url: string, body: JSONValue, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
-  return request<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }, onUnauthorized);
-}
-
-export function upload<T>(url: string, formData: FormData, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
-  const { headers, ...rest } = options;
-  return request<T>(url, { ...rest, headers: { ...headers, 'Content-Type': 'multipart/form-data' }, method: 'POST', body: formData }, onUnauthorized);
-}
-
-export function remove<T>(url: string, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
-  return request<T>(url, { ...options, method: 'DELETE' }, onUnauthorized);
-}
-
-export function get<T>(url: string, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
-  return request<T>(url, { ...options, method: 'GET' }, onUnauthorized);
-}
-
-export async function request<T>(url: string, options: RequestInit = {}, onUnauthorized?: () => void): Promise<ApiResult<T>> {
+async function request<T>(
+  url: string,
+  options: RequestInit = {},
+  onUnauthorized?: () => void,
+  refreshUri?: string,
+): Promise<ApiResult<T>> {
   try {
     const { headers, ...rest } = options;
+    const isUpload = rest.body instanceof FormData;
     const response = await fetch(url, {
       ...rest,
-      headers: { 'Content-Type': 'application/json', ...(headers || {}) },
+      headers: isUpload ? { ...(headers || {}) } : { 'Content-Type': 'application/json', ...(headers || {}) },
       credentials: 'include',
     });
 
-    if (response.status === 401 && onUnauthorized) {
-      onUnauthorized();
+    if (response.status === 401) {
+      if (refreshUri) {
+        const refreshed = await refreshToken(refreshUri);
+        if (refreshed) {
+          return request<T>(url, options, onUnauthorized);
+        } else {
+          onUnauthorized?.();
+          return { success: false, error: 'Session expired' };
+        }
+      } else {
+        onUnauthorized?.();
+        return { success: false, error: 'Unauthorized' };
+      }
     }
+
     if (!response.ok) {
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/problem+json')) {
@@ -53,6 +68,7 @@ export async function request<T>(url: string, options: RequestInit = {}, onUnaut
         return { success: false, error: `Action failed: ${response.status} - ${errorText}` };
       }
     }
+
     const raw = await response.text();
     try {
       return { success: true, data: JSON.parse(raw) };
@@ -63,4 +79,50 @@ export async function request<T>(url: string, options: RequestInit = {}, onUnaut
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
   }
+}
+
+export function useApi() {
+  const { endpoints } = useBootstrap();
+  const refreshUri = endpoints.auth.refresh.href;
+
+  const onUnauthorized = useCallback(() => {
+  }, []);
+
+  const get = useCallback(
+    <T>(url: string, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'GET' }, onUnauthorized, refreshUri),
+    [onUnauthorized, refreshUri],
+  );
+
+  const post = useCallback(
+    <T>(url: string, body: JSONValue, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }, onUnauthorized, refreshUri),
+    [onUnauthorized, refreshUri],
+  );
+
+  const put = useCallback(
+    <T>(url: string, body: JSONValue, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }, onUnauthorized, refreshUri),
+    [onUnauthorized, refreshUri],
+  );
+
+  const patch = useCallback(
+    <T>(url: string, body: JSONValue, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'PATCH', body: JSON.stringify(body) }, onUnauthorized, refreshUri),
+    [onUnauthorized, refreshUri],
+  );
+
+  const remove = useCallback(
+    <T>(url: string, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'DELETE' }, onUnauthorized, refreshUri),
+    [onUnauthorized, refreshUri],
+  );
+
+  const upload = useCallback(
+    <T>(url: string, formData: FormData, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'POST', body: formData }, onUnauthorized, refreshUri),
+    [onUnauthorized, refreshUri],
+  );
+
+  return { get, post, put, patch, remove, upload };
 }

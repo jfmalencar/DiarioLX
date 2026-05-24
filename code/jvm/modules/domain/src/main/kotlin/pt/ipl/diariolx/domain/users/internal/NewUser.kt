@@ -1,10 +1,10 @@
 package pt.ipl.diariolx.domain.users.internal
 
 import pt.ipl.diariolx.domain.users.UserRole
-import pt.ipl.diariolx.utils.user.Email
-import pt.ipl.diariolx.utils.user.Name
-import pt.ipl.diariolx.utils.user.PasswordHash
-import pt.ipl.diariolx.utils.user.Username
+import pt.ipl.diariolx.domain.users.value.Email
+import pt.ipl.diariolx.domain.users.value.Name
+import pt.ipl.diariolx.domain.users.value.PasswordHash
+import pt.ipl.diariolx.domain.users.value.Username
 
 data class NewUser(
     val username: Username,

@@ -1,15 +1,17 @@
 import { useMemo } from 'react';
 
-import type { AuthService, LoginResponseDTO } from './auth.types';
-import { post } from '../http/client';
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
+
+import type { AuthService } from './auth.types';
+import { useApi } from '../http/client';
 
 export const useAuthApiService = (): AuthService => {
   const { endpoints } = useBootstrap()
+  const { post } = useApi()
 
   return useMemo<AuthService>(() => ({
     async authenticate(username, password) {
-      const result = await post<LoginResponseDTO>(endpoints.auth.login.href, {
+      const result = await post<void>(endpoints.auth.login.href, {
         username,
         password,
       });
@@ -18,7 +20,7 @@ export const useAuthApiService = (): AuthService => {
         return undefined;
       }
 
-      return result.data;
+      return true;
     },
 
     async logout() {
@@ -34,17 +36,13 @@ export const useAuthApiService = (): AuthService => {
           password,
           firstName: firstName,
           lastName: lastName,
+          inviteCode: inviteCode,
         },
-        {
-          headers: {
-            Authorization: `Invite ${inviteCode}`,
-          },
-        }
       );
       if (!result.success) {
         return false
       }
       return true;
     },
-  }), [endpoints]);
+  }), [endpoints, post]);
 }

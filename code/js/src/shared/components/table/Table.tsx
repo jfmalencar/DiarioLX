@@ -46,7 +46,9 @@ export const Table = ({ children, dataTestId }: TableProps) => {
 export const TableHeader = ({ children }: TableHeaderProps) => {
     return (
         <thead>
-            {children}
+            <tr>
+                {children}
+            </tr>
         </thead>
     );
 }
@@ -91,7 +93,10 @@ export const TableRow = ({ children, className }: TableRowProps) => {
 }
 
 export const TableColumn = ({ children, className, isHeader }: TableColumnProps) => {
-    return <td className={`${(isHeader ? 'text-muted border-bottom pb-3 text-uppercase' : 'py-4')} ${className || (isHeader ? 'col' : 'col-12')}`}>{children}</td>;
+    if (isHeader) {
+        return <th className={`text-muted border-bottom pb-3 text-uppercase ${className || 'col'} `}>{children}</th>;
+    }
+    return <td className={`py-4 ${className || 'col-12'} `}>{children}</td>;
 }
 
 export const TablePagination = ({ hasPrevious, hasNext }: TablePaginationProps) => {

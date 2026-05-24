@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from 'react';
 
-import { mediaService } from '@/shared/services/media';
+import { useMediaService } from '@/shared/services/media';
 import type { Query } from '@/shared/types/Query';
 import type { Media, MediaFormValues, SignedUpload, UserMediaFormValues, UserSignedUpload } from '@/shared/services/media/media.types';
 import type { Pagination } from '@/shared/types/Pagination';
@@ -13,6 +13,7 @@ export const useMedia = () => {
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const mediaService = useMediaService()
 
     const fetchAll = useCallback(
         async (params: Query): Promise<undefined> => {
@@ -30,7 +31,7 @@ export const useMedia = () => {
                 setLoading(false)
             }
         },
-        []
+        [mediaService]
     )
 
     const getSignedUrl = useCallback(
@@ -47,7 +48,7 @@ export const useMedia = () => {
                 setLoading(false)
             }
         },
-        []
+        [mediaService]
     )
 
     const getUserSignedUrl = useCallback(
@@ -64,24 +65,7 @@ export const useMedia = () => {
                 setLoading(false)
             }
         },
-        []
-    )
-
-    const upload = useCallback(
-        async (media: MediaFormValues): Promise<Media | undefined> => {
-            setLoading(true)
-            setError(null)
-            try {
-                return await mediaService.upload(media)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to create category'
-                setError(message)
-                return undefined
-            } finally {
-                setLoading(false)
-            }
-        },
-        []
+        [mediaService]
     )
 
     const completeUpload = useCallback(
@@ -97,7 +81,7 @@ export const useMedia = () => {
                 setLoading(false)
             }
         },
-        []
+        [mediaService]
     )
 
     return {
@@ -108,7 +92,6 @@ export const useMedia = () => {
         fetchAll,
         getSignedUrl,
         getUserSignedUrl,
-        completeUpload,
-        upload,
+        completeUpload
     }
 }

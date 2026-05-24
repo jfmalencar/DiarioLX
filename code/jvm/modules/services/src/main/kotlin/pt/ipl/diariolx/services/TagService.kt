@@ -2,7 +2,6 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
-import pt.ipl.diariolx.domain.tag.NewTag
 import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
 import pt.ipl.diariolx.repository.Transaction
@@ -34,8 +33,7 @@ class TagService(
             validateData(tx, null, slug).let {
                 if (it is Failure) return@run it
             }
-            val newTag = NewTag(name!!, slug!!, description)
-            val tagId = tx.tagRepository.create(newTag)
+            val tagId = tx.tagRepository.create(name!!, slug!!, description)
             success(tagId)
         }
     }

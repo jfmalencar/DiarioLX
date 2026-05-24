@@ -1,11 +1,12 @@
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 
 import type { UsersService, UsersResponse, UserApiResponse } from './users.types';
-import { get, patch } from '../http/client';
+import { useApi } from '../http/client';
 import { useMemo } from 'react';
 
 export const useUsersApiService = (): UsersService => {
   const { endpoints } = useBootstrap()
+  const { get, patch } = useApi()
 
   return useMemo<UsersService>(() => ({
     async fetchAll(params) {
@@ -41,5 +42,5 @@ export const useUsersApiService = (): UsersService => {
 
       return result.data;
     },
-  }), [endpoints]);
+  }), [endpoints, get, patch]);
 }

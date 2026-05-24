@@ -1,13 +1,13 @@
 package pt.ipl.diariolx.repository
 
 import kotlinx.datetime.Instant
+import pt.ipl.diariolx.domain.auth.RefreshToken
+import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
-import pt.ipl.diariolx.utils.token.Session
-import pt.ipl.diariolx.utils.token.SessionToken
-import pt.ipl.diariolx.utils.user.Email
-import pt.ipl.diariolx.utils.user.Username
+import pt.ipl.diariolx.domain.users.value.Email
+import pt.ipl.diariolx.domain.users.value.Username
 
 interface UserRepository {
     fun create(
@@ -46,12 +46,7 @@ interface UserRepository {
         maxTokens: Int,
     )
 
-    fun deleteSession(sessionToken: SessionToken): Boolean
+    fun getSessionByRefreshToken(refreshToken: RefreshToken): Session?
 
-    fun updateSessionTokenUsage(
-        session: Session,
-        now: Instant,
-    )
-
-    fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>?
+    fun deleteSession(refreshToken: RefreshToken): Boolean
 }

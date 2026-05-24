@@ -1,11 +1,5 @@
-export type LoginResponseDTO = {
-  token: string;
-  expiresAt: string;
-  message: string;
-}
-
 export interface AuthService {
-  authenticate(username: string, password: string): Promise<LoginResponseDTO | undefined>;
+  authenticate(username: string, password: string): Promise<boolean | undefined>;
 
   logout(): Promise<void>;
 

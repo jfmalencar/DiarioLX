@@ -1,10 +1,8 @@
 CREATE INDEX idx_content_category_id ON contents(category_id);
-CREATE INDEX idx_content_slug ON contents(slug);
 
 CREATE INDEX idx_content_authors_content_id ON content_authors(content_id);
 CREATE INDEX idx_content_authors_author_id ON content_authors(author_id);
 
-CREATE INDEX idx_content_blocks_content_id ON content_blocks(content_id);
 CREATE INDEX idx_content_blocks_content_position ON content_blocks(content_id, position);
 
 CREATE INDEX idx_content_tags_content_id ON content_tags(content_id);

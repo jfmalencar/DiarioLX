@@ -1,5 +1,7 @@
 package pt.ipl.diariolx.utils.token
 
+import pt.ipl.diariolx.domain.auth.RefreshToken
+
 /**
  * Defines the contract for encoding tokens into a validation representation.
  * Implementations are responsible for transforming a raw token into a
@@ -14,5 +16,5 @@ interface TokenEncoder {
      * @param token the raw token to be transformed
      * @return a {@link TokenValidationInfo} containing the validation representation of the token
      */
-    fun createSessionToken(token: String): SessionToken
+    fun createSessionToken(token: String): RefreshToken
 }

@@ -5,12 +5,6 @@ import type { AuthService } from './auth.types';
 import { setFakeUser } from '../users/users.mock';
 import type { UserRole } from '../users/users.types';
 
-const fakeLoginResponse = {
-  token: 'fake-token',
-  expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-  message: 'Login successful',
-}
-
 export const useAuthMockService = (): AuthService => {
   return useMemo<AuthService>(() => ({
     async authenticate(username, password) {
@@ -30,7 +24,7 @@ export const useAuthMockService = (): AuthService => {
         };
         setFakeUser(fakeUser);
         cookieStore.set('authUser', JSON.stringify(fakeUser));
-        return fakeLoginResponse;
+        return true;
       }
       return undefined;
     },

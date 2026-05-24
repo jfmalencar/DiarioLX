@@ -51,7 +51,7 @@ const ContentsTable = ({ filter }: Props) => {
                                         className='d-flex align-items-center justify-content-center border border-dark flex-shrink-0'
                                         style={{ width: 135, height: 80, overflow: 'hidden' }}
                                     >
-                                        {row.type === 'article' ?
+                                        {true || row.type === 'article' ?
                                             <img src={`http://localhost:8333/${row.featuredImage}`}
                                                 alt={row.title}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}

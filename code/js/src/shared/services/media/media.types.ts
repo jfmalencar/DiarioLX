@@ -49,8 +49,6 @@ export type UserSignedUpload = {
 export type MediaService = {
     fetchAll: (params: Query) => Promise<MediasResponse>;
 
-    upload: (media: MediaFormValues) => Promise<Media>;
-
     getSignedUrl: (media: MediaFormValues) => Promise<SignedUpload>;
 
     getUserSignedUrl: (media: UserMediaFormValues) => Promise<UserSignedUpload>;

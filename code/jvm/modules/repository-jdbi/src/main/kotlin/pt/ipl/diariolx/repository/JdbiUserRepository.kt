@@ -6,17 +6,17 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.jdbi.v3.core.mapper.RowMapper
 import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
+import pt.ipl.diariolx.domain.auth.RefreshToken
+import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
+import pt.ipl.diariolx.domain.users.value.Email
+import pt.ipl.diariolx.domain.users.value.Name
+import pt.ipl.diariolx.domain.users.value.PasswordHash
+import pt.ipl.diariolx.domain.users.value.Username
 import pt.ipl.diariolx.repository.mappers.InstantMapper
-import pt.ipl.diariolx.utils.token.Session
-import pt.ipl.diariolx.utils.token.SessionToken
-import pt.ipl.diariolx.utils.user.Email
-import pt.ipl.diariolx.utils.user.Name
-import pt.ipl.diariolx.utils.user.PasswordHash
-import pt.ipl.diariolx.utils.user.Username
 import java.sql.ResultSet
 
 class JdbiUserRepository(
@@ -170,78 +170,69 @@ class JdbiUserRepository(
         newSession: Session,
         maxTokens: Int,
     ) {
-        // Delete the oldest token when achieved the maximum number of tokens
         handle
             .createUpdate(
                 """
-            DELETE FROM sessions 
-            WHERE user_id = :user_id 
-                AND session_token IN (
-                    SELECT session_token FROM sessions 
-                    WHERE user_id = :user_id 
-                    ORDER BY created_at ASC 
-                    OFFSET :offset
-                )
-            """,
+        DELETE FROM sessions 
+        WHERE user_id = :user_id 
+            AND refresh_token IN (
+                SELECT refresh_token FROM sessions 
+                WHERE user_id = :user_id 
+                ORDER BY created_at ASC 
+                OFFSET :offset
+            )
+        """,
             ).bind("user_id", newSession.userId)
             .bind("offset", maxTokens - 1)
             .execute()
 
-        // Insert the new session
         handle
             .createUpdate(
                 """
-            INSERT INTO sessions (session_token, user_id, created_at, last_used_at)
-            VALUES (:session_token, :user_id, :created_at, :last_used_at)
-            """,
-            ).bind("session_token", newSession.sessionToken.value)
+        INSERT INTO sessions (refresh_token, user_id, created_at, expires_at)
+        VALUES (:refresh_token, :user_id, :created_at, :expires_at)
+        """,
+            ).bind("refresh_token", newSession.refreshToken.value)
             .bind("user_id", newSession.userId)
             .bind("created_at", newSession.createdAt.epochSeconds)
-            .bind("last_used_at", newSession.lastUsedAt.epochSeconds)
+            .bind("expires_at", newSession.expiresAt.epochSeconds)
             .execute()
     }
 
-    override fun deleteSession(sessionToken: SessionToken): Boolean {
+    override fun deleteSession(refreshToken: RefreshToken): Boolean {
         val rowsAffected =
             handle
                 .createUpdate(
-                    "DELETE FROM sessions WHERE session_token = :session_token",
-                ).bind("session_token", sessionToken.value)
+                    "DELETE FROM sessions WHERE refresh_token = :refresh_token",
+                ).bind("refresh_token", refreshToken.value)
                 .execute()
         return rowsAffected > 0
     }
 
-    override fun updateSessionTokenUsage(
-        session: Session,
-        now: Instant,
-    ) {
-        handle
-            .createUpdate(
-                """
-            UPDATE sessions 
-            SET last_used_at = :last_used_at
-            WHERE session_token = :session_token
-            """,
-            ).bind("last_used_at", now.epochSeconds)
-            .bind("session_token", session.sessionToken.value)
-            .execute()
-    }
-
-    override fun getUserAndSessionByToken(sessionToken: SessionToken): Pair<User, Session>? =
+    override fun getSessionByRefreshToken(refreshToken: RefreshToken): Session? =
         handle
             .createQuery(
-                """
-            SELECT u.id, u.username, u.email, u.password_hash, u.role, u.first_name, u.last_name, 
-                   u.bio, u.created_at, u.updated_at, u.profile_picture_url, u.active_account,
-                   t.session_token, t.user_id, t.created_at as token_created_at, t.last_used_at
-            FROM users u
-            JOIN sessions t ON u.id = t.user_id
-            WHERE t.session_token = :session_token
-            """,
-            ).bind("session_token", sessionToken.value)
-            .map(UserAndSessionMapper())
-            .findOne()
-            .orElse(null)
+                "SELECT * FROM sessions WHERE refresh_token = :refresh_token",
+            ).bind("refresh_token", refreshToken.value)
+            .mapTo<SessionDBModel>()
+            .singleOrNull()
+            ?.toSessionDomain()
+
+    private data class SessionDBModel(
+        val id: Int,
+        val refreshToken: String,
+        val userId: Int,
+        val createdAt: Instant,
+        val expiresAt: Instant,
+    ) {
+        fun toSessionDomain(): Session =
+            Session(
+                refreshToken = RefreshToken(refreshToken),
+                userId = userId,
+                createdAt = createdAt,
+                expiresAt = expiresAt,
+            )
+    }
 
     private data class UserDBModel(
         val id: Int,
@@ -297,10 +288,10 @@ class JdbiUserRepository(
                 )
             val session =
                 Session(
-                    sessionToken = SessionToken(rs.getString("session_token")),
+                    refreshToken = RefreshToken(rs.getString("session_token")),
                     userId = rs.getInt("user_id"),
-                    createdAt = instantMapper.map(rs, rs.findColumn("token_created_at"), ctx),
-                    lastUsedAt = instantMapper.map(rs, rs.findColumn("last_used_at"), ctx),
+                    createdAt = instantMapper.map(rs, rs.findColumn("created_at"), ctx),
+                    expiresAt = instantMapper.map(rs, rs.findColumn("expires_at"), ctx),
                 )
             return Pair(user, session)
         }

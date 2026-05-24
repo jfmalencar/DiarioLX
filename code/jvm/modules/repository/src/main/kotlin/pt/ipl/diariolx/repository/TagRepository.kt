@@ -1,11 +1,14 @@
 package pt.ipl.diariolx.repository
 
-import pt.ipl.diariolx.domain.tag.NewTag
 import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
 
 interface TagRepository {
-    fun create(tag: NewTag): Int
+    fun create(
+        name: String,
+        slug: String,
+        description: String? = null,
+    ): Int
 
     fun getById(id: Int): Tag?
 

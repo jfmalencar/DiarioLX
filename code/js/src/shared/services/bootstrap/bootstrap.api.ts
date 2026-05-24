@@ -1,12 +1,17 @@
-import { get } from '../http/client';
+import { useMemo } from 'react'
+
 import type { BootstrapService, BootstrapData } from './bootstrap.types';
 
-export const bootstrapApiService: BootstrapService = {
-  async fetchBootstrapData() {
-    const result = await get<BootstrapData>('/api');
-    if (!result.success) {
-      throw new Error('Failed to fetch bootstrap data');
+export const useBootstrapApiService = (): BootstrapService => {
+
+  return useMemo<BootstrapService>(() => ({
+    async fetchBootstrapData() {
+      const result = await fetch('/api');
+      if (!result.ok) {
+        throw new Error('Failed to fetch bootstrap data');
+      }
+      const data: Promise<BootstrapData> = result.json();
+      return data
     }
-    return result.data;
-  },
+  }), [])
 };

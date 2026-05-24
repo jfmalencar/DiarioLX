@@ -38,6 +38,7 @@ object Uris {
         const val SIGNUP = "$ROOT/signup"
         const val LOGIN = "$ROOT/login"
         const val LOGOUT = "$ROOT/logout"
+        const val REFRESH = "$ROOT/refresh"
     }
 
     object Categories {

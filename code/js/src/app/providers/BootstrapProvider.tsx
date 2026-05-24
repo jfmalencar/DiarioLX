@@ -2,20 +2,20 @@ import { useEffect, useState } from 'react';
 
 import { BootstrapContext, type Endpoints } from '@/shared/hooks/useBootstrap';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
-import { bootstrapService } from '@/shared/services/bootstrap';
+import { useBootstrapService } from '@/shared/services/bootstrap';
 
 export const BootstrapProvider = ({ children }: { children: React.ReactNode }) => {
   const [endpoints, setEndpoints] = useState<Endpoints | null>(null);
   const [loading, setLoading] = useState(true);
   const [ready, setReady] = useState(false);
-
-  console.log('BootstrapProvider rendered with endpoints:', endpoints);
+  const bootstrapService = useBootstrapService()
 
   useEffect(() => {
     async function loadConfig() {
       try {
-        const { endpoints } = await bootstrapService.fetchBootstrapData();
-        setEndpoints(endpoints);
+        const { api } = await bootstrapService.fetchBootstrapData();
+        console.log('API = ', api)
+        setEndpoints(api);
       } catch (error) {
         console.error('Erro ao carregar configurações do site', error);
       } finally {
@@ -24,7 +24,7 @@ export const BootstrapProvider = ({ children }: { children: React.ReactNode }) =
     }
 
     loadConfig();
-  }, []);
+  }, [bootstrapService]);
 
   if (!ready || loading) {
     return <LoadingScreen onReady={() => setReady(true)} endProgress={50} />;

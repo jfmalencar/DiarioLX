@@ -68,7 +68,7 @@ export const EditContent = () => {
     const [searchParams] = useSearchParams();
     const { t } = useI18n();
 
-    const type = searchParams.get('tipo') || 'content';
+    const type = searchParams.get('tipo') || 'article';
 
     const { create, loading } = useContents();
     const { fetchAll: fetchCategories, categories } = useCategories();
@@ -262,7 +262,7 @@ export const EditContent = () => {
                                 })
                             }
                         >
-                            {type === 'content' || type === 'podcast' ?
+                            {type === 'article' || type === 'podcast' ?
                                 <span className='fs-5'>Imagem em destaque</span>
                                 : type === 'video' ?
                                     <span className='fs-5'>Vídeo</span>

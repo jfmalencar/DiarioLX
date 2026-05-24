@@ -74,10 +74,11 @@ INSERT INTO invites (invite_token, role_assigned, created_at, expires_at) VALUES
     ('SUPER-ADMIN-INVITE', 'ADMIN', extract(epoch from now())::bigint, extract(epoch from now() + interval '60 minutes')::bigint);
 
 CREATE TABLE sessions (
-     session_token      VARCHAR(256) PRIMARY KEY ,
-     user_id            INT REFERENCES users (id),
-     created_at         BIGINT NOT NULL,
-     last_used_at       BIGINT NOT NULL
+     id            SERIAL PRIMARY KEY,
+     user_id       INT NOT NULL REFERENCES users(id),
+     refresh_token VARCHAR(64) NOT NULL UNIQUE,
+     created_at    BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
+     expires_at    BIGINT NOT NULL
 );
 
 CREATE TABLE medias (

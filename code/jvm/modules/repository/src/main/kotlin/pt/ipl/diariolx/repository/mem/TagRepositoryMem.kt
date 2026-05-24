@@ -1,7 +1,6 @@
 package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
-import pt.ipl.diariolx.domain.tag.NewTag
 import pt.ipl.diariolx.domain.tag.Tag
 import pt.ipl.diariolx.domain.tag.UpdateTag
 import pt.ipl.diariolx.repository.TagRepository
@@ -10,14 +9,18 @@ class TagRepositoryMem : TagRepository {
     private val tags = mutableListOf<Tag>()
     private var currentId = 0
 
-    override fun create(tag: NewTag): Int {
+    override fun create(
+        name: String,
+        slug: String,
+        description: String?,
+    ): Int {
         val id = ++currentId
         val newTag =
             Tag(
                 id = id,
-                name = tag.name,
-                description = tag.description,
-                slug = tag.slug,
+                name = name,
+                description = description,
+                slug = slug,
                 quantity = 0,
                 createdAt = Clock.System.now(),
                 updatedAt = Clock.System.now(),

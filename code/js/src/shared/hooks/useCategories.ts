@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { categoriesService } from '@/shared/services/categories';
+import { useCategoriesService } from '@/shared/services/categories';
 import type { Category, CategoryFormValues } from '@/shared/services/categories/categories.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
@@ -12,6 +12,7 @@ export const useCategories = () => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const categoriesService = useCategoriesService()
 
     const fetchOne = useCallback(
         async (id: string): Promise<Category | undefined> => {
@@ -28,7 +29,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
     const fetchAll = useCallback(
@@ -47,7 +48,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
     const create = useCallback(
@@ -65,7 +66,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
     const update = useCallback(
@@ -81,7 +82,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
 
@@ -98,7 +99,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
     const unarchive = useCallback(
@@ -114,7 +115,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
     const remove = useCallback(
@@ -130,7 +131,7 @@ export const useCategories = () => {
                 setLoading(false)
             }
         },
-        []
+        [categoriesService]
     )
 
     return {

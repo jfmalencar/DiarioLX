@@ -26,6 +26,7 @@ class BootstrapController {
                             LinkDTO(Uris.Auth.SIGNUP, HttpMethod.POST),
                             LinkDTO(Uris.Auth.LOGIN, HttpMethod.POST),
                             LinkDTO(Uris.Auth.LOGOUT, HttpMethod.POST),
+                            LinkDTO(Uris.Auth.REFRESH, HttpMethod.POST),
                         ),
                     users =
                         UserEndpointsDTO(

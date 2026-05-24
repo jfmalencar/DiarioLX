@@ -2,16 +2,26 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.plus
 import org.slf4j.Logger
 import org.springframework.security.crypto.password.PasswordEncoder
 import pt.ipl.diariolx.domain.PageResponse
+import pt.ipl.diariolx.domain.auth.JwtConfig
+import pt.ipl.diariolx.domain.auth.RefreshToken
+import pt.ipl.diariolx.domain.auth.Session
+import pt.ipl.diariolx.domain.auth.UserTokens
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
+import pt.ipl.diariolx.domain.users.value.Email
+import pt.ipl.diariolx.domain.users.value.Name
+import pt.ipl.diariolx.domain.users.value.Password
+import pt.ipl.diariolx.domain.users.value.PasswordHash
+import pt.ipl.diariolx.domain.users.value.Username
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.utils.AuthError
 import pt.ipl.diariolx.utils.LoginResult
@@ -22,27 +32,15 @@ import pt.ipl.diariolx.utils.UserUpdateResult
 import pt.ipl.diariolx.utils.failure
 import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
-import pt.ipl.diariolx.utils.token.LoginResultOutput
-import pt.ipl.diariolx.utils.token.Session
-import pt.ipl.diariolx.utils.token.TokenEncoder
-import pt.ipl.diariolx.utils.user.Email
-import pt.ipl.diariolx.utils.user.Name
-import pt.ipl.diariolx.utils.user.PasswordHash
-import pt.ipl.diariolx.utils.user.Username
-import pt.ipl.diariolx.utils.user.isEmailValid
-import pt.ipl.diariolx.utils.user.isNameValid
-import pt.ipl.diariolx.utils.user.isPasswordValid
-import pt.ipl.diariolx.utils.user.isUsernameValid
-import java.security.SecureRandom
-import java.util.Base64.getUrlDecoder
-import java.util.Base64.getUrlEncoder
+import pt.ipl.diariolx.utils.token.TokenGenerator
 
 @Named
 class UserService(
     private val transactionManager: TransactionManager,
     private val config: UsersDomainConfig,
     private val passwordEncoder: PasswordEncoder,
-    private val tokenEncoder: TokenEncoder,
+    private val tokenGenerator: TokenGenerator,
+    private val jwtConfig: JwtConfig,
     private val clock: Clock.System,
     private val logger: Logger,
 ) {
@@ -58,53 +56,15 @@ class UserService(
             "Creating new user: $username, email: $email, password: $password, firstName: $firstName, " +
                 "lastName: $lastName, invite: ${invite.invite}",
         )
-        val username =
-            username?.let {
-                if (it.isUsernameValid()) {
-                    Username(it)
-                } else {
-                    return failure(UserError.InvalidUsername)
-                }
-            } ?: return failure(UserError.InvalidUsername)
-
-        val email =
-            email?.let {
-                if (it.isEmailValid()) {
-                    Email(it)
-                } else {
-                    return failure(UserError.InvalidEmail)
-                }
-            } ?: return failure(UserError.InvalidEmail)
-
-        val password =
-            password?.let {
-                if (it.isPasswordValid()) {
-                    PasswordHash(passwordEncoder.encode(it))
-                } else {
-                    return failure(UserError.InvalidPassword)
-                }
-            } ?: return failure(UserError.InvalidPassword)
-
-        val fName =
-            firstName?.let {
-                if (it.isNameValid()) {
-                    Name(it)
-                } else {
-                    return failure(UserError.InvalidName)
-                }
-            } ?: return failure(UserError.InvalidName)
-
-        val lName =
-            lastName?.let {
-                if (it.isNameValid()) {
-                    Name(it)
-                } else {
-                    return failure(UserError.InvalidName)
-                }
-            } ?: return failure(UserError.InvalidName)
+        val username = Username.parse(username) ?: return failure(UserError.InvalidUsername)
+        val email = Email.parse(email) ?: return failure(UserError.InvalidEmail)
+        val password = Password.parse(password) ?: return failure(UserError.InvalidPassword)
+        val passwordHash = PasswordHash(passwordEncoder.encode(password.value))
+        val firstName = Name.parse(firstName) ?: return failure(UserError.InvalidName)
+        val lastName = Name.parse(lastName) ?: return failure(UserError.InvalidName)
 
         return transactionManager.run { tx ->
-            val newUser = NewUser(username, email, password, fName, lName, invite.role)
+            val newUser = NewUser(username, email, passwordHash, firstName, lastName, invite.role)
             val user = tx.userRepository.create(newUser, clock.now())
             if (!tx.inviteRepository.consumeInvite(invite.id)) {
                 return@run failure(UserError.InvalidInvite)
@@ -127,53 +87,14 @@ class UserService(
             "Updating user ${oldUser.id}: new username: $username, new email: $email, new password: $password, " +
                 "new firstName: $firstName, new lastName: $lastName, new bio: $bio, new profilePictureURL: $profilePictureURL",
         )
-        val username =
-            username?.let {
-                if (it.isUsernameValid()) {
-                    Username(it)
-                } else {
-                    return failure(UserError.InvalidUsername)
-                }
-            } ?: oldUser.username
 
-        val email =
-            email?.let {
-                if (it.isEmailValid()) {
-                    Email(it)
-                } else {
-                    return failure(UserError.InvalidEmail)
-                }
-            } ?: oldUser.email
-
-        val password =
-            password?.let {
-                if (it.isPasswordValid()) {
-                    PasswordHash(passwordEncoder.encode(it))
-                } else {
-                    return failure(UserError.InvalidPassword)
-                }
-            } ?: oldUser.passwordHash
-
-        val fName =
-            firstName?.let {
-                if (it.isNameValid()) {
-                    Name(it)
-                } else {
-                    return failure(UserError.InvalidName)
-                }
-            } ?: oldUser.fName
-
-        val lName =
-            lastName?.let {
-                if (it.isNameValid()) {
-                    Name(it)
-                } else {
-                    return failure(UserError.InvalidName)
-                }
-            } ?: oldUser.lName
-
+        val username = Username.parse(username) ?: return failure(UserError.InvalidUsername)
+        val email = Email.parse(email) ?: return failure(UserError.InvalidEmail)
+        val password = Password.parse(password) ?: return failure(UserError.InvalidPassword)
+        val passwordHash = PasswordHash(passwordEncoder.encode(password.value))
+        val firstName = Name.parse(firstName) ?: return failure(UserError.InvalidName)
+        val lastName = Name.parse(lastName) ?: return failure(UserError.InvalidName)
         val bio = bio ?: oldUser.bio
-
         val profilePictureURL = profilePictureURL ?: oldUser.profilePictureURL
 
         return transactionManager.run { tx ->
@@ -190,7 +111,7 @@ class UserService(
                 }
             }
 
-            val updatedUser = UpdateUser(username, email, password, fName, lName, bio, profilePictureURL)
+            val updatedUser = UpdateUser(username, email, passwordHash, firstName, lastName, bio, profilePictureURL)
             tx.userRepository.update(updatedUser, oldUser.id, clock.now())
             success(Unit)
         }
@@ -272,16 +193,8 @@ class UserService(
         password: String,
     ): LoginResult {
         logger.info("Logging in user: $username; password: $password")
-        val username =
-            if (username.isUsernameValid()) {
-                Username(username)
-            } else {
-                return failure(AuthError.InvalidCredentials)
-            }
-
-        if (!password.isPasswordValid()) {
-            return failure(AuthError.InvalidCredentials)
-        }
+        val username = Username.parse(username) ?: return failure(AuthError.InvalidCredentials)
+        val password = Password.parse(password) ?: return failure(AuthError.InvalidCredentials)
 
         return transactionManager.run {
             val user =
@@ -290,21 +203,41 @@ class UserService(
             if (!user.active) {
                 return@run failure(AuthError.DeactivatedAccount)
             }
-            if (!verifyPasswordMatch(password, user.passwordHash)) {
+            if (!verifyPasswordMatch(password.value, user.passwordHash)) {
                 return@run failure(AuthError.InvalidCredentials)
             }
-            val tokenValue = generateTokenValue()
-            val now = clock.now()
-            val newSession =
-                Session(
-                    tokenEncoder.createSessionToken(tokenValue),
-                    user.id,
-                    now,
-                    now,
-                )
 
-            it.userRepository.createSession(newSession, config.maxTokensPerUser)
-            success(LoginResultOutput(tokenValue, getTokenExpiration(newSession)))
+            val refreshToken = tokenGenerator.generateRefreshToken()
+            val session = createSession(user, refreshToken)
+            it.userRepository.createSession(session, config.maxTokensPerUser)
+
+            val accessToken = tokenGenerator.generateAccessToken(user.id, user.role)
+            success(UserTokens(accessToken, refreshToken.value))
+        }
+    }
+
+    fun refresh(refreshToken: RefreshToken): LoginResult {
+        return transactionManager.run {
+            val session =
+                it.userRepository.getSessionByRefreshToken(refreshToken)
+                    ?: return@run failure(AuthError.InvalidCredentials)
+
+            val now = clock.now()
+            if (now > session.expiresAt) {
+                it.userRepository.deleteSession(refreshToken)
+                return@run failure(AuthError.InvalidCredentials)
+            }
+
+            val user =
+                it.userRepository.getById(session.userId)
+                    ?: return@run failure(AuthError.InvalidCredentials)
+
+            if (!user.active) {
+                return@run failure(AuthError.DeactivatedAccount)
+            }
+
+            val accessToken = tokenGenerator.generateAccessToken(user.id, user.role)
+            success(UserTokens(accessToken, refreshToken.value))
         }
     }
 
@@ -313,58 +246,28 @@ class UserService(
         realPasswordInfo: PasswordHash,
     ): Boolean = passwordEncoder.matches(loginPassword, realPasswordInfo.value)
 
-    fun logout(tokenValue: String): Boolean {
-        val sessionToken = tokenEncoder.createSessionToken(tokenValue)
-        return transactionManager.run {
-            it.userRepository.deleteSession(sessionToken)
+    fun logout(refreshToken: RefreshToken): Boolean =
+        transactionManager.run {
+            it.userRepository.deleteSession(refreshToken)
             true
         }
-    }
 
-    fun getUserByToken(token: String): User? {
-        if (!canBeToken(token)) {
-            return null
-        }
-        return transactionManager.run {
-            val sessionToken = tokenEncoder.createSessionToken(token)
-            val userAndToken = it.userRepository.getUserAndSessionByToken(sessionToken)
-            if (userAndToken != null && userAndToken.second.isStillValid(clock)) {
-                it.userRepository.updateSessionTokenUsage(userAndToken.second, clock.now())
-                userAndToken.first
-            } else {
-                null
-            }
-        }
-    }
-
-    private fun generateTokenValue(): String =
-        ByteArray(config.tokenSizeInBytes).let { byteArray ->
-            SecureRandom.getInstanceStrong().nextBytes(byteArray)
-            getUrlEncoder().encodeToString(byteArray)
+    fun getUserById(id: Int): User? =
+        transactionManager.run {
+            it.userRepository.getById(id)
         }
 
-    private fun getTokenExpiration(session: Session): Instant {
-        val expirationTime = session.createdAt + config.tokenExpirationTime
-        val sessionExpiration = session.lastUsedAt + config.sessionExpirationTime
-        logger.info("Expiration time: $expirationTime; sessionExpiration: $sessionExpiration; Session: ${session.sessionToken}")
-        return if (expirationTime < sessionExpiration) {
-            expirationTime
-        } else {
-            sessionExpiration
-        }
-    }
-
-    private fun canBeToken(token: String): Boolean =
-        try {
-            getUrlDecoder().decode(token).size == config.tokenSizeInBytes
-        } catch (e: IllegalArgumentException) {
-            false
-        }
-
-    private fun Session.isStillValid(clock: Clock): Boolean {
+    private fun createSession(
+        user: User,
+        refreshToken: RefreshToken,
+    ): Session {
         val now = clock.now()
-        return this.createdAt <= now &&
-            (now - this.createdAt) <= config.tokenExpirationTime &&
-            (now - this.lastUsedAt) <= config.sessionExpirationTime
+        val expiresAt = now.plus(jwtConfig.refreshTokenExpirationMs, DateTimeUnit.MILLISECOND)
+        return Session(
+            userId = user.id,
+            refreshToken = refreshToken,
+            createdAt = now,
+            expiresAt = expiresAt,
+        )
     }
 }

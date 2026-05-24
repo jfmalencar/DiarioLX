@@ -1,11 +1,11 @@
 import { getEnv } from '@/config/env';
 
 import type { ContentsService } from './contents.types';
-import { contentsApiService } from './contents.api';
-import { contentsMockService } from './contents.mock';
+import { useContentsApiService } from './contents.api';
+import { useContentsMockService } from './contents.mock';
 
 const useFake = getEnv('VITE_MOCK_API') === 'true';
 
-export const contentsService: ContentsService = useFake
-  ? contentsMockService
-  : contentsApiService;
+export const useContentsService: () => ContentsService = useFake
+  ? useContentsMockService
+  : useContentsApiService;
