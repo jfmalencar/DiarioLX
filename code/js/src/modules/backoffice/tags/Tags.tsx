@@ -81,7 +81,7 @@ const TagsTable = ({ filter, openModal }: Props) => {
                                         </button>
                                         :
                                         <Link
-                                            to={`/backoffice/etiquetas/${row.id}`}
+                                            to={`/backoffice/tags/${row.id}`}
                                             state={{ tag: row }}
                                             className='btn btn-dark rounded-2'
                                             data-testid={`manage-tag-button-${index}`}
@@ -117,7 +117,7 @@ export const Tags = () => {
             alert: 'Os conteúdos que têm esta etiqueta como etiqueta principal deixarão de estar visíveis enquanto ela estiver arquivada.',
             confirmLabel: 'Arquivar',
             action: archive,
-            getRedirect: () => '/backoffice/etiquetas?tab=archived',
+            getRedirect: () => '/backoffice/tags?tab=archived',
         },
         unarchive: {
             title: 'Desaquivar etiqueta',
@@ -125,7 +125,7 @@ export const Tags = () => {
             alert: 'Os conteúdos que têm esta etiqueta como etiqueta principal voltarão a estar visíveis assim que ela for desarquivada.',
             confirmLabel: 'Desarquivar',
             action: unarchive,
-            getRedirect: () => '/backoffice/etiquetas?tab=all',
+            getRedirect: () => '/backoffice/tags?tab=all',
         },
         delete: {
             title: 'Elimiar etiqueta',
@@ -133,7 +133,7 @@ export const Tags = () => {
             alert: 'Esta ação é permanente e não pode ser revertida.',
             confirmLabel: 'Eliminar',
             action: remove,
-            getRedirect: () => `/backoffice/etiquetas?tab=archived&refresh=${Date.now()}`,
+            getRedirect: () => `/backoffice/tags?tab=archived&refresh=${Date.now()}`,
             variant: 'danger',
         },
     };

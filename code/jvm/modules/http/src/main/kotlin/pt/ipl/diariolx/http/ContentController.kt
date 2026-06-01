@@ -1,6 +1,5 @@
 package pt.ipl.diariolx.http
 
-import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.NewContent
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
@@ -21,6 +19,7 @@ import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.content.ContentResponseDTO
+import pt.ipl.diariolx.http.dto.content.ContentSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
 import pt.ipl.diariolx.http.problems.Problem
@@ -59,11 +58,11 @@ class ContentController(
         @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
         @RequestParam archived: Boolean = false,
-    ): ResponseEntity<PaginatedResponseDTO<ContentSummary>> {
+    ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
         val response = contentService.getAll(page, size, query, archived)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
-                response.items,
+                response.items.map { ContentSummaryResponseDTO.from(it) },
                 Pagination(
                     response.page,
                     response.pageSize,

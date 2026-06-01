@@ -10,7 +10,7 @@ data class NewUser(
     val username: Username,
     val email: Email,
     val passwordHash: PasswordHash,
-    val fName: Name,
-    val lName: Name,
+    val firstName: Name,
+    val lastName: Name,
     val role: UserRole,
 )

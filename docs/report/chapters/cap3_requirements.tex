@@ -12,39 +12,39 @@ This chapter presents the functional and non-functional requirements of the Diá
 The system must provide a full content management lifecycle supporting the following content types: \textbf{articles}, \textbf{podcasts}, \textbf{videos}, and \textbf{photo essays}. Each content item must include the following attributes:
 
 \begin{itemize}
-  \item Title
-  \item Body text (supporting inline subtitles, highlights, and captioned images)
-  \item Lead paragraph (\textit{entrada})
-  \item Author(s) and photo author
-  \item Creation and publication date
-  \item Featured image
-  \item Category and subcategory
-  \item Tags
+      \item Title
+      \item Body text (supporting inline subtitles, highlights, and captioned images)
+      \item Lead paragraph (\textit{entrada})
+      \item Author(s) and photo author
+      \item Creation and publication date
+      \item Featured image
+      \item Category and subcategory
+      \item Tags
 \end{itemize}
 
 Content must progress through a defined workflow:
 
 \begin{enumerate}
-  \item \textbf{Draft} — created and edited by a Contributor.
-  \item \textbf{Pending Approval} — submitted for editorial review.
-  \item \textbf{Published} — approved and publicly visible.
-  \item \textbf{Rejected} — returned to the author with revision comments.
+      \item \textbf{Draft} — created and edited by a Contributor.
+      \item \textbf{Pending Approval} — submitted for editorial review.
+      \item \textbf{Published} — approved and publicly visible.
+      \item \textbf{Rejected} — returned to the author with revision comments.
 \end{enumerate}
 
 It must be possible to archive and permanently delete content. It must be possible to mark content as featured for display on the homepage.
 
 \subsection{Categories, Subcategories, and Tags} \label{sec:req_categories}
 
-Content must be organised using categories and subcategories. The main editorial sections are:
-
+Content must be organized using categories and subcategories. The main editorial sections are:\footnote{Section names are kept in
+      Portuguese as they are proper editorial names specific to Diário LX.}
 \begin{itemize}
-  \item Lisboa, Cidade Aberta
-  \item A Fundo
-  \item Secções (Mundo, Política, Sociedade, Economia, Cultura e Media, Bem-Viver, Desporto)
-  \item Especiais
-  \item Fotografia
-  \item Podcasts
-  \item Vídeos
+      \item Lisboa, Cidade Aberta
+      \item A Fundo
+      \item Secções (Mundo, Política, Sociedade, Economia, Cultura e Media, Bem-Viver, Desporto)
+      \item Especiais
+      \item Fotografia
+      \item Podcasts
+      \item Vídeos
 \end{itemize}
 
 Each category must support a name, an associated colour, and an automatically generated listing page. Tags must also have dedicated listing pages. The system must allow the creation, editing, and deletion of categories and tags.
@@ -54,13 +54,13 @@ Each category must support a name, an associated colour, and an automatically ge
 The system defines three user roles:
 
 \begin{description}
-  \item[Administrator] The highest privilege level. Inherits all Editor and Contributor
-        permissions. Additionally manages user accounts and generates invitation codes for
-        new users to register on the platform.
-  \item[Editor] Inherits all Contributor permissions. Can approve or reject content
-        submitted for review.
-  \item[Contributor] The base role. Can create content and submit it for editorial
-        review. Cannot publish directly.
+      \item[Administrator] The highest privilege level. Inherits all Editor and Contributor
+            permissions. Additionally manages user accounts and generates invitation codes for
+            new users to register on the platform.
+      \item[Editor] Inherits all Contributor permissions. Can approve or reject content
+            submitted for review.
+      \item[Contributor] The base role. Can create content and submit it for editorial
+            review. Cannot publish directly.
 \end{description}
 
 The three roles form a strict permission hierarchy:
@@ -74,11 +74,11 @@ Each user profile includes: name, email, profile photograph, active/inactive sta
 The backoffice must provide:
 
 \begin{itemize}
-  \item Account creation for Editors, Contributors and Administrators via invitation codes.
-  \item Login and logout for all profiles.
-  \item Listing and search of all content and users.
-  \item Profile editing (own profile for all; any profile for Administrators).
-  \item Category and tag management (create, edit, delete) by Administrators.
+      \item Account creation for Editors, Contributors and Administrators via invitation codes.
+      \item Login and logout for all profiles.
+      \item Listing and search of all content and users.
+      \item Profile editing (own profile for all; any profile for Administrators).
+      \item Category and tag management (create, edit, delete) by Administrators.
 \end{itemize}
 
 \subsection{Public Website} \label{sec:req_frontend}
@@ -86,41 +86,41 @@ The backoffice must provide:
 \subsubsection{Homepage}
 The homepage must display:
 \begin{itemize}
-  \item 4 featured articles (defined in the backoffice).
-  \item The 4 most recent articles.
-  \item Navigation to main editorial sections.
-  \item Links to institutional pages: Team, Editorial Statute, and Code of Ethics.
+      \item 4 featured articles (defined in the backoffice).
+      \item The 4 most recent articles.
+      \item Navigation to main editorial sections.
+      \item Links to institutional pages: Team, Editorial Statute, and Code of Ethics.
 \end{itemize}
 
 \subsubsection{Other Pages}
 \begin{itemize}
-  \item \textbf{Category page}: one featured article (defined in the backoffice) and remaining articles in reverse chronological order.
-  \item \textbf{Tag page}: list of associated articles.
-  \item \textbf{Article page}: full article view, reader comments, and 4 related articles.
-  \item \textbf{Team page}.
-  \item \textbf{Podcast page}: dedicated layout distinct from other category pages.
+      \item \textbf{Category page}: one featured article (defined in the backoffice) and remaining articles in reverse chronological order.
+      \item \textbf{Tag page}: list of associated articles.
+      \item \textbf{Article page}: full article view, and 4 related articles.
+      \item \textbf{Team page}.
+      \item \textbf{Podcast page}: dedicated layout distinct from other category pages.
 \end{itemize}
 
 \subsection{Search and Navigation} \label{sec:req_search}
 
 \begin{itemize}
-  \item Full-text keyword search across articles.
-  \item Human-readable, slugified URLs (e.g. \texttt{/politica/orcamento-estado-2026}).
+      \item Full-text keyword search across articles.
+      \item Human-readable, slugified URLs (e.g. \texttt{/politica/orcamento-estado-2026}).
 \end{itemize}
 
 \section{Non-Functional Requirements} \label{sec:req_nonfunctional}
 
 \begin{itemize}
-  \item \textbf{Security}: Authentication via JSON Web Tokens (JWT) with short-lived
-        access tokens and long-lived refresh tokens stored as \texttt{HttpOnly} cookies.
-        Role-based access control enforced at the API level.
+      \item \textbf{Security}: Authentication via JSON Web Tokens (JWT) with short-lived
+            access tokens and long-lived refresh tokens stored as \texttt{HttpOnly} cookies.
+            Role-based access control enforced at the API level.
 
-  \item \textbf{Maintainability}: The system is organised into independent modules
-        (HTTP, Services, Domain, Repository, Storage) allowing the frontend and backend
-        to evolve independently.
+      \item \textbf{Maintainability}: The system is organized into independent modules
+            (HTTP, Services, Domain, Repository, Storage) allowing the frontend and backend
+            to evolve independently.
 
-  \item \textbf{Compatibility}: The public website must be fully functional on mobile,
-        tablet, and desktop viewports. The backoffice is optimised for desktop use.
+      \item \textbf{Compatibility}: The public website must be fully functional on mobile,
+            tablet, and desktop viewports. The backoffice is optimised for desktop use.
 \end{itemize}
 
 \section{Optional Requirements} \label{sec:req_optional}
@@ -128,9 +128,13 @@ The homepage must display:
 The following features are considered optional and may be addressed in future iterations:
 
 \begin{itemize}
-  \item Scheduled publication of content.
-  \item Advanced search filters (by date, category, author, tag) in both backoffice and public site.
-  \item Reader account registration and commenting.
-  \item Audiodescription support for visually impaired users.
-  \item Multilingual support (Portuguese and English).
+      \item Scheduled publication of content via a backoffice date picker.
+            The underlying data model and backend already support future
+            \texttt{published\_at} timestamps; the remaining work is
+            limited to the backoffice interface.
+      \item Advanced search filters (by date, category, author, tag) in
+            both backoffice and public site.
+      \item Reader account registration and commenting.
+      \item Audiodescription support for visually impaired users.
+      \item Multilingual support (Portuguese and English).
 \end{itemize}

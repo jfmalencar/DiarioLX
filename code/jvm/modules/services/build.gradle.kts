@@ -34,9 +34,6 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-    if (System.getenv("DB_URL") == null) {
-        environment("DB_URL", "jdbc:postgresql://localhost:5435/db?user=dbuser&password=changeit")
-    }
     dependsOn(":repository-jdbi:dbTestsWait")
     finalizedBy(":repository-jdbi:dbTestsDown")
 }

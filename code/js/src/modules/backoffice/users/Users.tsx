@@ -10,6 +10,7 @@ import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
 import { useUsers } from '@/shared/hooks/useUsers';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
+import { usePath } from '@/shared/hooks/usePath';
 
 const sections: FilterSection[] = [ // Exemplo
     {
@@ -40,6 +41,7 @@ const UsersTable = ({ filter }: Props) => {
     const { loading, users, pagination, fetchAll } = useUsers();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
+    const { buildMediaUrl } = usePath();
 
     useEffect(() => {
         const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { deactivated: filter.deactivated });
@@ -72,8 +74,8 @@ const UsersTable = ({ filter }: Props) => {
                                         className='d-flex align-items-center justify-content-center rounded-circle border border-dark flex-shrink-0'
                                         style={{ width: 64, height: 64 }}
                                     >
-                                        {row.profilePictureURL ?
-                                            <img src={row.profilePictureURL}
+                                        {row.profilePicturePath ?
+                                            <img src={buildMediaUrl(row.profilePicturePath)}
                                                 alt={`${row.firstName} ${row.lastName}`}
                                                 className='rounded-circle'
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -117,7 +119,6 @@ const UsersTable = ({ filter }: Props) => {
 
 export function Users() {
     const { t } = useI18n();
-
     return (
         <>
             <Tabs

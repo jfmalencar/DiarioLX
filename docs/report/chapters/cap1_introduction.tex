@@ -11,29 +11,33 @@ The platform targets a young audience aged 18 to 35 years, with higher education
 
 \section{Motivation} \label{sec:intro_motivation}
 
-A proof of concept was initially implemented using WordPress to validate the editorial structure and workflow. However, this approach revealed significant limitations in terms of architectural control, customisation, and long-term scalability. The need to build a purpose-built platform that fully supports the editorial lifecycle — from content creation and review to publication and archival — motivated the development of this system from the ground up.
+A proof of concept was initially implemented using WordPress to validate the editorial structure and workflow. However, this approach revealed significant limitations in terms of architectural control, customization, and long-term scalability. The need to build a purpose-built platform that fully supports the editorial lifecycle — from content creation and review to publication and archival — motivated the development of this system from the ground up.
 
 \section{Solution Overview} \label{sec:intro_solution}
 
-The resulting system, Diário LX, is a web-based content management and publication platform organised around two distinct areas:
+Diário LX is a web-based content management and publication platform
+built to support the full editorial lifecycle of a digital journalism
+outlet. The system is organized around two distinct areas:
 
 \begin{itemize}
-  \item \textbf{Backoffice}: A restricted editorial management interface, accessible only to authenticated users (Administrators, Editors, and Contributors), supporting content creation, revision, approval, and publishing workflows.
-  \item \textbf{Public Website}: A reader-facing interface providing access to published articles, multimedia content (podcasts, videos, photo essays), organised by category, tag, and editorial section.
+      \item \textbf{Backoffice}: A restricted editorial management interface, accessible only to authenticated users (Administrators, Editors, and Contributors), supporting content creation, revision, approval, and publishing workflows.
+      \item \textbf{Public Website}: A reader-facing interface providing access to published articles, multimedia content (podcasts, videos, photo essays), organized by category, tag, and editorial section.
 \end{itemize}
 
-The system enforces a structured editorial workflow in which content progresses through defined states — \textit{draft}, \textit{pending approval}, \textit{published}, and \textit{rejected} — ensuring editorial oversight before any content reaches the public.
+The system is designed around an editorial workflow in which content progresses through
+defined states — draft, pending approval, published, and rejected. In the beta version,
+the editorial workflow is in an advanced stage of implementation.
 
 \section{Report Organization} \label{sec:intro_organization}
 
-The remainder of this report is organised as follows:
+The remainder of this report is organized as follows:
 
 \begin{itemize}
-  \item Chapter~\ref{cap:background} presents the context, related work, and existing solutions analysed during the project.
-  \item Chapter~\ref{cap:requirements} details the functional and non-functional requirements of the system.
-  \item Chapter~\ref{cap:architecture} describes the system architecture and technology choices.
-  \item Chapter~\ref{cap:datamodel} presents the data model.
-  \item Chapter~\ref{cap:backend} covers the backend implementation.
-  \item Chapter~\ref{cap:frontend} covers the frontend implementation.
-  \item Chapter~\ref{cap:conclusion} concludes the report and outlines future work.
+      \item Chapter~\ref{cap:background} presents the context, related work, and existing solutions analysed during the project.
+      \item Chapter~\ref{cap:requirements} details the functional and non-functional requirements of the system.
+      \item Chapter~\ref{cap:architecture} describes the system architecture and technology choices.
+      \item Chapter~\ref{cap:datamodel} presents the data model.
+      \item Chapter~\ref{cap:backend} covers the backend implementation.
+      \item Chapter~\ref{cap:frontend} covers the frontend implementation.
+      \item Chapter~\ref{cap:currentstate} summarises the current development status, and the work remaining for the final version.
 \end{itemize}

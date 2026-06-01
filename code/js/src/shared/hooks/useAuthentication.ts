@@ -19,15 +19,7 @@ export type AuthenticationState = {
     inviteCode: string
   ) => Promise<boolean>;
   refreshUser: () => Promise<AuthUser>;
-  updateProfile: (
-    username?: string,
-    email?: string,
-    password?: string,
-    firstName?: string,
-    lastName?: string,
-    bio?: string | null,
-    profilePictureURL?: string | null
-  ) => Promise<AuthUser>;
+  setUser: (user: User) => void
 };
 
 export const AuthenticationContext = createContext<AuthenticationState | undefined>(undefined);

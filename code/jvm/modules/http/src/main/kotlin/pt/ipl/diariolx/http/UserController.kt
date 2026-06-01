@@ -23,6 +23,7 @@ import pt.ipl.diariolx.http.annotations.MayReturnUserOk
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
+import pt.ipl.diariolx.http.dto.user.UpdateAvatarDTO
 import pt.ipl.diariolx.http.dto.user.UpdateUserRequestDTO
 import pt.ipl.diariolx.http.dto.user.UserResponseDTO
 import pt.ipl.diariolx.http.problems.Problem
@@ -53,10 +54,9 @@ class UserController(
                     body.username,
                     body.email,
                     body.password,
-                    body.fName,
-                    body.lName,
+                    body.firstName,
+                    body.lastName,
                     body.bio,
-                    body.profilePictureURL,
                 )
         ) {
             is Success -> ResponseEntity.noContent().build<Unit>()
@@ -143,4 +143,16 @@ class UserController(
                     Uris.Users.DEACTIVATE,
                 )
         }
+
+    @RequireRole(UserRole.CONTRIBUTOR)
+    @PatchMapping(Uris.Users.AVATAR)
+    fun completeAvatarUpload(
+        @Parameter(hidden = true) me: AuthenticatedUser,
+        @RequestBody body: UpdateAvatarDTO,
+    ): ResponseEntity<*> {
+        if (userService.completeAvatarUpload(body.avatarMediaId, me.user)) {
+            return ResponseEntity.ok().build<Unit>()
+        }
+        return ResponseEntity.badRequest().build<Unit>()
+    }
 }

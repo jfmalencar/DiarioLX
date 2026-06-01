@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const TAGS_URL = '/backoffice/etiquetas';
+const TAGS_URL = '/backoffice/tags';
 
 async function goToTags(page: Page) {
     await page.goto(TAGS_URL);
@@ -51,7 +51,7 @@ test.describe('Tags', () => {
         await expect(firstTagLink).toBeVisible();
         await firstTagLink.click();
 
-        await expect(page).toHaveURL(/\/etiquetas\/[^/]+$/);
+        await expect(page).toHaveURL(/\/tags\/[^/]+$/);
     });
 
     test('search tags', async ({ page }) => {

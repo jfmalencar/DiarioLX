@@ -7,19 +7,33 @@ import java.time.Duration
 interface FileStorage {
     fun upload(
         bytes: ByteArray,
+        bucket: String,
         objectName: String,
         contentType: String,
     ): StoredFile
 
-    fun delete(objectName: String)
+    fun delete(
+        bucket: String,
+        objectName: String,
+    )
 
-    fun exists(objectName: String): Boolean
+    fun exists(
+        bucket: String,
+        objectName: String,
+    ): Boolean
 
-    fun getUrl(objectName: String): String
+    fun getPath(
+        bucket: String,
+        objectName: String,
+    ): String
 
-    fun getObjectInfo(objectName: String): StoredObjectInfo?
+    fun getObjectInfo(
+        bucket: String,
+        objectName: String,
+    ): StoredObjectInfo?
 
     fun getUploadSignedUrl(
+        bucket: String,
         objectName: String,
         contentType: String,
         expiresIn: Duration = Duration.ofMinutes(15),

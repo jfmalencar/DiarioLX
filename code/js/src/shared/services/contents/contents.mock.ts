@@ -5,7 +5,7 @@ import type { ContentsService, Content } from './contents.types';
 const fakeContents: Content[] = [
   {
     id: '1',
-    type: 'article',
+    type: 'ARTICLE',
     title: 'Content 1',
     slug: 'content-1',
     headline: 'Description 1',
@@ -46,7 +46,7 @@ export const useContentsMockService = (): ContentsService => {
           title: art.title,
           type: art.type,
           slug: art.slug,
-          featuredImage: art.featuredImage ? art.featuredImage.url : '',
+          featuredImage: art.featuredImage ? art.featuredImage.path : '',
           category: art.category.name,
           authors: art.authors.map((author) => author.name),
           createdAt: art.createdAt,
@@ -59,6 +59,10 @@ export const useContentsMockService = (): ContentsService => {
           hasNext: false,
         }
       };
+    },
+
+    async fetchPublished(params) {
+      return this.fetchAll(params)
     },
 
     async fetchOne(id) {

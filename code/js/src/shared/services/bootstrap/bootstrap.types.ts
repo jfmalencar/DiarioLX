@@ -1,6 +1,11 @@
 export type BootstrapData = {
     api: Endpoints;
+    assets: Assets
 };
+
+export type Assets = {
+    publicMediaBaseUrl: string
+}
 
 export type Link = {
     href: string;
@@ -20,6 +25,7 @@ export type Endpoints = {
         create: Link;
         update: Link;
         delete: Link;
+        avatar: Link;
     }
     tags: {
         list: Link;
@@ -57,7 +63,6 @@ export type Endpoints = {
         list: Link;
         create: Link;
         signedUrl: Link;
-        userSignedUrl: Link;
         completeUpload: Link;
     };
 };

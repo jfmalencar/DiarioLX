@@ -15,5 +15,7 @@ interface MediaRepository {
         type: String? = null,
     ): List<Media>
 
+    fun delete(id: Int): Boolean
+
     fun completeUpload(media: NewMedia): Boolean
 }

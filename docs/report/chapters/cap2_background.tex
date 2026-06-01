@@ -5,50 +5,111 @@
 
 \section{Digital Journalism Platforms} \label{sec:background_journalism}
 
-% TODO: descrever o contexto do jornalismo digital, slow journalism, plataformas existentes
-Digital journalism has undergone significant transformations in the past decade, driven by the proliferation of social media, mobile devices, and algorithmic content distribution. Traditional newsrooms have increasingly migrated to web-native platforms, yet many existing solutions prioritise speed and volume over editorial rigour and journalistic depth~\cite{slow_journalism}.
+Digital journalism has undergone significant transformations in the past decade, driven
+by the proliferation of social media, mobile devices, and algorithmic content
+distribution. Traditional newsrooms have increasingly migrated to web-native platforms,
+yet many existing solutions prioritise speed and volume over editorial rigour and
+journalistic depth~\cite{slow_journalism}.
 
-Slow journalism, as a counter-movement, emphasises long-form reporting, investigative depth, and contextual analysis. Platforms designed to support slow journalism require features that differ substantially from high-volume news aggregators: robust editorial workflows, multimedia support, and fine-grained access control for editorial teams.
+Slow journalism, as a counter-movement, emphasises long-form reporting, investigative
+depth, and contextual analysis. Platforms designed to support slow journalism require
+features that differ substantially from high-volume news aggregators: robust editorial
+workflows, multimedia support, and fine-grained access control for editorial teams.
 
 \section{Existing Solutions} \label{sec:background_existing}
 
-Several content management systems (CMS) were analysed as potential off-the-shelf solutions before the decision was made to develop a bespoke platform.
+Several content management systems (CMS) were analysed as potential off-the-shelf
+solutions before the decision was made to develop a bespoke platform.
 
 \subsection{WordPress} \label{sec:background_wordpress}
 
-WordPress is the most widely adopted CMS in the world, powering over 40\% of all websites~\cite{wordpress_stats}. A WordPress-based proof of concept was the starting point for this project. Although WordPress provides a rich plugin ecosystem and a familiar editorial interface, it presents notable limitations in the context of Diário LX:
+WordPress is the most widely adopted CMS in the world, powering over 40\% of all
+websites~\cite{wordpress_stats}. A WordPress-based proof of concept was the starting
+point for this project. Although WordPress provides a rich plugin ecosystem and a
+familiar editorial interface, it presents notable limitations in the context of
+Diário LX:
 
 \begin{itemize}
-  \item Limited control over the editorial approval workflow without heavy plugin dependencies.
-  \item Performance and security concerns at scale.
-  \item Architectural rigidity that complicates custom API design and frontend decoupling.
+      \item Limited control over the editorial approval workflow without heavy plugin
+            dependencies.
+      \item Performance and security concerns at scale.
+      \item Architectural rigidity that complicates custom API design and frontend
+            decoupling.
 \end{itemize}
 
 \subsection{Ghost} \label{sec:background_ghost}
 
-Ghost is a modern, open-source publishing platform focused on independent journalism and newsletters. It offers a clean editorial interface and native support for membership models. However, its workflow model does not natively support multi-role editorial approval chains, and its theming system imposes constraints on frontend customisation.
+Ghost~\cite{ghost_cms} is a modern, open-source publishing platform focused on independent journalism
+and newsletters. It offers a clean editorial interface and native support for
+membership models. Ghost defines four built-in roles --- \textit{Contributor},
+\textit{Author}, \textit{Editor}, and \textit{Administrator} --- with well-defined
+publish permissions. Contributors cannot publish directly and must submit content for
+review. However, Ghost does not support explicit content rejection: editors can only
+publish or leave content unpublished, with no formal rejection state or feedback
+mechanism for contributors. This makes it unsuitable for a newsroom where editorial
+accountability and structured feedback are part of the workflow. Its theming system
+also makes full frontend decoupling impractical.
 
 \subsection{Summary} \label{sec:background_summary}
 
-% TODO: tabela comparativa opcional
-Table~\ref{tab:cms_comparison} summarises the key features of the evaluated solutions in comparison with the requirements of Diário LX.
+The three platforms differ significantly in how they address the core requirements
+of Diário LX.
+
+Regarding \textbf{editorial workflow}, WordPress requires plugins to approximate any
+structured content lifecycle, while Ghost supports a basic submit-and-publish model
+where Contributors cannot publish directly but editors have no formal way to reject
+content --- they can only publish or leave it unpublished, with no feedback mechanism
+for contributors. Diário LX enforces a formal lifecycle with four explicit states ---
+\textit{Draft}, \textit{Pending}, \textit{Published}, and \textit{Rejected} ---
+requiring an editor to explicitly approve or reject each submission before publication.
+
+Regarding \textbf{role-based access control}, WordPress relies on plugins for any
+granular permission model. Ghost defines four built-in roles with well-defined publish
+restrictions, but the permissions are tied to the platform's own publishing model and
+cannot be extended. Diário LX defines three roles --- \textit{Contributor},
+\textit{Editor}, and \textit{Administrator} --- enforced directly at the API level,
+meaning every endpoint independently validates the caller's role without depending on
+any plugin or external system.
+
+Regarding \textbf{multimedia support}, both WordPress and Ghost treat multimedia as
+a secondary concern, relying on basic media libraries or plugins. Diário LX includes
+a native upload pipeline supporting images, video, and audio, with direct integration
+into the content authoring workflow.
+
+Regarding \textbf{frontend decoupling}, WordPress and Ghost both tie the presentation
+layer to their own theming systems, which constrains the design and technology choices
+available to the frontend. Diário LX exposes a dedicated REST API consumed by an
+independent React application, meaning the frontend can be developed, deployed, and
+replaced entirely without touching the backend.
+
+Table~\ref{tab:cms_comparison} consolidates these differences.
 
 \begin{table}[H]
-  \centering
-  \caption{Comparison of existing CMS solutions.}
-  \label{tab:cms_comparison}
-  \begin{tabularx}{\textwidth}{lXXX}
-    \toprule
-    \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost} & \textbf{Diário LX} \\
-    \midrule
-    Editorial workflow & Plugin-based       & Limited        & Built-in           \\
-    Role-based access  & Plugin-based       & Basic          & Multi-level        \\
-    Multimedia support & Plugin-based       & Basic          & Native             \\
-    API-first design   & Partial            & Yes            & Yes                \\
-    Custom frontend    & Theme-based        & Theme-based    & React (decoupled)  \\
-    Open source        & Yes                & Yes            & Yes                \\
-    \bottomrule
-  \end{tabularx}
+      \centering
+      \caption{Comparison of existing CMS solutions against Diário LX requirements.}
+      \label{tab:cms_comparison}
+      \begin{tabularx}{\textwidth}{lXXX}
+            \toprule
+            \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost}        & \textbf{Diário LX}      \\
+            \midrule
+            Editorial workflow & Plugin-based       & Submit/publish only,  & Draft → Pending →       \\
+                               &                    & no rejection state    & Published / Rejected    \\
+            \addlinespace
+            Role-based access  & Plugin-based       & Four built-in roles,  & Three roles, enforced   \\
+                               &                    & no rejection feedback & natively at API level   \\
+            \addlinespace
+            Multimedia support & Plugin-based       & Basic                 & Native (images, video,  \\
+                               &                    &                       & audio)                  \\
+            \addlinespace
+            API-first design   & Partial            & Yes                   & Yes                     \\
+            \addlinespace
+            Custom frontend    & Theme-based        & Theme-based           & React (fully decoupled) \\
+            \addlinespace
+            Open source        & Yes                & Yes                   & Yes                     \\
+            \bottomrule
+      \end{tabularx}
 \end{table}
 
-None of the analysed solutions fully satisfies the editorial workflow, access control, and multimedia management requirements of Diário LX. This motivated the development of a purpose-built platform.
+None of the analysed off-the-shelf solutions fully satisfies the editorial workflow,
+access control, and multimedia management requirements of Diário LX, motivating the
+development of a purpose-built platform.

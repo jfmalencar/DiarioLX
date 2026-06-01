@@ -5,14 +5,13 @@ import { AuthenticationProvider } from '@/app/providers/AuthenticationProvider';
 import { BootstrapProvider } from '@/app/providers/BootstrapProvider';
 
 // Public
-import { Home } from '@/modules/public/Home';
+import { Home } from '@/modules/public/home/Home';
 import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
 import { Content } from '@/modules/public/Content';
 
 // Backoffice
 import { Login } from '@/modules/backoffice/Login';
-import { Homepage } from '@/modules/backoffice/Homepage';
 import { Categories as BackofficeCategories } from '@/modules/backoffice/categories/Categories';
 import { Tags } from '@/modules/backoffice/tags/Tags';
 import { EditCategory } from '@/modules/backoffice/categories/EditCategory';
@@ -43,11 +42,11 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: 'categorias',
+        path: 'categories',
         element: <Categories />,
       },
       {
-        path: 'categorias/:id',
+        path: 'categories/:id',
         element: <Category />,
       },
       {
@@ -79,7 +78,7 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <RequireAuthentication>
-            <Homepage />
+            <div></div>
           </RequireAuthentication>
         ),
         handle: {
@@ -89,7 +88,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'categorias',
+        path: 'categories',
         element: (
           <RequireAuthentication>
             <BackofficeCategories />
@@ -102,7 +101,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'categorias/:id',
+        path: 'categories/:id',
         element: (
           <RequireAuthentication>
             <EditCategory />
@@ -113,7 +112,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'etiquetas',
+        path: 'tags',
         element: (
           <RequireAuthentication>
             <Tags />
@@ -126,7 +125,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'etiquetas/:id',
+        path: 'tags/:id',
         element: (
           <RequireAuthentication>
             <EditTag />
@@ -137,7 +136,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'utilizadores',
+        path: 'users',
         element: (
           <RequireAuthentication>
             <Users />
@@ -150,7 +149,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'publicacoes',
+        path: 'contents',
         element: (
           <RequireAuthentication>
             <Contents />
@@ -163,7 +162,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'publicacoes/:id',
+        path: 'contents/:id',
         element: (
           <RequireAuthentication>
             <EditContent />
@@ -174,7 +173,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'perfil',
+        path: 'profile',
         element: (
           <RequireAuthentication>
             <MyProfile />
@@ -187,7 +186,7 @@ const router = createBrowserRouter([
         }
       },
       {
-        path: 'convites',
+        path: 'invites',
         element: (
           <RequireRole role='ADMIN'>
             <Invites />

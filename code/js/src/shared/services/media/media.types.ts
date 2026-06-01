@@ -6,8 +6,8 @@ export type MediaType = 'image' | 'video' | 'audio';
 export type Media = {
     id: string;
     type: MediaType;
-    url: string;
-    thumbnailUrl: string | null;
+    path: string;
+    thumbnailPath: string | null;
     credits: {
         id: string
         name: string;
@@ -20,16 +20,13 @@ export type Media = {
 };
 
 export type MediaFormValues = {
+    uploadType: 'CONTENT_IMAGES' | 'CONTENT_VIDEOS' | 'CONTENT_AUDIOS' | 'PROFILE_PICTURES'
     file: File;
     altText: string;
     credits: {
         userId: string;
         role: string;
     }[];
-};
-
-export type UserMediaFormValues = {
-    file: File;
 };
 
 export type MediasResponse = {
@@ -42,16 +39,10 @@ export type SignedUpload = {
     signedUrl: string;
 }
 
-export type UserSignedUpload = {
-    signedUrl: string;
-}
-
 export type MediaService = {
     fetchAll: (params: Query) => Promise<MediasResponse>;
 
     getSignedUrl: (media: MediaFormValues) => Promise<SignedUpload>;
-
-    getUserSignedUrl: (media: UserMediaFormValues) => Promise<UserSignedUpload>;
 
     completeUpload: (id: string) => Promise<void>;
 };

@@ -17,7 +17,7 @@ data class TagResponseDTO(
             TagResponseDTO(
                 id = tag.id,
                 name = tag.name,
-                slug = tag.slug,
+                slug = tag.slug.value,
                 description = tag.description,
                 quantity = tag.quantity,
                 createdAt = tag.createdAt.toString(),

@@ -8,7 +8,6 @@ import pt.ipl.diariolx.domain.media.NewUpload
 import pt.ipl.diariolx.repository.MediaRepository
 
 class MediaRepositoryMem : MediaRepository {
-    private val baseUrl = "http://localhost:8333"
     private val medias = mutableListOf<Media>()
     private var currentId = 0
 
@@ -23,7 +22,7 @@ class MediaRepositoryMem : MediaRepository {
                 altText = upload.altText,
                 credits = upload.credits.map { MediaCredit(it.userId, "Photographer name", "PHOTOGRAPHER", "author") },
                 mimeType = upload.contentType,
-                status = "ready",
+                status = "pending",
                 sizeBytes = 0,
                 createdAt = Clock.System.now(),
             )
@@ -37,9 +36,9 @@ class MediaRepositoryMem : MediaRepository {
         limit: Int,
         offset: Int,
         type: String?,
-    ): List<Media> = medias.drop(offset).take(limit)
+    ): List<Media> = medias.filter { it.status === "ready" }.drop(offset).take(limit)
 
-    override fun completeUpload(media: NewMedia): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun delete(id: Int): Boolean = medias.removeIf { it.id == id }
+
+    override fun completeUpload(media: NewMedia): Boolean = true
 }

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "test": "playwright test",
+    "build": "vite build",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",

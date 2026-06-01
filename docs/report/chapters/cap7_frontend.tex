@@ -11,42 +11,40 @@ of reusable UI elements and enables clear separation between the public website 
 the backoffice interface. TypeScript was adopted to improve code maintainability and
 reduce runtime errors through static type checking.
 
-\subsection{Libraries} \label{sec:fe_libraries}
-
 The following libraries were adopted:
 
 \begin{itemize}
-  \item \textbf{React Router}~\cite{react_router} --- client-side routing, enabling
-        slug-based navigation.
+      \item \textbf{React Router}~\cite{react_router} --- client-side routing, enabling
+            slug-based navigation.
 
-  \item \textbf{Fetch API}~\cite{mdn_fetch} --- HTTP communication with the backend
-        API, wrapped in a custom \texttt{useApi} hook.
+      \item \textbf{Fetch API}~\cite{mdn_fetch} --- HTTP communication with the backend
+            API, wrapped in a custom \texttt{useApi} hook.
 
-  \item \textbf{TipTap}~\cite{tiptap} --- rich text editor framework used to implement
-        the block-based article editor in the backoffice.
+      \item \textbf{TipTap}~\cite{tiptap} --- rich text editor framework used to implement
+            the block-based article editor in the backoffice.
 
-  \item \textbf{Bootstrap}~\cite{bootstrap} --- responsive CSS framework used for
-        layout structuring and interface styling.
+      \item \textbf{Bootstrap}~\cite{bootstrap} --- responsive CSS framework used for
+            layout structuring and interface styling.
 
-  \item \textbf{Lucide React}~\cite{lucide} --- icon library providing consistent
-        and lightweight SVG-based icons throughout the interface.
+      \item \textbf{Lucide React}~\cite{lucide} --- icon library providing consistent
+            and lightweight SVG-based icons throughout the interface.
 \end{itemize}
 
 \section{Organization} \label{sec:fe_organization}
 
 The frontend follows a modular architecture inspired by the separation of concerns
-principle. Figure~\ref{fig:frontend_diagram} illustrates the internal organisation
+principle. Figure~\ref{fig:frontend_diagram} illustrates the internal organization
 of the frontend and its relationship with the backend API.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/frontend_module_diagram.png}}
-  \end{center}
-  \caption{Frontend module organization.}
-  \label{fig:frontend_diagram}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/frontend_module_diagram.png}}
+      \end{center}
+      \caption{Frontend module organization.}
+      \label{fig:frontend_diagram}
 \end{figure}
 
-The source tree is organised as follows:
+The source tree is organized as follows:
 
 \begin{verbatim}
 src/
@@ -71,22 +69,22 @@ src/
 The main modules are:
 
 \begin{description}
-  \item[UI Components] Reusable presentation components with no business logic,
-        shared across the backoffice and public modules.
+      \item[UI Components] Reusable presentation components with no business logic,
+            shared across the backoffice and public modules.
 
-  \item[Hooks] Custom React hooks encapsulating state management and side effects.
-        Hooks communicate with the backend exclusively through the \texttt{Services}
-        interface.
+      \item[Hooks] Custom React hooks encapsulating state management and side effects.
+            Hooks communicate with the backend exclusively through the \texttt{Services}
+            interface.
 
-  \item[Services] An interface defining the API communication contract, implemented
-        by the \texttt{API Client}. This abstraction decouples the application logic
-        from the HTTP communication layer.
+      \item[Services] An interface defining the API communication contract, implemented
+            by the \texttt{API Client}. This abstraction decouples the application logic
+            from the HTTP communication layer.
 
-  \item[API Client] The concrete implementation of the \texttt{Services} interface,
-        built on the Fetch API and encapsulated in the \texttt{useApi} hook.
+      \item[API Client] The concrete implementation of the \texttt{Services} interface,
+            built on the Fetch API and encapsulated in the \texttt{useApi} hook.
 
-  \item[Domain] TypeScript type definitions representing the shared data model
-        (content, users, categories, tags).
+      \item[Domain] TypeScript type definitions representing the shared data model
+            (content, users, categories, tags).
 \end{description}
 
 \section{Bootstrap and Configuration} \label{sec:fe_bootstrap}
@@ -123,8 +121,9 @@ Protected routes redirect unauthenticated users to the login page.
 
 The backoffice is the editorial management interface, accessible only to
 authenticated users. It provides tools for user administration, category and tag
-management, and invitation-based onboarding. Content management and the editorial
-review workflow are currently under active development.
+management, and invitation-based onboarding. Content management is partially
+implemented — content creation is functional, but editing, deletion, and the
+editorial review workflow are currently under active development.
 
 \subsection{Authentication Pages} \label{sec:fe_auth_pages}
 
@@ -139,75 +138,75 @@ determines the role assigned to the new account. Both pages share a split layout
 form on the right.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/register.png}}
-  \end{center}
-  \caption{Backoffice registration page.}
-  \label{fig:fe_register}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/register.png}}
+      \end{center}
+      \caption{Backoffice registration page.}
+      \label{fig:fe_register}
 \end{figure}
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/login.png}}
-  \end{center}
-  \caption{Backoffice login page.}
-  \label{fig:fe_login}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/login.png}}
+      \end{center}
+      \caption{Backoffice login page.}
+      \label{fig:fe_login}
 \end{figure}
 
 \subsection{User Management} \label{sec:fe_user_mgmt}
 
 The user management page lists all active and deactivated users, displaying their
-name, username, email, and profile picture. Administrators can delete users and
-create new ones via the invitation system.
+name, username, email, and profile picture. Administrators can invite new ones via
+the invitation system.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/users.png}}
-  \end{center}
-  \caption{Backoffice --- user management page.}
-  \label{fig:fe_users}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/users.png}}
+      \end{center}
+      \caption{Backoffice --- user management page.}
+      \label{fig:fe_users}
 \end{figure}
 
 \subsection{Category and Tag Management} \label{sec:fe_cat_mgmt}
 
 The category management page lists all active and archived categories, displaying
 their name, slug, associated colour, parent category (hierarchy), and content count.
-Each category can be edited or deleted. The tag management page follows the same
+Each category can be archived, edited or deleted. The tag management page follows the same
 structure, listing tags with their slug and associated content count.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/categories.png}}
-  \end{center}
-  \caption{Backoffice --- category management page.}
-  \label{fig:fe_categories}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/categories.png}}
+      \end{center}
+      \caption{Backoffice --- category management page.}
+      \label{fig:fe_categories}
 \end{figure}
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/tags.png}}
-  \end{center}
-  \caption{Backoffice --- tag management page.}
-  \label{fig:fe_tags}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/tags.png}}
+      \end{center}
+      \caption{Backoffice --- tag management page.}
+      \label{fig:fe_tags}
 \end{figure}
 
 Editing a tag opens a dedicated page with fields for name, slug, and an optional
 description.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/edit-tag.png}}
-  \end{center}
-  \caption{Backoffice --- tag edit page.}
-  \label{fig:fe_edit_tag}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/edit-tag.png}}
+      \end{center}
+      \caption{Backoffice --- tag edit page.}
+      \label{fig:fe_edit_tag}
 \end{figure}
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/edit-category.png}}
-  \end{center}
-  \caption{Backoffice --- category edit page.}
-  \label{fig:fe_edit_category}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/edit-category.png}}
+      \end{center}
+      \caption{Backoffice --- category edit page.}
+      \label{fig:fe_edit_category}
 \end{figure}
 
 \subsection{Invitations} \label{sec:fe_invites}
@@ -218,11 +217,11 @@ Administrator --- and expire after one hour. Active and expired invitations are
 displayed in separate tabs.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/invites.png}}
-  \end{center}
-  \caption{Backoffice --- invitation management page.}
-  \label{fig:fe_invites}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/invites.png}}
+      \end{center}
+      \caption{Backoffice --- invitation management page.}
+      \label{fig:fe_invites}
 \end{figure}
 
 \subsection{User Profile} \label{sec:fe_profile}
@@ -232,11 +231,11 @@ username, account creation date, and active status. Users can edit their profile
 or log out from this page.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/profile.png}}
-  \end{center}
-  \caption{Backoffice --- user profile page.}
-  \label{fig:fe_profile}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/profile.png}}
+      \end{center}
+      \caption{Backoffice --- user profile page.}
+      \label{fig:fe_profile}
 \end{figure}
 
 \subsection{Content Management} \label{sec:fe_content_mgmt}
@@ -247,11 +246,11 @@ to create new content items and select the type --- article, video, episode,
 podcast, category, or tag.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/contents.png}}
-  \end{center}
-  \caption{Backoffice --- content listing page.}
-  \label{fig:fe_contents}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/contents.png}}
+      \end{center}
+      \caption{Backoffice --- content listing page.}
+      \label{fig:fe_contents}
 \end{figure}
 
 The content editor provides a split interface: a block-based writing area on the
@@ -261,19 +260,19 @@ link). The settings panel allows the author to define the slug, category, primar
 and secondary tags, and primary and secondary authors.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content-0.png}}
-  \end{center}
-  \caption{Backoffice --- content editor (empty state).}
-  \label{fig:fe_editor_empty}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content-0.png}}
+      \end{center}
+      \caption{Backoffice --- content editor (empty state).}
+      \label{fig:fe_editor_empty}
 \end{figure}
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content.png}}
-  \end{center}
-  \caption{Backoffice --- content editor with a published article.}
-  \label{fig:fe_editor}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content.png}}
+      \end{center}
+      \caption{Backoffice --- content editor with a published article.}
+      \label{fig:fe_editor}
 \end{figure}
 
 Image blocks are inserted via a media gallery modal, which lists all uploaded media
@@ -281,19 +280,19 @@ items with their credits and accessible description. New images can be uploaded
 directly from the modal.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/medias.png}}
-  \end{center}
-  \caption{Backoffice --- media gallery modal.}
-  \label{fig:fe_media_gallery}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/medias.png}}
+      \end{center}
+      \caption{Backoffice --- media gallery modal.}
+      \label{fig:fe_media_gallery}
 \end{figure}
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-media.png}}
-  \end{center}
-  \caption{Backoffice --- media upload form with credits and accessible description.}
-  \label{fig:fe_media_upload}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-media.png}}
+      \end{center}
+      \caption{Backoffice --- media upload form with credits and accessible description.}
+      \label{fig:fe_media_upload}
 \end{figure}
 
 \subsection{Homepage Management} \label{sec:fe_homepage_mgmt}
@@ -303,37 +302,60 @@ displayed on the public website's homepage. The selection of featured articles i
 currently under development.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/homepage.png}}
-  \end{center}
-  \caption{Backoffice --- homepage management page (under development).}
-  \label{fig:fe_homepage_mgmt}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/homepage.png}}
+      \end{center}
+      \caption{Backoffice --- homepage management page (under development).}
+      \label{fig:fe_homepage_mgmt}
 \end{figure}
 
 \section{Public Website} \label{sec:fe_public}
 
 The public website is the reader-facing interface of Diário LX, providing access
-to published content organised by category, tag, and editorial section. It is
-designed to reflect the editorial identity of the publication, with a clean layout
-that prioritises long-form reading and visual journalism.
+to published content organized by editorial section. It is designed to reflect the
+editorial identity of the publication, prioritising long-form reading and visual
+journalism. At the current beta stage, only the homepage and article page are
+implemented; the remaining pages are planned for the final version.
 
-At the current beta stage, the public website is still under active development.
-The article page is the primary implemented view; the remaining pages are planned
-and will be completed in the final version.
+\subsection{Homepage} \label{sec:fe_homepage}
+
+The homepage has been implemented and currently presents content from multiple
+editorial sections, including a hero article, featured content, latest news,
+and dedicated blocks for Lisboa, Cidade Aberta, A Fundo, Especiais,
+Photography, Podcasts, and Videos. At the current beta stage, the page is
+rendered using mocked data, while integration with the content management and
+featured content curation features is under active development.
+
+\begin{figure}[H]
+      \begin{center}
+            \includegraphics[width=\textwidth]{./figures/screenshots/home_1.png}
+      \end{center}
+      \caption{Homepage --- header, hero, featured articles, latest news, Lisboa, Cidade Aberta, and A Fundo sections.}
+      \label{fig:fe_homepage_1}
+\end{figure}
+
+\begin{figure}[H]
+      \begin{center}
+            \includegraphics[width=\textwidth]{./figures/screenshots/home_2.png}
+      \end{center}
+      \caption{Homepage --- Especiais, Photography, Podcasts, Videos, Team Member section, and footer.}
+      \label{fig:fe_homepage_2}
+\end{figure}
 
 \subsection{Article Page} \label{sec:fe_article}
 
-Each content item is rendered on a dedicated public page at its canonical URL.
-The page displays the featured image, category, publication date, title, headline,
-author credits, and the full block-based body. Social sharing links are displayed
-below the author information.
+Each content item is rendered on a dedicated public page accessible
+at its slug-based URL. The page displays the featured image, category,
+publication date, title, headline, author credits, and the full
+block-based body. Social sharing links are displayed below the
+author information.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/article.png}}
-  \end{center}
-  \caption{Public website --- article page.}
-  \label{fig:fe_article_page}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/article.png}}
+      \end{center}
+      \caption{Public website --- article page.}
+      \label{fig:fe_article_page}
 \end{figure}
 
 \section{Responsive Design} \label{sec:fe_responsive}

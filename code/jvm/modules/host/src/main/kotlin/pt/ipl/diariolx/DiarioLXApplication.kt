@@ -5,7 +5,6 @@ import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.MessageSource
@@ -18,6 +17,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import pt.ipl.diariolx.domain.auth.JwtConfig
 import pt.ipl.diariolx.domain.invites.config.InviteDomainConfig
+import pt.ipl.diariolx.domain.media.Buckets
+import pt.ipl.diariolx.domain.media.MediaBaseUrl
 import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
 import pt.ipl.diariolx.http.auth.AuthenticatedUserArgumentResolver
 import pt.ipl.diariolx.http.auth.AuthenticationInterceptor
@@ -29,7 +30,6 @@ import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.repository.configureWithAppRequirements
 import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.storage.FileStorageFactory
-import pt.ipl.diariolx.utils.token.Sha256TokenEncoder
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -60,20 +60,25 @@ class DiarioLXApplication {
     // To use in-memory mode, comment out the jdbiTransactionManager and uncomment memoryTransactionManager
 
     @Bean
-    fun jdbi() =
-        Jdbi
+    fun jdbi(appEnv: AppEnvironment): Jdbi {
+        logger.info("Connecting to database...")
+        logger.info("Database URL: ${appEnv.dbUrl}")
+        return Jdbi
             .create(
                 PGSimpleDataSource().apply {
-                    setURL(Environment.getDbUrl())
+                    setURL(appEnv.dbUrl)
                 },
             ).configureWithAppRequirements()
+    }
 
     @Bean
-    fun transactionManager(jdbi: Jdbi): TransactionManager =
-        JdbiTransactionManager(
+    fun transactionManager(jdbi: Jdbi): TransactionManager {
+        logger.info("Using JDBI Transaction Manager")
+        return JdbiTransactionManager(
             jdbi = jdbi,
             logger(),
         )
+    }
 
     // === UNCOMMENT BELOW TO USE IN-MEMORY REPOSITORIES INSTEAD ===
 
@@ -102,9 +107,6 @@ class DiarioLXApplication {
     }
 
     @Bean
-    fun tokenEncoder() = Sha256TokenEncoder()
-
-    @Bean
     fun usersDomainConfig() =
         UsersDomainConfig(
             tokenSizeInBytes = 256 / 8,
@@ -119,27 +121,35 @@ class DiarioLXApplication {
             inviteExpirationTime = 60.minutes,
         )
 
+    @Bean fun mediaBaseUrl(appEnv: AppEnvironment) = MediaBaseUrl(appEnv.imageBaseUrl)
+
     @Bean
     fun logger(): Logger = LoggerFactory.getLogger(DiarioLXApplication::class.java)
 
     @Bean
-    fun fileStorage(
-        @Value("\${storage.s3.endpoint}") url: String,
-        @Value("\${storage.s3.region}") region: String,
-        @Value("\${storage.s3.access-key}") accessKey: String,
-        @Value("\${storage.s3.secret-key}") secretKey: String,
-        @Value("\${storage.s3.bucket}") bucket: String,
-        @Value("\${storage.s3.path-style-access}") pathStyleAccess: Boolean,
-    ): FileStorage =
-        FileStorageFactory()
-            .create(url, region, accessKey, secretKey, bucket, pathStyleAccess)
+    fun buckets(appEnv: AppEnvironment) =
+        Buckets(
+            appEnv.s3PublicBucket,
+        )
 
     @Bean
-    fun jwtConfig(
-        @Value("\${jwt.secret}") secret: String,
-        @Value("\${jwt.access-token-expiration-ms}") accessTokenExpirationMs: Long,
-        @Value("\${jwt.refresh-token-expiration-ms}") refreshTokenExpirationMs: Long,
-    ): JwtConfig = JwtConfig(secret, accessTokenExpirationMs, refreshTokenExpirationMs)
+    fun fileStorage(appEnv: AppEnvironment): FileStorage =
+        FileStorageFactory().create(
+            appEnv.s3Endpoint,
+            appEnv.s3PublicEndpoint,
+            appEnv.s3Region,
+            appEnv.s3AccessKey,
+            appEnv.s3SecretKey,
+            appEnv.s3PathStyleAccess,
+        )
+
+    @Bean
+    fun jwtConfig(appEnv: AppEnvironment): JwtConfig =
+        JwtConfig(
+            appEnv.jwtSecret,
+            appEnv.jwtAccessTokenExpirationMs,
+            appEnv.jwtRefreshTokenExpirationMs,
+        )
 }
 
 private val logger = LoggerFactory.getLogger("main")

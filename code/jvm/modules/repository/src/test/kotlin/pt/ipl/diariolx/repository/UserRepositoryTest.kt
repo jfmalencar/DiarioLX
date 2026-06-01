@@ -33,16 +33,16 @@ class UserRepositoryTest {
         email: String = "test@example.com",
         password: String = "hashedPassword123",
         role: UserRole = UserRole.CONTRIBUTOR,
-        fName: String = "John",
-        lName: String = "Doe",
+        firstName: String = "John",
+        lastName: String = "Doe",
     ): NewUser =
         NewUser(
             username = Username(username),
             email = Email(email),
             passwordHash = PasswordHash(password),
             role = role,
-            fName = Name(fName),
-            lName = Name(lName),
+            firstName = Name(firstName),
+            lastName = Name(lastName),
         )
 
     private fun createUpdateUser(
@@ -52,7 +52,6 @@ class UserRepositoryTest {
         fName: String = "Jane",
         lName: String = "Smith",
         bio: String = "Updated bio",
-        profilePictureURL: String? = null,
     ): UpdateUser =
         UpdateUser(
             username = Username(username),
@@ -61,7 +60,6 @@ class UserRepositoryTest {
             fName = Name(fName),
             lName = Name(lName),
             bio = bio,
-            profilePictureURL = profilePictureURL ?: "",
         )
 
     private fun createSession(
@@ -365,7 +363,7 @@ class UserRepositoryTest {
         val updated = repo.getById(createdUser.id)
         assertNotNull(updated)
         assertEquals("updated@example.com", updated.email.value)
-        assertEquals("Updated", updated.fName.value)
+        assertEquals("Updated", updated.firstName.value)
     }
 
     @Test
@@ -394,37 +392,6 @@ class UserRepositoryTest {
         val updated = repo.getById(createdUser.id)
         assertNotNull(updated)
         assertEquals("This is my new bio", updated.bio)
-    }
-
-    @Test
-    fun `update modifies profile picture URL`() {
-        val repo = createRepository()
-        val now = Clock.System.now()
-        val createdUser = repo.create(createNewUser(), now)
-
-        val updateUser = createUpdateUser(profilePictureURL = "https://example.com/profile.jpg")
-        repo.update(updateUser, createdUser.id, now)
-
-        val updated = repo.getById(createdUser.id)
-        assertNotNull(updated)
-        assertEquals("https://example.com/profile.jpg", updated.profilePictureURL)
-    }
-
-    @Test
-    fun `update clears profile picture URL when set to null`() {
-        val repo = createRepository()
-        val now = Clock.System.now()
-        val createdUser = repo.create(createNewUser(), now)
-
-        // First set a URL
-        repo.update(createUpdateUser(profilePictureURL = "https://example.com/profile.jpg"), createdUser.id, now)
-
-        // Then clear it
-        repo.update(createUpdateUser(profilePictureURL = null), createdUser.id, now)
-
-        val updated = repo.getById(createdUser.id)
-        assertNotNull(updated)
-        assertEquals("", updated.profilePictureURL)
     }
 
     @Test

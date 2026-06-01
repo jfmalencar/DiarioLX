@@ -4,16 +4,18 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.UpdateCategory
+import pt.ipl.diariolx.domain.category.CategoryUpdate
+import pt.ipl.diariolx.domain.category.value.Color
+import pt.ipl.diariolx.domain.shared.value.Slug
 
 class JdbiCategoryRepository(
     private val handle: Handle,
 ) : CategoryRepository {
     override fun create(
         name: String,
-        slug: String,
+        slug: Slug,
         description: String?,
-        color: String,
+        color: Color,
         parentId: Int?,
     ): Int =
         handle
@@ -24,14 +26,14 @@ class JdbiCategoryRepository(
                 returning id
                 """.trimIndent(),
             ).bind("name", name)
-            .bind("slug", slug)
+            .bind("slug", slug.value)
             .bind("description", description)
-            .bind("color", color)
+            .bind("color", color.value)
             .bind("parent_id", parentId)
             .mapTo<Int>()
             .one()
 
-    override fun update(category: UpdateCategory): Boolean =
+    override fun update(category: CategoryUpdate): Boolean =
         handle
             .createUpdate(
                 """
@@ -42,9 +44,9 @@ class JdbiCategoryRepository(
                 """.trimIndent(),
             ).bind("id", category.id)
             .bind("name", category.name)
-            .bind("slug", category.slug)
+            .bind("slug", category.slug.value)
             .bind("description", category.description)
-            .bind("color", category.color)
+            .bind("color", category.color.value)
             .bind("parent_id", category.parentId)
             .execute() > 0
 
@@ -91,10 +93,10 @@ class JdbiCategoryRepository(
             .singleOrNull()
             ?.category
 
-    override fun getBySlug(slug: String): Category? =
+    override fun getBySlug(slug: Slug): Category? =
         handle
             .createQuery("select * from v_categories where slug = :slug")
-            .bind("slug", slug)
+            .bind("slug", slug.value)
             .mapTo<CategoryModel>()
             .singleOrNull()
             ?.category
@@ -140,8 +142,8 @@ class JdbiCategoryRepository(
                     id = id,
                     name = name,
                     description = description,
-                    color = color,
-                    slug = slug,
+                    color = Color(color),
+                    slug = Slug(slug),
                     parentId = parentId,
                     parentName = parentName,
                     quantity = quantity,

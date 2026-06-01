@@ -36,6 +36,26 @@ FROM categories c
 LEFT JOIN categories p
 ON p.id = c.parent_id;
 
+CREATE VIEW v_users AS
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    u.role,
+    u.password_hash,
+    u.first_name,
+    u.last_name,
+    u.bio,
+    m.id AS avatar_media_id,
+    m.bucket AS avatar_bucket,
+    m.object_key AS avatar_object_key,
+    u.active_account,
+    u.created_at,
+    u.updated_at
+FROM users u
+LEFT JOIN medias m
+ON u.avatar_media_id = m.id;
+
 CREATE OR REPLACE VIEW v_medias AS
 SELECT
     m.id,
@@ -87,15 +107,13 @@ SELECT
     a.slug,
     a.headline,
     a.type,
-    a.created_at AS "createdAt",
-    a.updated_at AS "updatedAt",
-    a.published_at AS "publishedAt",
-    NULL::BIGINT AS "archivedAt",
-
-    c.id AS "categoryId",
-    c.name AS "categoryName",
-    c.slug AS "categorySlug",
-
+    a.created_at,
+    a.updated_at,
+    a.published_at,
+    NULL::BIGINT AS archived_at,
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
     CASE
         WHEN fm.id IS NULL THEN NULL
         ELSE json_build_object(
@@ -177,6 +195,7 @@ FROM contents a
     WHERE cb.content_id = a.id
         ) blocks ON true;
 
+
 -- Content summary
 CREATE OR REPLACE VIEW v_contents_summary AS
 SELECT
@@ -184,10 +203,17 @@ SELECT
     a.title,
     a.slug,
     a.type,
-    c.name AS "categoryName",
-    fm.bucket || '/' || fm.object_key AS "featuredImage",
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    fm.bucket || '/' || fm.object_key AS featured_image,
     COALESCE(authors.names, '') AS authors,
-    a.created_at AS "createdAt"
+    primary_tag.id AS tag_id,
+    primary_tag.name AS tag_name,
+    primary_tag.slug AS tag_slug,
+    a.created_at,
+    a.published_at,
+    NULL::BIGINT AS archived_at
 FROM contents a
          JOIN categories c ON c.id = a.category_id
          LEFT JOIN medias fm ON fm.id = a.featured_media_id
@@ -195,4 +221,13 @@ FROM contents a
     SELECT string_agg(concat_ws(' ', u.first_name, u.last_name), ', ' ORDER BY u.first_name) AS names
 FROM content_authors aa
     JOIN users u ON u.id = aa.author_id
-WHERE aa.content_id = a.id) authors ON true;
+WHERE aa.content_id = a.id
+    ) authors ON true
+    LEFT JOIN LATERAL (
+    SELECT t.name, t.slug, t.id
+    FROM content_tags ct
+    JOIN tags t ON t.id = ct.tag_id
+    WHERE ct.content_id = a.id
+    AND ct.role = 'primary'
+    LIMIT 1
+    ) primary_tag ON true;

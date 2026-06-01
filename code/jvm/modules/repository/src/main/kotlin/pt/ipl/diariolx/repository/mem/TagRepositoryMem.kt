@@ -1,8 +1,9 @@
 package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
+import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.Tag
-import pt.ipl.diariolx.domain.tag.UpdateTag
+import pt.ipl.diariolx.domain.tag.TagUpdate
 import pt.ipl.diariolx.repository.TagRepository
 
 class TagRepositoryMem : TagRepository {
@@ -11,7 +12,7 @@ class TagRepositoryMem : TagRepository {
 
     override fun create(
         name: String,
-        slug: String,
+        slug: Slug,
         description: String?,
     ): Int {
         val id = ++currentId
@@ -29,7 +30,7 @@ class TagRepositoryMem : TagRepository {
         return id
     }
 
-    override fun update(tag: UpdateTag): Boolean {
+    override fun update(tag: TagUpdate): Boolean {
         val tagToUpdate = tags.find { it.id == tag.id }
         if (tagToUpdate != null) {
             val categoryUpdated =
@@ -67,7 +68,7 @@ class TagRepositoryMem : TagRepository {
 
     override fun getById(id: Int): Tag? = tags.find { it.id == id }
 
-    override fun getBySlug(slug: String): Tag? = tags.find { it.slug == slug }
+    override fun getBySlug(slug: Slug): Tag? = tags.find { it.slug == slug }
 
     override fun archive(id: Int): Boolean {
         val tagToArchive = tags.find { it.id == id }

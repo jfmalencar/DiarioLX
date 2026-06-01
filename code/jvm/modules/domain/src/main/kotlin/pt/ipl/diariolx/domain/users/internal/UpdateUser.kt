@@ -12,5 +12,4 @@ data class UpdateUser(
     val fName: Name,
     val lName: Name,
     val bio: String = "",
-    val profilePictureURL: String = "",
 )

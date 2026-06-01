@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-const CATEGORIES_URL = '/backoffice/categorias';
+const CATEGORIES_URL = '/backoffice/categories';
 
 async function gotoCategories(page: Page) {
     await page.goto(CATEGORIES_URL);
@@ -45,7 +45,7 @@ test.describe('Categories', () => {
         const firstCategoryLink = page.getByTestId('manage-category-button-0').first();
         await expect(firstCategoryLink).toBeVisible();
         await firstCategoryLink.click();
-        await expect(page).toHaveURL(/\/categorias\/[^/]+$/);
+        await expect(page).toHaveURL(/\/categories\/[^/]+$/);
     });
 
     test('search categories', async ({ page }) => {

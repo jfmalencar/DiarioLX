@@ -15,11 +15,10 @@ import java.time.Duration
 class S3FileStorage(
     private val s3Client: S3Client,
     private val s3PreSigner: S3Presigner,
-    private val bucket: String,
-    private val publicEndpoint: String = "http://localhost:8333",
 ) : FileStorage {
     override fun upload(
         bytes: ByteArray,
+        bucket: String,
         objectName: String,
         contentType: String,
     ): StoredFile {
@@ -38,11 +37,14 @@ class S3FileStorage(
 
         return StoredFile(
             objectName = objectName,
-            url = getUrl(objectName),
+            url = getPath(bucket, objectName),
         )
     }
 
-    override fun delete(objectName: String) {
+    override fun delete(
+        bucket: String,
+        objectName: String,
+    ) {
         s3Client.deleteObject(
             DeleteObjectRequest
                 .builder()
@@ -52,7 +54,10 @@ class S3FileStorage(
         )
     }
 
-    override fun exists(objectName: String): Boolean =
+    override fun exists(
+        bucket: String,
+        objectName: String,
+    ): Boolean =
         try {
             s3Client.headObject(
                 HeadObjectRequest
@@ -68,7 +73,10 @@ class S3FileStorage(
             false
         }
 
-    override fun getObjectInfo(objectName: String): StoredObjectInfo? =
+    override fun getObjectInfo(
+        bucket: String,
+        objectName: String,
+    ): StoredObjectInfo? =
         try {
             val response =
                 s3Client.headObject(
@@ -87,9 +95,8 @@ class S3FileStorage(
             null
         }
 
-    override fun getUrl(objectName: String): String = "$publicEndpoint/$bucket/$objectName"
-
     override fun getUploadSignedUrl(
+        bucket: String,
         objectName: String,
         contentType: String,
         expiresIn: Duration,
@@ -114,4 +121,9 @@ class S3FileStorage(
 
         return presignedRequest.url().toString()
     }
+
+    override fun getPath(
+        bucket: String,
+        objectName: String,
+    ) = "/$bucket/$objectName"
 }

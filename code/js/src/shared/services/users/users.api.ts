@@ -25,7 +25,7 @@ export const useUsersApiService = (): UsersService => {
       return result.data;
     },
 
-    async updateProfile(username, email, password, firstName, lastName, bio, profilePictureURL) {
+    async updateProfile(username, email, password, firstName, lastName, bio) {
       const result = await patch<UserApiResponse>(endpoints.users.me.href, {
         username: username || null,
         email: email || null,
@@ -33,7 +33,6 @@ export const useUsersApiService = (): UsersService => {
         firstName: firstName || null,
         lastName: lastName || null,
         bio: bio || null,
-        profilePictureURL: profilePictureURL || null,
       });
 
       if (!result.success) {
@@ -42,5 +41,12 @@ export const useUsersApiService = (): UsersService => {
 
       return result.data;
     },
+
+    async completeAvatarUpload(id) {
+      const result = await patch(endpoints.users.avatar.href, { avatarMediaId: id });
+      if (!result.success) {
+        throw new Error('Failed to complete upload');
+      }
+    }
   }), [endpoints, get, patch]);
 }

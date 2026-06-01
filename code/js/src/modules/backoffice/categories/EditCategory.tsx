@@ -118,12 +118,12 @@ export const EditCategory = () => {
         if (location.state?.category) {
             const category = location.state.category;
             dispatch({ type: 'init', category });
-        } else if (params.id && params.id !== 'nova') {
+        } else if (params.id && params.id !== 'new') {
             fetchOne(params.id).then((category) => {
                 if (category) {
                     dispatch({ type: 'init', category });
                 } else {
-                    navigate('/backoffice/categorias/nova', { replace: true });
+                    navigate('/backoffice/categories/new', { replace: true });
                 }
             });
         }
@@ -139,7 +139,7 @@ export const EditCategory = () => {
     }, [inputs?.parentSearch, fetchAll]);
 
     if (!inputs) {
-        return <Navigate to='/backoffice/categorias' />;
+        return <Navigate to='/backoffice/categories' />;
     }
 
     const handleChange = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -159,7 +159,7 @@ export const EditCategory = () => {
         dispatch({ type: 'submit' });
 
         const category: CategoryFormValues = {
-            id: params.id === 'nova' ? '' : params.id!,
+            id: params.id === 'new' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,
             slug: inputs.slug,
@@ -168,7 +168,7 @@ export const EditCategory = () => {
             parentName: inputs.parentSearch || null,
         };
         (
-            params.id === 'nova' ? create(category) : update(params.id!, category)
+            params.id === 'new' ? create(category) : update(params.id!, category)
         ).then(() => {
             dispatch({ type: 'success' });
         });
@@ -179,11 +179,11 @@ export const EditCategory = () => {
             <header className='bg-black text-white border-bottom border-secondary position-sticky top-0'>
                 <div className='container-fluid px-4 px-lg-5'>
                     <div className='d-flex align-items-center justify-content-between' style={{ minHeight: 64 }}>
-                        <Link to='/backoffice/categorias' className='d-flex align-items-center text-white text-decoration-none'>
+                        <Link to='/backoffice/categories' className='d-flex align-items-center text-white text-decoration-none'>
                             <img src={icon} alt='Ícone do DiárioLX' style={{ width: 28, height: 28 }} className='me-3' />
                         </Link>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {params.id === 'nova' ? 'Criação' : 'Edição'} de categoria
+                            {params.id === 'new' ? 'Criação' : 'Edição'} de categoria
                         </div>
                         <div></div>
                     </div>
@@ -292,7 +292,7 @@ export const EditCategory = () => {
                             )}
                             <div className='d-flex justify-content-end gap-3 pt-4'>
                                 {state.tag !== 'submitting' &&
-                                    <Link to='/backoffice/categorias' className='btn btn-outline-dark px-4 rounded-3'>
+                                    <Link to='/backoffice/categories' className='btn btn-outline-dark px-4 rounded-3'>
                                         Cancelar
                                     </Link>
                                 }

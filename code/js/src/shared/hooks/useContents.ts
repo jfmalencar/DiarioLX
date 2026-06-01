@@ -53,6 +53,25 @@ export const useContents = () => {
         [contentsService]
     )
 
+    const fetchPublished = useCallback(
+        async (params: Query): Promise<undefined> => {
+            setLoading(true)
+            setError(null)
+            try {
+                const data = await contentsService.fetchPublished(params)
+                setContents(data.items)
+                setPagination(data.pagination)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch contents'
+                setError(message)
+                setContents([])
+            } finally {
+                setLoading(false)
+            }
+        },
+        [contentsService]
+    )
+
     const create = useCallback(
         async (content: ContentRequest): Promise<string | undefined> => {
             setLoading(true)
@@ -125,6 +144,7 @@ export const useContents = () => {
         contents,
         pagination,
         fetchAll,
+        fetchPublished,
         fetchOne,
         create,
         update,

@@ -21,6 +21,11 @@ interface UserRepository {
         now: Instant,
     )
 
+    fun updateAvatar(
+        userId: Int,
+        mediaId: Int,
+    ): Boolean
+
     fun delete(id: Int): Boolean
 
     fun deactivate(
@@ -40,6 +45,8 @@ interface UserRepository {
         query: String?,
         deactivated: Boolean,
     ): List<User>
+
+    fun completeAvatarUpload(userId: Int): Boolean
 
     fun createSession(
         newSession: Session,

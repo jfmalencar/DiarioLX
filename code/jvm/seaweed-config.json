@@ -2,7 +2,8 @@
   "identities": [
     {
       "name": "anonymous",
-      "actions": ["Read:images"]
+      "actions": ["Read"],
+      "resources": ["buckets/media/*"]
     }
   ]
 }

@@ -3,15 +3,16 @@ package pt.ipl.diariolx.repository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.Tag
-import pt.ipl.diariolx.domain.tag.UpdateTag
+import pt.ipl.diariolx.domain.tag.TagUpdate
 
 class JdbiTagRepository(
     private val handle: Handle,
 ) : TagRepository {
     override fun create(
         name: String,
-        slug: String,
+        slug: Slug,
         description: String?,
     ): Int =
         handle
@@ -22,12 +23,12 @@ class JdbiTagRepository(
                 returning id
                 """.trimIndent(),
             ).bind("name", name)
-            .bind("slug", slug)
+            .bind("slug", slug.value)
             .bind("description", description)
             .mapTo<Int>()
             .one()
 
-    override fun update(tag: UpdateTag) =
+    override fun update(tag: TagUpdate) =
         handle
             .createUpdate(
                 """
@@ -37,7 +38,7 @@ class JdbiTagRepository(
                 """.trimIndent(),
             ).bind("id", tag.id)
             .bind("name", tag.name)
-            .bind("slug", tag.slug)
+            .bind("slug", tag.slug.value)
             .bind("description", tag.description)
             .execute() > 0
 
@@ -84,10 +85,10 @@ class JdbiTagRepository(
             .singleOrNull()
             ?.tag
 
-    override fun getBySlug(slug: String): Tag? =
+    override fun getBySlug(slug: Slug): Tag? =
         handle
             .createQuery("select * from v_tags where slug = :slug")
-            .bind("slug", slug)
+            .bind("slug", slug.value)
             .mapTo<TagModel>()
             .singleOrNull()
             ?.tag
@@ -130,7 +131,7 @@ class JdbiTagRepository(
                     id = id,
                     name = name,
                     description = description,
-                    slug = slug,
+                    slug = Slug(slug),
                     quantity = quantity,
                     createdAt = Instant.fromEpochSeconds(createdAt),
                     updatedAt = Instant.fromEpochSeconds(updatedAt),

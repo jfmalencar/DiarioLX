@@ -2,12 +2,37 @@ services:
   diariolx-postgres-test:
     container_name: diariolx-postgres-test
     image: diariolx-postgres-test
-    environment:
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=changeit
-      - POSTGRES_DB=db
+    env_file:
+      - ../../.env.staging
     ports:
       - 5435:5432
+
+  diariolx-seaweed-master:
+    image: chrislusf/seaweedfs:latest
+    command: "master -ip=diariolx-seaweed-master -ip.bind=0.0.0.0"
+
+  diariolx-seaweed-volume:
+    image: chrislusf/seaweedfs:latest
+    command: 'volume -mserver="diariolx-seaweed-master:9333" -ip=diariolx-seaweed-volume -ip.bind=0.0.0.0 -dir=/data'
+    depends_on:
+      - diariolx-seaweed-master
+
+  diariolx-seaweed-filer:
+    image: chrislusf/seaweedfs:latest
+    command: 'filer -master="diariolx-seaweed-master:9333" -ip=diariolx-seaweed-filer -ip.bind=0.0.0.0'
+    depends_on:
+      - diariolx-seaweed-master
+      - diariolx-seaweed-volume
+
+  diariolx-seaweed-s3:
+    image: chrislusf/seaweedfs:latest
+    command: 's3 -filer="diariolx-seaweed-filer:8888" -ip.bind=0.0.0.0 -config=/etc/seaweedfs/seaweed-config.json'
+    depends_on:
+      - diariolx-seaweed-filer
+    volumes:
+      - ../../seaweed-config.json:/etc/seaweedfs/seaweed-config.json:ro
+    ports:
+      - "8335:8333"
 
   # diariolx-jvm-dynamic is used to illustrate scenarios with a dynamic number of servers
   # without static and well know names.
@@ -15,19 +40,25 @@ services:
   diariolx-jvm-dynamic:
     image: diariolx-jvm
     hostname: diariolx-jvm-dynamic
-    environment:
-      PORT: 8180
-      DB_URL: "jdbc:postgresql://diariolx-postgres-test:5432/db?user=dbuser&password=changeit"
+    env_file:
+      - ../../.env.staging
 
   # The service running the load-balancer
   nginx:
-    container_name: diariolx-nginx
     image: diariolx-nginx
     ports:
-      - 8180:8180
+      - "8180:8180"
+    depends_on:
+      - diariolx-seaweed-s3
+      - diariolx-jvm-dynamic
 
   # Just a machine running ubuntu, with 'dig' installed so that we can observe the docker compose environment.
   ubuntu:
     container_name: ubuntu
     image: diariolx-ubuntu
     tty: true
+
+volumes:
+  diariolx-seaweed-master-data:
+  diariolx-seaweed-volume-data:
+  diariolx-seaweed-filer-data:

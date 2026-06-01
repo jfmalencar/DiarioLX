@@ -5,8 +5,8 @@ import pt.ipl.diariolx.domain.media.MediaCredit
 
 data class MediaResponseDTO(
     val id: Int,
-    val url: String,
-    val thumbnailUrl: String? = null,
+    val path: String,
+    val thumbnailPath: String? = null,
     val altText: String,
     val credits: List<MediaCredit>,
     val mimeType: String,
@@ -18,8 +18,8 @@ data class MediaResponseDTO(
         fun from(media: Media): MediaResponseDTO =
             MediaResponseDTO(
                 id = media.id,
-                url = "http://localhost:8333/${media.bucket}/${media.objectKey}",
-                thumbnailUrl = "http://localhost:8333/${media.thumbnailBucket}/${media.thumbnailObjectKey}",
+                path = "${media.bucket}/${media.objectKey}",
+                thumbnailPath = "${media.thumbnailBucket}/${media.thumbnailObjectKey}",
                 altText = media.altText,
                 credits = media.credits,
                 mimeType = media.mimeType,

@@ -25,5 +25,5 @@ jobs:
         
       - name: Build and Run Checks with Gradle
         # O comando --info não é estritamente necessário para o check
-        run: ./gradlew check
+        run: cp .env.example .env && ./gradlew check
         working-directory: code/jvm/

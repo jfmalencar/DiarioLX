@@ -11,32 +11,32 @@ for business logic and data management. Figure~\ref{fig:architecture} illustrate
 high-level architecture of the system.
 
 \begin{figure}[H]
-  \begin{center}
-    \resizebox{\textwidth}{!}{\includegraphics{./figures/architecture_diagram.png}}
-  \end{center}
-  \caption{High-level system architecture.}
-  \label{fig:architecture}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/architecture_diagram.png}}
+      \end{center}
+      \caption{High-level system architecture.}
+      \label{fig:architecture}
 \end{figure}
 
 The system comprises the following main components:
 
 \begin{itemize}
-  \item \textbf{Frontend} (React + TypeScript): A single-page application (SPA)
-        running in the browser, responsible for rendering the public website and the
-        backoffice interface. Communicates with the backend via HTTP requests and
-        interacts directly with SeaweedFS for media uploads and reads.
+      \item \textbf{Frontend} (React + TypeScript): A single-page application (SPA)
+            running in the browser, responsible for rendering the public website and the
+            backoffice interface. Communicates with the backend via HTTP requests and
+            interacts directly with SeaweedFS for media uploads and reads.
 
-  \item \textbf{Web Service} (Spring Boot + Kotlin): The backend application
-        responsible for business logic, authentication, and data access. Controls media
-        metadata and mediates access to the data layer.
+      \item \textbf{Web Service} (Spring Boot + Kotlin): The backend application
+            responsible for business logic, authentication, and data access. Controls media
+            metadata and mediates access to the data layer.
 
-  \item \textbf{PostgreSQL}: Relational database storing structured data
-        (content, users, categories, tags, sessions).
+      \item \textbf{PostgreSQL}~\cite{postgresql_docs}: Relational database storing structured data
+            (content, users, categories, tags, sessions).
 
-  \item \textbf{SeaweedFS}: Self-hosted distributed file system used for multimedia
-        asset storage (images, audio, video), accessed via an S3-compatible API. Receives
-        direct uploads from the frontend and is managed by the backend via media control
-        operations.
+      \item \textbf{SeaweedFS}: Self-hosted distributed file system used for multimedia
+            asset storage (images, audio, video), accessed via an S3-compatible API. Receives
+            direct uploads from the frontend and is managed by the backend via media control
+            operations.
 \end{itemize}
 
 \section{Technology Stack} \label{sec:arch_stack}
@@ -44,51 +44,54 @@ The system comprises the following main components:
 Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
 
 \begin{table}[H]
-  \centering
-  \caption{Technology stack.}
-  \label{tab:tech_stack}
-  \begin{tabularx}{\textwidth}{llX}
-    \toprule
-    \textbf{Layer} & \textbf{Technology}  & \textbf{Rationale}                                                                      \\
-    \midrule
-    Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support                            \\
-    Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
-    Database       & PostgreSQL           & Relational model well-suited for editorial and structured data                          \\
-    Media Storage  & SeaweedFS            & Self-hosted S3-compatible distributed storage with low operational overhead             \\
-    Data Access    & JDBI                 & Lightweight SQL library providing direct query control without ORM overhead             \\
-    Authentication & JWT                  & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
-    \bottomrule
-  \end{tabularx}
+      \centering
+      \caption{Technology stack.}
+      \label{tab:tech_stack}
+      \begin{tabularx}{\textwidth}{llX}
+            \toprule
+            \textbf{Layer} & \textbf{Technology}  & \textbf{Rationale}                                                                      \\
+            \midrule
+            Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support                            \\
+            Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
+            Database       & PostgreSQL           & Relational model well-suited for editorial and structured data                          \\
+            Media Storage  & SeaweedFS            & Self-hosted S3-compatible distributed storage with low operational overhead             \\
+            Data Access    & JDBI                 & Lightweight SQL library providing direct query control without ORM overhead             \\
+            Authentication & JWT                  & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
+            \bottomrule
+      \end{tabularx}
 \end{table}
 
 \section{API Design} \label{sec:arch_api}
 
-Communication between the frontend and backend is handled through a RESTful HTTP API.
-All endpoints are prefixed with \texttt{/api/}. The API follows standard HTTP
-conventions for resource naming and status codes, and all error responses follow the
-Problem Details for HTTP APIs standard (\texttt{application/problem+json}), as defined
-in RFC~9457~\cite{rfc9457}.
+Communication between the frontend and backend is handled through a
+RESTful HTTP API, following the architectural principles described by
+Fielding~\cite{fielding2000rest}. All endpoints are prefixed with \texttt{/api/}.
+The API follows standard HTTP conventions for resource naming and status codes,
+and all error responses follow the Problem Details for HTTP APIs standard
+(\texttt{application/problem+json}), as defined in RFC~9457~\cite{rfc9457}.
 
-The API is organised around the following resource groups:
+The API is organized around the following resource groups:
 
 \begin{itemize}
-  \item \texttt{/api/auth} --- Authentication (signup, login, logout, token refresh)
-  \item \texttt{/api/users} --- User management (update, deactivate, delete, list)
-  \item \texttt{/api/contents} --- Content management (create, edit, submit, approve, reject, publish, archive, delete)
-  \item \texttt{/api/categories} --- Category management (create, edit, delete, list, archive and unarchive)
-  \item \texttt{/api/tags} --- Tag management (create, edit, delete, list, archive and unarchive)
-  \item \texttt{/api/medias} --- Media asset management (generate signed url, list, delete)
-  \item \texttt{/api/invites} --- Invitation code generation and validation
+      \item \texttt{/api/auth} --- Authentication (signup, login, logout, token refresh)
+      \item \texttt{/api/users} --- User management (update, deactivate, delete, list)
+      \item \texttt{/api/contents} --- Content management (create, edit, submit, approve, reject, publish, archive, delete)
+      \item \texttt{/api/categories} --- Category management (create, edit, delete, list, archive and unarchive)
+      \item \texttt{/api/tags} --- Tag management (create, edit, delete, list, archive and unarchive)
+      \item \texttt{/api/medias} --- Media asset management (generate signed url, list, delete)
+      \item \texttt{/api/invites} --- Invitation code generation and validation
 \end{itemize}
 
-\section{Authentication and Authorisation} \label{sec:arch_auth}
+\section{Authentication and Authorization} \label{sec:arch_auth}
 
 Authentication is implemented using JSON Web Tokens (JWT)~\cite{jwt_spec}. Upon
 successful login, the server generates two tokens: a short-lived access token
 (10 minutes), signed with HMAC-SHA256, and a long-lived refresh token (7 days),
-which is a cryptographically random opaque string. Both are issued as
+represented as a cryptographically random opaque string. Both are issued as
 \texttt{HttpOnly} cookies, preventing client-side JavaScript from accessing them
-and mitigating XSS attacks.
+and mitigating XSS attacks. While access tokens are validated statelessly,
+refresh tokens are persisted in the database to support session invalidation,
+logout, and propagation of user role changes.
 
 The access token encodes the user's identifier and role as JWT claims, enabling
 stateless validation on every request without a database lookup. Refresh tokens
@@ -96,35 +99,41 @@ are persisted in the \texttt{sessions} table and invalidated upon logout, provid
 explicit session termination. When the access token expires, the client transparently
 obtains a new one via \texttt{POST /api/auth/refresh}.
 
-Role-based access control (RBAC) is enforced at the HTTP layer, with each endpoint
+Role-based access control (RBAC)~\cite{sandhu1996rbac} is enforced at the HTTP layer, with each endpoint
 declaring the minimum required role. The implementation details are covered in
 Chapter~\ref{cap:backend}.
 
 \section{Editorial Workflow} \label{sec:arch_workflow}
 
-Figure~\ref{fig:workflow} illustrates the publication lifecycle of a content item
-within the system.
-
-% TODO: inserir figura do workflow
-\begin{figure}[H]
-  \begin{center}
-    \framebox[\textwidth]{\rule{0pt}{50mm} Editorial Workflow Diagram (Figure placeholder)}
-  \end{center}
-  \caption{Publication workflow state machine.}
-  \label{fig:workflow}
-\end{figure}
+The editorial workflow is intended to govern the lifecycle of a content item from creation to
+publication. It is designed to enforce editorial accountability by requiring explicit
+approval before any content becomes publicly accessible, while allowing editors and
+administrators to intervene at any stage.
 
 Content transitions between the following states:
 
 \begin{description}
-  \item[Draft] Initial state. The content is only visible to its author.
-  \item[Pending Approval] The author submits the content for review. It becomes
-        visible to Editors and Administrators.
-  \item[Published] An Editor or Administrator approves the content; it becomes
-        publicly accessible.
-  \item[Rejected] An Editor or Administrator rejects the content, optionally
-        providing revision comments. The author may edit and resubmit.
+      \item[Draft] Initial state. The content is created and edited by its author.
+            It is only visible to the author and to administrators.
+
+      \item[Pending] The author submits the content for editorial review. It becomes
+            visible to Editors and Administrators, who are responsible for evaluating
+            it before publication.
+
+      \item[Published] An Editor or Administrator approves the content. It becomes
+            publicly accessible on the site.
+
+      \item[Rejected] An Editor or Administrator rejects the content, optionally
+            providing a reason. The author may revise and resubmit, returning the
+            content to the \textit{Draft} state.
 \end{description}
 
-Editors and Administrators may also publish content directly, bypassing the
-approval step.
+Editors and Administrators may also publish content directly without going through
+the \textit{Pending} state, for cases where editorial review is not required.
+
+The state transitions described above are enforced at the API level --- the backend
+validates that each transition is permitted for the requesting user's role before
+persisting the state change.
+
+The workflow described above defines the intended behaviour;
+the complete implementation is currently in progress.

@@ -4,15 +4,11 @@ import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.NewContent
-import pt.ipl.diariolx.repository.Transaction
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.utils.ContentCreateResult
 import pt.ipl.diariolx.utils.ContentError
 import pt.ipl.diariolx.utils.ContentResult
 import pt.ipl.diariolx.utils.ContentUpdateResult
-import pt.ipl.diariolx.utils.SlugValidator
-import pt.ipl.diariolx.utils.TagError
-import pt.ipl.diariolx.utils.TagValidationResult
 import pt.ipl.diariolx.utils.failure
 import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
@@ -83,29 +79,4 @@ class ContentService(
                 return@run failure(ContentError.ContentNotFound)
             }
         }
-
-    private fun validateInputs(
-        name: String?,
-        slug: String?,
-    ): TagValidationResult {
-        if (name.isNullOrBlank()) {
-            return failure(TagError.EmptyName)
-        }
-        if (slug.isNullOrEmpty() || SlugValidator.isValid(slug).not()) {
-            return failure(TagError.InvalidSlug)
-        }
-        return success(Unit)
-    }
-
-    private fun validateData(
-        tx: Transaction,
-        id: Int?,
-        slug: String?,
-    ): TagValidationResult {
-        val existing = tx.tagRepository.getBySlug(slug!!)
-        if (existing != null && existing.id != id) {
-            return failure(TagError.SlugAlreadyExists)
-        }
-        return success(Unit)
-    }
 }

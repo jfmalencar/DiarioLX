@@ -1,18 +1,19 @@
 package pt.ipl.diariolx.repository
 
+import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.Tag
-import pt.ipl.diariolx.domain.tag.UpdateTag
+import pt.ipl.diariolx.domain.tag.TagUpdate
 
 interface TagRepository {
     fun create(
         name: String,
-        slug: String,
+        slug: Slug,
         description: String? = null,
     ): Int
 
     fun getById(id: Int): Tag?
 
-    fun getBySlug(slug: String): Tag?
+    fun getBySlug(slug: Slug): Tag?
 
     fun getAll(
         limit: Int,
@@ -23,7 +24,7 @@ interface TagRepository {
 
     fun delete(id: Int): Boolean
 
-    fun update(tag: UpdateTag): Boolean
+    fun update(tag: TagUpdate): Boolean
 
     fun archive(id: Int): Boolean
 

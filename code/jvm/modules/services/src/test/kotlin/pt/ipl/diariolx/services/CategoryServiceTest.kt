@@ -127,8 +127,8 @@ class CategoryServiceTest {
         val created = category.value
 
         assertEquals("Cultura", created.name)
-        assertEquals("cultura", created.slug)
-        assertEquals("#abcdef", created.color)
+        assertEquals("cultura", created.slug.value)
+        assertEquals("#abcdef", created.color.value)
     }
 
     @Test
@@ -237,9 +237,9 @@ class CategoryServiceTest {
 
         val updated = (service.get(id) as Success<Category>).value
         assertEquals("Cultura Updated", updated.name)
-        assertEquals("cultura-updated", updated.slug)
+        assertEquals("cultura-updated", updated.slug.value)
         assertEquals("nova desc", updated.description)
-        assertEquals("#000000", updated.color)
+        assertEquals("#000000", updated.color.value)
     }
 
     @Test
@@ -282,7 +282,7 @@ class CategoryServiceTest {
         assertEquals(CategoryError.SlugAlreadyExists, failure.value)
 
         val unchanged = (service.get(id2) as Success<Category>).value
-        assertEquals("sociedade", unchanged.slug)
+        assertEquals("sociedade", unchanged.slug.value)
         assertEquals(id1, (service.get(id1) as Success<Category>).value.id)
     }
 

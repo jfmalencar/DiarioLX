@@ -4,10 +4,8 @@ services:
     build:
       context: ./modules/repository-jdbi
       dockerfile: ./tests/Dockerfile-db-test
-    environment:
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=changeit
-      - POSTGRES_DB=db
+    env_file:
+      - .env
     ports:
       - 5435:5432
 

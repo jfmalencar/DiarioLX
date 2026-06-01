@@ -27,8 +27,8 @@ class UserRepositoryMem : UserRepository {
                 email = newUser.email,
                 passwordHash = newUser.passwordHash,
                 role = newUser.role,
-                fName = newUser.fName,
-                lName = newUser.lName,
+                firstName = newUser.firstName,
+                lastName = newUser.lastName,
                 createdAt = now,
                 updatedAt = now,
             )
@@ -47,10 +47,9 @@ class UserRepositoryMem : UserRepository {
                     username = updateUser.username,
                     email = updateUser.email,
                     passwordHash = updateUser.password,
-                    fName = updateUser.fName,
-                    lName = updateUser.lName,
+                    firstName = updateUser.fName,
+                    lastName = updateUser.lName,
                     bio = updateUser.bio,
-                    profilePictureURL = updateUser.profilePictureURL,
                     updatedAt = now,
                 )
             users.remove(user)
@@ -94,13 +93,20 @@ class UserRepositoryMem : UserRepository {
                     if (query == null) {
                         true
                     } else {
-                        it.fName.value.contains(query) ||
-                            it.lName.value.contains(query) ||
+                        it.firstName.value.contains(query) ||
+                            it.lastName.value.contains(query) ||
                             it.username.value.contains(query)
                     }
                 )
         }
     }
+
+    override fun updateAvatar(
+        userId: Int,
+        mediaId: Int,
+    ) = true
+
+    override fun completeAvatarUpload(userId: Int): Boolean = true
 
     /** Session Management **/
 

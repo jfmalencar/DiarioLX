@@ -12,6 +12,8 @@ import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.auth.UserTokens
 import pt.ipl.diariolx.domain.invites.Invite
+import pt.ipl.diariolx.domain.media.Buckets
+import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
@@ -23,6 +25,7 @@ import pt.ipl.diariolx.domain.users.value.Password
 import pt.ipl.diariolx.domain.users.value.PasswordHash
 import pt.ipl.diariolx.domain.users.value.Username
 import pt.ipl.diariolx.repository.TransactionManager
+import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.utils.AuthError
 import pt.ipl.diariolx.utils.LoginResult
 import pt.ipl.diariolx.utils.UserCreateResult
@@ -40,6 +43,8 @@ class UserService(
     private val config: UsersDomainConfig,
     private val passwordEncoder: PasswordEncoder,
     private val tokenGenerator: TokenGenerator,
+    private val fileStorage: FileStorage,
+    private val buckets: Buckets,
     private val jwtConfig: JwtConfig,
     private val clock: Clock.System,
     private val logger: Logger,
@@ -81,21 +86,24 @@ class UserService(
         firstName: String?,
         lastName: String?,
         bio: String?,
-        profilePictureURL: String?,
     ): UserUpdateResult {
         logger.info(
             "Updating user ${oldUser.id}: new username: $username, new email: $email, new password: $password, " +
-                "new firstName: $firstName, new lastName: $lastName, new bio: $bio, new profilePictureURL: $profilePictureURL",
+                "new firstName: $firstName, new lastName: $lastName, new bio: $bio",
         )
 
         val username = Username.parse(username) ?: return failure(UserError.InvalidUsername)
         val email = Email.parse(email) ?: return failure(UserError.InvalidEmail)
-        val password = Password.parse(password) ?: return failure(UserError.InvalidPassword)
-        val passwordHash = PasswordHash(passwordEncoder.encode(password.value))
+        val passwordHash =
+            if (password != null) {
+                val pw = Password.parse(password) ?: return failure(UserError.InvalidPassword)
+                PasswordHash(passwordEncoder.encode(pw.value))
+            } else {
+                oldUser.passwordHash
+            }
         val firstName = Name.parse(firstName) ?: return failure(UserError.InvalidName)
         val lastName = Name.parse(lastName) ?: return failure(UserError.InvalidName)
         val bio = bio ?: oldUser.bio
-        val profilePictureURL = profilePictureURL ?: oldUser.profilePictureURL
 
         return transactionManager.run { tx ->
             if (username != oldUser.username) {
@@ -111,7 +119,7 @@ class UserService(
                 }
             }
 
-            val updatedUser = UpdateUser(username, email, passwordHash, firstName, lastName, bio, profilePictureURL)
+            val updatedUser = UpdateUser(username, email, passwordHash, firstName, lastName, bio)
             tx.userRepository.update(updatedUser, oldUser.id, clock.now())
             success(Unit)
         }
@@ -256,6 +264,28 @@ class UserService(
         transactionManager.run {
             it.userRepository.getById(id)
         }
+
+    fun completeAvatarUpload(
+        id: Int,
+        user: User,
+    ): Boolean {
+        val media =
+            transactionManager.run {
+                it.mediaRepository.get(id)
+            } ?: return false
+
+        val info = fileStorage.getObjectInfo(media.bucket, media.objectKey) ?: return false
+        transactionManager.run {
+            it.mediaRepository.completeUpload(NewMedia(id, info.sizeBytes))
+            it.userRepository.updateAvatar(user.id, id)
+            user.avatar?.let { old -> it.mediaRepository.delete(old.id) }
+        }
+
+        user.avatar?.let {
+            fileStorage.delete(it.bucket, it.objectKey)
+        }
+        return true
+    }
 
     private fun createSession(
         user: User,

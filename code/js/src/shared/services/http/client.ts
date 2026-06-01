@@ -70,12 +70,14 @@ async function request<T>(
     }
 
     const raw = await response.text();
-    try {
-      return { success: true, data: JSON.parse(raw) };
-    } catch (e) {
-      console.error('Failed to parse JSON, returning raw response', { raw, error: e });
-      return { success: true, data: raw as unknown as T };
+    if (!raw) {
+      return { success: true, data: undefined as T };
     }
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+      return { success: true, data: JSON.parse(raw) as T };
+    }
+    return { success: true, data: raw as T };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
   }

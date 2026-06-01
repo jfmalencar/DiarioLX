@@ -18,6 +18,7 @@ object Uris {
         const val DELETE = "$ROOT/{id}"
         const val UPDATE = "$ROOT/me"
         const val DEACTIVATE = "$ROOT/{id}/deactivate"
+        const val AVATAR = "$ROOT/me/avatar"
 
         const val HOME = "$ROOT/me"
 
@@ -80,11 +81,17 @@ object Uris {
         const val GET_SIGNED_URL = "$PREFIX/medias/signed-url"
         const val GET_USER_SIGNED_URL = "$PREFIX/medias/user-signed-url"
         const val COMPLETE_UPLOAD = "$PREFIX/medias/{id}"
+        const val COMPLETE_AVATAR_UPLOAD = "$PREFIX/medias/me"
     }
 
     object Content {
         const val CREATE = "$PREFIX/contents"
         const val GET_BY_SLUG = "$PREFIX/contents/{slug}"
         const val GET_ALL = "$PREFIX/contents"
+    }
+
+    object Public {
+        const val HOMEPAGE = "$PREFIX/homepage"
+        const val NAVIGATION = "$PREFIX/navigation"
     }
 }

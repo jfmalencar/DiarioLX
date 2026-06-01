@@ -1,11 +1,21 @@
-%
-% Chapter 6 — Backend
-%
 \chapter{Backend} \label{cap:backend}
 
 \section{Organization} \label{sec:be_organization}
 
-The backend is organised into the following modules:
+The backend is a Spring Boot application written in Kotlin, structured as a set of
+loosely coupled Gradle modules. Each module has a well-defined responsibility and
+depends only on modules below it in the hierarchy, ensuring that business logic
+remains isolated from infrastructure concerns, following principles commonly associated
+with Clean Architecture~\cite{martin2017clean}. Figure~\ref{fig:backend_layers}
+illustrates the module organization and the dependency relationships between them.
+
+\begin{figure}[H]
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/backend_module_diagram.png}}
+      \end{center}
+      \caption{Backend module organization.}
+      \label{fig:backend_layers}
+\end{figure}
 
 \begin{description}
       \item[HTTP] Defines the REST controllers that expose the API endpoints, each
@@ -30,9 +40,13 @@ The backend is organised into the following modules:
       \item[Storage] Defines the storage interface for multimedia files. The concrete
             implementation, \texttt{Storage S3}, integrates with SeaweedFS~\cite{seaweedfs}
             for binary file storage using the AWS S3 SDK~\cite{aws_s3_sdk}, as SeaweedFS
-            exposes an S3-compatible API. SeaweedFS was chosen as it can be self-hosted at
-            no cost, which was a requirement given the project's academic and non-commercial
-            nature.
+            exposes an S3-compatible API. An S3-compatible storage layer was chosen to
+            avoid coupling the application to a specific storage provider while retaining a
+            widely adopted interface. SeaweedFS was selected as a self-hosted
+            implementation that satisfies the project's operational constraints and
+            supports direct browser uploads, allowing large media files to bypass the
+            application server during transfer. This approach reduces server load and keeps
+            the backend responsible only for media metadata and access control.
 
       \item[Host] The root composition module, responsible for assembling the full
             application. It contains the Spring Boot entry point, all bean definitions, and
@@ -44,14 +58,6 @@ The backend is organised into the following modules:
 The external systems used by the backend are \textbf{PostgreSQL}, accessed via the
 JDBI repository implementation, and \textbf{SeaweedFS}, accessed via the S3 storage
 implementation.
-
-\begin{figure}[H]
-      \begin{center}
-            \resizebox{\textwidth}{!}{\includegraphics{./figures/backend_module_diagram.png}}
-      \end{center}
-      \caption{Backend module organization.}
-      \label{fig:backend_layers}
-\end{figure}
 
 \section{Authentication} \label{sec:be_auth}
 
@@ -91,7 +97,7 @@ parameter, the user is fetched from the database by the identifier in the JWT cl
 and injected via \texttt{AuthenticatedUserArgumentResolver}. Endpoints that do not
 declare this parameter incur no database lookup during authentication.
 
-\section{Authorization} \label{sec:be_authorisation}
+\section{Authorization} \label{sec:be_authorization}
 
 Role-based access control (RBAC) is enforced at the HTTP layer via the
 \texttt{@RequireRole} annotation. Each endpoint declares the minimum role required
@@ -127,8 +133,6 @@ for the JVM. Unlike ORM-based approaches, JDBI provides direct control over SQL 
 mapping result sets to domain objects explicitly. This choice favours simplicity and
 transparency of database interactions over the abstraction overhead of a full ORM.
 
-\subsection{Transaction Management} \label{sec:be_transactions}
-
 Database operations are executed within transactions managed by the
 \texttt{TransactionManager} interface. Each call to \texttt{run\{\}} opens a JDBI
 transaction, instantiates all repositories sharing the same database handle, and
@@ -151,16 +155,17 @@ class JdbiTransactionManager(
 
 \section{API Documentation} \label{sec:be_apidocs}
 
-The API is documented using the OpenAPI standard, generated automatically by
-\texttt{springdoc-openapi}~\cite{springdoc} and served via Scalar~\cite{scalar},
-a modern API reference UI. Custom annotations (\texttt{@MayReturnNotFound},
-\texttt{@MayReturnBadRequest}, etc.) were defined to reduce boilerplate in
-controller declarations while maintaining accurate schema documentation. The
-documentation is available at \texttt{/docs} when the application is running.
+The API is documented using the OpenAPI standard~\cite{openapi}, generated
+automatically by \texttt{springdoc-openapi}~\cite{springdoc} and served via
+Scalar~\cite{scalar}, a modern API reference UI. Custom annotations
+(\texttt{@MayReturnNotFound}, \texttt{@MayReturnBadRequest}, etc.) were defined
+to reduce boilerplate in controller declarations while maintaining accurate schema
+documentation. The documentation is available at \texttt{/docs} when the
+application is running.
 
 \section{Tests} \label{sec:be_tests}
 
-Testing is organised by module, with dedicated test suites for the repository,
+Testing is organized by module, with dedicated test suites for the repository,
 service, and HTTP layers. At the current beta stage, the test suites are in an
 early phase and do not yet provide full coverage.
 

@@ -1,20 +1,22 @@
 package pt.ipl.diariolx.repository
 
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.UpdateCategory
+import pt.ipl.diariolx.domain.category.CategoryUpdate
+import pt.ipl.diariolx.domain.category.value.Color
+import pt.ipl.diariolx.domain.shared.value.Slug
 
 interface CategoryRepository {
     fun create(
         name: String,
-        slug: String,
+        slug: Slug,
         description: String? = null,
-        color: String,
+        color: Color,
         parentId: Int? = null,
     ): Int
 
     fun getById(id: Int): Category?
 
-    fun getBySlug(slug: String): Category?
+    fun getBySlug(slug: Slug): Category?
 
     fun getAll(
         limit: Int,
@@ -25,7 +27,7 @@ interface CategoryRepository {
 
     fun delete(id: Int): Boolean
 
-    fun update(category: UpdateCategory): Boolean
+    fun update(category: CategoryUpdate): Boolean
 
     fun archive(id: Int): Boolean
 

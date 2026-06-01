@@ -88,7 +88,7 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                                         </button>
                                         :
                                         <Link
-                                            to={`/backoffice/categorias/${row.id}`}
+                                            to={`/backoffice/categories/${row.id}`}
                                             state={{ category: row }}
                                             className='btn btn-dark rounded-2'
                                             data-testid={`manage-category-button-${index}`}
@@ -126,7 +126,7 @@ export const Categories = () => {
             alert: 'Os conteúdos associados deixarão de estar visíveis enquanto a categoria estiver arquivada.',
             confirmLabel: 'Arquivar',
             action: archive,
-            getRedirect: () => '/backoffice/categorias?tab=archived',
+            getRedirect: () => '/backoffice/categories?tab=archived',
         },
         unarchive: {
             title: 'Desaquivar categoria',
@@ -134,7 +134,7 @@ export const Categories = () => {
             alert: 'Os conteúdos associados voltarão a estar visíveis assim que a categoria for desarquivada.',
             confirmLabel: 'Desarquivar',
             action: unarchive,
-            getRedirect: () => '/backoffice/categorias?tab=all',
+            getRedirect: () => '/backoffice/categories?tab=all',
         },
         delete: {
             title: 'Elimiar categoria',
@@ -142,7 +142,7 @@ export const Categories = () => {
             alert: 'Esta ação é permanente e não pode ser revertida.',
             confirmLabel: 'Eliminar',
             action: remove,
-            getRedirect: () => `/backoffice/categorias?tab=archived&refresh=${Date.now()}`,
+            getRedirect: () => `/backoffice/categories?tab=archived&refresh=${Date.now()}`,
             variant: 'danger',
         },
     };

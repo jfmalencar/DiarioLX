@@ -5,9 +5,11 @@ import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.ContentSummary
+import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.domain.content.NewContent
 import pt.ipl.diariolx.domain.tag.TagSummary
 import pt.ipl.diariolx.repository.ContentRepository
+import java.time.LocalDate
 
 class ContentRepositoryMem : ContentRepository {
     private val categoryRepo = CategoryRepositoryMem()
@@ -50,8 +52,14 @@ class ContentRepositoryMem : ContentRepository {
     override fun getAll(
         limit: Int,
         offset: Int,
+        type: ContentType?,
         query: String?,
         archived: Boolean,
+        onlyPublished: Boolean,
+        tag: String?,
+        category: String?,
+        from: LocalDate?,
+        to: LocalDate?,
     ): List<ContentSummary> =
         contents
             .filter {
@@ -61,7 +69,8 @@ class ContentRepositoryMem : ContentRepository {
                     id = it.id,
                     title = it.title,
                     slug = it.slug,
-                    category = it.category.name,
+                    category = CategorySummary(it.category.id, it.category.name, it.category.slug),
+                    tag = TagSummary(1, "Tag Test", "tag"),
                     featuredImage = it.featuredImage?.url,
                     createdAt = it.createdAt.toString(),
                     authors = it.authors.map { a -> a.name },

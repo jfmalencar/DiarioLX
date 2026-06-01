@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { FloatingActionMenu } from '@/shared/components/FloatingActionMenu';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
 
+import { usePath } from '@/shared/hooks/usePath';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { ScrollToTop } from '@/shared/components/ScrollToTop';
@@ -21,6 +22,7 @@ export const BackofficeLayout = () => {
   const { user, hydrated } = useAuthentication();
   const [ready, setReady] = useState(false);
   const { t } = useI18n();
+  const { buildMediaUrl } = usePath()
 
   const matches = useMatches()
   const currentMatch = matches[matches.length - 1]
@@ -41,12 +43,12 @@ export const BackofficeLayout = () => {
   }
 
   const options = [
-    { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/publicacoes/nova?tipo=article') },
-    { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/publicacoes/nova?tipo=video') },
-    { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/publicacoes/nova?tipo=episode') },
-    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/podcasts/nova') },
-    { key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categorias/nova') },
-    { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/etiquetas/nova') },
+    { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/contents/new?type=ARTICLE') },
+    { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/contents/new?type=VIDEO') },
+    { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/contents/new?type=EPISODE') },
+    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/podcasts/new') },
+    { key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categories/new') },
+    { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/tags/new') },
   ]
   return (
     <div className='d-flex min-vh-100'>
@@ -65,16 +67,16 @@ export const BackofficeLayout = () => {
           <div className='mt-4'>
             <p className='text-uppercase text-secondary small mb-3'>{t('backoffice_layout.manage')}</p>
             <nav className='nav flex-column gap-2'>
-              <Link to='/backoffice/publicacoes' data-testid='publications-link' className='nav-link text-white p-0'>
+              <Link to='/backoffice/contents' data-testid='publications-link' className='nav-link text-white p-0'>
                 {t('backoffice_layout.publications')}
               </Link>
-              <Link to='/backoffice/utilizadores' data-testid='users-link' className='nav-link text-white p-0'>
+              <Link to='/backoffice/users' data-testid='users-link' className='nav-link text-white p-0'>
                 {t('backoffice_layout.users')}
               </Link>
-              <Link to='/backoffice/categorias' data-testid='categories-link' className='nav-link text-white p-0'>
+              <Link to='/backoffice/categories' data-testid='categories-link' className='nav-link text-white p-0'>
                 {t('backoffice_layout.categories')}
               </Link>
-              <Link to='/backoffice/etiquetas' data-testid='tags-link' className='nav-link text-white p-0'>
+              <Link to='/backoffice/tags' data-testid='tags-link' className='nav-link text-white p-0'>
                 {t('backoffice_layout.tags')}
               </Link>
             </nav>
@@ -83,10 +85,10 @@ export const BackofficeLayout = () => {
           <div>
             <p className='text-uppercase text-secondary small mb-3'>{t('backoffice_layout.personal')}</p>
             <nav className='nav flex-column gap-2'>
-              <Link to='/backoffice/perfil' className='nav-link text-white p-0'>
+              <Link to='/backoffice/profile' className='nav-link text-white p-0'>
                 {t('backoffice_layout.profile')}
               </Link>
-              <Link to='/backoffice/convites' className='nav-link text-white p-0'>
+              <Link to='/backoffice/invites' className='nav-link text-white p-0'>
                 {t('backoffice_layout.invites')}
               </Link>
             </nav>
@@ -114,7 +116,7 @@ export const BackofficeLayout = () => {
               style={{ width: '44px', height: '44px' }}
             >
               <img
-                src={user?.profilePictureURL ? user.profilePictureURL : 'https://placehold.co/213x213/black/white?text=' + (user?.firstName?.charAt(0).toUpperCase() || 'U')}
+                src={user?.profilePicturePath ? buildMediaUrl(user.profilePicturePath) : 'https://placehold.co/213x213/black/white?text=' + (user?.firstName?.charAt(0).toUpperCase() || 'U')}
                 alt={user?.firstName}
                 className='rounded-circle'
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}

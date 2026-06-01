@@ -1,10 +1,15 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { Upload, Eye, EyeOff } from 'lucide-react';
+
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
-import { useNavigate } from 'react-router-dom';
-import { Modal } from '@/shared/components/modals/Modal';
 import { useMedia } from '@/shared/hooks/useMedia';
-import { Upload, Eye, EyeOff } from 'lucide-react';
+import { usePath } from '@/shared/hooks/usePath';
+import { useUsers } from '@/shared/hooks/useUsers';
+
+import { Modal } from '@/shared/components/modals/Modal';
 
 const formatDate = (value: string | null | undefined) => {
     if (!value) {
@@ -21,11 +26,13 @@ const formatDate = (value: string | null | undefined) => {
 };
 
 export function MyProfile() {
-    const { user, hydrated, logout, updateProfile, refreshUser } = useAuthentication();
+    const { user, hydrated, logout, refreshUser } = useAuthentication();
+    const { updateProfile, completeAvatarUpload } = useUsers();
     const [showPassword, setShowPassword] = useState(false);
     const { t } = useI18n();
     const navigate = useNavigate();
-    const { getUserSignedUrl } = useMedia();
+    const { getSignedUrl } = useMedia();
+    const { buildMediaUrl } = usePath();
 
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editFormData, setEditFormData] = useState({
@@ -44,7 +51,7 @@ export function MyProfile() {
     const firstName = user?.firstName?.trim() || '';
     const lastName = user?.lastName?.trim() || '';
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || t('myprofile.profile_name');
-    const imageUrl = user?.profilePictureURL?.trim() || 'https://placehold.co/213x213/black/white?text=' + (displayName.charAt(0).toUpperCase() || 'U');
+    const imageUrl = user?.profilePicturePath ? buildMediaUrl(user.profilePicturePath) : 'https://placehold.co/213x213/black/white?text=' + (displayName.charAt(0).toUpperCase() || 'U');
     const email = user?.email || t('common.no_email');
     const createdAtDate = user?.createdAt ? formatDate(user.createdAt) : t('common.not_available');
     const role = user?.username?.toUpperCase() || t('common.not_available');
@@ -73,43 +80,24 @@ export function MyProfile() {
 
         setUploadLoading(true);
         try {
-            // Get signed URL
-            const signedUpload = await getUserSignedUrl({
-                file,
-            });
-
+            const signedUpload = await getSignedUrl({ uploadType: 'PROFILE_PICTURES', altText: "Profile image", file, credits: [] });
             if (!signedUpload) {
                 alert(t('common.upload_error') || 'Upload failed');
                 return;
             }
 
-            // Upload using signed URL
             const uploadResponse = await fetch(signedUpload.signedUrl, {
                 method: 'PUT',
                 body: file,
-                headers: {
-                    'Content-Type': file.type,
-                },
+                headers: { 'Content-Type': file.type },
             });
-
             if (!uploadResponse.ok) {
                 throw new Error('Upload failed');
             }
 
-            // Update profile with new image URL
-            const fileUrl = signedUpload.signedUrl.split('?')[0]; // Remove query params
-            await updateProfile(
-                user?.username,
-                user?.email,
-                undefined,
-                user?.firstName,
-                user?.lastName,
-                user?.bio || null,
-                fileUrl
-            );
+            await completeAvatarUpload(signedUpload.id);
+            await refreshUser();
 
-            // Force reload to update profile picture across the app
-            window.location.reload();
         } catch (err) {
             console.error(err);
             alert(t('common.upload_error') || 'Upload failed');
@@ -127,11 +115,9 @@ export function MyProfile() {
                 editFormData.password || undefined,
                 editFormData.firstName,
                 editFormData.lastName,
-                editFormData.bio || null,
-                user?.profilePictureURL || null
+                editFormData.bio || null
             );
 
-            // Refresh user data to ensure all changes are reflected
             await refreshUser();
 
             setEditModalOpen(false);
@@ -143,8 +129,8 @@ export function MyProfile() {
         }
     };
 
-    const handleLogoutClick = () => {
-        logout();
+    const handleLogoutClick = async () => {
+        await logout();
         navigate('/');
     };
 
@@ -196,7 +182,6 @@ export function MyProfile() {
                             </div>
                         )}
                     </div>
-
                     <input
                         type='file'
                         ref={fileInputRef}
@@ -205,17 +190,14 @@ export function MyProfile() {
                         onChange={handleImageChange}
                         disabled={uploadLoading}
                     />
-
                     <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', position: 'relative' }}>
                         <div style={{ color: 'black', fontSize: 41, fontFamily: 'Sora, sans-serif', fontWeight: 600, wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
                             {displayName}
                         </div>
                     </div>
-
                     <div style={{ color: 'black', fontSize: 22, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'lowercase', wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
                         {email}
                     </div>
-
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', position: 'relative', marginTop: '0px' }}>
                         <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{t('myprofile.created_at')} </span>
                         <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{createdAtDate}</span>
@@ -233,8 +215,6 @@ export function MyProfile() {
                             </div>
                         </div>
                     </div>
-
-                    {/* Action Buttons */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center', marginTop: '16px', position: 'relative' }}>
                         <button
                             onClick={handleEditClick}
@@ -264,7 +244,6 @@ export function MyProfile() {
                         >
                             {t('common.edit')}
                         </button>
-
                         <button
                             onClick={handleLogoutClick}
                             style={{
@@ -295,15 +274,12 @@ export function MyProfile() {
                         </button>
                     </div>
                 </div>
-
                 {!hydrated && (
                     <div className='position-absolute top-50 start-50 translate-middle text-uppercase small text-muted'>
                         {t('myprofile.loading')}
                     </div>
                 )}
             </div>
-
-            {/* Edit Modal */}
             <Modal
                 isOpen={editModalOpen}
                 title={t('common.edit_profile')}
@@ -325,7 +301,6 @@ export function MyProfile() {
                 ]}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {/* Username */}
                     <div className='mb-3'>
                         <label className='form-label'>{t('common.username')}</label>
                         <input
@@ -335,8 +310,6 @@ export function MyProfile() {
                             onChange={(e) => setEditFormData(prev => ({ ...prev, username: e.target.value }))}
                         />
                     </div>
-
-                    {/* Email */}
                     <div className='mb-3'>
                         <label className='form-label'>{t('common.email')}</label>
                         <input
@@ -346,8 +319,6 @@ export function MyProfile() {
                             onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
                         />
                     </div>
-
-                    {/* Password */}
                     <div className='mb-3'>
                         <label className='form-label'>{t('common.password')} ({t('common.optional')})</label>
                         <div className='input-group'>

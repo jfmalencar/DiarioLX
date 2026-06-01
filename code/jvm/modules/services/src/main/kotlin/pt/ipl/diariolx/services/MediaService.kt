@@ -2,18 +2,17 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
+import pt.ipl.diariolx.domain.media.Buckets
 import pt.ipl.diariolx.domain.media.Credit
 import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
-import pt.ipl.diariolx.domain.media.SignedUrlResponse
+import pt.ipl.diariolx.domain.media.SignedUrl
 import pt.ipl.diariolx.domain.media.StoredFile
 import pt.ipl.diariolx.domain.media.UploadType
-import pt.ipl.diariolx.domain.media.UserSignedUrlResponse
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.utils.MediaSignedUrlResult
-import pt.ipl.diariolx.utils.UserMediaSignedUrlResult
 import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
 import java.util.UUID
@@ -22,18 +21,20 @@ import java.util.UUID
 class MediaService(
     private val fileStorage: FileStorage,
     private val transactionManager: TransactionManager,
+    private val buckets: Buckets,
 ) {
     fun getSignedUrl(
         altText: String,
-        credits: List<Credit>,
+        credits: List<Credit> = listOf(),
         contentType: String,
         originalFileName: String,
+        uploadType: UploadType,
     ): MediaSignedUrlResult {
         val extension = originalFileName.substringAfterLast('.', "")
-        val objectName = buildObjectName(extension = extension)
+        val objectName = buildObjectName(uploadType = uploadType, extension = extension)
         val upload =
             NewUpload(
-                "images",
+                "media",
                 objectName,
                 altText,
                 credits,
@@ -45,17 +46,8 @@ class MediaService(
             transactionManager.run {
                 it.mediaRepository.create(upload)
             }
-        val signedUrl = fileStorage.getUploadSignedUrl(objectName, upload.contentType)
-        return success(SignedUrlResponse(id, signedUrl))
-    }
-
-    fun getUserSignedUrl(
-        contentType: String,
-        userId: Int,
-    ): UserMediaSignedUrlResult {
-        val objectName = buildObjectName(userId.toString(), UploadType.PROFILE_PICTURES)
-        val signedUrl = fileStorage.getUploadSignedUrl(objectName, contentType)
-        return success(UserSignedUrlResponse(signedUrl))
+        val signedUrl = fileStorage.getUploadSignedUrl(buckets.public, objectName, upload.contentType)
+        return success(SignedUrl(id, signedUrl))
     }
 
     fun completeUpload(id: Int): Boolean {
@@ -63,7 +55,7 @@ class MediaService(
             transactionManager.run {
                 return@run it.mediaRepository.get(id)
             } ?: return false
-        val info = fileStorage.getObjectInfo(media.objectKey) ?: return false
+        val info = fileStorage.getObjectInfo(media.bucket, media.objectKey) ?: return false
         transactionManager.run {
             it.mediaRepository.completeUpload(NewMedia(id, info.sizeBytes))
         }
@@ -88,10 +80,10 @@ class MediaService(
         contentType: String,
     ): StoredFile {
         val extension = originalFileName.substringAfterLast('.', "")
-        val objectName = buildObjectName(extension)
-
+        val objectName = buildObjectName(uploadType = UploadType.CONTENT_IMAGES, extension = extension)
         return fileStorage.upload(
             bytes = bytes,
+            bucket = buckets.public,
             objectName = objectName,
             contentType = contentType,
         )
@@ -99,7 +91,7 @@ class MediaService(
 
     private fun buildObjectName(
         id: String = UUID.randomUUID().toString(),
-        uploadType: UploadType = UploadType.CONTENT_GALLERY,
+        uploadType: UploadType = UploadType.CONTENT_IMAGES,
         extension: String? = null,
     ): String =
         if (extension.isNullOrBlank()) {

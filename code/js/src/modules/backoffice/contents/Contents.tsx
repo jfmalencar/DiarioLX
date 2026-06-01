@@ -9,6 +9,7 @@ import { TableSearch } from '@/shared/components/table/TableSearch';
 import { useContents } from '@/shared/hooks/useContents';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
+import { usePath } from '@/shared/hooks/usePath';
 
 type Props = {
     filter: { archived: boolean };
@@ -19,6 +20,7 @@ const ContentsTable = ({ filter }: Props) => {
     const { loading, contents, pagination, fetchAll } = useContents();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
+    const { buildMediaUrl } = usePath();
 
     useEffect(() => {
         const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { archived: filter.archived });
@@ -51,13 +53,9 @@ const ContentsTable = ({ filter }: Props) => {
                                         className='d-flex align-items-center justify-content-center border border-dark flex-shrink-0'
                                         style={{ width: 135, height: 80, overflow: 'hidden' }}
                                     >
-                                        {true || row.type === 'article' ?
-                                            <img src={`http://localhost:8333/${row.featuredImage}`}
-                                                alt={row.title}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            /> :
+                                        {row.type === 'VIDEO' ?
                                             <video
-                                                src={`http://localhost:8333/${row.featuredImage}#t=1`}
+                                                src={`${buildMediaUrl(row.featuredImage)}#t=1`}
                                                 poster={undefined}
                                                 muted
                                                 preload='metadata'
@@ -67,6 +65,11 @@ const ContentsTable = ({ filter }: Props) => {
                                                     objectFit: 'cover',
                                                     display: 'block',
                                                 }}
+                                            />
+                                            :
+                                            <img src={buildMediaUrl(row.featuredImage)}
+                                                alt={row.title}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         }
                                     </div>

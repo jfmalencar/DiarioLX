@@ -86,6 +86,12 @@ class JdbiMediaRepository(
             .bind("size_bytes", media.sizeBytes)
             .execute() > 0
 
+    override fun delete(id: Int): Boolean =
+        handle
+            .createUpdate("delete from medias where id = :id")
+            .bind("id", id)
+            .execute() > 0
+
     private fun insertCredits(
         mediaId: Int,
         credits: List<Credit>,

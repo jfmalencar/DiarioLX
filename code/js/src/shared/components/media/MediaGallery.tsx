@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import { useMedia, type Media } from '@/shared/hooks/useMedia';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { useUsers } from '@/shared/hooks/useUsers';
+import { usePath } from '@/shared/hooks/usePath';
 
 import { FieldSection } from '../inputs/FieldSection';
 import { UnderlineInput } from '../inputs/UnderlineInput';
@@ -39,6 +40,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
         uploadProgress,
     } = state;
 
+    const { buildMediaUrl } = usePath()
     const { fetchAll: fetchUsers, users } = useUsers();
     const { buildQuery } = useFilters();
     const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
@@ -94,6 +96,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
             dispatch({ type: 'set-upload-progress', value: 0 });
 
             const response = await getSignedUrl({
+                uploadType: 'CONTENT_IMAGES',
                 file: selectedFile,
                 altText,
                 credits: credits.map((credit) => ({
@@ -189,7 +192,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
         if (mediaType === 'image') {
             return (
                 <img
-                    src={item.thumbnailUrl || item.url}
+                    src={item.thumbnailPath ? buildMediaUrl(item.thumbnailPath) : buildMediaUrl(item.path)}
                     alt={item.altText || 'Media image'}
                     className='w-100'
                     style={{
@@ -204,8 +207,8 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
         if (mediaType === 'video') {
             return (
                 <video
-                    src={`${item.url}#t=1`}
-                    poster={item.thumbnailUrl ?? undefined}
+                    src={`${buildMediaUrl(item.path)}#t=1`}
+                    poster={item.thumbnailPath ? buildMediaUrl(item.thumbnailPath) : buildMediaUrl(item.path)}
                     muted
                     preload='metadata'
                     className='w-100'

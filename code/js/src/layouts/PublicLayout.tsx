@@ -5,12 +5,12 @@ import { Footer } from '@/modules/public/Footer';
 
 export function PublicLayout() {
   return (
-    <div className='bg-light' >
+    <>
       <Header />
-      <div style={{ paddingTop: 150 }}>
+      <div style={{ paddingTop: 130 }}>
         <Outlet />
       </div>
       <Footer />
-    </div>
+    </>
   );
 }

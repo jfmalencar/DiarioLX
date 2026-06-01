@@ -2,7 +2,9 @@ package pt.ipl.diariolx.repository
 
 import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.ContentSummary
+import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.domain.content.NewContent
+import java.time.LocalDate
 
 interface ContentRepository {
     fun create(content: NewContent): Int
@@ -14,8 +16,14 @@ interface ContentRepository {
     fun getAll(
         limit: Int,
         offset: Int,
+        type: ContentType? = null,
         query: String?,
-        archived: Boolean,
+        archived: Boolean = false,
+        onlyPublished: Boolean = false,
+        tag: String? = null,
+        category: String? = null,
+        from: LocalDate? = null,
+        to: LocalDate? = null,
     ): List<ContentSummary>
 
     fun delete(id: Int): Boolean

@@ -26,14 +26,8 @@ export const useMediaMockService = (): MediaService => {
       };
     },
 
-    async getUserSignedUrl() {
-      return {
-        signedUrl: '/api/media/user-profile'
-      };
-    },
-
     async completeUpload() {
       return;
-    }
+    },
   }), [])
 };

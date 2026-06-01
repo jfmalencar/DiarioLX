@@ -10,6 +10,7 @@ build
 node_modules/
 
 .env
+.env.staging
 
 code/jvm/data*
 
@@ -20,6 +21,8 @@ test-storageState.json
 test-results/
 
 bin/
+
+.DS_Store
 
 # LaTex
 

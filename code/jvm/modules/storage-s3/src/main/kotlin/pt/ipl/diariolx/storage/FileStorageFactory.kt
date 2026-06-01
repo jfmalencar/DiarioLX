@@ -10,11 +10,11 @@ import java.net.URI
 
 class FileStorageFactory {
     fun create(
-        endpoint: String?,
+        endpoint: String,
+        publicEndpoint: String,
         region: String,
         accessKey: String,
         secretKey: String,
-        bucket: String,
         pathStyleAccess: Boolean,
     ): FileStorage {
         val credentials =
@@ -42,9 +42,13 @@ class FileStorageFactory {
                 .credentialsProvider(credentials)
                 .serviceConfiguration(s3Configuration)
 
-        if (!endpoint.isNullOrBlank()) {
+        if (endpoint.isNotBlank()) {
             val uri = URI.create(endpoint)
             s3ClientBuilder.endpointOverride(uri)
+        }
+
+        if (publicEndpoint.isNotBlank()) {
+            val uri = URI.create(publicEndpoint)
             preSignerBuilder.endpointOverride(uri)
         }
 
@@ -54,8 +58,6 @@ class FileStorageFactory {
         return S3FileStorage(
             s3Client = client,
             s3PreSigner = preSigner,
-            bucket = bucket,
-            publicEndpoint = endpoint ?: "",
         )
     }
 }

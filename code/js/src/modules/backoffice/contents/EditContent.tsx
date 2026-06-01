@@ -17,11 +17,13 @@ import { useContents } from '@/shared/hooks/useContents';
 import { useTags } from '@/shared/hooks/useTags';
 import { useUsers } from '@/shared/hooks/useUsers';
 import { useI18n } from '@/shared/hooks/useI18n';
+import { usePath } from '@/shared/hooks/usePath';
 
 import type { ImageBlockProps } from './EditContent.types';
 import { editContentReducer, initialState } from './EditContent.reducer';
 
 import icon from '@/assets/icon.svg';
+import type { ContentType } from '@/shared/services/contents/contents.types';
 
 const useDebouncedSearch = (
     value: string,
@@ -66,11 +68,12 @@ export const EditContent = () => {
     const navigate = useNavigate();
     const params = useParams();
     const [searchParams] = useSearchParams();
+    const { buildMediaUrl } = usePath()
     const { t } = useI18n();
 
-    const type = searchParams.get('tipo') || 'article';
+    const type = (searchParams.get('type') || 'ARTICLE') as ContentType;
 
-    const { create, loading } = useContents();
+    const { create, loading, error } = useContents();
     const { fetchAll: fetchCategories, categories } = useCategories();
     const { fetchAll: fetchAuthors, users } = useUsers();
     const { fetchAll: fetchTags, tags } = useTags();
@@ -110,8 +113,8 @@ export const EditContent = () => {
     const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const result = await create({
-            id: 'nova',
+        await create({
+            id: 'new',
             type: type,
             title: content.title,
             slug: content.slug,
@@ -131,7 +134,7 @@ export const EditContent = () => {
             blocks: state.blocks,
         });
 
-        if (result) {
+        if (!error) {
             navigate('/p/' + content.slug);
         }
     };
@@ -146,7 +149,7 @@ export const EditContent = () => {
                     >
                         <div className='d-flex align-items-center' style={{ width: 320 }}>
                             <Link
-                                to='/backoffice/publicacoes'
+                                to='/backoffice/contents'
                                 className='d-flex align-items-center text-white text-decoration-none'
                             >
                                 <img
@@ -162,7 +165,7 @@ export const EditContent = () => {
                             />
                         </div>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {t(`posts.${params.id === 'nova' ? 'create' : 'edit'}.${type}`)}
+                            {t(`posts.${params.id === 'new' ? 'create' : 'edit'}.${type.toLowerCase()}`)}
                         </div>
                         <div
                             className='d-flex align-items-center gap-4'
@@ -230,9 +233,9 @@ export const EditContent = () => {
                     {content.featuredMedia ? (
                         <div className='mb-4 position-relative' style={{ width: 600 }}>
                             {content.featuredMedia.mimeType.startsWith('video') ? (
-                                <VideoBlock url={content.featuredMedia.url} />
+                                <VideoBlock url={buildMediaUrl(content.featuredMedia.path)} />
                             ) : (
-                                <ImageBlock url={content.featuredMedia.url} alt={content.featuredMedia.altText} />
+                                <ImageBlock url={buildMediaUrl(content.featuredMedia.path)} alt={content.featuredMedia.altText} />
                             )}
                             <button
                                 type='button'
@@ -262,11 +265,11 @@ export const EditContent = () => {
                                 })
                             }
                         >
-                            {type === 'article' || type === 'podcast' ?
+                            {type === 'ARTICLE' || type === 'PODCAST' ?
                                 <span className='fs-5'>Imagem em destaque</span>
-                                : type === 'video' ?
+                                : type === 'VIDEO' ?
                                     <span className='fs-5'>Vídeo</span>
-                                    : type === 'episode' ?
+                                    : type === 'EPISODE' ?
                                         <span className='fs-5'>Áudio do Episódio</span>
                                         : null
                             }
@@ -276,7 +279,7 @@ export const EditContent = () => {
                     {state.blocks.map((block) => (
                         <div key={block.id} className='position-relative'>
                             {block.type === 'image' ? (
-                                <ImageBlock url={block.media.url} alt={block.media.altText} />
+                                <ImageBlock url={buildMediaUrl(block.media.path)} alt={block.media.altText} />
                             ) : (
                                 <RichTextBlock
                                     value={block.content}
@@ -556,7 +559,7 @@ export const EditContent = () => {
                 </div>
             </main>
             <MediaGallery
-                mediaType={type === 'video' ? 'video' : type === 'episode' ? 'audio' : 'image'}
+                mediaType={type === 'VIDEO' ? 'video' : type === 'EPISODE' ? 'audio' : 'image'}
                 isOpen={state.galleryMode !== null}
                 onClose={() => dispatch({ type: 'close-gallery' })}
                 onSelect={(media) =>

@@ -1,11 +1,12 @@
 import { useContext } from 'react';
 import { createContext } from 'react';
 
-import type { Endpoints } from '../services/bootstrap/bootstrap.types';
+import type { Endpoints, Assets } from '../services/bootstrap/bootstrap.types';
 
-export type { Endpoints }
+export type { Endpoints, Assets }
 
 export type BootstrapState = {
+  assets: Assets;
   endpoints: Endpoints;
   loading: boolean;
 };

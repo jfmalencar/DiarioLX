@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiárioLX — Gantt Chart</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff;
+            padding: 2rem;
+        }
+
+        .gantt-wrap {
+            font-size: 12px;
+            color: #111;
+        }
+
+        .gantt-header {
+            display: flex;
+            margin-bottom: 4px;
+        }
+
+        .gantt-label-col {
+            width: 240px;
+            flex-shrink: 0;
+        }
+
+        .gantt-months {
+            flex: 1;
+            display: grid;
+        }
+
+        .month-label {
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            border-left: 0.5px solid #ddd;
+            padding: 2px 0;
+        }
+
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            min-height: 26px;
+            border-bottom: 0.5px solid #eee;
+        }
+
+        .gantt-row:last-child {
+            border-bottom: none;
+        }
+
+        .gantt-name {
+            width: 240px;
+            flex-shrink: 0;
+            padding-right: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gantt-name.group {
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .gantt-name.sub {
+            padding-left: 14px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .gantt-name.sub2 {
+            padding-left: 28px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .gantt-name.plain {
+            font-size: 12px;
+        }
+
+        .gantt-timeline {
+            flex: 1;
+            position: relative;
+            height: 26px;
+        }
+
+        .col-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 0.5px;
+            background: #eee;
+        }
+
+        .today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #E24B4A;
+            z-index: 10;
+        }
+
+        .bar {
+            position: absolute;
+            top: 5px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        .bar.done {
+            background: #1D9E75;
+        }
+
+        .bar.inprog {
+            background: #378ADD;
+        }
+
+        .bar.todo {
+            background: #B4B2A9;
+        }
+
+        .bar.optional {
+            background: #EF9F27;
+            opacity: 0.75;
+        }
+
+        .bar.section {
+            top: 10px;
+            height: 6px;
+            background: #5F5E5A;
+            opacity: 0.2;
+            border-radius: 2px;
+        }
+
+        .milestone {
+            position: absolute;
+            top: 6px;
+            width: 13px;
+            height: 13px;
+            background: #E24B4A;
+            transform: rotate(45deg);
+            border-radius: 2px;
+            z-index: 5;
+        }
+
+        .legend {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gantt-wrap">
+        <div class="legend">
+            <span class="legend-item"><span class="legend-dot" style="background:#1D9E75"></span>Done</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#378ADD"></span>In progress</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#B4B2A9"></span>Planned</span>
+            <span class="legend-item"><span class="legend-dot"
+                    style="background:#EF9F27;opacity:.75"></span>Optional</span>
+            <span class="legend-item"><span class="legend-dot"
+                    style="background:#E24B4A;transform:rotate(45deg);border-radius:2px"></span>Milestone</span>
+        </div>
+        <div id="gantt"></div>
+    </div>
+
+    <script>
+        const START = new Date('2026-02-01');
+        const END = new Date('2026-07-11');
+        const TOTAL_DAYS = (END - START) / 86400000;
+
+        const tasks = [
+            { name: 'Architecture & data model', cls: 'plain', status: 'done', s: '2026-02-01', e: '2026-03-01' },
+            { name: 'Project proposal', type: 'milestone', s: '2026-03-01' },
+
+            { name: 'Backend', cls: 'group', s: '2026-03-01', e: '2026-06-20' },
+            { name: 'Authentication', cls: 'sub', status: 'done', s: '2026-03-01', e: '2026-03-15' },
+            { name: 'Users management', cls: 'sub', status: 'done', s: '2026-03-08', e: '2026-03-24' },
+            { name: 'Categories management', cls: 'sub', status: 'done', s: '2026-03-08', e: '2026-03-24' },
+            { name: 'Invites management', cls: 'sub', status: 'done', s: '2026-03-25', e: '2026-04-05' },
+            { name: 'Tags management', cls: 'sub', status: 'done', s: '2026-03-25', e: '2026-04-05' },
+            { name: 'Media management', cls: 'sub', status: 'done', s: '2026-04-08', e: '2026-05-20' },
+            { name: 'Content management', cls: 'sub', status: 'inprog', s: '2026-04-01', e: '2026-06-14' },
+            { name: 'Create content', cls: 'sub2', status: 'done', s: '2026-04-01', e: '2026-05-01' },
+            { name: 'Edit & delete', cls: 'sub2', status: 'inprog', s: '2026-05-10', e: '2026-06-07' },
+            { name: 'Editorial workflow', cls: 'sub', status: 'inprog', s: '2026-05-10', e: '2026-06-20' },
+            { name: 'Direct publish', cls: 'sub2', status: 'done', s: '2026-04-20', e: '2026-05-01' },
+            { name: 'Review, approval & reject', cls: 'sub2', status: 'inprog', s: '2026-05-24', e: '2026-06-20' },
+
+            { name: 'Frontend', cls: 'group', s: '2026-04-12', e: '2026-07-08' },
+            { name: 'Backoffice', cls: 'sub', status: 'inprog', s: '2026-04-12', e: '2026-06-14' },
+            { name: 'Core pages', cls: 'sub2', status: 'done', s: '2026-04-12', e: '2026-05-24' },
+            { name: 'Workflow UI', cls: 'sub2', status: 'todo', s: '2026-05-30', e: '2026-06-14' },
+            { name: 'Public website', cls: 'sub', status: 'inprog', s: '2026-04-26', e: '2026-06-28' },
+            { name: 'Article page', cls: 'sub2', status: 'done', s: '2026-04-26', e: '2026-05-24' },
+            { name: 'Homepage', cls: 'sub2', status: 'inprog', s: '2026-05-24', e: '2026-06-14' },
+            { name: 'Remaining pages', cls: 'sub2', status: 'todo', s: '2026-06-14', e: '2026-06-28' },
+            { name: 'Full-text search', cls: 'sub', status: 'todo', s: '2026-06-28', e: '2026-07-05' },
+            { name: 'Responsive design', cls: 'sub', status: 'todo', s: '2026-06-14', e: '2026-07-04' },
+            { name: 'Optional features', cls: 'sub', status: 'optional', s: '2026-06-28', e: '2026-07-08' },
+
+            { name: 'Test coverage', cls: 'plain', status: 'inprog', s: '2026-02-01', e: '2026-07-05' },
+            { name: 'Deployment', cls: 'plain', status: 'todo', s: '2026-07-01', e: '2026-07-08' },
+            { name: 'Final report', cls: 'plain', status: 'inprog', s: '2026-02-01', e: '2026-07-11' },
+
+            { name: 'Beta delivery', type: 'milestone', s: '2026-05-30' },
+            { name: 'Final delivery', type: 'milestone', s: '2026-07-11' },
+        ];
+
+        const months = [];
+        let cur = new Date('2026-02-01');
+        while (cur <= new Date('2026-07-31')) {
+            months.push(new Date(cur));
+            cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+        }
+
+        function pct(dateStr) {
+            const d = new Date(dateStr);
+            return Math.max(0, Math.min(100, ((d - START) / 86400000 / TOTAL_DAYS) * 100));
+        }
+
+        const gantt = document.getElementById('gantt');
+
+        const header = document.createElement('div');
+        header.className = 'gantt-header';
+        const lbl = document.createElement('div');
+        lbl.className = 'gantt-label-col';
+        header.appendChild(lbl);
+
+        const mGrid = document.createElement('div');
+        mGrid.className = 'gantt-months';
+        mGrid.style.gridTemplateColumns = months.map(m => {
+            const days = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
+            return (days / TOTAL_DAYS * 100) + 'fr';
+        }).join(' ');
+        months.forEach(m => {
+            const ml = document.createElement('div');
+            ml.className = 'month-label';
+            ml.textContent = m.toLocaleString('en', { month: 'short' }) + ' ' + m.getFullYear();
+            mGrid.appendChild(ml);
+        });
+        header.appendChild(mGrid);
+        gantt.appendChild(header);
+
+        const monthStarts = months.map(m => ((m - START) / 86400000 / TOTAL_DAYS) * 100);
+
+        tasks.forEach(t => {
+            const row = document.createElement('div');
+            row.className = 'gantt-row';
+
+            const name = document.createElement('div');
+            name.className = 'gantt-name ' + (t.cls || 'plain');
+            name.textContent = t.name;
+            row.appendChild(name);
+
+            const tl = document.createElement('div');
+            tl.className = 'gantt-timeline';
+
+            monthStarts.forEach(p => {
+                if (p > 0 && p < 100) {
+                    const line = document.createElement('div');
+                    line.className = 'col-line';
+                    line.style.left = p + '%';
+                    tl.appendChild(line);
+                }
+            });
+
+            const todayPct = ((new Date() - START) / 86400000 / TOTAL_DAYS) * 100;
+            if (todayPct >= 0 && todayPct <= 100) {
+                const tday = document.createElement('div');
+                tday.className = 'today-line';
+                tday.style.left = todayPct + '%';
+                tl.appendChild(tday);
+            }
+
+            if (t.type === 'milestone') {
+                const ms = document.createElement('div');
+                ms.className = 'milestone';
+                ms.style.left = 'calc(' + pct(t.s) + '% - 6px)';
+                tl.appendChild(ms);
+            } else {
+                const bar = document.createElement('div');
+                bar.className = 'bar ' + (t.cls === 'group' ? 'section' : (t.status || 'todo'));
+                bar.style.left = pct(t.s) + '%';
+                bar.style.width = Math.max(0.5, pct(t.e) - pct(t.s)) + '%';
+                tl.appendChild(bar);
+            }
+
+            row.appendChild(tl);
+            gantt.appendChild(row);
+        });
+    </script>
+</body>
+
+</html>

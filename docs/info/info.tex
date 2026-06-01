@@ -1,0 +1,333 @@
+\documentclass[12pt,a4paper]{article}
+
+% Encoding & Language
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+% Layout
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm, headheight=15pt]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% Fonts
+
+
+% Graphics & Colors
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\definecolor{iselred}{RGB}{180,0,0}
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{lightgray}{RGB}{230,230,230}
+
+% Links
+\usepackage[hidelinks, colorlinks=true, linkcolor=iselred, urlcolor=iselred, citecolor=iselred]{hyperref}
+
+% Directory tree
+
+
+% Code listings
+\usepackage{listings}
+\lstset{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{lightgray},
+  xleftmargin=10pt,
+  xrightmargin=10pt,
+  showstringspaces=false,
+  tabsize=2,
+}
+
+% Tables
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+
+% Headers & Footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Diário LX}
+\fancyhead[R]{\small Organização do Projeto}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Section styling
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\color{iselred}}{}{0em}{\thesection\quad}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{\thesubsection\quad}
+\titleformat{\subsubsection}{\normalsize\itshape}{}{0em}{\thesubsubsection\quad}
+
+% Misc
+\usepackage{enumitem}
+\usepackage{parskip}
+\setlength{\parskip}{6pt}
+
+% --------------------------------------------------
+\begin{document}
+
+% ===== CAPA =====
+\begin{titlepage}
+  \centering
+  \vspace*{1cm}
+
+  {\Large Instituto Superior de Engenharia de Lisboa}\\[0.3cm]
+  {\large Licenciatura em Engenharia Informática e de Computadores}\\[0.2cm]
+  {\large Projeto e Seminário 2025/2026}
+
+  \vspace{2cm}
+  {\LARGE \textbf{Organização do Projeto}}\\[0.5cm]
+  {\Huge \textbf{\textcolor{iselred}{Diário LX}}}\\[0.3cm]
+  {\large Plataforma de Jornalismo Digital}
+
+  \vspace{2.5cm}
+  \begin{tabular}{rl}
+    \textbf{Estudantes:}   & Jessé Alencar, n.º 51745, \href{mailto:a51745@alunos.isel.pt}{a51745@alunos.isel.pt}   \\[0.2cm]
+                           & Julianne Lobato, n.º 51191, \href{mailto:a51191@alunos.isel.pt}{a51191@alunos.isel.pt} \\[0.5cm]
+    \textbf{Orientadores:} & Artur Ferreira, \href{mailto:artur.ferreira@isel.pt}{artur.ferreira@isel.pt} — ISEL    \\[0.2cm]
+                           & Filipe Freitas, \href{mailto:filipe.freitas@isel.pt}{filipe.freitas@isel.pt} — ISEL    \\[0.2cm]
+                           & Fátima Cardoso, \href{mailto:mlcardoso@escs.ipl.pt}{mlcardoso@escs.ipl.pt} — ESCS      \\
+  \end{tabular}
+
+  \vspace{2.5cm}
+  {\large Junho de 2026}
+
+  \vfill
+\end{titlepage}
+
+% ===== 1. REPOSITÓRIO =====
+\section{Repositório do Projeto}
+
+Toda a implementação e documentação do projeto
+\textbf{Diário LX} estão disponíveis publicamente no \textit{GitHub}:
+
+\begin{center}
+  \href{https://github.com/jfmalencar/DiarioLX}{\texttt{https://github.com/jfmalencar/DiarioLX}}
+\end{center}
+
+% ===== 2. ORGANIZAÇÃO =====
+\section{Organização do Projeto}
+
+O projeto está organizado num único repositório. O código fonte encontra-se na pasta \texttt{code/}, dividida em dois diretórios principais: o \textit{backend} (JVM/Kotlin) e o \textit{frontend} (React/TypeScript).
+\subsection{\textit{Backend} — \texttt{code/jvm/}}
+
+\begin{lstlisting}
+code/jvm/
+|-- modules/
+|   |-- domain/           % Entidades e regras de negocio
+|   |-- http/             % Controllers, DTOs e autenticacao
+|   |-- services/         % Logica de negocio e validacao
+|   |-- repository/       % Interfaces de acesso a dados
+|   |-- repository-jdbi/  % Implementacoes JDBI + SQL
+|   |-- storage/          % Interface de armazenamento
+|   |-- storage-s3/       % Implementacao S3 / SeaweedFS
+|   `-- host/             % Ponto de entrada e configuracao
+|-- build.gradle.kts
+|-- settings.gradle.kts
+|-- seaweed-config.json
+`-- docker-compose.yml
+\end{lstlisting}
+
+\subsection{\textit{Frontend} — \texttt{code/js/}}
+
+\begin{lstlisting}
+code/js/
+|-- src/
+|   |-- app/
+|   |   `-- providers/    % Bootstrap, autenticacao e i18n
+|   |-- assets/           % Logotipo, icones e traducoes
+|   |-- config/           % Variaveis de ambiente
+|   |-- layouts/          % Layouts partilhados
+|   |-- modules/
+|   |   |-- backoffice/   % Interface de gestao editorial
+|   |   `-- public/       % Interface publica do jornal
+|   |-- shared/
+|   |   |-- components/   % Componentes reutilizaveis
+|   |   |-- hooks/        % Hooks de acesso ao servicos
+|   |   |-- services/     % Interfaces e implementacoes
+|   |   |-- types/        % Tipos e interfaces partilhados
+|   |   `-- utils/        % Funcoes utilitarias
+|   `-- tests/            % Testes Playwright
+|-- index.html
+|-- index.tsx
+`-- package.json
+\end{lstlisting}
+
+\section{Implantação e Utilização}
+
+\subsection{Pré-requisitos}
+
+\begin{itemize}[leftmargin=1.5cm]
+  \item \textbf{Docker} e \textbf{Docker Compose} instalados.
+  \item \textbf{Java 17+} instalado (necessário para executar o \textit{Gradle Wrapper}).
+  \item Acesso à linha de comandos (terminal).
+\end{itemize}
+
+\subsection{Modos de Execução}
+
+O projecto suporta dois modos de execução distintos:
+
+\begin{description}
+  \item[Desenvolvimento local] O \textit{backend} é executado directamente pelo
+        \textit{IntelliJ IDEA} e o \textit{frontend} pelo servidor de desenvolvimento \textit{Vite}
+        (\texttt{npm run dev}). As variáveis de ambiente são carregadas
+        a partir do ficheiro \texttt{.env} na raiz de \texttt{code/jvm/}.
+        Apenas a base de dados e o \textit{SeaweedFS} são executados via \textit{Docker
+          Compose}:
+
+        \begin{lstlisting}[language=bash]
+cd code/jvm
+docker compose up -d
+\end{lstlisting}
+
+  \item[\textit{Staging}] Todos os serviços — \textit{backend}, \textit{frontend},
+        base de dados, \textit{SeaweedFS} e \textit{Nginx} — são executados em \textit{containers}
+        \textit{Docker}. As variáveis de ambiente são carregadas a partir do
+        ficheiro \texttt{.env.staging}. Este é o modo descrito nas
+        secções seguintes, usando as \textit{tasks} Gradle \texttt{buildImageAll}
+        e \texttt{allUp}.
+\end{description}
+\subsection{Configuração Inicial}
+
+Antes de executar qualquer comando, é necessário colocar dois ficheiros de configuração na pasta \texttt{code/jvm/}:
+
+\subsubsection{Ficheiro \texttt{.env.staging}}
+
+Alterar o ficheiro \texttt{code/jvm/.env.staging} com o seguinte conteúdo:
+
+\begin{lstlisting}
+PORT=8180
+
+S3_PUBLIC_ENDPOINT=http://localhost:${PORT}
+S3_ENDPOINT=http://diariolx-seaweed-s3:8333
+S3_REGION=us-east-1
+S3_ACCESS_KEY=DEV-ACCESS-KEY
+S3_SECRET_KEY=DEV-SECRET-KEY
+S3_BUCKET=media
+S3_PATH_STYLE_ACCESS=true
+
+SCALAR_PATH=/docs
+
+JWT_SECRET=QBqCNu2Dusr161yq7foRF2U6MLjKSG4oG8j7T7RNbk4=
+JWT_ACCESS_EXPIRATION_MS=600000
+JWT_REFRESH_EXPIRATION_MS=604800000
+
+POSTGRES_USER=dbuser
+POSTGRES_PASSWORD=changeit
+POSTGRES_DB=db
+POSTGRES_HOST=diariolx-postgres-test
+POSTGRES_PORT=5432
+
+DB_URL=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}\
+?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
+\end{lstlisting}
+
+\subsubsection{Ficheiro \texttt{seaweed-config.json}}
+
+Criar o ficheiro \texttt{code/jvm/seaweed-config.json} com o seguinte conteúdo:
+
+\begin{lstlisting}
+{
+  "identities": [
+    {
+      "name": "anonymous",
+      "actions": ["Read"],
+      "resources": ["buckets/media/*"]
+    },
+    {
+      "name": "dev-user",
+      "credentials": [
+        {
+          "accessKey": "DEV-ACCESS-KEY",
+          "secretKey": "DEV-SECRET-KEY"
+        }
+      ],
+      "actions": ["Read", "Write", "List", "Tagging", "Admin"],
+      "resources": ["buckets/media/*"]
+    }
+  ]
+}
+\end{lstlisting}
+
+Este ficheiro configura as permissões do \textit{SeaweedFS} — o sistema de armazenamento de ficheiros multimédia. O utilizador \texttt{anonymous} tem permissão de leitura pública, enquanto o \texttt{dev-user} tem acesso total para operações do \textit{backend}.
+
+\subsection{Construção e Arranque}
+
+Com os ficheiros de configuração em lugar, navegar para a pasta \texttt{code/jvm/} e executar os seguintes comandos pela ordem indicada.
+
+\subsubsection{Passo 1 — Construir as imagens \textit{Docker}}
+
+\begin{lstlisting}[language=bash]
+cd code/jvm
+./gradlew buildImageAll
+\end{lstlisting}
+
+Este comando compila o projecto e constrói todas as imagens \textit{Docker} necessárias (\textit{backend}, \textit{frontend} e infraestrutura).
+
+\subsubsection{Passo 2 — Iniciar todos os serviços}
+
+\begin{lstlisting}[language=bash]
+./gradlew allUp
+\end{lstlisting}
+
+Este comando inicia todos os serviços orquestrados via \textit{Docker Compose}. Após a conclusão, a aplicação estará disponível na porta \texttt{8180}.
+
+\subsection{Resumo dos \textit{Endpoints}}
+
+Após o arranque, todos os serviços são acessíveis através de uma única porta:
+
+\begin{center}
+  \begin{tabularx}{0.85\textwidth}{@{}lXl@{}}
+    \toprule
+    \textbf{\textit{Endpoint}} & \textbf{Descrição}                                 & \textbf{URL}                      \\
+    \midrule
+    \textit{Frontend}          & Interface web (site público e \textit{backoffice}) & \texttt{localhost:8180}           \\
+    API REST                   & \textit{Backend} Spring Boot                       & \texttt{localhost:8180/api}       \\
+    Documentação               & Scalar (especificação \textit{OpenAPI})            & \texttt{localhost:8180/docs}      \\
+    \textit{Media}             & Ficheiros multimédia (\textit{SeaweedFS})          & \texttt{localhost:8180/media/...} \\
+    \bottomrule
+  \end{tabularx}
+\end{center}
+
+\noindent\colorbox{codebg}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+    \small\textbf{Nota:} O \textit{Nginx} actua como \textit{reverse proxy}, encaminhando todos os
+    pedidos através da porta \texttt{8180}. Não é necessário expor portas individuais
+    de cada serviço.
+  }}
+
+\subsection{Convite Inicial de Administrador}
+
+Na primeira execução, é inserido automaticamente na base de dados um convite de administrador com o código:
+
+\begin{lstlisting}
+SUPER-ADMIN-INVITE
+\end{lstlisting}
+
+Aceder a \texttt{localhost:8180/backoffice/register} e
+usar este código para criar uma conta com o papel de \texttt{ADMIN}.
+
+% ===== 4. TECNOLOGIAS =====
+\section{Tecnologias Utilizadas}
+
+\begin{center}
+  \begin{tabularx}{0.85\textwidth}{@{}lX@{}}
+    \toprule
+    \textbf{Tecnologia}  & \textbf{Utilização}                                         \\
+    \midrule
+    Kotlin + Spring Boot & \textit{Backend} e API REST                                 \\
+    JDBI                 & Acesso à base de dados                                      \\
+    PostgreSQL           & Persistência de dados estruturados                          \\
+    SeaweedFS (S3)       & Armazenamento de ficheiros multimédia                       \\
+    React + TypeScript   & Interface \textit{web} (\textit{backoffice} e site público) \\
+    Vite                 & \textit{Bundler} e servidor de desenvolvimento              \\
+    Playwright           & Testes \textit{end-to-end} do \textit{frontend}             \\
+    Docker + Compose     & \textit{Containerização} e orquestração de serviços         \\
+    Nginx                & \textit{Reverse proxy} (implantação)                        \\
+    \bottomrule
+  \end{tabularx}
+\end{center}
+
+\end{document}

@@ -2,11 +2,13 @@ import type { Query } from '@/shared/types/Query';
 import type { Media } from '@/shared/services/media/media.types';
 import type { Pagination } from '@/shared/types/Pagination';
 
+export type ContentType = 'ARTICLE' | 'VIDEO' | 'EPISODE' | 'PODCAST';
+
 export type Content = {
     id: string;
     title: string;
     slug: string;
-    type: string;
+    type: ContentType;
     headline: string;
     featuredImage: Media | null;
     blocks: ContentBlock[];
@@ -34,7 +36,7 @@ export type Content = {
 export type ContentSummary = {
     id: string;
     title: string;
-    type: string;
+    type: ContentType;
     slug: string;
     featuredImage: string
     category: string
@@ -95,7 +97,7 @@ export type ContentRequest = {
     title: string;
     slug: string;
     headline: string;
-    type: string;
+    type: ContentType;
     featuredMediaId: string | null;
     blocks: ContentBlock[];
     tags: {
@@ -118,6 +120,8 @@ export type ContentResponse = Content
 
 export interface ContentsService {
     fetchAll(params: Query): Promise<ContentsResponse>;
+
+    fetchPublished(params: Query): Promise<ContentsResponse>;
 
     fetchOne(id: string): Promise<ContentResponse>;
 

@@ -2,8 +2,10 @@ package pt.ipl.diariolx.http
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import pt.ipl.diariolx.domain.media.MediaBaseUrl
 import pt.ipl.diariolx.http.dto.bootstrap.ApiEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.AppBootstrapDTO
+import pt.ipl.diariolx.http.dto.bootstrap.AssetsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.AuthEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.CategoryEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.ContentEndpointsDTO
@@ -14,11 +16,15 @@ import pt.ipl.diariolx.http.dto.bootstrap.TagEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.UserEndpointsDTO
 
 @RestController
-class BootstrapController {
+class BootstrapController(
+    private val mediaBaseUrl: MediaBaseUrl,
+) {
     @GetMapping(Uris.HOME)
     fun bootstrap(): AppBootstrapDTO =
         AppBootstrapDTO(
             version = "0.0.1",
+            assets =
+                AssetsDTO(mediaBaseUrl.imageBaseUrl),
             api =
                 ApiEndpointsDTO(
                     auth =
@@ -36,6 +42,7 @@ class BootstrapController {
                             create = LinkDTO(Uris.Users.CREATE, HttpMethod.POST),
                             update = LinkDTO(Uris.Users.UPDATE, HttpMethod.PUT),
                             delete = LinkDTO(Uris.Users.DELETE, HttpMethod.DELETE),
+                            avatar = LinkDTO(Uris.Users.AVATAR, HttpMethod.PATCH),
                         ),
                     tags =
                         TagEndpointsDTO(
@@ -61,7 +68,6 @@ class BootstrapController {
                         MediaEndpointsDTO(
                             list = LinkDTO(Uris.Media.GET_ALL, HttpMethod.GET),
                             signedUrl = LinkDTO(Uris.Media.GET_SIGNED_URL, HttpMethod.POST),
-                            userSignedUrl = LinkDTO(Uris.Media.GET_USER_SIGNED_URL, HttpMethod.POST),
                             completeUpload = LinkDTO(Uris.Media.COMPLETE_UPLOAD, HttpMethod.POST),
                         ),
                     invites =

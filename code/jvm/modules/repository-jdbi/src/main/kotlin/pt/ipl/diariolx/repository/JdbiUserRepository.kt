@@ -3,11 +3,10 @@ package pt.ipl.diariolx.repository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.mapper.RowMapper
-import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.auth.Session
+import pt.ipl.diariolx.domain.media.Avatar
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.internal.NewUser
@@ -16,8 +15,6 @@ import pt.ipl.diariolx.domain.users.value.Email
 import pt.ipl.diariolx.domain.users.value.Name
 import pt.ipl.diariolx.domain.users.value.PasswordHash
 import pt.ipl.diariolx.domain.users.value.Username
-import pt.ipl.diariolx.repository.mappers.InstantMapper
-import java.sql.ResultSet
 
 class JdbiUserRepository(
     private val handle: Handle,
@@ -37,8 +34,8 @@ class JdbiUserRepository(
             ).bind("username", newUser.username.value)
             .bind("email", newUser.email.value)
             .bind("password_hash", newUser.passwordHash.value)
-            .bind("first_name", newUser.fName.value)
-            .bind("last_name", newUser.lName.value)
+            .bind("first_name", newUser.firstName.value)
+            .bind("last_name", newUser.lastName.value)
             .bind("role", newUser.role.name)
             .bind("created_at", now.epochSeconds)
             .bind("updated_at", now.epochSeconds)
@@ -69,7 +66,6 @@ class JdbiUserRepository(
                 first_name = :first_name, 
                 last_name = :last_name, 
                 bio = :bio, 
-                profile_picture_url = :profile_picture_url, 
                 updated_at = :updated_at
             WHERE id = :userId
             """,
@@ -79,7 +75,6 @@ class JdbiUserRepository(
             .bind("first_name", updateUser.fName.value)
             .bind("last_name", updateUser.lName.value)
             .bind("bio", updateUser.bio)
-            .bind("profile_picture_url", updateUser.profilePictureURL)
             .bind("updated_at", now.epochSeconds)
             .bind("userId", userId)
             .execute()
@@ -112,7 +107,7 @@ class JdbiUserRepository(
     override fun getById(id: Int): User? =
         handle
             .createQuery(
-                "SELECT * FROM users WHERE id = :id",
+                "SELECT * FROM v_users WHERE id = :id",
             ).bind("id", id)
             .mapTo<UserDBModel>()
             .singleOrNull()
@@ -121,7 +116,7 @@ class JdbiUserRepository(
     override fun getByEmail(email: Email): User? =
         handle
             .createQuery(
-                "SELECT * FROM users WHERE email = :email",
+                "SELECT * FROM v_users WHERE email = :email",
             ).bind("email", email.value)
             .mapTo<UserDBModel>()
             .singleOrNull()
@@ -130,7 +125,7 @@ class JdbiUserRepository(
     override fun getByUsername(username: Username): User? =
         handle
             .createQuery(
-                "SELECT * FROM users WHERE username = :username",
+                "SELECT * FROM v_users WHERE username = :username",
             ).bind("username", username.value)
             .mapTo<UserDBModel>()
             .singleOrNull()
@@ -144,7 +139,7 @@ class JdbiUserRepository(
     ): List<User> {
         val sql =
             buildString {
-                append("select * from users WHERE 1 = 1".trimIndent())
+                append("select * from v_users WHERE 1 = 1".trimIndent())
                 when (deactivated) {
                     true -> append(" AND active_account = false")
                     false -> append(" AND active_account = true")
@@ -165,6 +160,34 @@ class JdbiUserRepository(
             .list()
             .map { it.toUserDomain() }
     }
+
+    override fun updateAvatar(
+        userId: Int,
+        mediaId: Int,
+    ) = handle
+        .createUpdate(
+            """
+            update users
+            set avatar_media_id = :media_id,
+            updated_at = EXTRACT(EPOCH FROM NOW())
+            where id = :id
+            """.trimIndent(),
+        ).bind("id", userId)
+        .bind("media_id", mediaId)
+        .execute() > 0
+
+    override fun completeAvatarUpload(userId: Int) =
+        handle
+            .createUpdate(
+                """
+                update users
+                set avatar_status = :status,
+                updated_at = EXTRACT(EPOCH FROM NOW())
+                where id = :id
+                """.trimIndent(),
+            ).bind("id", userId)
+            .bind("status", "ready")
+            .execute() > 0
 
     override fun createSession(
         newSession: Session,
@@ -243,9 +266,11 @@ class JdbiUserRepository(
         val firstName: String,
         val lastName: String,
         val bio: String,
+        val avatarMediaId: Int?,
+        val avatarBucket: String?,
+        val avatarObjectKey: String?,
         val createdAt: Instant,
         val updatedAt: Instant,
-        val profilePictureURL: String?,
         val activeAccount: Boolean = true,
     ) {
         fun toUserDomain(): User =
@@ -255,45 +280,21 @@ class JdbiUserRepository(
                 email = Email(email),
                 passwordHash = PasswordHash(passwordHash),
                 role = UserRole.valueOf(role),
-                fName = Name(firstName),
-                lName = Name(lastName),
+                firstName = Name(firstName),
+                lastName = Name(lastName),
                 bio = bio,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
-                profilePictureURL = profilePictureURL ?: "",
+                avatar =
+                    if (avatarMediaId != null &&
+                        avatarBucket != null &&
+                        avatarObjectKey != null
+                    ) {
+                        Avatar(avatarMediaId, avatarBucket, avatarObjectKey)
+                    } else {
+                        null
+                    },
                 active = activeAccount,
             )
-    }
-
-    private class UserAndSessionMapper : RowMapper<Pair<User, Session>> {
-        override fun map(
-            rs: ResultSet,
-            ctx: StatementContext,
-        ): Pair<User, Session> {
-            val instantMapper = InstantMapper()
-            val user =
-                User(
-                    id = rs.getInt("id"),
-                    username = Username(rs.getString("username")),
-                    email = Email(rs.getString("email")),
-                    passwordHash = PasswordHash(rs.getString("password_hash")),
-                    role = UserRole.valueOf(rs.getString("role")),
-                    fName = Name(rs.getString("first_name")),
-                    lName = Name(rs.getString("last_name")),
-                    bio = rs.getString("bio"),
-                    createdAt = instantMapper.map(rs, rs.findColumn("created_at"), ctx),
-                    updatedAt = instantMapper.map(rs, rs.findColumn("updated_at"), ctx),
-                    profilePictureURL = rs.getString("profile_picture_url") ?: "",
-                    active = rs.getBoolean("active_account"),
-                )
-            val session =
-                Session(
-                    refreshToken = RefreshToken(rs.getString("session_token")),
-                    userId = rs.getInt("user_id"),
-                    createdAt = instantMapper.map(rs, rs.findColumn("created_at"), ctx),
-                    expiresAt = instantMapper.map(rs, rs.findColumn("expires_at"), ctx),
-                )
-            return Pair(user, session)
-        }
     }
 }

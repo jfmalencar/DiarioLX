@@ -14,8 +14,6 @@ sealed class UserError(
 
     object InvalidName : UserError("Invalid name format")
 
-    object InvalidProfilePictureURL : UserError("Invalid profile picture URL")
-
     object InvalidInvite : UserError("Invalid invite code")
 
     object InvalidBio : UserError("Invalid bio format")

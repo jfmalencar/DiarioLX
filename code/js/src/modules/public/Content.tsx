@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useContents, type Content } from '@/shared/hooks/useContents';
+import { usePath } from '@/shared/hooks/usePath';
 
 const formatNewsDate = (dateString: string): string => {
     const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ']
@@ -11,10 +12,11 @@ const formatNewsDate = (dateString: string): string => {
 
 export function Content() {
     const { slug } = useParams();
+    const { buildMediaUrl } = usePath()
     const { fetchOne } = useContents();
     const [content, setContent] = useState<Content | undefined>();
 
-    const heroImageUrl = `http://localhost:8333/${content?.featuredImage?.url}`;
+    const heroImageUrl = content?.featuredImage?.path ? buildMediaUrl(content?.featuredImage?.path) : '';
     const category = content?.category.name?.toUpperCase();
     const title = content?.title
     const headline = content?.headline
@@ -37,7 +39,7 @@ export function Content() {
             <div className='container px-4 px-md-5'>
                 <section className='row g-4 g-lg-5 align-items-start mb-5'>
                     <div className='col-12 col-lg-6'>
-                        {content?.type == 'video' ? (
+                        {content?.type == 'VIDEO' ? (
                             <video
                                 src={`${heroImageUrl}#t=1`}
                                 controls
@@ -154,7 +156,7 @@ export function Content() {
                                         <>
                                             <img
                                                 key={index}
-                                                src={`http://localhost:8333/${block.media.url}`}
+                                                src={buildMediaUrl(block.media.path)}
                                                 alt={block.media.altText}
                                                 className='img-fluid mb-4'
                                             />

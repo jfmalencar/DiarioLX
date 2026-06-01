@@ -98,14 +98,6 @@ class Problem(
                 HttpStatus.BAD_REQUEST,
             )
 
-        val invalidProfilePictureURL =
-            Problem(
-                URI("$URL/invalid-profile-picture-url"),
-                "Invalid profile picture URL",
-                "The provided profile picture URL is invalid",
-                HttpStatus.BAD_REQUEST,
-            )
-
         val invalidBio =
             Problem(
                 URI("$URL/invalid-bio"),

@@ -9,8 +9,12 @@ import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.ContentSummary
+import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.domain.content.NewContent
 import pt.ipl.diariolx.domain.media.MediaSummary
+import pt.ipl.diariolx.domain.shared.value.Slug
+import pt.ipl.diariolx.domain.tag.TagSummary
+import java.time.LocalDate
 
 class JdbiContentRepository(
     private val handle: Handle,
@@ -54,14 +58,43 @@ class JdbiContentRepository(
     override fun getAll(
         limit: Int,
         offset: Int,
+        type: ContentType?,
         query: String?,
         archived: Boolean,
+        onlyPublished: Boolean,
+        tag: String?,
+        category: String?,
+        from: LocalDate?,
+        to: LocalDate?,
     ): List<ContentSummary> {
         val sql =
             buildString {
                 append("select * from v_contents_summary WHERE 1 = 1".trimIndent())
                 if (query != null) {
                     append(" AND (title ILIKE :query OR slug ILIKE :query)")
+                }
+                if (type != null) {
+                    append(" AND type = :type")
+                }
+                if (archived) {
+                    append(" AND archived_at IS NOT NULL")
+                } else {
+                    append(" AND archived_at IS NULL")
+                }
+                if (tag != null) {
+                    append(" AND tag_slug = :tag")
+                }
+                if (category != null) {
+                    append(" AND category_slug = :category")
+                }
+                if (onlyPublished) {
+                    append(" AND published_at IS NOT NULL AND published_at <= EXTRACT(EPOCH FROM NOW())")
+                }
+                if (from != null) {
+                    append(" AND published_at >= :from")
+                }
+                if (to != null) {
+                    append(" AND published_at <= :to")
                 }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
@@ -71,6 +104,11 @@ class JdbiContentRepository(
             .bind("limit", limit)
             .bind("offset", offset)
             .bind("query", "%$query%")
+            .bind("type", type)
+            .bind("category", category)
+            .bind("tag", tag)
+            .bind("from", from?.toEpochDay())
+            .bind("to", to?.toEpochDay())
             .mapTo<ContentSummaryModel>()
             .list()
             .map { it.content }
@@ -199,7 +237,7 @@ class JdbiContentRepository(
                         CategorySummary(
                             id = categoryId,
                             name = categoryName,
-                            slug = categorySlug,
+                            slug = Slug(categorySlug),
                         ),
                     featuredImage = featuredImage?.let { parseJson<MediaSummary>(it) },
                     tags = parseJson(tags),
@@ -216,7 +254,12 @@ class JdbiContentRepository(
         val id: Int,
         val title: String,
         val slug: String,
+        val categoryId: Int,
+        val categorySlug: String,
         val categoryName: String,
+        val tagId: Int,
+        val tagName: String,
+        val tagSlug: String,
         val featuredImage: String?,
         val authors: String,
         val createdAt: Long,
@@ -227,7 +270,8 @@ class JdbiContentRepository(
                     id = id,
                     title = title,
                     slug = slug,
-                    category = categoryName,
+                    category = CategorySummary(categoryId, categoryName, Slug(categorySlug)),
+                    tag = TagSummary(tagId, tagName, tagSlug),
                     featuredImage = featuredImage,
                     authors = authors.split(", "),
                     createdAt = Instant.fromEpochSeconds(createdAt).toString(),

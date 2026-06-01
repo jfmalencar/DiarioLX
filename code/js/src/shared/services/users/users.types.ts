@@ -17,7 +17,7 @@ export type User = {
     firstName: string;
     lastName: string;
     bio: string | null;
-    profilePictureURL: string | null;
+    profilePicturePath: string | null;
     createdAt: string;
     updatedAt: string;
     isActive: boolean;
@@ -35,7 +35,8 @@ export interface UsersService {
         password?: string,
         firstName?: string,
         lastName?: string,
-        bio?: string | null,
-        profilePictureURL?: string | null
+        bio?: string | null
     ): Promise<UserApiResponse | undefined>;
+
+    completeAvatarUpload: (id: string) => Promise<void>;
 }

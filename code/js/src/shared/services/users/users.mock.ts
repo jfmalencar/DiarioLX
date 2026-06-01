@@ -20,7 +20,7 @@ const fakeUsers: User[] = [
     firstName: 'John',
     lastName: 'Doe',
     bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    profilePictureURL: 'https://randomuser.me/api/portraits/men/1.jpg',
+    profilePicturePath: 'https://randomuser.me/api/portraits/men/1.jpg',
     role: 'ADMIN',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -51,6 +51,10 @@ export const useUsersMockService = (): UsersService => {
 
     async updateProfile() {
       return undefined;
+    },
+
+    async completeAvatarUpload() {
+      return;
     }
   }), []);
 }

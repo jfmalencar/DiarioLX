@@ -2,7 +2,9 @@ package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
 import pt.ipl.diariolx.domain.category.Category
-import pt.ipl.diariolx.domain.category.UpdateCategory
+import pt.ipl.diariolx.domain.category.CategoryUpdate
+import pt.ipl.diariolx.domain.category.value.Color
+import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.repository.CategoryRepository
 
 class CategoryRepositoryMem : CategoryRepository {
@@ -11,9 +13,9 @@ class CategoryRepositoryMem : CategoryRepository {
 
     override fun create(
         name: String,
-        slug: String,
+        slug: Slug,
         description: String?,
-        color: String,
+        color: Color,
         parentId: Int?,
     ): Int {
         val id = ++currentId
@@ -32,7 +34,7 @@ class CategoryRepositoryMem : CategoryRepository {
         return id
     }
 
-    override fun update(category: UpdateCategory): Boolean {
+    override fun update(category: CategoryUpdate): Boolean {
         val categoryToUpdate = categories.find { it.id == category.id }
         if (categoryToUpdate != null) {
             val categoryUpdated =
@@ -71,7 +73,7 @@ class CategoryRepositoryMem : CategoryRepository {
 
     override fun getById(id: Int): Category? = categories.find { it.id == id }
 
-    override fun getBySlug(slug: String): Category? = categories.find { it.slug == slug }
+    override fun getBySlug(slug: Slug): Category? = categories.find { it.slug == slug }
 
     override fun archive(id: Int): Boolean {
         val categoryToArchive = categories.find { it.id == id }

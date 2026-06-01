@@ -19,12 +19,12 @@
 \usepackage{booktabs}
 \usepackage{float}
 
-\usepackage[Algoritmo]{algorithm}
+\usepackage[Algorithm]{algorithm}
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 
-\renewcommand{\algorithmicrequire}{\textbf{Dados: }}
-\renewcommand{\algorithmicensure}{\textbf{Resultado: }}
+\renewcommand{\algorithmicrequire}{\textbf{Input: }}
+\renewcommand{\algorithmicensure}{\textbf{Output: }}
 
 % Definições das dimensões das páginas
 \setlength{\textheight}{24.00cm}
@@ -42,7 +42,7 @@
       \hspace{-20mm}\resizebox{75mm}{!}{\includegraphics{./figures/logoISELnew2.png}}\\
    \end{minipage}\\[20mm]
 
-   {\bf DiárioLX — Plataforma Digital de Jornalismo Académico}
+   {\bf DiárioLX --- Digital Journalism Platform}
 }
 
 \author{
@@ -53,13 +53,13 @@
 
 \date{
 \begin{tabular}{ll}
-  {Orientadores:} & Artur Ferreira \\
-                  & Filipe Freitas\\
-                  & Fátima Cardoso (ESCS)\\
+  {Supervisors:} & Artur Ferreira \\
+                 & Filipe Freitas\\
+                 & Fátima Cardoso (ESCS)\\
 \end{tabular}\\[10mm]
-Relatório do projeto realizado no âmbito de Projecto e Seminário\\
-Licenciatura em Engenharia Informática e de Computadores\\[20mm]
-Junho de 2026}
+Beta report submitted in partial fulfilment of the requirements for\\
+BSc in Computer Science and Computer Engineering\\[20mm]
+June 2026}
 
 \begin{document}
 \pagenumbering{roman}
@@ -68,11 +68,11 @@ Junho de 2026}
 
 \baselineskip 18pt
 
-% Contracapa
+% Back cover
 \newpage
 \thispagestyle{empty}
 
-% Página de assinaturas
+% Signature page
 \cleardoublepage
 \setcounter{page}{1}
 
@@ -80,7 +80,7 @@ Junho de 2026}
 
   \textsc{\LARGE Instituto Superior de Engenharia de Lisboa}\\[50mm]
 
-  {\large \bf DiárioLX — Plataforma Digital de Jornalismo Académico}\\[20mm]
+  {\large \bf DiárioLX --- Digital Journalism Platform}\\[20mm]
 
   \begin{tabular}{rl}
     51745 & Jessé Alencar      \\[10mm]
@@ -91,20 +91,20 @@ Junho de 2026}
   \end{tabular}\\[10mm]
 
   \begin{tabular}{rl}
-    Orientadores: & Artur Ferreira        \\[10mm]
-                  & \rule{75mm}{0.5pt}    \\[5mm]
+    Supervisors: & Artur Ferreira        \\[10mm]
+                 & \rule{75mm}{0.5pt}    \\[5mm]
 
-                  & Filipe Freitas        \\[10mm]
-                  & \rule{75mm}{0.5pt}    \\[5mm]
+                 & Filipe Freitas        \\[10mm]
+                 & \rule{75mm}{0.5pt}    \\[5mm]
 
-                  & Fátima Cardoso (ESCS) \\[10mm]
-                  & \rule{75mm}{0.5pt}    \\
+                 & Fátima Cardoso (ESCS) \\[10mm]
+                 & \rule{75mm}{0.5pt}    \\
   \end{tabular}\\[10mm]
 
-  Relatório do projeto realizado no âmbito de Projecto e Seminário\\
-  Licenciatura em Engenharia Informática e de Computadores\\[20mm]
+  Beta report submitted in partial fulfilment of the requirements for\\
+  BSc in Computer Science and Computer Engineering\\[20mm]
 
-  Junho de 2026\\
+  June 2026\\
 
 \end{center}
 
@@ -128,13 +128,14 @@ armazenados num serviço compatível com S3 auto-hospedado (SeaweedFS). A comuni
 entre componentes é realizada através de uma API REST, com respostas de erro a seguir
 o standard Problem Details for HTTP APIs (RFC 9457).
 
-A plataforma suporta um fluxo editorial no qual o conteúdo progride por estados
-definidos --- rascunho, pendente de aprovação, publicado e rejeitado --- aplicado
-por um modelo de permissões baseado em três níveis de utilizador: Colaborador,
-Editor e Administrador. A autenticação é implementada através de JSON
-Web Tokens (JWT), com tokens de acesso de curta duração e tokens de actualização de
-longa duração armazenados em cookies \texttt{HttpOnly}, garantindo validação stateless
-e mitigação de ataques XSS.
+A plataforma foi projetada para suportar um fluxo editorial em que o conteúdo progride
+por estados definidos — rascunho, pendente de aprovação, publicado e rejeitado —
+suportado por um modelo de permissões baseado em três níveis de utilizador:
+Colaborador, Editor e Administrador. Na versão beta, o fluxo editorial encontra-se
+em desenvolvimento activo. A autenticação é implementada através de JSON
+Web Tokens (JWT), com tokens de acesso de curta duração e tokens de atualização
+de longa duração armazenados em cookies \texttt{HttpOnly}, permitindo a validação
+stateless dos pedidos e a mitigação de ataques XSS.
 
 Este relatório descreve a versão beta do sistema, cobrindo as decisões de
 arquitectura, modelo de dados, implementação do backend e frontend, e os testes
@@ -164,12 +165,13 @@ S3-compatible service (SeaweedFS). Communication between components is performed
 through a RESTful API, with error responses following the Problem Details for HTTP
 APIs standard (RFC 9457).
 
-The platform supports an editorial workflow in which content progresses through
-defined states --- draft, pending approval, published, and rejected --- enforced by
-a role-based permission model with three user levels: Contributor, Editor,
-and Administrator. Authentication is implemented using JSON Web Tokens (JWT),
-with short-lived access tokens and long-lived refresh tokens stored as \texttt{HttpOnly}
-cookies, ensuring stateless validation and mitigation of XSS attacks.
+The platform is designed around an editorial workflow in which content progresses
+through defined states — draft, pending approval, published, and rejected — governed
+by a role-based permission model with three user levels: Contributor, Editor, and
+Administrator. In the beta version, the editorial workflow is under active development.
+Authentication is implemented using JSON Web Tokens (JWT), with
+short-lived access tokens and long-lived refresh tokens stored as \texttt{HttpOnly}
+cookies, enabling stateless request validation while mitigating XSS attacks.
 
 This report describes the beta version of the system, covering the architectural
 decisions, data model, backend and frontend implementation, and the testing carried
@@ -180,7 +182,7 @@ solution tailored to the editorial workflows and technical requirements of Diár
 \textbf{Keywords:} Digital Journalism; Content Management Systems; Web Development;
 REST API; React; Spring Boot; Editorial Workflow.
 
-% IA
+% AI Usage
 \cleardoublepage
 \chapter*{Usage of Generative AI Tools}
 
@@ -190,52 +192,52 @@ AI tools were also used to generate preliminary code examples, assist in the cre
 
 All final architectural, implementation, and validation decisions were made by the project authors.
 
-% Índice
+% Table of contents
 \cleardoublepage
 \tableofcontents
 \cleardoublepage
 
-% Figuras e tabelas
+% Figures and tables
 \listoffigures
 \cleardoublepage
 
 \listoftables
 \cleardoublepage
 
-% Numeração normal
+% Arabic numbering
 \setcounter{page}{1}
 \pagenumbering{arabic}
 
 % =========================
-% CAPÍTULOS
+% CHAPTERS
 % =========================
 
-% Capítulo 1 — Introdução
+% Chapter 1 — Introduction
 \include{chapters/cap1_introduction}
 
-% Capítulo 2 — Problema e Contexto
+% Chapter 2 — Background
 \include{chapters/cap2_background}
 
-% Capítulo 3 — Requisitos do Sistema
+% Chapter 3 — System Requirements
 \include{chapters/cap3_requirements}
 
-% Capítulo 4 — Arquitetura
+% Chapter 4 — Architecture
 \include{chapters/cap4_architecture}
 
-% Capítulo 5 — Modelo de Dados
+% Chapter 5 — Data Model
 \include{chapters/cap5_datamodel}
 
-% Capítulo 6 — Backend
+% Chapter 6 — Backend
 \include{chapters/cap6_backend}
 
-% Capítulo 7 — Frontend
+% Chapter 7 — Frontend
 \include{chapters/cap7_frontend}
 
-% Capítulo 8 — Conclusão
-\include{chapters/cap8_conclusion}
+% Chapter 8 — Current State and Future Work
+\include{chapters/cap8_currentstate}
 
 % =========================
-% REFERÊNCIAS
+% REFERENCES
 % =========================
 
 \bibliographystyle{unsrt}
@@ -243,9 +245,11 @@ All final architectural, implementation, and validation decisions were made by t
 \addcontentsline{toc}{chapter}{References}
 
 % =========================
-% APÊNDICES
+% APPENDICES
 % =========================
 
 \appendix
+
+\include{appendices/apendice_db_model}
 
 \end{document}

@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.domain.users
 
 import kotlinx.datetime.Instant
+import pt.ipl.diariolx.domain.media.Avatar
 import pt.ipl.diariolx.domain.users.value.Email
 import pt.ipl.diariolx.domain.users.value.Name
 import pt.ipl.diariolx.domain.users.value.PasswordHash
@@ -12,11 +13,11 @@ data class User(
     val email: Email,
     val passwordHash: PasswordHash,
     val role: UserRole,
-    val fName: Name,
-    val lName: Name,
+    val firstName: Name,
+    val lastName: Name,
     val bio: String = "",
+    val avatar: Avatar? = null,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val profilePictureURL: String = "",
     val active: Boolean = true,
 )

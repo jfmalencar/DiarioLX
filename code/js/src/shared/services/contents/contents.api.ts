@@ -18,6 +18,14 @@ export const useContentsApiService = (): ContentsService => {
       return result.data;
     },
 
+    async fetchPublished(params) {
+      const result = await get<ContentsResponse>(`${endpoints.contents.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      if (!result.success) {
+        throw new Error('Failed to fetch contents');
+      }
+      return result.data;
+    },
+
     async fetchOne(slug) {
       const result = await get<ContentResponse>(endpoints.contents.get.href.replace('{slug}', slug));
       if (!result.success) {

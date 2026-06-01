@@ -91,12 +91,12 @@ export const EditTag = () => {
         if (location.state?.tag) {
             const tag = location.state.tag;
             dispatch({ type: 'init', tag });
-        } else if (params.id && params.id !== 'nova') {
+        } else if (params.id && params.id !== 'new') {
             fetchOne(params.id).then((tag) => {
                 if (tag) {
                     dispatch({ type: 'init', tag });
                 } else {
-                    navigate('/backoffice/etiquetas/nova', { replace: true });
+                    navigate('/backoffice/tags/new', { replace: true });
                 }
             });
         }
@@ -104,7 +104,7 @@ export const EditTag = () => {
 
     const inputs = state.tag === 'submitting' || state.tag === 'editing' ? state.inputs : null;
     if (!inputs) {
-        return <Navigate to='/backoffice/etiquetas' />;
+        return <Navigate to='/backoffice/tags' />;
     }
 
     const handleChange = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -124,13 +124,13 @@ export const EditTag = () => {
         dispatch({ type: 'submit' });
 
         const tag: TagFormValues = {
-            id: params.id === 'nova' ? '' : params.id!,
+            id: params.id === 'new' ? '' : params.id!,
             name: inputs.name,
             description: inputs.description,
             slug: inputs.slug,
         };
         (
-            params.id === 'nova' ? create(tag) : update(params.id!, tag)
+            params.id === 'new' ? create(tag) : update(params.id!, tag)
         ).then(() => {
             dispatch({ type: 'success' });
         });
@@ -141,11 +141,11 @@ export const EditTag = () => {
             <header className='bg-black text-white border-bottom border-secondary position-sticky top-0'>
                 <div className='container-fluid px-4 px-lg-5'>
                     <div className='d-flex align-items-center justify-content-between' style={{ minHeight: 64 }}>
-                        <Link to='/backoffice/etiquetas' className='d-flex align-items-center text-white text-decoration-none'>
+                        <Link to='/backoffice/tags' className='d-flex align-items-center text-white text-decoration-none'>
                             <img src={icon} alt='Ícone do DiárioLX' style={{ width: 28, height: 28 }} className='me-3' />
                         </Link>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {params.id === 'nova' ? 'Criação' : 'Edição'} de etiqueta
+                            {params.id === 'new' ? 'Criação' : 'Edição'} de etiqueta
                         </div>
                         <div></div>
                     </div>
@@ -198,7 +198,7 @@ export const EditTag = () => {
                             )}
                             <div className='d-flex justify-content-end gap-3 pt-4'>
                                 {state.tag !== 'submitting' &&
-                                    <Link to='/backoffice/etiquetas' className='btn btn-outline-dark px-4 rounded-3'>
+                                    <Link to='/backoffice/tags' className='btn btn-outline-dark px-4 rounded-3'>
                                         Cancelar
                                     </Link>
                                 }

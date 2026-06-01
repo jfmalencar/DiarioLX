@@ -20,10 +20,10 @@ data class CategoryResponseDTO(
             CategoryResponseDTO(
                 id = category.id,
                 name = category.name,
-                slug = category.slug,
+                slug = category.slug.value,
                 description = category.description,
                 quantity = category.quantity,
-                color = category.color,
+                color = category.color.value,
                 parentId = category.parentId,
                 parentName = category.parentName,
                 createdAt = category.createdAt.toString(),

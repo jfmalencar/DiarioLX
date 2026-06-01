@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import pt.ipl.diariolx.domain.media.Credit
-import pt.ipl.diariolx.domain.users.AuthenticatedUser
+import pt.ipl.diariolx.domain.users.UserRole
+import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.media.MediaResponseDTO
 import pt.ipl.diariolx.http.dto.media.SignedUrlRequestDTO
 import pt.ipl.diariolx.http.dto.media.UploadCompleteResponseDTO
-import pt.ipl.diariolx.http.dto.media.UserSignedUrlRequestDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
 import pt.ipl.diariolx.services.MediaService
@@ -25,6 +25,7 @@ import pt.ipl.diariolx.utils.Success
 class MediaController(
     private val mediaService: MediaService,
 ) {
+    @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Media.GET_ALL)
     fun getAllFiles(
         @RequestParam page: Int = 1,
@@ -45,6 +46,7 @@ class MediaController(
         )
     }
 
+    @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Media.UPLOAD)
     fun upload(
         @RequestParam("file") file: MultipartFile,
@@ -64,16 +66,18 @@ class MediaController(
         )
     }
 
+    @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Media.GET_SIGNED_URL)
     fun getSignedUrl(
         @RequestBody body: SignedUrlRequestDTO,
     ): ResponseEntity<*> {
         val response =
             mediaService.getSignedUrl(
-                body.altText,
-                body.credits.map { Credit(it.userId, it.role) },
-                body.contentType,
-                body.originalFileName,
+                altText = body.altText,
+                credits = body.credits.map { Credit(it.userId, it.role) },
+                contentType = body.contentType,
+                originalFileName = body.originalFileName,
+                uploadType = body.uploadType,
             )
         if (response is Success) {
             return ResponseEntity.ok(response.value)
@@ -81,22 +85,7 @@ class MediaController(
         return ResponseEntity.badRequest().build<Unit>()
     }
 
-    @PostMapping(Uris.Media.GET_USER_SIGNED_URL)
-    fun getUserSignedUrl(
-        authenticatedUser: AuthenticatedUser,
-        @RequestBody body: UserSignedUrlRequestDTO,
-    ): ResponseEntity<*> {
-        val response =
-            mediaService.getUserSignedUrl(
-                body.contentType,
-                authenticatedUser.user.id,
-            )
-        if (response is Success) {
-            return ResponseEntity.ok(response.value)
-        }
-        return ResponseEntity.badRequest().build<Unit>()
-    }
-
+    @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Media.COMPLETE_UPLOAD)
     fun completeUpload(
         @PathVariable id: Int,

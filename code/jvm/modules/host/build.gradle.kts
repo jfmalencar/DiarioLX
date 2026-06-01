@@ -5,8 +5,7 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-group = "pt.ipl.diariolx"
-version = "1.0-SNAPSHOT"
+version = "0.0.1"
 
 dependencies {
     // Module dependencies
@@ -19,7 +18,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    runtimeOnly("org.springdoc:springdoc-openapi-starter-webmvc-scalar:2.8.17")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-scalar:2.8.17")
 
     // for JDBI and Postgres
     implementation("org.jdbi:jdbi3-core:3.37.1")
@@ -35,13 +34,23 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation(kotlin("test"))
+
+    // DotEnv
+    implementation("me.paulschwarz:spring-dotenv:4.0.0")
 }
 
 tasks.test {
     useJUnitPlatform()
-    if (System.getenv("DB_URL") == null) {
-        environment("DB_URL", "jdbc:postgresql://localhost:5435/db?user=dbuser&password=changeit")
-    }
+
+    val envFile = rootProject.file(".env")
+    envFile
+        .readLines()
+        .filter { it.isNotBlank() && !it.trim().startsWith("#") }
+        .forEach {
+            val (key, value) = it.split("=", limit = 2)
+            environment(key.trim(), value.trim())
+        }
+
     dependsOn(":repository-jdbi:dbTestsWait")
     finalizedBy(":repository-jdbi:dbTestsDown")
 }
@@ -81,7 +90,8 @@ tasks.register<Exec>("buildImageJvm") {
 }
 
 tasks.register<Exec>("buildImageNginx") {
-    commandLine(dockerCmd, "build", "-t", dockerImageTagNginx, "-f", "tests/Dockerfile-nginx", ".")
+    workingDir = file("../../../")
+    commandLine(dockerCmd, "build", "-t", dockerImageTagNginx, "-f", "Dockerfile-nginx", ".")
 }
 
 tasks.register<Exec>("buildImagePostgresTest") {

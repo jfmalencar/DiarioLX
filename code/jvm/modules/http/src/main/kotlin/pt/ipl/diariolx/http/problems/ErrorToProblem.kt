@@ -28,7 +28,6 @@ fun UserError.toProblem(): Problem =
         is UserError.InvalidEmail -> Problem.invalidEmail
         is UserError.InvalidPassword -> Problem.invalidPassword
         is UserError.InvalidName -> Problem.invalidName
-        is UserError.InvalidProfilePictureURL -> Problem.invalidProfilePictureURL
         is UserError.InvalidBio -> Problem.invalidBio
         is UserError.Unauthorized -> Problem.unauthorized
         is UserError.UserNotFound -> Problem.userNotFound
