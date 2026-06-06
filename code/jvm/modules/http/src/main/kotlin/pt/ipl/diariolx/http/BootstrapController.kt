@@ -72,8 +72,17 @@ class BootstrapController {
                     contents =
                         ContentEndpointsDTO(
                             list = LinkDTO(Uris.Content.GET_ALL, HttpMethod.GET),
-                            get = LinkDTO(Uris.Content.GET_BY_SLUG, HttpMethod.GET),
-                            create = LinkDTO(Uris.Content.CREATE, HttpMethod.POST),
+                            getBySlug = LinkDTO(Uris.Content.CONTENT_BY_SLUG, HttpMethod.GET),
+                            getById = LinkDTO(Uris.Content.CONTENT_BY_SLUG, HttpMethod.GET),
+                            internalList = LinkDTO(Uris.Content.INTERNAL_GET_ALL, HttpMethod.GET),
+                            internalGetBySlug = LinkDTO(Uris.Content.INTERNAL_CONTENT_BY_SLUG, HttpMethod.GET),
+                            internalGetById = LinkDTO(Uris.Content.INTERNAL_CONTENT_BY_ID, HttpMethod.GET),
+                            create = LinkDTO(Uris.Content.MAIN, HttpMethod.POST),
+                            update = LinkDTO(Uris.Content.MAIN, HttpMethod.PUT),
+                            delete = LinkDTO(Uris.Content.INTERNAL_CONTENT_BY_ID, HttpMethod.DELETE),
+                            publish = LinkDTO(Uris.Content.PUBLISH, HttpMethod.POST),
+                            reject = LinkDTO(Uris.Content.REJECT, HttpMethod.POST),
+                            archive = LinkDTO(Uris.Content.ARCHIVE, HttpMethod.POST),
                         ),
                 ),
         )

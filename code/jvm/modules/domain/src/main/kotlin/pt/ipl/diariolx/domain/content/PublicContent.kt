@@ -7,19 +7,18 @@ import pt.ipl.diariolx.domain.content.value.ContentBlock
 import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.tag.TagSummary
 
-data class Content(
+data class PublicContent(
     val id: Int,
     val type: ContentType,
     val title: String,
     val headline: String,
-    val featuredImage: MediaSummary?,
-    val slug: String? = null,
-    val category: CategorySummary? = null,
+    val featuredImage: MediaSummary,
+    val slug: String,
+    val category: CategorySummary,
     val publishedAt: Instant? = null,
     val archivedAt: Instant? = null,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val state: ContentState,
     val tags: List<TagSummary>,
     val authors: List<Author>,
     val blocks: List<ContentBlock>,

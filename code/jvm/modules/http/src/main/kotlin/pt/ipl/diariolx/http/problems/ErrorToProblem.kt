@@ -8,7 +8,7 @@ import pt.ipl.diariolx.utils.UserError
 
 fun TagError.toProblem() =
     when (this) {
-        is TagError.EmptyName -> Problem.emptyName
+        is TagError.EmptyName -> Problem.emptyField
         is TagError.InvalidSlug -> Problem.invalidSlug
         is TagError.TagNotFound -> Problem.notFound
         is TagError.SlugAlreadyExists -> Problem.invalidSlug
@@ -18,8 +18,13 @@ fun ContentError.toProblem() =
     when (this) {
         is ContentError.InvalidSlug -> Problem.invalidSlug
         is ContentError.ContentNotFound -> Problem.notFound
-        is ContentError.EmptyName -> Problem.emptyName
+        is ContentError.EmptyField -> Problem.emptyField
+        is ContentError.InvalidType -> Problem.invalidField
         is ContentError.SlugAlreadyExists -> Problem.invalidSlug
+        is ContentError.AuthorNotFound -> Problem.authorNotFound
+        is ContentError.CategoryNotFound -> Problem.categoryNotFound
+        is ContentError.FeaturedMediaIdNotFound -> Problem.featuredMediaIdNotFound
+        is ContentError.TagNotFound -> Problem.tagNotFound
     }
 
 fun UserError.toProblem(): Problem =

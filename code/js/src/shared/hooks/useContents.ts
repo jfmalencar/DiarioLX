@@ -3,11 +3,11 @@ import { useState, useCallback } from 'react';
 
 import { useContentsService } from '../services/contents';
 
-import type { Content, ContentRequest, ContentSummary } from '../services/contents/contents.types';
+import type { Content, UpdateContentRequest, ContentSummary, CreateContentRequest } from '../services/contents/contents.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
 
-export type { Content, ContentSummary, ContentRequest };
+export type { Content, ContentSummary, UpdateContentRequest as ContentRequest };
 
 export const useContents = () => {
     const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -54,7 +54,7 @@ export const useContents = () => {
     )
 
     const create = useCallback(
-        async (content: ContentRequest): Promise<string | undefined> => {
+        async (content: CreateContentRequest): Promise<number> => {
             setLoading(true)
             setError(null)
             try {
@@ -63,7 +63,7 @@ export const useContents = () => {
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to create category'
                 setError(message)
-                return undefined
+                throw err
             } finally {
                 setLoading(false)
             }
@@ -72,7 +72,7 @@ export const useContents = () => {
     )
 
     const update = useCallback(
-        async (id: string, content: ContentRequest): Promise<void> => {
+        async (id: number, content: UpdateContentRequest): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -87,8 +87,27 @@ export const useContents = () => {
         [contentsService]
     )
 
+    const publish = useCallback(
+        async (id: number): Promise<boolean> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await contentsService.publish(id)
+                return true
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to publish content'
+                setError(message)
+                return false
+            } finally {
+                setLoading(false)
+            }
+        },
+        [contentsService]
+    )
+
+
     const archive = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -103,15 +122,16 @@ export const useContents = () => {
         [contentsService]
     )
 
-    const unarchive = useCallback(
-        async (id: string): Promise<void> => {
+    const deleteContent = useCallback(
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
-                await contentsService.unarchive(id)
+                await contentsService.delete(id)
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to unarchive content'
+                const message = err instanceof Error ? err.message : 'Failed to delete content'
                 setError(message)
+                throw err
             } finally {
                 setLoading(false)
             }
@@ -128,7 +148,8 @@ export const useContents = () => {
         fetchOne,
         create,
         update,
+        publish,
         archive,
-        unarchive
+        delete: deleteContent
     }
 }

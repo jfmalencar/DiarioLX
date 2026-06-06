@@ -11,7 +11,7 @@ export const useContentsApiService = (): ContentsService => {
 
   return useMemo<ContentsService>(() => ({
     async fetchAll(params) {
-      const result = await get<ContentsResponse>(`${endpoints.contents.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      const result = await get<ContentsResponse>(`${endpoints.contents.internalList.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
         throw new Error('Failed to fetch contents');
       }
@@ -19,7 +19,7 @@ export const useContentsApiService = (): ContentsService => {
     },
 
     async fetchOne(slug) {
-      const result = await get<ContentResponse>(endpoints.contents.get.href.replace('{slug}', slug));
+      const result = await get<ContentResponse>(endpoints.contents.internalGetBySlug.href.replace('{slug}', slug));
       if (!result.success) {
         throw new Error('Failed to fetch content');
       }
@@ -28,17 +28,29 @@ export const useContentsApiService = (): ContentsService => {
 
     async create(content) {
       const request = {
+        type: content.type,
+      };
+
+      const result = await post<number>(endpoints.contents.create.href, request);
+      if (!result.success) {
+        throw new Error('Failed to create content');
+      }
+      return result.data;
+    },
+
+    async update(id, content) {
+      const request = {
+        id,
         title: content.title,
         headline: content.headline,
-        type: content.type,
-        slug: content.slug,
         featuredMediaId: content.featuredMediaId,
-        categoryId: content.category.id,
+        slug: content.slug,
+        categoryId: content.categoryId,
         authors: content.authors.map((author) => ({
-          authorId: author.authorId,
+          authorId: typeof author.authorId === 'string' ? parseInt(author.authorId) : author.authorId,
         })),
         tags: content.tags.map((tag) => ({
-          tagId: tag.tagId,
+          tagId: typeof tag.tagId === 'string' ? parseInt(tag.tagId) : tag.tagId,
         })),
         blocks: content.blocks.map(block => {
           if (block.type === 'text' || block.type === 'quote') {
@@ -56,39 +68,30 @@ export const useContentsApiService = (): ContentsService => {
           }
         })
       };
-
-      const result = await post<string>(endpoints.contents.create.href, request);
-      if (!result.success) {
-        throw new Error('Failed to create content');
-      }
-      return result.data;
-    },
-
-    async update(id, content) {
-      const result = await put(endpoints.contents.update.href.replace('{id}', id), content);
+      const result = await put(endpoints.contents.update.href, request);
       if (!result.success) {
         throw new Error('Failed to update content');
       }
     },
 
+    async publish(id) {
+      const result = await post(endpoints.contents.publish.href, { id });
+      if (!result.success) {
+        throw new Error('Failed to publish content');
+      }
+    },
+
     async delete(id) {
-      const result = await remove(endpoints.contents.delete.href.replace('{id}', id), {});
+      const result = await remove(endpoints.contents.delete.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to delete content');
       }
     },
 
     async archive(id) {
-      const result = await post(endpoints.contents.archive.href.replace('{id}', id), {});
+      const result = await post(endpoints.contents.archive.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to archive content');
-      }
-    },
-
-    async unarchive(id) {
-      const result = await post(endpoints.contents.unarchive.href.replace('{id}', id), {});
-      if (!result.success) {
-        throw new Error('Failed to unarchive content');
       }
     }
   }), [get, post, put, remove, endpoints])

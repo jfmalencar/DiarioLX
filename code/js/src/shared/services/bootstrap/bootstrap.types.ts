@@ -41,12 +41,17 @@ export type Endpoints = {
     };
     contents: {
         list: Link;
-        get: Link;
+        getById: Link;
+        getBySlug: Link;
+        internalList: Link;
+        internalGetById: Link;
+        internalGetBySlug: Link;
         create: Link;
         update: Link;
         delete: Link;
+        publish: Link;
+        reject: Link;
         archive: Link;
-        unarchive: Link;
     };
     invites: {
         list: Link;

@@ -10,6 +10,8 @@ const emptyOption: Option = {
 
 export const initialState: EditContentState = {
     tag: 'editing',
+    contentId: null,
+    isDirty: false,
     contentData: {
         title: '',
         slug: '',
@@ -174,6 +176,42 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                     ),
             };
         }
+
+        case 'set-content-id':
+            return {
+                ...state,
+                contentId: action.payload,
+            };
+
+        case 'set-dirty':
+            return {
+                ...state,
+                isDirty: action.payload,
+            };
+
+        case 'load-content':
+            return {
+                ...state,
+                contentId: action.payload.id,
+                isDirty: false,
+                contentData: {
+                    title: action.payload.title,
+                    slug: action.payload.slug,
+                    headline: action.payload.headline,
+                    category: action.payload.category,
+                    categorySearch: '',
+                    mainTag: action.payload.mainTag,
+                    mainTagSearch: '',
+                    secondaryTags: action.payload.secondaryTags,
+                    secondaryTagSearch: '',
+                    mainAuthor: action.payload.mainAuthor,
+                    mainAuthorSearch: '',
+                    secondaryAuthors: action.payload.secondaryAuthors,
+                    secondaryAuthorSearch: '',
+                    featuredMedia: action.payload.featuredMedia,
+                },
+                blocks: action.payload.blocks,
+            };
 
         default:
             return state;

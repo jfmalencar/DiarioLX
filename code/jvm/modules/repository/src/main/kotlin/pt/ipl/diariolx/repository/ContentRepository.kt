@@ -1,11 +1,22 @@
 package pt.ipl.diariolx.repository
 
+import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
-import pt.ipl.diariolx.domain.content.NewContent
+import pt.ipl.diariolx.domain.content.ContentType
+import pt.ipl.diariolx.domain.content.UpdateContent
 
 interface ContentRepository {
-    fun create(content: NewContent): Int
+    fun createEmpty(
+        type: ContentType,
+        now: Instant,
+    ): Int
+
+    fun updateContent(
+        content: UpdateContent,
+        now: Instant,
+    )
 
     fun getById(id: Int): Content?
 
@@ -18,9 +29,37 @@ interface ContentRepository {
         archived: Boolean,
     ): List<ContentSummary>
 
+    fun internalGetById(id: Int): Content?
+
+    fun internalGetBySlug(slug: String): Content?
+
+    fun internalGetAll(
+        limit: Int,
+        offset: Int,
+        query: String?,
+        archived: Boolean,
+    ): List<ContentSummary>
+
     fun delete(id: Int): Boolean
 
-    fun archive(id: Int): Boolean
+    fun archive(
+        id: Int,
+        now: Instant,
+    ): Boolean
 
-    fun unarchive(id: Int): Boolean
+    fun unarchive(
+        id: Int,
+        now: Instant,
+    ): Boolean
+
+    fun publish(
+        id: Int,
+        newState: ContentState,
+        now: Instant,
+    ): Boolean
+
+    fun reject(
+        id: Int,
+        now: Instant,
+    ): Boolean
 }

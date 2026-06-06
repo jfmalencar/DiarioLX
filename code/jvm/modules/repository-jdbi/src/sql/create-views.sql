@@ -83,19 +83,26 @@ GROUP BY m.id;
 CREATE OR REPLACE VIEW v_contents AS
 SELECT
     a.id,
-    a.title,
-    a.slug,
-    a.headline,
+    -----------------------------------------------------------------------
+    -- CONTENT'S NOT NULLABLE FIELDS
     a.type,
-    a.created_at AS "createdAt",
-    a.updated_at AS "updatedAt",
-    a.published_at AS "publishedAt",
-    NULL::BIGINT AS "archivedAt",
-
-    c.id AS "categoryId",
-    c.name AS "categoryName",
-    c.slug AS "categorySlug",
-
+    a.title,
+    a.headline,
+    a.state as content_state,
+    -----------------------------------------------------------------------
+    -- CONTENT'S NULLABLE FIELDS
+    a.slug,
+    a.archived_at as archived_at,
+    a.published_at AS published_at,
+    a.created_at AS created_at,
+    a.updated_at AS updated_at,
+    -----------------------------------------------------------------------
+    -- CONTENT'S CATEGORY FIELDS
+    c.id AS category_id,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    -----------------------------------------------------------------------
+    -- CONTENT'S FEATURED MEDIA FIELDS
     CASE
         WHEN fm.id IS NULL THEN NULL
         ELSE json_build_object(
@@ -108,91 +115,117 @@ SELECT
                 'sizeBytes', fm.size_bytes,
                 'credits', fm.credits
              )
-        END AS "featuredImage",
-
+        END AS featured_image,
+    -----------------------------------------------------------------------
+    -- CONTENT'S TAGS, AUTHORS AND BLOCKS FIELDS
     COALESCE(tags.items, '[]'::json)::text AS tags,
     COALESCE(authors.items, '[]'::json)::text AS authors,
     COALESCE(blocks.items, '[]'::json)::text AS blocks
 
 FROM contents a
-
-         JOIN categories c
-              ON c.id = a.category_id
-
-         LEFT JOIN v_medias fm
-                   ON fm.id = a.featured_media_id
-
-         LEFT JOIN LATERAL (
-    SELECT json_agg(
-                   json_build_object(
-                           'id', t.id,
-                           'name', t.name,
-                           'slug', t.slug
+    LEFT JOIN categories c ON c.id = a.category_id
+    LEFT JOIN v_medias fm ON fm.id = a.featured_media_id
+    LEFT JOIN LATERAL (
+        SELECT json_agg(
+           json_build_object(
+                   'id', t.id,
+                   'name', t.name,
+                   'slug', t.slug
+           )
+        ) AS items
+        FROM content_tags ct JOIN tags t ON t.id = ct.tag_id
+        WHERE ct.content_id = a.id
+    ) tags ON true
+    LEFT JOIN LATERAL (
+        SELECT json_agg(
+            json_build_object(
+               'id', u.id,
+               'name', u.first_name || ' ' || u.last_name,
+               'slug', u.username
+            )
+            ORDER BY (ca.role = 'primary') DESC
+        ) AS items
+        FROM content_authors ca
+        JOIN users u ON u.id = ca.author_id
+        WHERE ca.content_id = a.id
+    ) authors ON true
+    LEFT JOIN LATERAL (
+        SELECT json_agg(
+            json_build_object(
+               'id', cb.id,
+               'type', cb.type,
+               'content', cb.content,
+               'media',
+               CASE
+                   WHEN m.id IS NULL THEN NULL
+                   ELSE json_build_object(
+                       'id', m.id,
+                       'type', m.type,
+                       'url', m.url,
+                       'thumbnailUrl', m.thumbnail_url,
+                       'altText', m.alt_text,
+                       'mimeType', m.mime_type,
+                       'sizeBytes', m.size_bytes,
+                       'credits', m.credits
                    )
-           ) AS items
-    FROM content_tags ct
-             JOIN tags t ON t.id = ct.tag_id
-    WHERE ct.content_id = a.id
-        ) tags ON true
+               END
+            )
+            ORDER BY cb.position
+        ) AS items
+        FROM content_blocks cb
+        LEFT JOIN v_medias m ON m.id = cb.media_id
+        WHERE cb.content_id = a.id
+    ) blocks ON true;
 
-         LEFT JOIN LATERAL (
-    SELECT json_agg(
-                   json_build_object(
-                           'id', u.id,
-                           'name', u.first_name || ' ' || u.last_name,
-                           'slug', u.username
-                   )
-                       ORDER BY (ca.role = 'primary') DESC
-           ) AS items
-    FROM content_authors ca
-             JOIN users u ON u.id = ca.author_id
-    WHERE ca.content_id = a.id
-        ) authors ON true
-
-         LEFT JOIN LATERAL (
-    SELECT json_agg(
-                   json_build_object(
-                           'id', cb.id,
-                           'type', cb.type,
-                           'content', cb.content,
-                           'media',
-                           CASE
-                               WHEN m.id IS NULL THEN NULL
-                               ELSE json_build_object(
-                                       'id', m.id,
-                                       'type', m.type,
-                                       'url', m.url,
-                                       'thumbnailUrl', m.thumbnail_url,
-                                       'altText', m.alt_text,
-                                       'mimeType', m.mime_type,
-                                       'sizeBytes', m.size_bytes,
-                                       'credits', m.credits
-                                    )
-                               END
-                   )
-                       ORDER BY cb.position
-           ) AS items
-    FROM content_blocks cb
-             LEFT JOIN v_medias m ON m.id = cb.media_id
-    WHERE cb.content_id = a.id
-        ) blocks ON true;
+-- Published Content View
+CREATE OR REPLACE VIEW v_published_contents AS
+SELECT *
+FROM v_contents
+WHERE (content_state = 'PUBLISHED'::content_state OR content_state = 'PENDING_REVIEW'::content_state)
+    AND slug IS NOT NULL
+    AND category_id IS NOT NULL;
 
 -- Content summary
 CREATE OR REPLACE VIEW v_contents_summary AS
 SELECT
     a.id,
-    a.title,
-    a.slug,
     a.type,
-    c.name AS "categoryName",
-    fm.bucket || '/' || fm.object_key AS "featuredImage",
-    COALESCE(authors.names, '') AS authors,
-    a.created_at AS "createdAt"
+    a.title,
+    a.state AS content_state,
+    a.slug,
+    a.created_at,
+    a.archived_at,
+    c.id AS category_id,
+    c.name AS category_name,
+
+    CASE
+        WHEN fm.id IS NULL THEN NULL
+        ELSE fm.bucket || '/' || fm.object_key
+    END AS "featuredImage",
+
+    COALESCE(authors.names, '') AS authors
 FROM contents a
-         JOIN categories c ON c.id = a.category_id
-         LEFT JOIN medias fm ON fm.id = a.featured_media_id
-         LEFT JOIN LATERAL (
-    SELECT string_agg(concat_ws(' ', u.first_name, u.last_name), ', ' ORDER BY u.first_name) AS names
-FROM content_authors aa
-    JOIN users u ON u.id = aa.author_id
-WHERE aa.content_id = a.id) authors ON true;
+    LEFT JOIN categories c ON c.id = a.category_id
+    LEFT JOIN medias fm ON fm.id = a.featured_media_id
+    LEFT JOIN LATERAL (
+        SELECT string_agg(
+           concat_ws(
+               ' ',
+               u.first_name,
+               u.last_name
+           ),
+           ', '
+           ORDER BY u.first_name
+        ) AS names
+        FROM content_authors aa
+            JOIN users u ON u.id = aa.author_id
+        WHERE aa.content_id = a.id)
+    authors ON true;
+
+-- Published Content summary
+CREATE OR REPLACE VIEW v_published_contents_summary AS
+SELECT *
+FROM v_contents_summary
+WHERE (content_state = 'PUBLISHED'::content_state OR content_state = 'PENDING_REVIEW'::content_state)
+    AND slug IS NOT NULL
+    AND category_id IS NOT NULL;

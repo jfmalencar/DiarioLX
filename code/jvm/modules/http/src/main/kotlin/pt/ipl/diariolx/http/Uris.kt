@@ -83,8 +83,15 @@ object Uris {
     }
 
     object Content {
-        const val CREATE = "$PREFIX/contents"
-        const val GET_BY_SLUG = "$PREFIX/contents/{slug}"
+        const val MAIN = "$PREFIX/contents"
+        const val ARCHIVE = "$PREFIX/contents/archive/{id}"
+        const val PUBLISH = "$PREFIX/contents/publish"
+        const val REJECT = "$PREFIX/contents/reject"
+        const val CONTENT_BY_ID = "$PREFIX/contents/{id}"
+        const val CONTENT_BY_SLUG = "$PREFIX/contents/{slug}"
         const val GET_ALL = "$PREFIX/contents"
+        const val INTERNAL_CONTENT_BY_ID = "$PREFIX/internal-contents/{id}"
+        const val INTERNAL_CONTENT_BY_SLUG = "$PREFIX/internal-contents/{slug}"
+        const val INTERNAL_GET_ALL = "$PREFIX/internal-contents"
     }
 }

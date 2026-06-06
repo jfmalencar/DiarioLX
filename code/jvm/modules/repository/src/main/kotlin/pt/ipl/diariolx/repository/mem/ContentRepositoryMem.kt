@@ -1,50 +1,102 @@
 package pt.ipl.diariolx.repository.mem
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
-import pt.ipl.diariolx.domain.content.NewContent
+import pt.ipl.diariolx.domain.content.ContentType
+import pt.ipl.diariolx.domain.content.UpdateContent
+import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.tag.TagSummary
 import pt.ipl.diariolx.repository.ContentRepository
 
-class ContentRepositoryMem : ContentRepository {
-    private val categoryRepo = CategoryRepositoryMem()
-    private val tagRepo = TagRepositoryMem()
-
+class ContentRepositoryMem(
+    val categoryRepo: CategoryRepositoryMem,
+    val tagRepo: TagRepositoryMem,
+    val blockRepo: BlockRepositoryMem,
+    val mediaRepo: MediaRepositoryMem,
+) : ContentRepository {
     private val contents = mutableListOf<Content>()
     private var currentId = 0
 
-    override fun create(content: NewContent): Int {
-        val id = ++currentId
+    override fun createEmpty(
+        type: ContentType,
+        now: Instant,
+    ): Int {
+        val newId = ++currentId
+        val newContent =
+            Content(
+                id = newId,
+                type = type,
+                title = "",
+                headline = "",
+                featuredImage = null,
+                slug = null,
+                category = null,
+                publishedAt = null,
+                archivedAt = null,
+                createdAt = Clock.System.now(),
+                updatedAt = Clock.System.now(),
+                state = ContentState.DRAFT,
+                tags = emptyList(),
+                authors = emptyList(),
+                blocks = emptyList(),
+            )
+        contents.add(newContent)
+        return newId
+    }
 
-        val category = categoryRepo.getById(content.categoryId) ?: error("Category not found")
+    override fun updateContent(
+        content: UpdateContent,
+        now: Instant,
+    ) {
         val tags =
             content.tags.map {
                 val tag = tagRepo.getById(it.tagId) ?: error("Tag not found")
                 TagSummary(tag.id, tag.name, tag.name)
             }
+        val authors = content.authors.map { Author(it.authorId, "Name", "PHOTOGRAPHER", "author") }
+        val blocks =
+            content.blocks.map { block ->
+                val id = blockRepo.create(block)
+                blockRepo.get(id) ?: error("Block not found")
+            }
 
+        val oldContent = contents.find { it.id == content.id } ?: error("Content not found")
         val newContent =
             Content(
-                id = id,
+                id = content.id,
+                type = oldContent.type,
                 title = content.title,
-                slug = content.slug,
-                type = content.type,
                 headline = content.headline,
-                featuredImage = null,
-                category = CategorySummary(id = category.id, name = category.name, category.slug),
-                tags = tags,
-                blocks = listOf(),
-                authors = content.authors.map { Author(it.authorId, "Name", "PHOTOGRAPHER", "author") },
+                featuredImage =
+                    content.featuredMediaId?.let { mediaRepo.get(it) }?.let {
+                        MediaSummary(
+                            it.id,
+                            it.mimeType.split("/").first(),
+                            it.objectKey,
+                            it.thumbnailObjectKey,
+                            it.altText,
+                            it.mimeType,
+                            it.sizeBytes,
+                        )
+                    },
+                slug = content.slug,
+                category = categoryRepo.getById(content.categoryId ?: -1)?.let { CategorySummary(it.id, it.name, it.slug) },
+                publishedAt = null,
+                archivedAt = null,
                 createdAt = Clock.System.now(),
                 updatedAt = Clock.System.now(),
-                publishedAt = Clock.System.now(),
+                state = ContentState.DRAFT,
+                tags = tags,
+                authors = authors,
+                blocks = blocks,
             )
-
+        contents.removeIf { it.id == content.id }
         contents.add(newContent)
-        return id
     }
 
     override fun getAll(
@@ -54,18 +106,79 @@ class ContentRepositoryMem : ContentRepository {
         archived: Boolean,
     ): List<ContentSummary> =
         contents
-            .filter {
-                !archived || it.archivedAt != null && (if (query == null) true else it.title.contains(query))
-            }.map {
+            .filter { content ->
+                content.state == ContentState.PUBLISHED &&
+                    content.slug != null &&
+                    content.category != null &&
+                    (if (archived) content.archivedAt != null else content.archivedAt == null) &&
+                    (
+                        if (query ==
+                            null
+                        ) {
+                            true
+                        } else {
+                            content.title.contains(query, ignoreCase = true) ||
+                                (content.slug?.contains(query, ignoreCase = true) ?: false)
+                        }
+                    )
+            }.drop(offset)
+            .take(limit)
+            .map {
                 ContentSummary(
                     id = it.id,
+                    type = it.type,
                     title = it.title,
+                    state = it.state,
                     slug = it.slug,
-                    category = it.category.name,
+                    createdAt = it.createdAt,
+                    archivedAt = it.archivedAt ?: Clock.System.now(),
+                    categoryId = it.category?.id ?: -1,
+                    categoryName = it.category?.name ?: "",
                     featuredImage = it.featuredImage?.url,
-                    createdAt = it.createdAt.toString(),
                     authors = it.authors.map { a -> a.name },
-                    isPublished = it.publishedAt != null,
+                )
+            }
+
+    override fun internalGetById(id: Int): Content? = contents.find { it.id == id }
+
+    override fun internalGetBySlug(slug: String): Content? {
+        TODO("Not yet implemented")
+    }
+
+    override fun internalGetAll(
+        limit: Int,
+        offset: Int,
+        query: String?,
+        archived: Boolean,
+    ): List<ContentSummary> =
+        contents
+            .filter { content ->
+                (if (archived) content.archivedAt != null else content.archivedAt == null) &&
+                    (
+                        if (query ==
+                            null
+                        ) {
+                            true
+                        } else {
+                            content.title.contains(query, ignoreCase = true) ||
+                                (content.slug?.contains(query, ignoreCase = true) ?: false)
+                        }
+                    )
+            }.drop(offset)
+            .take(limit)
+            .map {
+                ContentSummary(
+                    id = it.id,
+                    type = it.type,
+                    title = it.title,
+                    state = it.state,
+                    slug = it.slug,
+                    createdAt = it.createdAt,
+                    archivedAt = it.archivedAt ?: Clock.System.now(),
+                    categoryId = it.category?.id ?: -1,
+                    categoryName = it.category?.name ?: "",
+                    featuredImage = it.featuredImage?.url,
+                    authors = it.authors.map { a -> a.name },
                 )
             }
 
@@ -75,11 +188,14 @@ class ContentRepositoryMem : ContentRepository {
         return true
     }
 
-    override fun getById(id: Int): Content? = contents.find { it.id == id }
+    override fun getById(id: Int): Content? = contents.find { it.id == id && it.state == ContentState.PUBLISHED && it.slug != null }
 
-    override fun getBySlug(slug: String): Content? = contents.find { it.slug == slug }
+    override fun getBySlug(slug: String): Content? = contents.find { it.slug == slug && it.state == ContentState.PUBLISHED }
 
-    override fun archive(id: Int): Boolean {
+    override fun archive(
+        id: Int,
+        now: Instant,
+    ): Boolean {
         val contentToArchive = contents.find { it.id == id }
         if (contentToArchive != null) {
             val now = Clock.System.now()
@@ -91,7 +207,10 @@ class ContentRepositoryMem : ContentRepository {
         return false
     }
 
-    override fun unarchive(id: Int): Boolean {
+    override fun unarchive(
+        id: Int,
+        now: Instant,
+    ): Boolean {
         val contentToUnarchive = contents.find { it.id == id }
         if (contentToUnarchive != null) {
             val now = Clock.System.now()
@@ -101,5 +220,20 @@ class ContentRepositoryMem : ContentRepository {
             return true
         }
         return false
+    }
+
+    override fun publish(
+        id: Int,
+        newState: ContentState,
+        now: Instant,
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun reject(
+        id: Int,
+        now: Instant,
+    ): Boolean {
+        TODO("Not yet implemented")
     }
 }

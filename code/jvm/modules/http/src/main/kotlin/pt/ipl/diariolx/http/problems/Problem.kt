@@ -50,11 +50,19 @@ class Problem(
                 HttpStatus.BAD_REQUEST,
             )
 
-        val emptyName =
+        val emptyField =
             Problem(
-                URI("$URL/empty-name"),
-                "Empty name",
-                "The provided name is empty",
+                URI("$URL/empty-field"),
+                "Empty field",
+                "The provided field is empty",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val invalidField =
+            Problem(
+                URI("$URL/invalid-field"),
+                "Invalid field",
+                "The provided field is invalid",
                 HttpStatus.BAD_REQUEST,
             )
 
@@ -175,6 +183,38 @@ class Problem(
                 URI("$URL/invalid-credentials"),
                 "Invalid credentials",
                 "The provided credentials are invalid",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val authorNotFound =
+            Problem(
+                URI("$URL/author-not-found"),
+                "Author not found",
+                "The provided author id is invalid",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val categoryNotFound =
+            Problem(
+                URI("$URL/category-not-found"),
+                "Category not found",
+                "The provided category is invalid",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val featuredMediaIdNotFound =
+            Problem(
+                URI("$URL/featured-media-not-found"),
+                "Featured Media ID not found",
+                "The provided featured Media ID is invalid",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val tagNotFound =
+            Problem(
+                URI("$URL/tag-not-found"),
+                "Tag not found",
+                "The provided tag is invalid",
                 HttpStatus.BAD_REQUEST,
             )
     }
