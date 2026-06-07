@@ -87,18 +87,22 @@ The main modules are:
             (content, users, categories, tags).
 \end{description}
 
-\section{Bootstrap and Configuration} \label{sec:fe_bootstrap}
+\section{Bootstrap, Configuration and Navigation} \label{sec:fe_bootstrap_navigation}
 
-On application startup, the \texttt{useBootstrap} hook fetches the initial
-configuration from the backend, including the API endpoint definitions. This avoids
-hardcoding API URLs in the frontend codebase, allowing the backend base URL to be
-configured via environment variables without recompiling the frontend.
+When the application starts, the \texttt{useBootstrap} hook retrieves the initial
+configuration from the backend, including the definitions of the available API
+endpoints. This approach eliminates the need to hardcode API URLs in the frontend
+codebase and enables the backend base URL to be configured through environment
+variables without requiring the frontend to be rebuilt or redeployed.
 
-\section{Navigation} \label{sec:fe_navigation}
-
-Client-side routing is handled by React Router. URL slugs follow the pattern
-\texttt{/<category>/<slug>}. Category and tag listing pages are dynamically
-generated based on data fetched from the API.
+Navigation within the application is implemented using React Router, providing
+client-side routing without requiring full page reloads. The routing structure
+clearly separates the public website from the administrative interface. All
+administrative functionality is available under the \texttt{/backoffice} route,
+whereas public-facing content is exposed through dedicated routes, such as
+\texttt{/p/<slug>} for individual content items. This approach simplifies route
+management and enforces a clear boundary between content consumption and content
+administration.
 
 \section{Authentication} \label{sec:fe_auth}
 
@@ -357,8 +361,6 @@ author information.
       \caption{Public website --- article page.}
       \label{fig:fe_article_page}
 \end{figure}
-
-\section{Responsive Design} \label{sec:fe_responsive}
 
 The interface is built on Bootstrap's responsive grid system, adapting layouts
 to mobile, tablet, and desktop viewports through standard Bootstrap breakpoints.

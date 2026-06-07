@@ -23,10 +23,8 @@ import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
 import pt.ipl.diariolx.http.auth.AuthenticatedUserArgumentResolver
 import pt.ipl.diariolx.http.auth.AuthenticationInterceptor
 import pt.ipl.diariolx.http.auth.RefreshTokenArgumentResolver
-import pt.ipl.diariolx.http.invite.InviteArgumentResolver
-import pt.ipl.diariolx.http.invite.InviteInterceptor
+import pt.ipl.diariolx.http.auth.RoleArgumentResolver
 import pt.ipl.diariolx.repository.JdbiTransactionManager
-import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.repository.configureWithAppRequirements
 import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.storage.FileStorageFactory
@@ -36,20 +34,18 @@ import kotlin.time.Duration.Companion.minutes
 @Configuration
 class PipelineConfigurer(
     private val authenticationInterceptor: AuthenticationInterceptor,
-    private val inviteInterceptor: InviteInterceptor,
+    private val userRoleArgumentResolver: RoleArgumentResolver,
     private val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
     private val refreshTokenArgumentResolver: RefreshTokenArgumentResolver,
-    private val inviteArgumentResolver: InviteArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(authenticationInterceptor)
-        registry.addInterceptor(inviteInterceptor)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(authenticatedUserArgumentResolver)
         resolvers.add(refreshTokenArgumentResolver)
-        resolvers.add(inviteArgumentResolver)
+        resolvers.add(userRoleArgumentResolver)
     }
 }
 
@@ -60,25 +56,20 @@ class DiarioLXApplication {
     // To use in-memory mode, comment out the jdbiTransactionManager and uncomment memoryTransactionManager
 
     @Bean
-    fun jdbi(appEnv: AppEnvironment): Jdbi {
-        logger.info("Connecting to database...")
-        logger.info("Database URL: ${appEnv.dbUrl}")
-        return Jdbi
+    fun jdbi(appEnv: AppEnvironment) =
+        Jdbi
             .create(
                 PGSimpleDataSource().apply {
                     setURL(appEnv.dbUrl)
                 },
             ).configureWithAppRequirements()
-    }
 
     @Bean
-    fun transactionManager(jdbi: Jdbi): TransactionManager {
-        logger.info("Using JDBI Transaction Manager")
-        return JdbiTransactionManager(
+    fun transactionManager(jdbi: Jdbi) =
+        JdbiTransactionManager(
             jdbi = jdbi,
             logger(),
         )
-    }
 
     // === UNCOMMENT BELOW TO USE IN-MEMORY REPOSITORIES INSTEAD ===
 

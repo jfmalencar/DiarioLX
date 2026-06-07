@@ -28,12 +28,12 @@ interface ContentRepository {
         offset: Int,
         type: ContentType? = null,
         query: String?,
-        archived: Boolean = false,
-        onlyPublished: Boolean = false,
+        state: ContentState? = null,
         tag: String? = null,
         category: String? = null,
         from: LocalDate? = null,
         to: LocalDate? = null,
+        authorId: Int? = null,
     ): List<ContentSummary>
 
     fun internalGetById(id: Int): Content?

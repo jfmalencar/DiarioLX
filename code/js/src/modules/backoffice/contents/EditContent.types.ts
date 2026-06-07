@@ -1,5 +1,5 @@
 import type { Media } from '@/shared/services/media/media.types';
-import type { ContentBlock } from '@/shared/services/contents/contents.types';
+import type { ContentBlock, Content } from '@/shared/services/contents/contents.types';
 
 export type Option = {
     id: string;
@@ -18,7 +18,7 @@ export type ContentEditingInput = {
     category: Option;
     categorySearch: string;
     slug: string;
-    
+
     mainTag: Option;
     mainTagSearch: string;
     secondaryTags: Option[];
@@ -41,9 +41,11 @@ export type EditContentState = {
     contentData: ContentEditingInput;
     blocks: ContentBlock[];
     galleryMode: GalleryMode;
+    galleryAfterId?: string
 };
 
 export type EditContentAction =
+    | { type: 'init'; content: Content }
     | {
         type: 'edit';
         field: keyof ContentEditingInput;
@@ -76,14 +78,17 @@ export type EditContentAction =
         id: string;
     }
 
-    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null> }
+    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null>, afterId?: string }
     | { type: 'close-gallery' }
     | { type: 'select-media'; payload: Media }
 
-    | { type: 'add-text-block' }
+    | { type: 'add-text-block', afterId?: string }
+    | { type: 'add-heading-block', level: 3 | 4, afterId?: string }
+    | { type: 'add-quote-block', afterId?: string }
+    | { type: 'update-content-block'; payload: { blockId: string; content: string } }
     | { type: 'remove-block'; payload: { blockId: string } }
     | { type: 'update-text-block'; payload: { blockId: string; content: string } }
-    
+
     | { type: 'set-content-id'; payload: number }
     | { type: 'set-dirty'; payload: boolean }
     | { type: 'load-content'; payload: ContentEditingInput & { id: number; blocks: ContentBlock[] } };

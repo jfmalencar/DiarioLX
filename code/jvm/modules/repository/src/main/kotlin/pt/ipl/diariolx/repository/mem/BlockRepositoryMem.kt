@@ -18,11 +18,10 @@ class BlockRepositoryMem(
                 type = newContentBlock.type,
                 content = newContentBlock.content,
                 media =
-                    newContentBlock.mediaId?.let {
-                        mediaRepo.get(it)?.let {
+                    newContentBlock.mediaId?.let { blockId ->
+                        mediaRepo.get(blockId)?.let {
                             MediaSummary(
                                 it.id,
-                                it.mimeType.split("/").first(),
                                 it.objectKey,
                                 it.thumbnailObjectKey,
                                 it.altText,
@@ -50,11 +49,10 @@ class BlockRepositoryMem(
                 type = newContentBlock.type,
                 content = newContentBlock.content,
                 media =
-                    newContentBlock.mediaId?.let {
+                    newContentBlock.mediaId?.let { it ->
                         mediaRepo.get(it)?.let {
                             MediaSummary(
                                 it.id,
-                                it.mimeType.split("/").first(),
                                 it.objectKey,
                                 it.thumbnailObjectKey,
                                 it.altText,

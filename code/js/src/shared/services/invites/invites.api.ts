@@ -11,7 +11,7 @@ export const useInvitesApiService = (): InvitesService => {
 
   return useMemo<InvitesService>(() => ({
     async fetchAll(params) {
-      const result = await get<InvitesResponse>(`${endpoints.invites.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      const result = await get<InvitesResponse>(`${endpoints.backoffice.invites.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
         throw new Error('Failed to fetch invites');
       }
@@ -22,7 +22,7 @@ export const useInvitesApiService = (): InvitesService => {
       const request: InviteRequest = {
         role: invite.role
       }
-      const result = await post<string>(endpoints.invites.create.href, request);
+      const result = await post<string>(endpoints.backoffice.invites.create.href, request);
       if (!result.success) {
         throw new Error('Failed to create invite');
       }
@@ -30,7 +30,7 @@ export const useInvitesApiService = (): InvitesService => {
     },
 
     async delete(id) {
-      const result = await remove(endpoints.invites.delete.href.replace('{id}', id), {});
+      const result = await remove(endpoints.backoffice.invites.delete.href.replace('{id}', id), {});
       if (!result.success) {
         throw new Error('Failed to delete invite');
       }

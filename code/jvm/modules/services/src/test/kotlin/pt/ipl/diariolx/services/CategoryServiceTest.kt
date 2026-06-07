@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.services
 
 import pt.ipl.diariolx.domain.category.Category
+import pt.ipl.diariolx.repository.mem.BlockRepositoryMem
 import pt.ipl.diariolx.repository.mem.CategoryRepositoryMem
 import pt.ipl.diariolx.repository.mem.ContentRepositoryMem
 import pt.ipl.diariolx.repository.mem.InviteRepositoryMem
@@ -106,7 +107,7 @@ class CategoryServiceTest {
             )
 
         val failure = assertIs<Failure<CategoryError>>(result)
-        assertEquals(CategoryError.ParentNotFound, failure.value)
+        assertEquals(CategoryError.InvalidParent, failure.value)
     }
 
     @Test
@@ -288,12 +289,19 @@ class CategoryServiceTest {
 
     companion object {
         fun createService(
-            repo: CategoryRepositoryMem = CategoryRepositoryMem(),
+            mediaRepo: MediaRepositoryMem = MediaRepositoryMem(),
             tagRepo: TagRepositoryMem = TagRepositoryMem(),
+            categoryRepo: CategoryRepositoryMem = CategoryRepositoryMem(),
             userRepo: UserRepositoryMem = UserRepositoryMem(),
             inviteRepo: InviteRepositoryMem = InviteRepositoryMem(),
-            contentRepo: ContentRepositoryMem = ContentRepositoryMem(),
-            fileRepo: MediaRepositoryMem = MediaRepositoryMem(),
-        ): CategoryService = CategoryService(TransactionManagerMem(repo, userRepo, inviteRepo, tagRepo, contentRepo, fileRepo))
+            blockRepo: BlockRepositoryMem = BlockRepositoryMem(mediaRepo = mediaRepo),
+            contentRepo: ContentRepositoryMem =
+                ContentRepositoryMem(
+                    mediaRepo = mediaRepo,
+                    tagRepo = tagRepo,
+                    blockRepo = blockRepo,
+                    categoryRepo = categoryRepo,
+                ),
+        ): CategoryService = CategoryService(TransactionManagerMem(categoryRepo, userRepo, inviteRepo, tagRepo, contentRepo, mediaRepo))
     }
 }

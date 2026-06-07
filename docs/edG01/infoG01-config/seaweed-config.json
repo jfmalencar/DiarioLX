@@ -1,0 +1,21 @@
+{
+  "identities": [
+    {
+      "name": "anonymous",
+      "actions": ["Read"],
+      "resources": ["buckets/media/*"]
+    },
+    {
+      "name": "dev-user",
+      "credentials": [
+        {
+          "accessKey": "DEV-ACCESS-KEY",
+          "secretKey": "DEV-SECRET-KEY"
+        }
+      ],
+      "actions": ["Read", "Write", "List", "Tagging", "Admin"],
+      "resources": ["buckets/media/*"]
+    }
+  ]
+}
+

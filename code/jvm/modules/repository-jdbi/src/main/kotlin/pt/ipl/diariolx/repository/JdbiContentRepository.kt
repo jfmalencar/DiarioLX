@@ -90,12 +90,12 @@ class JdbiContentRepository(
         offset: Int,
         type: ContentType?,
         query: String?,
-        archived: Boolean,
-        onlyPublished: Boolean,
+        state: ContentState?,
         tag: String?,
         category: String?,
         from: LocalDate?,
         to: LocalDate?,
+        authorId: Int?,
     ): List<ContentSummary> {
         val sql =
             buildString {
@@ -106,25 +106,26 @@ class JdbiContentRepository(
                 if (type != null) {
                     append(" AND type = :type")
                 }
-                if (archived) {
-                    append(" AND archived_at IS NOT NULL")
-                } else {
-                    append(" AND archived_at IS NULL")
-                }
                 if (tag != null) {
                     append(" AND tag_slug = :tag")
                 }
                 if (category != null) {
                     append(" AND category_slug = :category")
                 }
-                if (onlyPublished) {
+                if (state == ContentState.PUBLISHED) {
                     append(" AND published_at IS NOT NULL AND published_at <= EXTRACT(EPOCH FROM NOW())")
+                }
+                if (state != null) {
+                    append(" AND content_state = :state::content_state")
                 }
                 if (from != null) {
                     append(" AND published_at >= :from")
                 }
                 if (to != null) {
                     append(" AND published_at <= :to")
+                }
+                if (authorId != null) {
+                    append(" AND authors::jsonb @> jsonb_build_array(jsonb_build_object('id', :authorId))")
                 }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
@@ -134,11 +135,13 @@ class JdbiContentRepository(
             .bind("limit", limit)
             .bind("offset", offset)
             .bind("query", "%$query%")
+            .bind("state", state)
             .bind("type", type)
             .bind("category", category)
             .bind("tag", tag)
             .bind("from", from?.toEpochDay())
             .bind("to", to?.toEpochDay())
+            .bind("authorId", authorId)
             .mapTo<ContentSummaryModel>()
             .list()
             .map { it.content }
@@ -217,7 +220,7 @@ class JdbiContentRepository(
                      SET published_at = :published_at, updated_at = :updated_at, state = :newState::content_state
                      WHERE id = :id
                 """,
-                ).bind("published_at", now.epochSeconds)
+                ).bind("published_at", if (newState == ContentState.PUBLISHED) now.epochSeconds else null)
                 .bind("updated_at", now.epochSeconds)
                 .bind("newState", newState.name)
                 .bind("id", id)
@@ -349,7 +352,7 @@ class JdbiContentRepository(
             handle.prepareBatch(
                 """
                 insert into content_blocks (content_id, type, content, media_id, position)
-                values (:content_id, :type, :content, :media_id, :position)
+                values (:content_id, :type::block_type, :content, :media_id, :position)
                 """.trimIndent(),
             )
 
@@ -481,12 +484,18 @@ class JdbiContentRepository(
         val slug: String?,
         val createdAt: Long,
         val archivedAt: Long,
+        val publishedAt: Long,
         val categoryId: Int?,
         val categorySlug: String?,
         val categoryName: String?,
         val featuredImage: String?,
         val authors: String,
     ) {
+        private inline fun <reified T> parseJson(json: String): T {
+            val objectMapper = ObjectMapper().registerKotlinModule()
+            return objectMapper.readValue(json)
+        }
+
         val content: ContentSummary
             get() =
                 ContentSummary(
@@ -497,7 +506,8 @@ class JdbiContentRepository(
                     slug = slug,
                     category =
                         if (categoryId != null &&
-                            categoryName !== null && categorySlug != null
+                            categoryName !== null &&
+                            categorySlug != null
                         ) {
                             CategorySummary(categoryId, categoryName, Slug(categorySlug))
                         } else {
@@ -511,42 +521,11 @@ class JdbiContentRepository(
                         },
                     createdAt = Instant.fromEpochSeconds(createdAt),
                     archivedAt = Instant.fromEpochSeconds(archivedAt),
+                    publishedAt = Instant.fromEpochSeconds(publishedAt),
                     categoryId = categoryId,
                     categoryName = categoryName,
                     featuredImage = featuredImage,
-                    authors = authors.split(", "),
-                )
-    }
-
-    private data class PublicContentSummaryModel(
-        val id: Int,
-        val type: String,
-        val title: String,
-        val contentState: String,
-        val slug: String,
-        val createdAt: Long,
-        val archivedAt: Long,
-        val categoryId: Int,
-        val categoryName: String,
-        val featuredImage: String,
-        val authors: String,
-    ) {
-        val content: ContentSummary
-            get() =
-                ContentSummary(
-                    id = id,
-                    type = ContentType.valueOf(type),
-                    title = title,
-                    state = ContentState.valueOf(contentState),
-                    slug = slug,
-                    createdAt = Instant.fromEpochSeconds(createdAt),
-                    archivedAt = Instant.fromEpochSeconds(archivedAt),
-                    categoryId = categoryId,
-                    categoryName = categoryName,
-                    featuredImage = featuredImage,
-                    authors = authors.split(", "),
-                    category = null,
-                    tag = null,
+                    authors = parseJson(authors),
                 )
     }
 }

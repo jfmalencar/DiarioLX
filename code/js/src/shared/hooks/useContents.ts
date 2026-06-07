@@ -3,11 +3,11 @@ import { useState, useCallback } from 'react';
 
 import { useContentsService } from '../services/contents';
 
-import type { Content, UpdateContentRequest, ContentSummary, CreateContentRequest } from '../services/contents/contents.types';
+import type { Content, UpdateContentRequest, ContentSummary, CreateContentRequest, ContentState } from '../services/contents/contents.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
 
-export type { Content, ContentSummary, UpdateContentRequest as ContentRequest };
+export type { Content, ContentSummary, UpdateContentRequest as ContentRequest, ContentState };
 
 export const useContents = () => {
     const [pagination, setPagination] = useState<Pagination | null>(null);
@@ -16,12 +16,30 @@ export const useContents = () => {
     const [error, setError] = useState<string | null>(null)
     const contentsService = useContentsService()
 
-    const fetchOne = useCallback(
+    const fetchBySlug = useCallback(
         async (slug: string): Promise<Content | undefined> => {
             setLoading(true)
             setError(null)
             try {
-                const data = await contentsService.fetchOne(slug)
+                const data = await contentsService.fetchBySlug(slug)
+                return data
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch category'
+                setError(message)
+                return undefined
+            } finally {
+                setLoading(false)
+            }
+        },
+        [contentsService]
+    )
+
+    const fetchById = useCallback(
+        async (id: number): Promise<Content | undefined> => {
+            setLoading(true)
+            setError(null)
+            try {
+                const data = await contentsService.fetchById(id)
                 return data
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch category'
@@ -77,8 +95,8 @@ export const useContents = () => {
             setLoading(true)
             setError(null)
             try {
-                const newContentId = await contentsService.create(content)
-                return newContentId
+                const data = await contentsService.create(content)
+                return data.id
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to create category'
                 setError(message)
@@ -91,14 +109,16 @@ export const useContents = () => {
     )
 
     const update = useCallback(
-        async (id: number, content: UpdateContentRequest): Promise<void> => {
+        async (id: number, content: UpdateContentRequest): Promise<boolean> => {
             setLoading(true)
             setError(null)
             try {
                 await contentsService.update(id, content)
+                return true
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to update content'
                 setError(message)
+                return false
             } finally {
                 setLoading(false)
             }
@@ -124,6 +144,23 @@ export const useContents = () => {
         [contentsService]
     )
 
+    const submit = useCallback(
+        async (id: number): Promise<boolean> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await contentsService.submit(id)
+                return true
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to submit content'
+                setError(message)
+                return false
+            } finally {
+                setLoading(false)
+            }
+        },
+        [contentsService]
+    )
 
     const archive = useCallback(
         async (id: number): Promise<void> => {
@@ -165,10 +202,12 @@ export const useContents = () => {
         pagination,
         fetchAll,
         fetchPublished,
-        fetchOne,
+        fetchById,
+        fetchBySlug,
         create,
         update,
         publish,
+        submit,
         archive,
         delete: deleteContent
     }

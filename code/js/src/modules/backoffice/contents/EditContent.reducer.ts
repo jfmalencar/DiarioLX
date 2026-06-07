@@ -1,3 +1,4 @@
+import { slugify } from '@/shared/utils/format';
 import type { EditContentState, EditContentAction, Option } from './EditContent.types';
 import type { ContentBlock } from '@/shared/services/contents/contents.types';
 
@@ -30,12 +31,56 @@ export const initialState: EditContentState = {
     },
     blocks: [],
     galleryMode: null,
+    galleryAfterId: undefined,
 };
+
+const insertBlock = (blocks: ContentBlock[], newBlock: ContentBlock, afterId?: string,) => {
+    if (!afterId) return [...blocks, newBlock];
+    const idx = blocks.findIndex((b) => b.id === afterId);
+    if (idx === -1) return [...blocks, newBlock];
+    return [...blocks.slice(0, idx + 1), newBlock, ...blocks.slice(idx + 1)];
+};
+
+const reindex = (blocks: ContentBlock[]) => blocks.map((b, i) => ({ ...b, position: i }));
 
 export const editContentReducer = (state: EditContentState, action: EditContentAction,): EditContentState => {
     const content = state.contentData;
     switch (action.type) {
+        case 'init': {
+            const content = action.content;
+            const [mainAuthor, ...secondaryAuthors] = content.authors.map(a => ({ id: a.id, name: a.name }));
+            const [mainTag, ...secondaryTags] = content.tags.map(t => ({ id: t.id, name: t.name }));
+
+            return {
+                ...state,
+                contentId: content.id,
+                isDirty: false,
+                contentData: {
+                    title: content.title,
+                    slug: content.slug,
+                    headline: content.headline,
+                    category: content.category
+                        ? { id: content.category.id, name: content.category.name }
+                        : emptyOption,
+                    categorySearch: '',
+                    mainTag: mainTag ?? emptyOption,
+                    mainTagSearch: '',
+                    secondaryTags: secondaryTags ?? [],
+                    secondaryTagSearch: '',
+                    mainAuthor: mainAuthor ?? emptyOption,
+                    mainAuthorSearch: '',
+                    secondaryAuthors: secondaryAuthors ?? [],
+                    secondaryAuthorSearch: '',
+                    featuredMedia: content.featuredImage,
+                },
+                blocks: content.blocks,
+            };
+        }
+
         case 'edit':
+            if (action.field === 'title' && content.slug === slugify(content.title)) {
+                content.slug = slugify(action.value as string);
+            }
             return {
                 ...state,
                 contentData: {
@@ -95,12 +140,14 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
             return {
                 ...state,
                 galleryMode: action.payload,
+                galleryAfterId: action.afterId,
             };
 
         case 'close-gallery':
             return {
                 ...state,
                 galleryMode: null,
+                galleryAfterId: undefined,
             };
 
         case 'select-media': {
@@ -112,22 +159,26 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                         featuredMedia: action.payload,
                     },
                     galleryMode: null,
+                    galleryAfterId: undefined,
                 };
             }
 
             if (state.galleryMode === 'block') {
                 const newBlock: ContentBlock = {
                     id: generateId(),
-                    type: 'image',
-                    position: state.blocks.length,
+                    type: 'IMAGE',
+                    position: 0, // recalculado pelo reindex
                     media: action.payload,
                     caption: '',
                 };
 
                 return {
                     ...state,
-                    blocks: [...state.blocks, newBlock],
+                    blocks: reindex(
+                        insertBlock(state.blocks, newBlock, state.galleryAfterId),
+                    ),
                     galleryMode: null,
+                    galleryAfterId: undefined,
                 };
             }
 
@@ -137,43 +188,75 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
         case 'add-text-block':
             return {
                 ...state,
-                blocks: [
-                    ...state.blocks,
-                    {
-                        id: generateId(),
-                        type: 'text',
-                        position: state.blocks.length,
-                        content: '<p></p>',
-                    },
-                ],
+                blocks: reindex(
+                    insertBlock(
+                        state.blocks,
+                        {
+                            id: generateId(),
+                            type: 'TEXT',
+                            position: 0,
+                            content: '<p></p>',
+                        },
+                        action.afterId,
+                    ),
+                ),
             };
 
-        case 'update-text-block':
+        case 'add-quote-block':
+            return {
+                ...state,
+                blocks: reindex(
+                    insertBlock(
+                        state.blocks,
+                        {
+                            id: generateId(),
+                            type: 'QUOTE',
+                            position: 0,
+                            content: '',
+                        },
+                        action.afterId,
+                    ),
+                ),
+            };
+
+        case 'add-heading-block':
+            return {
+                ...state,
+                blocks: reindex(
+                    insertBlock(
+                        state.blocks,
+                        {
+                            id: generateId(),
+                            type: `H${action.level}`,
+                            position: 0,
+                            content: '',
+                        },
+                        action.afterId,
+                    ),
+                ),
+            };
+
+        case 'update-content-block':
             return {
                 ...state,
                 blocks: state.blocks.map((block) =>
-                    block.id === action.payload.blockId && block.type === 'text'
+                    block.id === action.payload.blockId
                         ? { ...block, content: action.payload.content }
                         : block,
                 ),
             };
 
         case 'remove-block': {
-            const blockToRemove = state.blocks.find(
+            const exists = state.blocks.some(
                 (b) => b.id === action.payload.blockId,
             );
-
-            if (!blockToRemove) return state;
+            if (!exists) return state;
 
             return {
                 ...state,
-                blocks: state.blocks
-                    .filter((b) => b.id !== action.payload.blockId)
-                    .map((b) =>
-                        b.position > blockToRemove.position
-                            ? { ...b, position: b.position - 1 }
-                            : b,
-                    ),
+                blocks: reindex(
+                    state.blocks.filter((b) => b.id !== action.payload.blockId),
+                ),
             };
         }
 

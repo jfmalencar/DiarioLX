@@ -1,18 +1,21 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Edit, ClipboardCheck } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { TableBody, Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
-import { useContents } from '@/shared/hooks/useContents';
+import { useContents, type ContentState } from '@/shared/hooks/useContents';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { usePath } from '@/shared/hooks/usePath';
+import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
 type Props = {
-    filter: { archived: boolean };
+    filter: {
+        state: ContentState
+    };
 };
 
 const ContentsTable = ({ filter }: Props) => {
@@ -21,9 +24,12 @@ const ContentsTable = ({ filter }: Props) => {
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
     const { buildMediaUrl } = usePath();
+    const { user } = useAuthentication();
+
+    const canEditPublished = user?.features?.includes('edit-published')
 
     useEffect(() => {
-        const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { archived: filter.archived });
+        const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { state: filter.state });
         fetchAll(params)
     }, [fetchAll, searchParams, filter, buildQuery]);
 
@@ -45,7 +51,7 @@ const ContentsTable = ({ filter }: Props) => {
                     </TableColumn>
                 </TableHeader>
                 <TableBody cols={4} loading={loading} isEmpty={contents.length === 0} emptyMessage='Nenhuma publicação encontrada.'>
-                    {contents.map((row) => (
+                    {contents.map((row, index) => (
                         <TableRow key={row.id}>
                             <TableColumn className='col-lg-5'>
                                 <div className='d-flex align-items-center gap-3'>
@@ -86,13 +92,32 @@ const ContentsTable = ({ filter }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-3'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>AUTORES</div>
-                                <div className='text-secondary'>{row.authors.join(', ')}</div>
+                                <div className='text-secondary'>{row.authors.map(author => author.name).join(', ')}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                                    <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
-                                        <ExternalLink size={16} />
-                                    </Link>
+                                    {row.state === 'PUBLISHED' &&
+                                        <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
+                                            <ExternalLink size={16} />
+                                        </Link>
+                                    }
+                                    {(row.state !== 'PUBLISHED' || canEditPublished) &&
+                                        <Link
+                                            to={`/backoffice/contents/${row.id}`}
+                                            className='btn btn-dark rounded-2'
+                                            data-testid={`manage-content-button-${index}`}
+                                        >
+                                            <Edit size={16} />
+                                        </Link>
+                                    }
+                                    {row.state === 'PENDING_REVIEW' &&
+                                        <Link
+                                            to={`/backoffice/contents/${row.id}/review`}
+                                            className='btn btn-outline-dark rounded-2'
+                                        >
+                                            <ClipboardCheck size={16} />
+                                        </Link>
+                                    }
                                 </div>
                             </TableColumn>
                         </TableRow>
@@ -116,8 +141,14 @@ export const Contents = () => {
                     </>
                 }
             >
-                <Tab id='active' label={t('common.active-f')}>
-                    <ContentsTable filter={{ archived: false }} />
+                <Tab id='published' label={t('common.published')}>
+                    <ContentsTable filter={{ state: 'PUBLISHED' }} />
+                </Tab>
+                <Tab id='pending' label={t('common.pending')}>
+                    <ContentsTable filter={{ state: 'PENDING_REVIEW' }} />
+                </Tab>
+                <Tab id='draft' label={t('common.draft')}>
+                    <ContentsTable filter={{ state: 'DRAFT' }} />
                 </Tab>
             </Tabs>
         </>

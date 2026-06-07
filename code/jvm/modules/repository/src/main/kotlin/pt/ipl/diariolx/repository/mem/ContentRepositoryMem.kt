@@ -77,7 +77,6 @@ class ContentRepositoryMem(
                     content.featuredMediaId?.let { mediaRepo.get(it) }?.let {
                         MediaSummary(
                             it.id,
-                            it.mimeType.split("/").first(),
                             it.objectKey,
                             it.thumbnailObjectKey,
                             it.altText,
@@ -105,19 +104,18 @@ class ContentRepositoryMem(
         offset: Int,
         type: ContentType?,
         query: String?,
-        archived: Boolean,
-        onlyPublished: Boolean,
+        state: ContentState?,
         tag: String?,
         category: String?,
         from: LocalDate?,
         to: LocalDate?,
+        authorId: Int?,
     ): List<ContentSummary> =
         contents
             .filter { content ->
                 content.state == ContentState.PUBLISHED &&
                     content.slug != null &&
                     content.category != null &&
-                    (if (archived) content.archivedAt != null else content.archivedAt == null) &&
                     (
                         if (query ==
                             null
@@ -140,11 +138,12 @@ class ContentRepositoryMem(
                     category = it.category?.let { c -> CategorySummary(c.id, c.name, c.slug) },
                     tag = TagSummary(1, "Tag Test", "tag"),
                     createdAt = it.createdAt,
-                    archivedAt = it.archivedAt ?: Clock.System.now(),
+                    archivedAt = it.archivedAt,
+                    publishedAt = it.publishedAt,
                     categoryId = it.category?.id ?: -1,
                     categoryName = it.category?.name ?: "",
-                    featuredImage = it.featuredImage?.url,
-                    authors = it.authors.map { a -> a.name },
+                    featuredImage = it.featuredImage?.path,
+                    authors = it.authors,
                 )
             }
 
@@ -183,11 +182,12 @@ class ContentRepositoryMem(
                     state = it.state,
                     slug = it.slug,
                     createdAt = it.createdAt,
-                    archivedAt = it.archivedAt ?: Clock.System.now(),
+                    archivedAt = it.archivedAt,
+                    publishedAt = it.publishedAt,
                     categoryId = it.category?.id ?: -1,
                     categoryName = it.category?.name ?: "",
-                    featuredImage = it.featuredImage?.url,
-                    authors = it.authors.map { a -> a.name },
+                    featuredImage = it.featuredImage?.path,
+                    authors = it.authors,
                     category = null,
                     tag = null,
                 )

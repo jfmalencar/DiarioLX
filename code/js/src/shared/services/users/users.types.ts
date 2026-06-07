@@ -1,5 +1,6 @@
 import type { Pagination } from '@/shared/types/Pagination';
 import type { Query } from '@/shared/types/Query';
+import type { Endpoints } from '../bootstrap/bootstrap.types';
 
 export type UserRole = 'ADMIN' | 'EDITOR' | 'CONTRIBUTOR';
 
@@ -22,12 +23,13 @@ export type User = {
     updatedAt: string;
     isActive: boolean;
     role: UserRole;
+    features: string[]
 };
 
 export interface UsersService {
     fetchAll(params: Query): Promise<UsersResponse>;
 
-    getCurrentUser(): Promise<UserApiResponse | undefined>;
+    getCurrentUser(apiOverride?: Endpoints): Promise<UserApiResponse | undefined>;
 
     updateProfile(
         username?: string,
@@ -36,7 +38,7 @@ export interface UsersService {
         firstName?: string,
         lastName?: string,
         bio?: string | null
-    ): Promise<UserApiResponse | undefined>;
+    ): Promise<boolean | undefined>;
 
     completeAvatarUpload: (id: string) => Promise<void>;
 }

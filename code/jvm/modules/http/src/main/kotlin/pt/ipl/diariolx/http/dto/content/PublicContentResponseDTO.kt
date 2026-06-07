@@ -19,6 +19,7 @@ data class PublicContentResponseDTO(
     val authors: List<Author>,
     val blocks: List<ContentBlock>,
     val createdAt: String,
+    val publishedAt: String,
 ) {
     companion object {
         fun from(content: Content): PublicContentResponseDTO =
@@ -34,6 +35,7 @@ data class PublicContentResponseDTO(
                 authors = content.authors,
                 blocks = content.blocks,
                 createdAt = content.createdAt.toString(),
+                publishedAt = content.publishedAt.toString(),
             )
     }
 }

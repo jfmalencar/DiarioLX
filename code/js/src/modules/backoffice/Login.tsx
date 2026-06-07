@@ -72,6 +72,7 @@ export function Login() {
   const { t } = useI18n();
 
   if (state.stage === 'succeed') {
+    console.log('success')
     return <Navigate to={location.state?.source || '/backoffice'} replace={true} />;
   }
 

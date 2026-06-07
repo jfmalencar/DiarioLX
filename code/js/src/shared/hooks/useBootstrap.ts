@@ -1,14 +1,16 @@
 import { useContext } from 'react';
 import { createContext } from 'react';
 
-import type { Endpoints, Assets } from '../services/bootstrap/bootstrap.types';
+import type { Endpoints, Assets, CreditRole } from '../services/bootstrap/bootstrap.types';
 
-export type { Endpoints, Assets }
+export type { Endpoints, Assets, CreditRole }
 
 export type BootstrapState = {
-  assets: Assets;
   endpoints: Endpoints;
+  assets: Assets;
+  creditRoles: CreditRole[];
   loading: boolean;
+  reload: () => Promise<{ api: Endpoints }>;
 };
 
 export const BootstrapContext = createContext<BootstrapState | null>(null);

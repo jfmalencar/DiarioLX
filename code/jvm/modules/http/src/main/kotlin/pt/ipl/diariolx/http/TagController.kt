@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.users.UserRole
+import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
+import pt.ipl.diariolx.http.annotations.MayReturnConflict
+import pt.ipl.diariolx.http.annotations.MayReturnCreated
+import pt.ipl.diariolx.http.annotations.MayReturnForbidden
+import pt.ipl.diariolx.http.annotations.MayReturnNoContent
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
 import pt.ipl.diariolx.http.annotations.MayReturnTagOk
@@ -72,7 +77,13 @@ class TagController(
         )
     }
 
+    @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Tags.CREATE)
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnBadRequest
+    @MayReturnConflict
+    @MayReturnCreated
     fun createTag(
         @RequestBody body: CreateUpdateTagRequestDTO,
     ): ResponseEntity<*> =
@@ -81,51 +92,88 @@ class TagController(
                 ResponseEntity
                     .created(Uris.Tags.byId(res.value))
                     .build<Unit>()
-            is Failure -> ResponseEntity.badRequest().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    res.value.toProblem(),
+                    Uris.Tags.CREATE,
+                )
         }
 
+    @RequireRole(UserRole.ADMIN)
     @PutMapping(Uris.Tags.UPDATE)
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
+    @MayReturnBadRequest
+    @MayReturnConflict
+    @MayReturnNoContent
     fun updateTag(
-        @PathVariable id: String,
+        @PathVariable id: Int,
         @RequestBody body: CreateUpdateTagRequestDTO,
-    ): ResponseEntity<*> {
-        val id = id.toInt()
-        return when (tagService.update(id, body.name, body.slug, body.description)) {
+    ): ResponseEntity<*> =
+        when (val res = tagService.update(id, body.name, body.slug, body.description)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
-            is Failure -> ResponseEntity.badRequest().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    res.value.toProblem(),
+                    Uris.Tags.UPDATE,
+                )
         }
-    }
 
+    @RequireRole(UserRole.ADMIN)
     @DeleteMapping(Uris.Tags.DELETE)
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
+    @MayReturnBadRequest
+    @MayReturnNoContent
     fun deleteTag(
-        @PathVariable id: String,
-    ): ResponseEntity<*> {
-        val id = id.toInt()
-        return when (tagService.delete(id)) {
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val res = tagService.delete(id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
-            is Failure -> ResponseEntity.badRequest().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    res.value.toProblem(),
+                    Uris.Tags.DELETE,
+                )
         }
-    }
 
+    @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Tags.ARCHIVE)
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
+    @MayReturnBadRequest
+    @MayReturnNoContent
     fun archiveTag(
-        @PathVariable id: String,
-    ): ResponseEntity<*> {
-        val id = id.toInt()
-        return when (tagService.archive(id)) {
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val res = tagService.archive(id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
-            is Failure -> ResponseEntity.badRequest().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    res.value.toProblem(),
+                    Uris.Tags.ARCHIVE,
+                )
         }
-    }
 
+    @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Tags.UNARCHIVE)
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
+    @MayReturnBadRequest
+    @MayReturnNoContent
     fun unarchiveTag(
-        @PathVariable id: String,
-    ): ResponseEntity<*> {
-        val id = id.toInt()
-        return when (tagService.unarchive(id)) {
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val res = tagService.unarchive(id)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
-            is Failure -> ResponseEntity.badRequest().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    res.value.toProblem(),
+                    Uris.Tags.UNARCHIVE,
+                )
         }
-    }
 }

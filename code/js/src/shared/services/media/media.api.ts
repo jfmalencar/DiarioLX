@@ -11,7 +11,7 @@ export const useMediaApiService = (): MediaService => {
 
   return useMemo<MediaService>(() => ({
     async fetchAll(params) {
-      const result = await get<MediasResponse>(`${endpoints.medias.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      const result = await get<MediasResponse>(`${endpoints.backoffice.medias.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
         throw new Error('Failed to fetch media');
       }
@@ -19,7 +19,7 @@ export const useMediaApiService = (): MediaService => {
     },
 
     async getSignedUrl(media) {
-      const result = await post<SignedUpload>(endpoints.medias.signedUrl.href, {
+      const result = await post<SignedUpload>(endpoints.backoffice.medias.signedUrl.href, {
         altText: media.altText,
         credits: media.credits.map(
           (credit) => ({
@@ -28,7 +28,7 @@ export const useMediaApiService = (): MediaService => {
           })
         ),
         originalFileName: media.file.name,
-        contentType: media.file.type,
+        mimeType: media.file.type,
         uploadType: media.uploadType
       });
       if (!result.success) {
@@ -38,7 +38,7 @@ export const useMediaApiService = (): MediaService => {
     },
 
     async completeUpload(id) {
-      const result = await post(endpoints.medias.completeUpload.href.replace('{id}', id), {});
+      const result = await post(endpoints.backoffice.medias.completeUpload.href.replace('{id}', id), {});
       if (!result.success) {
         throw new Error('Failed to complete upload');
       }

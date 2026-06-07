@@ -4,10 +4,13 @@ import type { Pagination } from '@/shared/types/Pagination';
 
 export type ContentType = 'ARTICLE' | 'VIDEO' | 'EPISODE' | 'PODCAST';
 
+export type ContentState = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED'
+
 export type Content = {
-    id: string;
+    id: number;
     title: string;
     slug: string;
+    state: ContentState;
     type: ContentType;
     headline: string;
     featuredImage: Media | null;
@@ -18,12 +21,12 @@ export type Content = {
         slug: string;
     }
     authors: {
-        authorId: string;
+        id: string;
         slug: string;
         name: string;
     }[]
     tags: {
-        tagId: string;
+        id: string;
         name: string;
         slug: string;
     }[]
@@ -36,11 +39,16 @@ export type Content = {
 export type ContentSummary = {
     id: string;
     title: string;
+    state: ContentState;
     type: ContentType;
     slug: string;
     featuredImage: string
     category: string
-    authors: string[]
+    authors: {
+        id: string
+        name: string
+        slug: string
+    }[]
     createdAt: string
     publishedAt: string | null
 }
@@ -50,28 +58,45 @@ type ContentBlockBase = {
     position: number;
 };
 
+export type ContentH3Block = ContentBlockBase & {
+    type: 'H3';
+    content: string;
+};
+
+export type ContentH4Block = ContentBlockBase & {
+    type: 'H4';
+    content: string;
+};
+
 export type ContentQuoteBlock = ContentBlockBase & {
-    type: 'quote';
+    type: 'QUOTE';
     content: string;
 };
 
 export type ContentTextBlock = ContentBlockBase & {
-    type: 'text';
+    type: 'TEXT';
     content: string;
 };
 
 export type ContentImageBlock = ContentBlockBase & {
-    type: 'image';
+    type: 'IMAGE';
     media: Media;
     caption: string | null;
 };
 
-export type ContentBlock = ContentTextBlock | ContentQuoteBlock | ContentImageBlock;
+export type ContentBlock =
+    | ContentTextBlock
+    | ContentQuoteBlock
+    | ContentImageBlock
+    | ContentH3Block
+    | ContentH4Block
 
 export type ContentBlockRequest =
-    | { type: 'text'; id: string, position: number, content: string }
-    | { type: 'quote'; id: string, position: number, content: string }
-    | { type: 'image'; id: string, position: number, mediaId: string; };
+    | { type: 'H3'; id: string, position: number, content: string }
+    | { type: 'H4'; id: string, position: number, content: string }
+    | { type: 'TEXT'; id: string, position: number, content: string }
+    | { type: 'QUOTE'; id: string, position: number, content: string }
+    | { type: 'IMAGE'; id: string, position: number, mediaId: string; };
 
 export type ContentFormValues = {
     title: string;
@@ -112,6 +137,10 @@ export type ContentsResponse = {
     pagination: Pagination
 };
 
+export type NewContentResponse = {
+    id: number
+}
+
 export type ContentResponse = Content
 
 export interface ContentsService {
@@ -119,13 +148,17 @@ export interface ContentsService {
 
     fetchPublished(params: Query): Promise<ContentsResponse>;
 
-    fetchOne(id: string): Promise<ContentResponse>;
+    fetchById(id: number): Promise<ContentResponse>;
 
-    create(content: CreateContentRequest): Promise<number>;
+    fetchBySlug(slug: string): Promise<ContentResponse>;
+
+    create(content: CreateContentRequest): Promise<NewContentResponse>;
 
     update(id: number, content: UpdateContentRequest): Promise<void>;
 
     publish(id: number): Promise<void>;
+
+    submit(id: number): Promise<void>;
 
     delete(id: number): Promise<void>;
 

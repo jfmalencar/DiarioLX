@@ -10,15 +10,19 @@ export const useUsersApiService = (): UsersService => {
 
   return useMemo<UsersService>(() => ({
     async fetchAll(params) {
-      const result = await get<UsersResponse>(`${endpoints.users.list.href}?` + new URLSearchParams(params as Record<string, string>).toString());
+      const result = await get<UsersResponse>(`${endpoints.backoffice.users.list.href}?` + new URLSearchParams(params as Record<string, string>).toString());
       if (!result.success) {
         throw new Error('Failed to fetch users');
       }
       return result.data;
     },
 
-    async getCurrentUser() {
-      const result = await get<UserApiResponse>(endpoints.users.me.href);
+    async getCurrentUser(apiOverride) {
+      const uri = apiOverride ? apiOverride : endpoints
+      if (!uri.backoffice) {
+        return undefined
+      }
+      const result = await get<UserApiResponse>(uri.backoffice.users.me.href);
       if (!result.success) {
         return undefined;
       }
@@ -26,7 +30,7 @@ export const useUsersApiService = (): UsersService => {
     },
 
     async updateProfile(username, email, password, firstName, lastName, bio) {
-      const result = await patch<UserApiResponse>(endpoints.users.me.href, {
+      const result = await patch<UserApiResponse>(endpoints.backoffice.users.me.href, {
         username: username || null,
         email: email || null,
         password: password || null,
@@ -38,12 +42,11 @@ export const useUsersApiService = (): UsersService => {
       if (!result.success) {
         return undefined;
       }
-
-      return result.data;
+      return true;
     },
 
     async completeAvatarUpload(id) {
-      const result = await patch(endpoints.users.avatar.href, { avatarMediaId: id });
+      const result = await patch(endpoints.backoffice.users.avatar.href, { avatarMediaId: id });
       if (!result.success) {
         throw new Error('Failed to complete upload');
       }

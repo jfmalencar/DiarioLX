@@ -1,10 +1,21 @@
 package pt.ipl.diariolx.http.problems
 
 import pt.ipl.diariolx.utils.AuthError
+import pt.ipl.diariolx.utils.CategoryError
 import pt.ipl.diariolx.utils.ContentError
 import pt.ipl.diariolx.utils.InviteError
 import pt.ipl.diariolx.utils.TagError
 import pt.ipl.diariolx.utils.UserError
+
+fun CategoryError.toProblem() =
+    when (this) {
+        is CategoryError.EmptyName -> Problem.emptyName
+        is CategoryError.InvalidSlug -> Problem.invalidSlug
+        is CategoryError.InvalidColor -> Problem.invalidColor
+        is CategoryError.InvalidParent -> Problem.invalidParent
+        is CategoryError.CategoryNotFound -> Problem.notFound
+        is CategoryError.SlugAlreadyExists -> Problem.invalidSlug
+    }
 
 fun TagError.toProblem() =
     when (this) {

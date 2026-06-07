@@ -8,6 +8,7 @@ import { useI18n } from '@/shared/hooks/useI18n';
 import { useMedia } from '@/shared/hooks/useMedia';
 import { usePath } from '@/shared/hooks/usePath';
 import { useUsers } from '@/shared/hooks/useUsers';
+import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
 import { Modal } from '@/shared/components/modals/Modal';
 
@@ -33,6 +34,7 @@ export function MyProfile() {
     const navigate = useNavigate();
     const { getSignedUrl } = useMedia();
     const { buildMediaUrl } = usePath();
+    const { showSnackbar } = useSnackbar();
 
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editFormData, setEditFormData] = useState({
@@ -48,6 +50,7 @@ export function MyProfile() {
     const [imageHovered, setImageHovered] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+    const bio = user?.bio?.trim() || '';
     const firstName = user?.firstName?.trim() || '';
     const lastName = user?.lastName?.trim() || '';
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || t('myprofile.profile_name');
@@ -82,7 +85,7 @@ export function MyProfile() {
         try {
             const signedUpload = await getSignedUrl({ uploadType: 'PROFILE_PICTURES', altText: "Profile image", file, credits: [] });
             if (!signedUpload) {
-                alert(t('common.upload_error') || 'Upload failed');
+                showSnackbar(t('common.upload_error'), 'error');
                 return;
             }
 
@@ -92,7 +95,7 @@ export function MyProfile() {
                 headers: { 'Content-Type': file.type },
             });
             if (!uploadResponse.ok) {
-                throw new Error('Upload failed');
+                showSnackbar(t('common.upload_error'), 'error');
             }
 
             await completeAvatarUpload(signedUpload.id);
@@ -100,7 +103,7 @@ export function MyProfile() {
 
         } catch (err) {
             console.error(err);
-            alert(t('common.upload_error') || 'Upload failed');
+            showSnackbar(t('common.upload_error'), 'error');
         } finally {
             setUploadLoading(false);
         }
@@ -109,7 +112,7 @@ export function MyProfile() {
     const handleSaveProfile = async () => {
         setSaveLoading(true);
         try {
-            await updateProfile(
+            const result = await updateProfile(
                 editFormData.username,
                 editFormData.email,
                 editFormData.password || undefined,
@@ -117,13 +120,17 @@ export function MyProfile() {
                 editFormData.lastName,
                 editFormData.bio || null
             );
+            if (result) {
+                showSnackbar('Perfil atualizado com sucesso!', 'success');
+            } else {
+                showSnackbar(t('common.save_error'), 'error');
+            }
 
             await refreshUser();
-
             setEditModalOpen(false);
         } catch (err) {
             console.error(err);
-            alert(t('common.save_error') || 'Failed to save');
+            showSnackbar(t('common.save_error'), 'error');
         } finally {
             setSaveLoading(false);
         }
@@ -138,8 +145,6 @@ export function MyProfile() {
         <div className='d-flex justify-content-center py-4 py-lg-5'>
             <div style={{ width: '100%', maxWidth: 568, position: 'relative' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-
-                    {/* Profile Picture with Upload Overlay */}
                     <div
                         style={{
                             position: 'relative',
@@ -197,6 +202,9 @@ export function MyProfile() {
                     </div>
                     <div style={{ color: 'black', fontSize: 22, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'lowercase', wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
                         {email}
+                    </div>
+                    <div style={{ color: 'black', fontSize: 16, fontFamily: 'Sora, sans-serif', fontWeight: 400, wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
+                        {bio}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', position: 'relative', marginTop: '0px' }}>
                         <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{t('myprofile.created_at')} </span>
@@ -339,25 +347,23 @@ export function MyProfile() {
                             </button>
                         </div>
                     </div>
-
-                    {/* First Name */}
                     <div>
                         <label className='form-label'>{t('common.first_name')}</label>
                         <input
                             type='text'
                             className='form-control'
                             value={editFormData.firstName}
+                            minLength={3}
                             onChange={(e) => setEditFormData(prev => ({ ...prev, firstName: e.target.value }))}
                         />
                     </div>
-
-                    {/* Last Name */}
                     <div>
                         <label className='form-label'>{t('common.last_name')}</label>
                         <input
                             type='text'
                             className='form-control'
                             value={editFormData.lastName}
+                            minLength={3}
                             onChange={(e) => setEditFormData(prev => ({ ...prev, lastName: e.target.value }))}
                         />
                     </div>

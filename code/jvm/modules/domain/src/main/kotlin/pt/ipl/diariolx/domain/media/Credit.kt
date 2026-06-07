@@ -2,5 +2,5 @@ package pt.ipl.diariolx.domain.media
 
 data class Credit(
     val userId: Int,
-    val role: String,
+    val role: CreditRole,
 )

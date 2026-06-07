@@ -11,7 +11,7 @@ sealed class CategoryError(
 
     object SlugAlreadyExists : CategoryError("Category slug already exists")
 
-    object ParentNotFound : CategoryError("Parent category not found")
+    object InvalidParent : CategoryError("Invalid parent category")
 
     object InvalidColor : CategoryError("Invalid color")
 

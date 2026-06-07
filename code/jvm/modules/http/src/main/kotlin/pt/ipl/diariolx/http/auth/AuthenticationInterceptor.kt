@@ -9,6 +9,7 @@ import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
+import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.problems.createProblemDetail
 
@@ -26,6 +27,11 @@ class AuthenticationInterceptor(
 
         val requiresLogin =
             handler.hasMethodOrClassAnnotation<RequireRole>()
+
+        val requireRole =
+            handler.methodParameters.any {
+                it.parameterType == UserRole::class.java
+            }
 
         val requireUser =
             handler.methodParameters.any {
@@ -67,6 +73,9 @@ class AuthenticationInterceptor(
             }
         }
 
+        if (requireRole && jwtInfo != null) {
+            RoleArgumentResolver.addUserRoleTo(jwtInfo.role, request)
+        }
         if (requireUser) {
             val authUser = jwtInfo?.let { authorizationHeaderProcessor.processUser(jwtInfo.userId, accessToken) }
             if (authUser == null) {

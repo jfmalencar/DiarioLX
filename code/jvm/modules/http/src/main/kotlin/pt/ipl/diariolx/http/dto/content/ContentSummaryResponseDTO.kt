@@ -1,39 +1,46 @@
 package pt.ipl.diariolx.http.dto.content
 
+import pt.ipl.diariolx.domain.author.Author
+import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
+import pt.ipl.diariolx.domain.content.ContentType
 
 data class ContentSummaryResponseDTO(
     val id: Int,
-    val title: String,
-    val slug: String,
-    val category: CategorySummaryResponseDTO,
-    val tag: TagSummaryResponseDTO,
+    val type: ContentType,
+    val title: String?,
+    val slug: String?,
+    val state: ContentState,
+    val category: CategorySummaryResponseDTO?,
+    val tag: TagSummaryResponseDTO?,
     val featuredImage: String?,
+    val authors: List<Author>,
+    val publishedAt: String? = null,
+    val archivedAt: String? = null,
     val createdAt: String,
-    val authors: List<String>,
-    val isPublished: Boolean,
 ) {
     companion object {
-        fun from(summary: ContentSummary): ContentSummaryResponseDTO {
-            require(summary.slug != null) { "Slug is null." }
-            require(summary.category != null) { "Category is null." }
-            require(summary.tag != null) { "Tag is null." }
-            return ContentSummaryResponseDTO(
+        fun from(summary: ContentSummary): ContentSummaryResponseDTO =
+            ContentSummaryResponseDTO(
                 id = summary.id,
                 title = summary.title,
-                slug = summary.slug!!,
+                slug = summary.slug,
                 category =
-                    CategorySummaryResponseDTO(
-                        summary.category!!.id,
-                        summary.category!!.name,
-                        summary.category!!.slug.value,
-                    ),
-                tag = TagSummaryResponseDTO(summary.tag!!.id, summary.tag!!.name, summary.tag!!.slug),
+                    summary.category?.let {
+                        CategorySummaryResponseDTO(
+                            it.id,
+                            it.name,
+                            it.slug.value,
+                        )
+                    },
+                tag = summary.tag?.let { TagSummaryResponseDTO(it.id, it.name, it.slug) },
                 featuredImage = summary.featuredImage,
-                createdAt = summary.createdAt.toString(),
                 authors = summary.authors,
-                isPublished = true,
+                type = summary.type,
+                state = summary.state,
+                publishedAt = summary.publishedAt?.toString(),
+                archivedAt = summary.archivedAt?.toString(),
+                createdAt = summary.createdAt.toString(),
             )
-        }
     }
 }

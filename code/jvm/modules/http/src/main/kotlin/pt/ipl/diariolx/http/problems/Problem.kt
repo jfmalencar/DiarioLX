@@ -50,6 +50,30 @@ class Problem(
                 HttpStatus.BAD_REQUEST,
             )
 
+        val invalidColor =
+            Problem(
+                URI("$URL/invalid-color"),
+                "Invalid slug",
+                "The provided color is either invalid or already in use",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val invalidParent =
+            Problem(
+                URI("$URL/invalid-parent"),
+                "Invalid parent",
+                "The provided parent is invalid or does not exist",
+                HttpStatus.BAD_REQUEST,
+            )
+
+        val emptyName =
+            Problem(
+                URI("$URL/empty-name"),
+                "Empty name",
+                "The provided name is empty",
+                HttpStatus.BAD_REQUEST,
+            )
+
         val emptyField =
             Problem(
                 URI("$URL/empty-field"),

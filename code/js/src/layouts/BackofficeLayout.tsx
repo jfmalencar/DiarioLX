@@ -27,6 +27,7 @@ export const BackofficeLayout = () => {
   const matches = useMatches()
   const currentMatch = matches[matches.length - 1]
   const handle = currentMatch?.handle as RouteHandle
+  const canManageInvites = user?.features?.includes('manage-invites')
 
   if (handle.layout === 'none') {
     return (
@@ -88,9 +89,11 @@ export const BackofficeLayout = () => {
               <Link to='/backoffice/profile' className='nav-link text-white p-0'>
                 {t('backoffice_layout.profile')}
               </Link>
-              <Link to='/backoffice/invites' className='nav-link text-white p-0'>
-                {t('backoffice_layout.invites')}
-              </Link>
+              {canManageInvites &&
+                <Link to='/backoffice/invites' className='nav-link text-white p-0'>
+                  {t('backoffice_layout.invites')}
+                </Link>
+              }
             </nav>
           </div>
         </div>

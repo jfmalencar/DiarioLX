@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Edit, Archive, ArchiveRestore, Trash } from 'lucide-react';
@@ -110,6 +110,9 @@ export const Tags = () => {
     const [open, setOpen] = useState<null | Tag>(null);
     const [modalAction, setModalAction] = useState<ModalAction | null>(null);
 
+    const activeFilter = useMemo(() => ({ archived: false }), []);
+    const archivedFilter = useMemo(() => ({ archived: true }), []);
+
     const modalConfig: Record<ModalAction, ModalConfig> = {
         archive: {
             title: 'Arquivar etiqueta',
@@ -163,10 +166,10 @@ export const Tags = () => {
                 }
             >
                 <Tab id='active' label={t('common.active-f')}>
-                    <TagsTable filter={{ archived: false }} openModal={(action, tag) => { setModalAction(action); setOpen(tag); }} />
+                    <TagsTable filter={activeFilter} openModal={(action, tag) => { setModalAction(action); setOpen(tag); }} />
                 </Tab>
                 <Tab id='archived' label={t('common.archived')}>
-                    <TagsTable filter={{ archived: true }} openModal={(action, tag) => { setModalAction(action); setOpen(tag); }} />
+                    <TagsTable filter={archivedFilter} openModal={(action, tag) => { setModalAction(action); setOpen(tag); }} />
                 </Tab>
             </Tabs>
             <ConfirmModal

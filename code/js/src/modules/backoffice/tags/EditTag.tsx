@@ -107,12 +107,12 @@ export const EditTag = () => {
         return <Navigate to='/backoffice/tags' />;
     }
 
-    const handleChange = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (ev: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value = ev.currentTarget.name === 'slug' ? slugify(ev.currentTarget.value) : ev.currentTarget.value;
         dispatch({ type: 'edit', inputName: ev.currentTarget.name, inputValue: value });
     }
 
-    const handleSubmit = (ev: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (ev: React.ChangeEvent<HTMLFormElement>) => {
         ev.preventDefault();
         if (state.tag !== 'editing') return;
 

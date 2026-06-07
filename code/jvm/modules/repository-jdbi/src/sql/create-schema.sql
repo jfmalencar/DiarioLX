@@ -16,13 +16,29 @@ DROP TYPE IF EXISTS credit_role CASCADE;
 DROP TYPE IF EXISTS content_type CASCADE;
 
 CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
-CREATE TYPE credit_role AS ENUM ('PHOTOGRAPHER', 'VIDEOGRAPHER', 'AUDIOGRAPHER', 'WRITER', 'DIRECTOR', 'PRODUCER', 'ACTOR', 'MODEL', 'OTHER');
 CREATE TYPE content_type AS ENUM ('ARTICLE', 'VIDEO', 'EPISODE', 'PODCAST');
 CREATE TYPE content_state AS ENUM ('DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'REJECTED');
+CREATE TYPE media_purpose AS ENUM ('GALLERY', 'PROFILE');
+CREATE TYPE block_type AS ENUM ('TEXT', 'QUOTE', 'IMAGE', 'H3', 'H4');
+CREATE TYPE credit_role AS ENUM (
+    'PHOTOGRAPHER',
+    'VIDEOGRAPHER',
+    'AUDIO_ENGINEER',
+    'WRITER',
+    'DIRECTOR',
+    'PRODUCER',
+    'EDITOR',
+    'NARRATOR',
+    'ACTOR',
+    'MODEL',
+    'ILLUSTRATOR',
+    'DESIGNER',
+    'OTHER'
+);
 
 CREATE TABLE medias (
     id                    SERIAL PRIMARY KEY,
-    type                  VARCHAR(20) NOT NULL CHECK (type IN ('image', 'video', 'audio')),
+    purpose               media_purpose NOT NULL,
     original_file_name    TEXT NOT NULL,
     bucket                TEXT NOT NULL,
     object_key            TEXT NOT NULL,
@@ -135,7 +151,7 @@ CREATE TABLE content_authors (
 CREATE TABLE content_blocks (
     id              SERIAL PRIMARY KEY,
     content_id      INTEGER NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
-    type            VARCHAR(20) NOT NULL CHECK (type IN ('text', 'quote', 'image')),
+    type            block_type NOT NULL,
     content         TEXT NULL,
     media_id        INTEGER NULL REFERENCES medias(id),
     position        INTEGER NOT NULL,
@@ -145,9 +161,9 @@ CREATE TABLE content_blocks (
 
     CONSTRAINT uq_content_blocks_content_position UNIQUE (content_id, position),
     CONSTRAINT chk_content_blocks_content CHECK (
-        (type IN ('text', 'quote') AND content IS NOT NULL)
+        (type IN ('TEXT', 'QUOTE', 'H3', 'H4') AND content IS NOT NULL)
             OR
-        (type = 'image' AND media_id IS NOT NULL)
+        (type = 'IMAGE' AND media_id IS NOT NULL)
     )
 );
 

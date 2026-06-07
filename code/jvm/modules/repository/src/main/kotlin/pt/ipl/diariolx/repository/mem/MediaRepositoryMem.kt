@@ -17,11 +17,11 @@ class MediaRepositoryMem : MediaRepository {
             Media(
                 id = id,
                 bucket = upload.bucket,
-                objectKey = upload.objectKey,
+                objectKey = upload.objectName,
                 thumbnailObjectKey = null,
                 altText = upload.altText,
                 credits = upload.credits.map { MediaCredit(it.userId, "Photographer name", "PHOTOGRAPHER", "author") },
-                mimeType = upload.contentType,
+                mimeType = upload.mimeType,
                 status = "pending",
                 sizeBytes = 0,
                 createdAt = Clock.System.now(),
@@ -36,6 +36,7 @@ class MediaRepositoryMem : MediaRepository {
         limit: Int,
         offset: Int,
         type: String?,
+        purpose: String?,
     ): List<Media> = medias.filter { it.status === "ready" }.drop(offset).take(limit)
 
     override fun delete(id: Int): Boolean = medias.removeIf { it.id == id }

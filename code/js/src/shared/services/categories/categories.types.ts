@@ -40,16 +40,14 @@ export type CategoriesResponse = {
   pagination: Pagination
 };
 
-export type CategoryResponse = {
-  category: Category;
-}
+export type CategoryResponse = Category
 
 export interface CategoriesService {
   fetchAll(params: Query): Promise<CategoriesResponse>;
 
   fetchOne(id: string): Promise<CategoryResponse>;
 
-  create(category: CategoryFormValues): Promise<string | undefined>;
+  create(category: CategoryFormValues): Promise<boolean>;
 
   update(id: string, category: CategoryFormValues): Promise<void>;
 

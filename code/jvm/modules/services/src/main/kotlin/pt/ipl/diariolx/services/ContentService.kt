@@ -104,18 +104,22 @@ class ContentService(
             }
         }
 
-    fun publish(
-        me: User,
+    fun publish(id: Int): ContentUpdateResult = send(id, ContentState.PUBLISHED)
+
+    fun submit(id: Int): ContentUpdateResult = send(id, ContentState.PENDING_REVIEW)
+
+    fun send(
         id: Int,
+        newState: ContentState,
     ): ContentUpdateResult {
-        val newState =
-            if (me.role == UserRole.CONTRIBUTOR) {
-                ContentState.PENDING_REVIEW
-            } else {
-                ContentState.PUBLISHED
-            }
         return transactionManager.run { tx ->
             val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            if (content.title.isBlank()) {
+                return@run failure(ContentError.EmptyField)
+            }
+            if (content.headline.isBlank()) {
+                return@run failure(ContentError.EmptyField)
+            }
             if (content.slug == null) {
                 return@run failure(ContentError.EmptyField)
             }
@@ -132,16 +136,7 @@ class ContentService(
 
     fun reject(id: Int): ContentUpdateResult {
         return transactionManager.run { tx ->
-            val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
-            if (content.slug == null) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.category == null) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.featuredImage == null) {
-                return@run failure(ContentError.EmptyField)
-            }
+            tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
             tx.contentRepository.reject(id, clock.now())
             return@run success(Unit)
         }
@@ -191,18 +186,22 @@ class ContentService(
         page: Int,
         size: Int,
         query: String?,
-        archived: Boolean,
-    ): PageResponse<ContentSummary> =
-        transactionManager.run {
+        state: ContentState?,
+        user: User,
+    ): PageResponse<ContentSummary> {
+        val authorId = if (user.role < UserRole.EDITOR && state != ContentState.PUBLISHED) user.id else null
+        return transactionManager.run {
             paginate(page, size) { limit, offset ->
                 it.contentRepository.getAll(
                     limit = limit,
                     offset = offset,
                     query = query,
-                    archived = archived,
+                    state = state,
+                    authorId = authorId,
                 )
             }
         }
+    }
 
     fun internalGetById(id: Int): ContentResult =
         transactionManager.run {
@@ -211,33 +210,6 @@ class ContentService(
                 return@run failure(ContentError.ContentNotFound)
             } else {
                 return@run success(content)
-            }
-        }
-
-    fun internalGetBySlug(slug: String): ContentResult =
-        transactionManager.run {
-            val content = it.contentRepository.internalGetBySlug(slug)
-            if (content == null) {
-                return@run failure(ContentError.ContentNotFound)
-            } else {
-                return@run success(content)
-            }
-        }
-
-    fun internalGetAll(
-        page: Int,
-        size: Int,
-        query: String?,
-        archived: Boolean,
-    ): PageResponse<ContentSummary> =
-        transactionManager.run {
-            paginate(page, size) { limit, offset ->
-                it.contentRepository.getAll(
-                    limit = limit,
-                    offset = offset,
-                    query = query,
-                    archived = archived,
-                )
             }
         }
 }

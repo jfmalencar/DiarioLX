@@ -11,7 +11,7 @@ export const UnderlineInput = ({
     placeholder: string;
     disabled?: boolean;
     dataTestId?: string;
-    onChange: (ev: React.FormEvent<HTMLInputElement>) => void;
+    onChange: (ev: React.ChangeEvent<HTMLInputElement>) => void;
 }) => {
     return (
         <input

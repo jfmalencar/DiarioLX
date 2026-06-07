@@ -15,6 +15,7 @@ data class UserResponseDTO(
     val updatedAt: String,
     val isActive: Boolean,
     val role: UserRole,
+    val features: List<String>,
 ) {
     companion object {
         fun from(user: User) =
@@ -30,6 +31,7 @@ data class UserResponseDTO(
                 user.updatedAt.toString(),
                 user.active,
                 user.role,
+                user.role.features(),
             )
     }
 }

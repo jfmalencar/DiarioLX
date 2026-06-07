@@ -6,11 +6,12 @@ import java.net.URI
 object Uris {
     const val PREFIX = "/api"
     const val HOME = PREFIX
+    const val BACKOFFICE = "$PREFIX/backoffice"
 
     fun home(): URI = URI(HOME)
 
     object Users {
-        const val ROOT = "$PREFIX/users"
+        const val ROOT = "$BACKOFFICE/users"
 
         const val CREATE = ROOT
         const val GET_ALL = ROOT
@@ -26,7 +27,7 @@ object Uris {
     }
 
     object Invites {
-        const val ROOT = "$PREFIX/invites"
+        const val ROOT = "$BACKOFFICE/invites"
 
         const val CREATE = ROOT
         const val GET_ALL = ROOT
@@ -43,7 +44,7 @@ object Uris {
     }
 
     object Categories {
-        const val ROOT = "$PREFIX/categories"
+        const val ROOT = "$BACKOFFICE/categories"
 
         const val GET_BY_ID = "$ROOT/{id}"
         const val CREATE = ROOT
@@ -57,7 +58,7 @@ object Uris {
     }
 
     object Tags {
-        const val ROOT = "$PREFIX/tags"
+        const val ROOT = "$BACKOFFICE/tags"
 
         const val GET_BY_ID = "$ROOT/{id}"
         const val CREATE = ROOT
@@ -76,29 +77,30 @@ object Uris {
     }
 
     object Media {
-        const val UPLOAD = "$PREFIX/medias"
-        const val GET_ALL = "$PREFIX/medias"
-        const val GET_SIGNED_URL = "$PREFIX/medias/signed-url"
-        const val GET_USER_SIGNED_URL = "$PREFIX/medias/user-signed-url"
-        const val COMPLETE_UPLOAD = "$PREFIX/medias/{id}"
-        const val COMPLETE_AVATAR_UPLOAD = "$PREFIX/medias/me"
+        const val ROOT = "$BACKOFFICE/medias"
+
+        const val UPLOAD = ROOT
+        const val GET_ALL = ROOT
+        const val GET_SIGNED_URL = "$ROOT/signed-url"
+        const val COMPLETE_UPLOAD = "$ROOT/{id}"
     }
 
     object Content {
-        const val MAIN = "$PREFIX/contents"
-        const val ARCHIVE = "$PREFIX/contents/archive/{id}"
-        const val PUBLISH = "$PREFIX/contents/publish"
-        const val REJECT = "$PREFIX/contents/reject"
-        const val CONTENT_BY_ID = "$PREFIX/contents/{id}"
-        const val CONTENT_BY_SLUG = "$PREFIX/contents/{slug}"
-        const val GET_ALL = "$PREFIX/contents"
-        const val INTERNAL_CONTENT_BY_ID = "$PREFIX/internal-contents/{id}"
-        const val INTERNAL_CONTENT_BY_SLUG = "$PREFIX/internal-contents/{slug}"
-        const val INTERNAL_GET_ALL = "$PREFIX/internal-contents"
+        const val ROOT = "$BACKOFFICE/contents"
+
+        const val MAIN = ROOT
+        const val ARCHIVE = "$ROOT/{id}/archive"
+        const val PUBLISH = "$ROOT/{id}/publish"
+        const val SUBMIT = "$ROOT/{id}/submit"
+        const val REJECT = "$ROOT/{id}/reject"
+        const val CONTENT_BY_ID = "$ROOT/{id}"
+        const val INTERNAL_GET_ALL = ROOT
     }
 
-    object Public {
+    object Guest {
         const val HOMEPAGE = "$PREFIX/homepage"
         const val NAVIGATION = "$PREFIX/navigation"
+        const val LIST_CONTENT = "$PREFIX/contents"
+        const val GET_CONTENT = "$PREFIX/contents/{slug}"
     }
 }

@@ -62,7 +62,7 @@ async function request<T>(
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/problem+json')) {
         const problem = await response.json();
-        return { success: false, error: problem.title || `Action failed: ${response.status}` };
+        return { success: false, error: problem.detail || `Action failed: ${response.status}` };
       } else {
         const errorText = await response.text();
         return { success: false, error: `Action failed: ${response.status} - ${errorText}` };

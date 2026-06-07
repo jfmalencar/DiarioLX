@@ -1,6 +1,6 @@
 import type { Media } from '@/shared/hooks/useMedia';
 
-export type MediaType = 'image' | 'video' | 'audio';
+export type MediaType = 'IMAGE' | 'VIDEO' | 'AUDIO';
 
 export type MediaGalleryProps = {
     mediaType: MediaType;

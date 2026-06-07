@@ -1,11 +1,10 @@
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
 
-export type MediaType = 'image' | 'video' | 'audio';
+export type MediaType = 'IMAGE' | 'VIDEO' | 'AUDIO';
 
 export type Media = {
     id: string;
-    type: MediaType;
     path: string;
     thumbnailPath: string | null;
     credits: {

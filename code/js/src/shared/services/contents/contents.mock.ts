@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 
-import type { ContentsService, Content } from './contents.types';
+import type { ContentsService, Content, ContentType, ContentState } from './contents.types';
 
 const fakeContents: Content[] = [
   {
-    id: '1',
+    id: 1,
     type: 'ARTICLE',
     title: 'Content 1',
     slug: 'content-1',
+    state: 'DRAFT',
     headline: 'Description 1',
     blocks: [],
     featuredImage: null,
@@ -18,14 +19,14 @@ const fakeContents: Content[] = [
     },
     authors: [
       {
-        authorId: '1',
+        id: '1',
         name: 'Author 1',
         slug: 'author-1',
       },
     ],
     tags: [
       {
-        tagId: '1',
+        id: '1',
         name: 'Tag 1',
         slug: 'tag-1',
       },
@@ -65,8 +66,16 @@ export const useContentsMockService = (): ContentsService => {
       return this.fetchAll(params)
     },
 
-    async fetchOne(id) {
+    async fetchById(id) {
       const content = fakeContents.find((art) => art.id === id);
+      if (!content) {
+        throw new Error('Content not found');
+      }
+      return content;
+    },
+
+    async fetchBySlug(slug) {
+      const content = fakeContents.find((art) => art.slug === slug);
       if (!content) {
         throw new Error('Content not found');
       }
@@ -75,23 +84,20 @@ export const useContentsMockService = (): ContentsService => {
 
     async create(content) {
       const newContent = {
-        ...content,
-        id: String(fakeContents.length + 1),
+        id: fakeContents.length + 1,
+        type: content.type as ContentType,
+        title: 'DRAFT',
+        state: 'DRAFT' as ContentState,
+        slug: '',
         category: {
-          id: content.category.id,
-          name: `Category ${content.category.id}`,
-          slug: `category-${content.category.id}`,
+          id: '1',
+          name: 'Category 1',
+          slug: 'category-1',
         },
-        authors: content.authors.map((author) => ({
-          authorId: author.authorId,
-          name: `Author ${author.authorId}`,
-          slug: `author-${author.authorId}`,
-        })),
-        tags: content.tags.map((tag) => ({
-          tagId: tag.tagId,
-          name: `Tag ${tag.tagId}`,
-          slug: `tag-${tag.tagId}`,
-        })),
+        headline: '',
+        blocks: [],
+        authors: [],
+        tags: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         publishedAt: null,
@@ -100,7 +106,7 @@ export const useContentsMockService = (): ContentsService => {
       };
       await new Promise((resolve) => setTimeout(resolve, 2000));
       fakeContents.push(newContent);
-      return newContent.id;
+      return { id: newContent.id }
     },
 
     async update(id, content) {
@@ -136,18 +142,5 @@ export const useContentsMockService = (): ContentsService => {
         updatedAt: new Date().toISOString(),
       };
     },
-
-    async unarchive(id) {
-      const index = fakeContents.findIndex((art) => art.id === id);
-      if (index === -1) {
-        throw new Error('Content not found');
-      }
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      fakeContents[index] = {
-        ...fakeContents[index],
-        archivedAt: null,
-        updatedAt: new Date().toISOString(),
-      };
-    }
   }), [])
 };

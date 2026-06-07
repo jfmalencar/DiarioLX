@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import pt.ipl.diariolx.domain.media.Credit
+import pt.ipl.diariolx.domain.media.CreditRole
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.media.MediaResponseDTO
@@ -74,10 +75,10 @@ class MediaController(
         val response =
             mediaService.getSignedUrl(
                 altText = body.altText,
-                credits = body.credits.map { Credit(it.userId, it.role) },
-                contentType = body.contentType,
+                credits = body.credits.map { Credit(it.userId, CreditRole.valueOf(it.role)) },
                 originalFileName = body.originalFileName,
                 uploadType = body.uploadType,
+                mimeType = body.mimeType,
             )
         if (response is Success) {
             return ResponseEntity.ok(response.value)

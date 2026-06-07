@@ -121,24 +121,24 @@ integralmente os requisitos do projeto, em particular o controlo de acessos base
 em papéis, um fluxo de publicação estruturado, a integração de conteúdos multimédia
 e uma arquitectura de aplicação desacoplada.
 
-A solução proposta segue uma arquitectura cliente-servidor composta por um frontend
-em React e um backend em Spring Boot implementado em Kotlin. O PostgreSQL foi adoptado
-para a persistência de dados estruturados, enquanto os assets multimédia são
+A solução proposta segue uma arquitectura cliente-servidor composta por um \textit{frontend}
+em React e um \textit{backend} em Spring Boot implementado em Kotlin. O PostgreSQL foi adoptado
+para a persistência de dados estruturados, enquanto os \textit{assets} multimédia são
 armazenados num serviço compatível com S3 auto-hospedado (SeaweedFS). A comunicação
 entre componentes é realizada através de uma API REST, com respostas de erro a seguir
-o standard Problem Details for HTTP APIs (RFC 9457).
+o \textit{standard Problem Details for HTTP APIs} (RFC 9457).
 
 A plataforma foi projetada para suportar um fluxo editorial em que o conteúdo progride
 por estados definidos — rascunho, pendente de aprovação, publicado e rejeitado —
 suportado por um modelo de permissões baseado em três níveis de utilizador:
 Colaborador, Editor e Administrador. Na versão beta, o fluxo editorial encontra-se
-em desenvolvimento activo. A autenticação é implementada através de JSON
-Web Tokens (JWT), com tokens de acesso de curta duração e tokens de atualização
-de longa duração armazenados em cookies \texttt{HttpOnly}, permitindo a validação
+em desenvolvimento activo. A autenticação é implementada através de \textit{JSON
+  Web Tokens} (JWT), com \textit{tokens} de acesso de curta duração e \textit{tokens} de atualização
+de longa duração armazenados em \textit{cookies} \texttt{HttpOnly}, permitindo a validação
 stateless dos pedidos e a mitigação de ataques XSS.
 
 Este relatório descreve a versão beta do sistema, cobrindo as decisões de
-arquitectura, modelo de dados, implementação do backend e frontend, e os testes
+arquitectura, modelo de dados, implementação do \textit{backend} e \textit{frontend}, e os testes
 realizados até à data. A plataforma desenvolvida demonstra a viabilidade de uma
 solução dedicada, adaptada aos fluxos editoriais e requisitos técnicos do Diário LX.
 

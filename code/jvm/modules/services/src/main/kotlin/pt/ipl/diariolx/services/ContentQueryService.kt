@@ -2,6 +2,7 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.PageResponse
+import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.repository.TransactionManager
@@ -16,10 +17,12 @@ import java.time.LocalDate
 class ContentQueryService(
     private val transactionManager: TransactionManager,
 ) {
-    fun getBySlug(slug: String): ContentResult =
+    fun getPublishedBySlug(slug: String): ContentResult =
         transactionManager.run {
             val content = it.contentRepository.getBySlug(slug)
             if (content == null) {
+                return@run failure(ContentError.ContentNotFound)
+            } else if (content.state != ContentState.PUBLISHED) {
                 return@run failure(ContentError.ContentNotFound)
             } else {
                 return@run success(content)

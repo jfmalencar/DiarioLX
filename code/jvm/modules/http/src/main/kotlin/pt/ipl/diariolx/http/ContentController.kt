@@ -1,5 +1,6 @@
 package pt.ipl.diariolx.http
 
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -11,12 +12,13 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.domain.content.ContentSummary
+import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnContentOk
 import pt.ipl.diariolx.http.annotations.MayReturnCreated
+import pt.ipl.diariolx.http.annotations.MayReturnNoContent
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
@@ -24,8 +26,7 @@ import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.content.ContentResponseDTO
 import pt.ipl.diariolx.http.dto.content.ContentSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentDTO
-import pt.ipl.diariolx.http.dto.content.PublicContentResponseDTO
-import pt.ipl.diariolx.http.dto.content.PublishContentDTO
+import pt.ipl.diariolx.http.dto.content.CreateContentResponseDTO
 import pt.ipl.diariolx.http.dto.content.UpdateContentDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
@@ -40,63 +41,8 @@ import pt.ipl.diariolx.utils.Success
 class ContentController(
     private val contentService: ContentService,
 ) {
-    @GetMapping(Uris.Content.CONTENT_BY_ID)
-    @MayReturnContentOk
-    @MayReturnUnauthorized
-    @MayReturnNotFound
-    fun getById(
-        @PathVariable id: Int,
-    ): ResponseEntity<*> =
-        when (val response = contentService.getById(id)) {
-            is Success -> ResponseEntity.ok(PublicContentResponseDTO.from(response.value))
-            is Failure ->
-                Problem.response(
-                    Problem.notFound,
-                    Uris.Content.CONTENT_BY_ID,
-                )
-        }
-
-    @GetMapping(Uris.Content.CONTENT_BY_SLUG)
-    @MayReturnContentOk
-    @MayReturnUnauthorized
-    @MayReturnNotFound
-    fun getBySlug(
-        @PathVariable slug: String,
-    ): ResponseEntity<*> =
-        when (val response = contentService.getBySlug(slug)) {
-            is Success -> ResponseEntity.ok(PublicContentResponseDTO.from(response.value))
-            is Failure ->
-                Problem.response(
-                    Problem.notFound,
-                    Uris.Content.CONTENT_BY_SLUG,
-                )
-        }
-
-    @GetMapping(Uris.Content.GET_ALL)
-    @MayReturnPaginationOk
-    @MayReturnUnauthorized
-    fun getAllContent(
-        @RequestParam page: Int = 1,
-        @RequestParam size: Int = 10,
-        @RequestParam query: String? = null,
-        @RequestParam archived: Boolean = false,
-    ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
-        val response = contentService.getAll(page, size, query, archived)
-        return ResponseEntity.ok().body(
-            PaginatedResponseDTO(
-                response.items.map { ContentSummaryResponseDTO.from(it) },
-                Pagination(
-                    response.page,
-                    response.pageSize,
-                    response.hasPrevious,
-                    response.hasNext,
-                ),
-            ),
-        )
-    }
-
     @RequireRole(UserRole.CONTRIBUTOR)
-    @GetMapping(Uris.Content.INTERNAL_CONTENT_BY_ID)
+    @GetMapping(Uris.Content.CONTENT_BY_ID)
     @MayReturnContentOk
     @MayReturnUnauthorized
     @MayReturnNotFound
@@ -108,24 +54,7 @@ class ContentController(
             is Failure ->
                 Problem.response(
                     Problem.notFound,
-                    Uris.Content.INTERNAL_CONTENT_BY_ID,
-                )
-        }
-
-    @RequireRole(UserRole.CONTRIBUTOR)
-    @GetMapping(Uris.Content.INTERNAL_CONTENT_BY_SLUG)
-    @MayReturnContentOk
-    @MayReturnUnauthorized
-    @MayReturnNotFound
-    fun internalGetBySlug(
-        @PathVariable slug: String,
-    ): ResponseEntity<*> =
-        when (val response = contentService.internalGetBySlug(slug)) {
-            is Success -> ResponseEntity.ok(ContentResponseDTO.from(response.value))
-            is Failure ->
-                Problem.response(
-                    Problem.notFound,
-                    Uris.Content.INTERNAL_CONTENT_BY_SLUG,
+                    Uris.Content.CONTENT_BY_ID,
                 )
         }
 
@@ -137,12 +66,13 @@ class ContentController(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
-        @RequestParam archived: Boolean = false,
-    ): ResponseEntity<PaginatedResponseDTO<ContentSummary>> {
-        val response = contentService.internalGetAll(page, size, query, archived)
+        @RequestParam state: ContentState? = null,
+        @Parameter(hidden = true) me: AuthenticatedUser,
+    ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
+        val response = contentService.getAll(page, size, query, state, me.user)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
-                response.items,
+                response.items.map { ContentSummaryResponseDTO.from(it) },
                 Pagination(
                     response.page,
                     response.pageSize,
@@ -165,7 +95,7 @@ class ContentController(
             is Success ->
                 ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(response.value)
+                    .body(CreateContentResponseDTO(response.value))
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
@@ -207,7 +137,7 @@ class ContentController(
         }
 
     @RequireRole(UserRole.CONTRIBUTOR)
-    @DeleteMapping(Uris.Content.INTERNAL_CONTENT_BY_ID)
+    @DeleteMapping(Uris.Content.CONTENT_BY_ID)
     @MayReturnContentOk
     @MayReturnUnauthorized
     @MayReturnBadRequest
@@ -222,7 +152,7 @@ class ContentController(
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Content.INTERNAL_CONTENT_BY_ID,
+                    Uris.Content.CONTENT_BY_ID,
                 )
         }
 
@@ -247,29 +177,43 @@ class ContentController(
                 )
         }
 
+    @RequireRole(UserRole.EDITOR)
     @PostMapping(Uris.Content.PUBLISH)
-    @MayReturnContentOk
+    @MayReturnNoContent
     @MayReturnUnauthorized
     @MayReturnBadRequest
     fun publishContent(
-        me: AuthenticatedUser,
-        @RequestBody body: PublishContentDTO,
+        @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (
-            val response =
-                contentService.publish(
-                    me.user,
-                    body.id,
-                )
-        ) {
+        when (val response = contentService.publish(id)) {
             is Success ->
                 ResponseEntity
-                    .status(HttpStatus.OK)
+                    .status(HttpStatus.NO_CONTENT)
                     .build<Unit>()
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
                     Uris.Content.PUBLISH,
+                )
+        }
+
+    @RequireRole(UserRole.CONTRIBUTOR)
+    @PostMapping(Uris.Content.SUBMIT)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
+    fun submitContent(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val response = contentService.submit(id)) {
+            is Success ->
+                ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Content.SUBMIT,
                 )
         }
 
@@ -279,7 +223,7 @@ class ContentController(
     @MayReturnUnauthorized
     @MayReturnBadRequest
     fun rejectContent(
-        @RequestBody id: Int,
+        @PathVariable id: Int,
     ): ResponseEntity<*> =
         when (
             val response =

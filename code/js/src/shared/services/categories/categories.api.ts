@@ -11,7 +11,7 @@ export const useCategoriesApiService = (): CategoriesService => {
 
   return useMemo<CategoriesService>(() => ({
     async fetchAll(params) {
-      const result = await get<CategoriesResponse>(`${endpoints.categories.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      const result = await get<CategoriesResponse>(`${endpoints.backoffice.categories.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
         throw new Error('Failed to fetch categories');
       }
@@ -19,9 +19,9 @@ export const useCategoriesApiService = (): CategoriesService => {
     },
 
     async fetchOne(id) {
-      const result = await get<CategoryResponse>(endpoints.categories.get.href.replace('{id}', id));
+      const result = await get<CategoryResponse>(endpoints.backoffice.categories.get.href.replace('{id}', id));
       if (!result.success) {
-        throw new Error('Failed to fetch category');
+        throw new Error(result.error || 'Failed to fetch category');
       }
       return result.data;
     },
@@ -36,11 +36,11 @@ export const useCategoriesApiService = (): CategoriesService => {
         parentId: category.parentId,
         parentName: category.parentName
       }
-      const result = await post<string>(endpoints.categories.create.href, request);
+      const result = await post<void>(endpoints.backoffice.categories.create.href, request);
       if (!result.success) {
-        throw new Error('Failed to create category');
+        throw new Error(result.error || 'Failed to create category');
       }
-      return result.data;
+      return true;
     },
 
     async update(id, category) {
@@ -53,30 +53,30 @@ export const useCategoriesApiService = (): CategoriesService => {
         parentId: category.parentId,
         parentName: category.parentName
       }
-      const result = await put(endpoints.categories.update.href.replace('{id}', id), request);
+      const result = await put(endpoints.backoffice.categories.update.href.replace('{id}', id), request);
       if (!result.success) {
-        throw new Error('Failed to update category');
+        throw new Error(result.error || 'Failed to update category');
       }
     },
 
     async delete(id) {
-      const result = await remove(endpoints.categories.delete.href.replace('{id}', id), {});
+      const result = await remove(endpoints.backoffice.categories.delete.href.replace('{id}', id), {});
       if (!result.success) {
-        throw new Error('Failed to delete category');
+        throw new Error(result.error || 'Failed to delete category');
       }
     },
 
     async archive(id) {
-      const result = await post(endpoints.categories.archive.href.replace('{id}', id), {});
+      const result = await post(endpoints.backoffice.categories.archive.href.replace('{id}', id), {});
       if (!result.success) {
-        throw new Error('Failed to archive category');
+        throw new Error(result.error || 'Failed to archive category');
       }
     },
 
     async unarchive(id) {
-      const result = await post(endpoints.categories.unarchive.href.replace('{id}', id), {});
+      const result = await post(endpoints.backoffice.categories.unarchive.href.replace('{id}', id), {});
       if (!result.success) {
-        throw new Error('Failed to unarchive category');
+        throw new Error(result.error || 'Failed to unarchive category');
       }
     }
   }), [get, post, put, remove, endpoints])

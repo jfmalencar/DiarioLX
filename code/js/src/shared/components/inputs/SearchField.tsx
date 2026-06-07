@@ -22,7 +22,7 @@ export const SearchField = ({
     options: Option[];
     placeholder: string;
     loading?: boolean;
-    onSearch: (ev: React.FormEvent<HTMLInputElement>) => void;
+    onSearch: (ev: React.ChangeEvent<HTMLInputElement>) => void;
     onSelect: (option: Option) => void;
 }) => {
     const [isOpen, setIsOpen] = useState(false);

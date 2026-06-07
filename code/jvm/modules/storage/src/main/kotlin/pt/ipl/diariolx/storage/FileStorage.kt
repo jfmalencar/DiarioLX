@@ -35,7 +35,7 @@ interface FileStorage {
     fun getUploadSignedUrl(
         bucket: String,
         objectName: String,
-        contentType: String,
+        mimeType: String,
         expiresIn: Duration = Duration.ofMinutes(15),
     ): String
 }

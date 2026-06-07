@@ -1,5 +1,6 @@
 import { useContext, createContext } from 'react';
 import type { User } from '@/shared/services/users/users.types';
+import type { Endpoints } from './useBootstrap';
 
 export type AuthUser = User | undefined;
 
@@ -18,7 +19,7 @@ export type AuthenticationState = {
     lastName: string,
     inviteCode: string
   ) => Promise<boolean>;
-  refreshUser: () => Promise<AuthUser>;
+  refreshUser: (apiOverride: Endpoints) => Promise<AuthUser>;
   setUser: (user: User) => void
 };
 
