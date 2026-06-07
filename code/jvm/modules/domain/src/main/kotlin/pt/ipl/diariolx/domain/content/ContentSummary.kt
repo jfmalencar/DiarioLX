@@ -1,16 +1,21 @@
 package pt.ipl.diariolx.domain.content
 
+import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.tag.TagSummary
 
 data class ContentSummary(
     val id: Int,
+    val type: ContentType,
     val title: String,
-    val slug: String,
-    val category: CategorySummary,
-    val tag: TagSummary,
+    val category: CategorySummary?,
+    val tag: TagSummary?,
+    val state: ContentState,
+    val slug: String?,
+    val createdAt: Instant,
+    val archivedAt: Instant,
+    val categoryId: Int?,
+    val categoryName: String?,
     val featuredImage: String?,
-    val createdAt: String,
     val authors: List<String>,
-    val isPublished: Boolean,
 )

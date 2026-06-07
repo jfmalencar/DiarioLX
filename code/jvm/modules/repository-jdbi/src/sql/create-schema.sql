@@ -18,6 +18,7 @@ DROP TYPE IF EXISTS content_type CASCADE;
 CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
 CREATE TYPE credit_role AS ENUM ('PHOTOGRAPHER', 'VIDEOGRAPHER', 'AUDIOGRAPHER', 'WRITER', 'DIRECTOR', 'PRODUCER', 'ACTOR', 'MODEL', 'OTHER');
 CREATE TYPE content_type AS ENUM ('ARTICLE', 'VIDEO', 'EPISODE', 'PODCAST');
+CREATE TYPE content_state AS ENUM ('DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'REJECTED');
 
 CREATE TABLE medias (
     id                    SERIAL PRIMARY KEY,
@@ -106,15 +107,22 @@ CREATE TABLE media_credits (
 
 CREATE TABLE contents (
     id                SERIAL PRIMARY KEY,
-    type              content_type NOT NULL,
-    title             VARCHAR(255) NOT NULL,
-    headline          TEXT,
-    featured_media_id INTEGER NULL REFERENCES medias(id),
-    slug              VARCHAR(255) NOT NULL UNIQUE,
-    category_id       INTEGER NOT NULL REFERENCES categories(id),
-    published_at      BIGINT NULL,
+    -----------------------------------------------------------------------
+    -- NOT NULLABLE FIELDS FOR ANY CONTENT TYPE
+    type              content_type NOT NULL DEFAULT 'ARTICLE',
+    title             VARCHAR(255) NOT NULL DEFAULT '',
+    headline          TEXT NOT NULL DEFAULT '',
+    -----------------------------------------------------------------------
+    -- NULLABLE FIELDS FOR ANY CONTENT ON UPDATE
+    featured_media_id INTEGER NULL REFERENCES medias(id) DEFAULT NULL,
+    slug              VARCHAR(255) NULL UNIQUE DEFAULT NULL,
+    category_id       INTEGER NULL REFERENCES categories(id) DEFAULT NULL,
+    published_at      BIGINT DEFAULT NULL,
+    archived_at       BIGINT DEFAULT NULL,
+    -----------------------------------------------------------------------
     created_at        BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
-    updated_at        BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
+    updated_at        BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
+    state             content_state NOT NULL DEFAULT 'DRAFT'
 );
 
 CREATE TABLE content_authors (

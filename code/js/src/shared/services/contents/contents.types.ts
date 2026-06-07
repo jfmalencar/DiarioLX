@@ -74,41 +74,37 @@ export type ContentBlockRequest =
     | { type: 'image'; id: string, position: number, mediaId: string; };
 
 export type ContentFormValues = {
-    id: string;
     title: string;
-    slug: string;
-    type: string;
     headline: string;
-    featuredMediaId: string | null;
-    blocks: ContentBlock[];
-    tags: {
-        tagId: string;
-    }[];
+    featuredMediaId: number | null;
+    slug: string | null;
+    categoryId: number | null;
     authors: {
-        authorId: string;
+        authorId: number;
     }[];
-    category: {
-        id: string;
-    };
+    tags: {
+        tagId: number;
+    }[];
+    blocks: ContentBlock[];
 };
 
-export type ContentRequest = {
-    id: string;
+export type CreateContentRequest = {
+    type: string;
+}
+
+export type UpdateContentRequest = {
     title: string;
-    slug: string;
     headline: string;
-    type: ContentType;
-    featuredMediaId: string | null;
-    blocks: ContentBlock[];
-    tags: {
-        tagId: string;
-    }[];
+    featuredMediaId: number | null;
+    slug: string | null;
+    categoryId: number | null;
     authors: {
-        authorId: string;
+        authorId: number;
     }[];
-    category: {
-        id: string;
-    };
+    tags: {
+        tagId: number;
+    }[];
+    blocks: ContentBlock[];
 }
 
 export type ContentsResponse = {
@@ -125,13 +121,13 @@ export interface ContentsService {
 
     fetchOne(id: string): Promise<ContentResponse>;
 
-    create(content: ContentRequest): Promise<string | undefined>;
+    create(content: CreateContentRequest): Promise<number>;
 
-    update(id: string, content: ContentRequest): Promise<void>;
+    update(id: number, content: UpdateContentRequest): Promise<void>;
 
-    delete(id: string): Promise<void>;
+    publish(id: number): Promise<void>;
 
-    archive(id: string): Promise<void>;
+    delete(id: number): Promise<void>;
 
-    unarchive(id: string): Promise<void>;
+    archive(id: number): Promise<void>;
 }

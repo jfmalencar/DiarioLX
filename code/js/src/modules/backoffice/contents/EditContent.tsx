@@ -19,7 +19,7 @@ import { useUsers } from '@/shared/hooks/useUsers';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { usePath } from '@/shared/hooks/usePath';
 
-import type { ImageBlockProps } from './EditContent.types';
+import type { ContentEditingInput, ImageBlockProps } from './EditContent.types';
 import { editContentReducer, initialState } from './EditContent.reducer';
 
 import icon from '@/assets/icon.svg';
@@ -64,6 +64,11 @@ const VideoBlock = ({ url }: { url: string }) => {
     );
 }
 
+const canPublish = (content: ContentEditingInput): boolean => {
+    return content.title.trim() !== '' && content.slug.trim() !== '' && content.category.id !== ''
+        && content.featuredMedia !== null && content.mainAuthor !== null && content.mainTag !== null;
+}
+
 export const EditContent = () => {
     const navigate = useNavigate();
     const params = useParams();
@@ -73,7 +78,7 @@ export const EditContent = () => {
 
     const type = (searchParams.get('type') || 'ARTICLE') as ContentType;
 
-    const { create, loading, error } = useContents();
+    const { create, update, loading, publish, delete: deleteContent } = useContents();
     const { fetchAll: fetchCategories, categories } = useCategories();
     const { fetchAll: fetchAuthors, users } = useUsers();
     const { fetchAll: fetchTags, tags } = useTags();
@@ -110,32 +115,106 @@ export const EditContent = () => {
         setActiveEditor(null);
     };
 
-    const handleSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleDelete = async () => {
+        if (!state.contentId) return;
 
-        await create({
-            id: 'new',
-            type: type,
+        const confirmDelete = window.confirm(
+            'Tem a certeza que deseja eliminar este conteúdo?'
+        );
+        if (!confirmDelete) return;
+
+        try {
+            await deleteContent(state.contentId);
+            navigate('/backoffice/contents');
+        } catch (error) {
+            alert('Failed to delete content: ' + error);
+            navigate('/backoffice/contents');
+        }
+    };
+
+    const handleUpdate = async () => {
+        let id = state.contentId;
+        if (!id) {
+            try {
+                id = await create({ type });
+            } catch (error) {
+                alert('Failed to create content: ' + error);
+                return;
+            }
+            dispatch({ type: 'set-content-id', payload: id });
+        }
+
+        await update(id, {
             title: content.title,
-            slug: content.slug,
             headline: content.headline,
-            featuredMediaId: content.featuredMedia?.id || null,
+            featuredMediaId: content.featuredMedia ? parseInt(content.featuredMedia.id) : null,
+            slug: content.slug,
+            categoryId: content.category.id ? parseInt(content.category.id) : null,
             tags: [
-                { tagId: content.mainTag.id },
-                ...content.secondaryTags.map((tag) => ({ tagId: tag.id })),
+                { tagId: parseInt(content.mainTag.id) },
+                ...content.secondaryTags.map((tag) => ({ tagId: parseInt(tag.id) })),
             ],
-            category: { id: content.category.id },
             authors: [
-                { authorId: content.mainAuthor.id },
+                { authorId: parseInt(content.mainAuthor.id) },
                 ...content.secondaryAuthors.map((author) => ({
-                    authorId: author.id,
+                    authorId: parseInt(author.id),
                 })),
             ],
             blocks: state.blocks,
         });
 
-        if (!error) {
-            navigate('/p/' + content.slug);
+        dispatch({ type: 'set-dirty', payload: false });
+    };
+
+    const handlePublish = async () => {
+        let id = state.contentId;
+
+        // If not yet saved, save first
+        if (!id) {
+            try {
+                id = await create({ type });
+            } catch (error) {
+                alert('Failed to create content: ' + error);
+                return;
+            }
+            dispatch({ type: 'set-content-id', payload: id });
+
+            // Update with current data before publishing
+            await update(id, {
+                title: content.title,
+                headline: content.headline,
+                featuredMediaId: content.featuredMedia ? parseInt(content.featuredMedia.id) : null,
+                slug: content.slug,
+                categoryId: content.category.id ? parseInt(content.category.id) : null,
+                tags: [
+                    { tagId: parseInt(content.mainTag.id) },
+                    ...content.secondaryTags.map((tag) => ({ tagId: parseInt(tag.id) })),
+                ],
+                authors: [
+                    { authorId: parseInt(content.mainAuthor.id) },
+                    ...content.secondaryAuthors.map((author) => ({
+                        authorId: parseInt(author.id),
+                    })),
+                ],
+                blocks: state.blocks,
+            });
+        }
+
+        // Validate required fields before publishing
+        if (canPublish(content)) {
+            alert('Preencha os campos obrigatórios: Título, Slug e Categoria');
+            return;
+        }
+
+        try {
+            const success = await publish(id);
+            if (success) {
+                alert('Conteúdo publicado com sucesso!');
+                navigate(`/p/${content.slug}`);
+            }
+        } catch (error) {
+            console.error('Failed to publish content:', error);
+            alert('Erro ao publicar conteúdo');
         }
     };
 
@@ -335,7 +414,7 @@ export const EditContent = () => {
                     className='pt-4 border-start border-dark'
                     style={{ width: 366, flexShrink: 0, overflowY: 'auto' }}
                 >
-                    <form onSubmit={handleSubmit} className='bg-transparent'>
+                    <form onSubmit={handleUpdate} className='bg-transparent'>
                         <div className='px-4'>
                             <FieldSection title='Slug'>
                                 <UnderlineInput
@@ -542,17 +621,51 @@ export const EditContent = () => {
                         </div>
 
                         <div
-                            className='bg-light p-3 position-sticky bottom-0 start-0 end-0'
+                            className='d-flex gap-2 bg-light p-3 position-sticky bottom-0 start-0 end-0'
                             style={{
                                 boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.08)',
                             }}
                         >
                             <button
-                                type='submit'
-                                className='btn btn-dark w-100'
-                                disabled={loading}
+                                type='button'
+                                className='btn w-40 flex-grow-1'
+                                onClick={handleDelete}
+                                disabled={!state.contentId || loading}
+                                style={{
+                                    backgroundColor: 'rgb(255, 0, 0)',
+                                    height: 40,
+                                    width: 10,
+                                }}
                             >
-                                Guardar alterações
+                                <svg width="40" height="100%" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" color="#FFFFFF" stroke-width="1.5">
+                                    <path d="M20 9L18.005 20.3463C17.8369 21.3026 17.0062 22 16.0353 22H7.96474C6.99379 22 6.1631 21.3026 5.99496 20.3463L4 9" fill="#ffffff"></path>
+                                    <path d="M20 9L18.005 20.3463C17.8369 21.3026 17.0062 22 16.0353 22H7.96474C6.99379 22 6.1631 21.3026 5.99496 20.3463L4 9H20Z" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                    <path d="M21 6H15.375M3 6H8.625M8.625 6V4C8.625 2.89543 9.52043 2 10.625 2H13.375C14.4796 2 15.375 2.89543 15.375 4V6M8.625 6H15.375" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </button>
+
+                            <button
+                                type='button'
+                                className='btn w-40 flex-grow-1'
+                                disabled={loading}
+                                onClick={handleUpdate}
+                                style={{
+                                    height: 40,
+                                    border: '1px black solid',
+                                }}
+                            >
+                                Guardar
+                            </button>
+                            <button
+                                type='button'
+                                className='btn btn-dark w-40 flex-grow-1'
+                                disabled={loading}
+                                onClick={handlePublish}
+                                style={{
+                                    height: 40,
+                                }}
+                            >
+                                Publicar
                             </button>
                         </div>
                     </form>

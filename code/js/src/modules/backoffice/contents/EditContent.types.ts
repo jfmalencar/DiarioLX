@@ -14,12 +14,11 @@ export type ImageBlockProps = {
 
 export type ContentEditingInput = {
     title: string;
-    slug: string;
     headline: string;
-
     category: Option;
     categorySearch: string;
-
+    slug: string;
+    
     mainTag: Option;
     mainTagSearch: string;
     secondaryTags: Option[];
@@ -37,6 +36,8 @@ export type GalleryMode = 'featured' | 'block' | null;
 
 export type EditContentState = {
     tag: 'loading' | 'editing';
+    contentId: number | null;
+    isDirty: boolean;
     contentData: ContentEditingInput;
     blocks: ContentBlock[];
     galleryMode: GalleryMode;
@@ -81,4 +82,8 @@ export type EditContentAction =
 
     | { type: 'add-text-block' }
     | { type: 'remove-block'; payload: { blockId: string } }
-    | { type: 'update-text-block'; payload: { blockId: string; content: string } };
+    | { type: 'update-text-block'; payload: { blockId: string; content: string } }
+    
+    | { type: 'set-content-id'; payload: number }
+    | { type: 'set-dirty'; payload: boolean }
+    | { type: 'load-content'; payload: ContentEditingInput & { id: number; blocks: ContentBlock[] } };

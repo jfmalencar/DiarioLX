@@ -1,4 +1,4 @@
-package pt.ipl.diariolx.domain.content
+package pt.ipl.diariolx.domain.content.value
 
 data class NewContentBlock(
     val type: String,

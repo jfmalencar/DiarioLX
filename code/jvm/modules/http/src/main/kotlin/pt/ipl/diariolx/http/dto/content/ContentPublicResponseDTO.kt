@@ -1,3 +1,5 @@
+/*
+
 package pt.ipl.diariolx.http.dto.content
 
 import pt.ipl.diariolx.domain.author.Author
@@ -37,3 +39,4 @@ data class ContentPublicResponseDTO(
             )
     }
 }
+ */

@@ -8,9 +8,13 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
-import pt.ipl.diariolx.domain.content.NewContent
+import pt.ipl.diariolx.domain.content.UpdateContent
+import pt.ipl.diariolx.domain.content.value.ContentAuthor
+import pt.ipl.diariolx.domain.content.value.ContentTag
+import pt.ipl.diariolx.domain.content.value.NewContentBlock
 import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.TagSummary
@@ -19,39 +23,65 @@ import java.time.LocalDate
 class JdbiContentRepository(
     private val handle: Handle,
 ) : ContentRepository {
-    override fun create(content: NewContent): Int {
-        val contentId =
-            handle
-                .createQuery(
-                    """
-                    insert into contents (type, title, headline, featured_media_id, slug, category_id)
-                    values (:type::content_type, :title, :headline,:featured_media_id, :slug, :category_id)
-                    returning id
-                    """.trimIndent(),
-                ).bind("type", content.type)
-                .bind("title", content.title)
-                .bind("headline", content.headline)
-                .bind("featured_media_id", content.featuredMediaId)
-                .bind("slug", content.slug)
-                .bind("category_id", content.categoryId)
-                .mapTo<Int>()
-                .one()
+    override fun createEmpty(
+        type: ContentType,
+        now: Instant,
+    ): Int =
+        handle
+            .createUpdate(
+                """
+                INSERT INTO contents (type, created_at, updated_at)
+                VALUES (:type::content_type, :created_at, :updated_at)
+                RETURNING id
+                """,
+            ).bind("type", type.name)
+            .bind("created_at", now.epochSeconds)
+            .bind("updated_at", now.epochSeconds)
+            .executeAndReturnGeneratedKeys()
+            .mapTo(Int::class.java)
+            .one()
 
-        insertAuthors(contentId, content)
-        insertTags(contentId, content)
-        insertBlocks(contentId, content)
-        return contentId
+    override fun updateContent(
+        content: UpdateContent,
+        now: Instant,
+    ) {
+        val contentId = content.id
+        handle
+            .createUpdate(
+                """
+                UPDATE contents 
+                SET title = :title, headline = :headline, featured_media_id = :featured_media_id,
+                    slug = :slug, category_id = :category_id, updated_at = :updated_at,
+                    published_at = NULL, state = 'DRAFT'::content_state
+                WHERE id = :id
+                """,
+            ).bind("title", content.title)
+            .bind("headline", content.headline)
+            .bind("featured_media_id", content.featuredMediaId)
+            .bind("slug", content.slug)
+            .bind("category_id", content.categoryId)
+            .bind("updated_at", now.epochSeconds)
+            .bind("id", contentId)
+            .execute()
+
+        updateAuthors(contentId, content.authors)
+        updateTags(contentId, content.tags)
+        updateBlocks(contentId, content.blocks)
     }
 
-    override fun getById(id: Int): Content? {
-        TODO("Not yet implemented")
-    }
+    override fun getById(id: Int): Content? =
+        handle
+            .createQuery("select * from v_published_contents where id = :id")
+            .bind("id", id)
+            .mapTo<PublicContentModel>()
+            .singleOrNull()
+            ?.content
 
     override fun getBySlug(slug: String): Content? =
         handle
-            .createQuery("select * from v_contents where slug = :slug")
+            .createQuery("select * from v_published_contents where slug = :slug")
             .bind("slug", slug)
-            .mapTo<ContentModel>()
+            .mapTo<PublicContentModel>()
             .singleOrNull()
             ?.content
 
@@ -114,23 +144,150 @@ class JdbiContentRepository(
             .map { it.content }
     }
 
+    override fun internalGetById(id: Int): Content? =
+        handle
+            .createQuery("select * from v_contents where id = :id")
+            .bind("id", id)
+            .mapTo<ContentModel>()
+            .singleOrNull()
+            ?.content
+
+    override fun internalGetBySlug(slug: String): Content? =
+        handle
+            .createQuery("select * from v_contents where slug = :slug")
+            .bind("slug", slug)
+            .mapTo<ContentModel>()
+            .singleOrNull()
+            ?.content
+
+    override fun internalGetAll(
+        limit: Int,
+        offset: Int,
+        query: String?,
+        archived: Boolean,
+    ): List<ContentSummary> {
+        val sql =
+            buildString {
+                append("select * from v_contents_summary WHERE 1 = 1".trimIndent())
+                if (archived) {
+                    append(" AND archived_at IS NOT NULL")
+                } else {
+                    append(" AND archived_at IS NULL")
+                }
+                if (query != null) {
+                    append(" AND (title ILIKE :query OR slug ILIKE :query)")
+                }
+                if (archived) {
+                    append(" AND archived_at IS NOT NULL")
+                } else {
+                    append(" AND archived_at IS NULL")
+                }
+                append(" ORDER BY id desc")
+                append(" LIMIT :limit OFFSET :offset")
+            }
+        return handle
+            .createQuery(sql)
+            .bind("limit", limit)
+            .bind("offset", offset)
+            .bind("query", "%$query%")
+            .mapTo<ContentSummaryModel>()
+            .list()
+            .map { it.content }
+    }
+
     override fun delete(id: Int): Boolean {
-        TODO("Not yet implemented")
+        val result =
+            handle
+                .createUpdate("DELETE FROM contents WHERE id = :id")
+                .bind("id", id)
+                .execute()
+        return result > 0
     }
 
-    override fun archive(id: Int): Boolean {
-        TODO("Not yet implemented")
+    override fun publish(
+        id: Int,
+        newState: ContentState,
+        now: Instant,
+    ): Boolean {
+        val result =
+            handle
+                .createUpdate(
+                    """
+                   UPDATE contents
+                     SET published_at = :published_at, updated_at = :updated_at, state = :newState::content_state
+                     WHERE id = :id
+                """,
+                ).bind("published_at", now.epochSeconds)
+                .bind("updated_at", now.epochSeconds)
+                .bind("newState", newState.name)
+                .bind("id", id)
+                .execute()
+        return result > 0
     }
 
-    override fun unarchive(id: Int): Boolean {
-        TODO("Not yet implemented")
+    override fun reject(
+        id: Int,
+        now: Instant,
+    ): Boolean {
+        val result =
+            handle
+                .createUpdate(
+                    """
+                   UPDATE contents
+                     SET updated_at = :updated_at, state = :newState::content_state
+                     WHERE id = :id
+                """,
+                ).bind("updated_at", now.epochSeconds)
+                .bind("newState", ContentState.REJECTED.name)
+                .bind("id", id)
+                .execute()
+        return result > 0
     }
 
-    private fun insertAuthors(
+    override fun archive(
+        id: Int,
+        now: Instant,
+    ): Boolean =
+        handle
+            .createUpdate(
+                """
+            UPDATE contents
+            SET archived_at = :archived_at, updated_at = :updated_at
+            WHERE id = :id
+            """,
+            ).bind("archived_at", now.epochSeconds)
+            .bind("updated_at", now.epochSeconds)
+            .bind("id", id)
+            .execute() > 0
+
+    override fun unarchive(
+        id: Int,
+        now: Instant,
+    ): Boolean =
+        handle
+            .createUpdate(
+                """
+            UPDATE contents
+            SET archived_at = :archived_at, updated_at = :updated_at
+            WHERE id = :id
+            """,
+            ).bind("archived_at", now.epochSeconds)
+            .bind("updated_at", now.epochSeconds)
+            .bind("id", id)
+            .execute() > 0
+
+    private fun updateAuthors(
         contentId: Int,
-        content: NewContent,
+        authors: List<ContentAuthor>,
     ) {
-        if (content.authors.isEmpty()) return
+        if (authors.isEmpty()) return
+
+        // Delete and replace authors
+        handle
+            .createUpdate("DELETE FROM content_authors WHERE content_id = :content_id")
+            .bind("content_id", contentId)
+            .execute()
+
         val batch =
             handle.prepareBatch(
                 """
@@ -139,7 +296,7 @@ class JdbiContentRepository(
                 """.trimIndent(),
             )
 
-        content.authors.forEachIndexed { idx, author ->
+        authors.forEachIndexed { idx, author ->
             batch
                 .bind("content_id", contentId)
                 .bind("author_id", author.authorId)
@@ -150,12 +307,16 @@ class JdbiContentRepository(
         batch.execute()
     }
 
-    private fun insertTags(
+    private fun updateTags(
         contentId: Int,
-        content: NewContent,
+        tags: List<ContentTag>,
     ) {
-        if (content.tags.isEmpty()) return
-
+        if (tags.isEmpty()) return
+        // Delete and replace tags
+        handle
+            .createUpdate("DELETE FROM content_tags WHERE content_id = :content_id")
+            .bind("content_id", contentId)
+            .execute()
         val batch =
             handle.prepareBatch(
                 """
@@ -163,8 +324,7 @@ class JdbiContentRepository(
                 values (:content_id, :tag_id, :role)
                 """.trimIndent(),
             )
-
-        content.tags.forEachIndexed { idx, tag ->
+        tags.forEachIndexed { idx, tag ->
             batch
                 .bind("content_id", contentId)
                 .bind("tag_id", tag.tagId)
@@ -175,12 +335,16 @@ class JdbiContentRepository(
         batch.execute()
     }
 
-    private fun insertBlocks(
+    private fun updateBlocks(
         contentId: Int,
-        content: NewContent,
+        blocks: List<NewContentBlock>,
     ) {
-        if (content.blocks.isEmpty()) return
-
+        if (blocks.isEmpty()) return
+        // Delete and replace blocks
+        handle
+            .createUpdate("DELETE FROM content_blocks WHERE content_id = :content_id")
+            .bind("content_id", contentId)
+            .execute()
         val batch =
             handle.prepareBatch(
                 """
@@ -189,7 +353,7 @@ class JdbiContentRepository(
                 """.trimIndent(),
             )
 
-        content.blocks.forEachIndexed { index, block ->
+        blocks.forEachIndexed { index, block ->
             batch
                 .bind("content_id", contentId)
                 .bind("type", block.type)
@@ -204,21 +368,22 @@ class JdbiContentRepository(
 
     private data class ContentModel(
         val id: Int,
-        val title: String,
-        val slug: String,
         val type: String,
+        val title: String,
         val headline: String,
-        val categoryId: Int,
-        val categoryName: String,
-        val categorySlug: String,
+        val contentState: String,
+        val slug: String?,
+        val archivedAt: Long?,
+        val publishedAt: Long?,
+        val createdAt: Long,
+        val updatedAt: Long,
+        val categoryId: Int?,
+        val categoryName: String?,
+        val categorySlug: String?,
         val featuredImage: String?,
         val tags: String,
         val authors: String,
         val blocks: String,
-        val createdAt: Long,
-        val updatedAt: Long,
-        val publishedAt: Long?,
-        val archivedAt: Long?,
     ) {
         private inline fun <reified T> parseJson(json: String): T {
             val objectMapper = ObjectMapper().registerKotlinModule()
@@ -229,53 +394,159 @@ class JdbiContentRepository(
             get() =
                 Content(
                     id = id,
+                    type = ContentType.valueOf(type),
                     title = title,
-                    slug = slug,
-                    type = type,
                     headline = headline,
+                    featuredImage = featuredImage?.let { parseJson<MediaSummary>(it) },
+                    slug = slug,
+                    category =
+                        if (categoryId != null && categoryName != null && categorySlug != null) {
+                            CategorySummary(
+                                id = categoryId,
+                                name = categoryName,
+                                slug = Slug(categorySlug),
+                            )
+                        } else {
+                            null
+                        },
+                    publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) },
+                    archivedAt = archivedAt?.let { Instant.fromEpochSeconds(it) },
+                    createdAt = Instant.fromEpochSeconds(createdAt),
+                    updatedAt = Instant.fromEpochSeconds(updatedAt),
+                    state = ContentState.valueOf(contentState),
+                    tags = parseJson(tags),
+                    authors = parseJson(authors),
+                    blocks = parseJson(blocks),
+                )
+    }
+
+    private data class PublicContentModel(
+        val id: Int,
+        val type: String,
+        val title: String,
+        val headline: String,
+        val contentState: String,
+        val slug: String,
+        val archivedAt: Long?,
+        val publishedAt: Long?,
+        val createdAt: Long,
+        val updatedAt: Long,
+        val categoryId: Int,
+        val categoryName: String,
+        val categorySlug: String,
+        val featuredImage: String?,
+        val tags: String,
+        val authors: String,
+        val blocks: String,
+    ) {
+        private inline fun <reified T> parseJson(json: String): T {
+            val objectMapper = ObjectMapper().registerKotlinModule()
+            return objectMapper.readValue(json)
+        }
+
+        val content: Content
+            get() =
+                Content(
+                    id = id,
+                    type = ContentType.valueOf(type),
+                    title = title,
+                    headline = headline,
+                    featuredImage = featuredImage?.let { parseJson<MediaSummary>(it) },
+                    slug = slug,
                     category =
                         CategorySummary(
                             id = categoryId,
                             name = categoryName,
                             slug = Slug(categorySlug),
                         ),
-                    featuredImage = featuredImage?.let { parseJson<MediaSummary>(it) },
+                    publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) },
+                    archivedAt = archivedAt?.let { Instant.fromEpochSeconds(it) },
+                    createdAt = Instant.fromEpochSeconds(createdAt),
+                    updatedAt = Instant.fromEpochSeconds(updatedAt),
+                    state = ContentState.valueOf(contentState),
                     tags = parseJson(tags),
                     authors = parseJson(authors),
                     blocks = parseJson(blocks),
-                    createdAt = Instant.fromEpochSeconds(createdAt),
-                    updatedAt = Instant.fromEpochSeconds(updatedAt),
-                    publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) },
-                    archivedAt = archivedAt?.let { Instant.fromEpochSeconds(it) },
                 )
     }
 
     private data class ContentSummaryModel(
         val id: Int,
+        val type: String,
         val title: String,
-        val slug: String,
-        val categoryId: Int,
-        val categorySlug: String,
-        val categoryName: String,
-        val tagId: Int,
-        val tagName: String,
-        val tagSlug: String,
+        val tagId: Int?,
+        val tagName: String?,
+        val tagSlug: String?,
+        val contentState: String,
+        val slug: String?,
+        val createdAt: Long,
+        val archivedAt: Long,
+        val categoryId: Int?,
+        val categorySlug: String?,
+        val categoryName: String?,
         val featuredImage: String?,
         val authors: String,
-        val createdAt: Long,
     ) {
         val content: ContentSummary
             get() =
                 ContentSummary(
                     id = id,
+                    type = ContentType.valueOf(type),
                     title = title,
+                    state = ContentState.valueOf(contentState),
                     slug = slug,
-                    category = CategorySummary(categoryId, categoryName, Slug(categorySlug)),
-                    tag = TagSummary(tagId, tagName, tagSlug),
+                    category =
+                        if (categoryId != null &&
+                            categoryName !== null && categorySlug != null
+                        ) {
+                            CategorySummary(categoryId, categoryName, Slug(categorySlug))
+                        } else {
+                            null
+                        },
+                    tag =
+                        if (tagId != null && tagName != null && tagSlug != null) {
+                            TagSummary(tagId, tagName, tagSlug)
+                        } else {
+                            null
+                        },
+                    createdAt = Instant.fromEpochSeconds(createdAt),
+                    archivedAt = Instant.fromEpochSeconds(archivedAt),
+                    categoryId = categoryId,
+                    categoryName = categoryName,
                     featuredImage = featuredImage,
                     authors = authors.split(", "),
-                    createdAt = Instant.fromEpochSeconds(createdAt).toString(),
-                    isPublished = true,
+                )
+    }
+
+    private data class PublicContentSummaryModel(
+        val id: Int,
+        val type: String,
+        val title: String,
+        val contentState: String,
+        val slug: String,
+        val createdAt: Long,
+        val archivedAt: Long,
+        val categoryId: Int,
+        val categoryName: String,
+        val featuredImage: String,
+        val authors: String,
+    ) {
+        val content: ContentSummary
+            get() =
+                ContentSummary(
+                    id = id,
+                    type = ContentType.valueOf(type),
+                    title = title,
+                    state = ContentState.valueOf(contentState),
+                    slug = slug,
+                    createdAt = Instant.fromEpochSeconds(createdAt),
+                    archivedAt = Instant.fromEpochSeconds(archivedAt),
+                    categoryId = categoryId,
+                    categoryName = categoryName,
+                    featuredImage = featuredImage,
+                    authors = authors.split(", "),
+                    category = null,
+                    tag = null,
                 )
     }
 }

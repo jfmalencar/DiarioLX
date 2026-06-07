@@ -7,29 +7,29 @@ import pt.ipl.diariolx.domain.content.value.ContentBlock
 import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.tag.TagSummary
 
-data class ContentResponseDTO(
+data class PublicContentResponseDTO(
     val id: Int,
     val title: String,
-    val slug: String?,
+    val slug: String,
     val type: String,
     val headline: String,
     val featuredImage: MediaSummary?,
-    val category: CategorySummary?,
+    val category: CategorySummary,
     val tags: List<TagSummary>,
     val authors: List<Author>,
     val blocks: List<ContentBlock>,
     val createdAt: String,
 ) {
     companion object {
-        fun from(content: Content): ContentResponseDTO =
-            ContentResponseDTO(
+        fun from(content: Content): PublicContentResponseDTO =
+            PublicContentResponseDTO(
                 id = content.id,
                 title = content.title,
                 type = content.type.name,
-                slug = content.slug,
+                slug = content.slug ?: error("missing slug"),
                 headline = content.headline,
                 featuredImage = content.featuredImage,
-                category = content.category,
+                category = content.category ?: error("missing category"),
                 tags = content.tags,
                 authors = content.authors,
                 blocks = content.blocks,

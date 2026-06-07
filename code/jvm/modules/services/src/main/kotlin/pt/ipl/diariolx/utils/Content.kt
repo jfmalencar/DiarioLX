@@ -5,13 +5,23 @@ import pt.ipl.diariolx.domain.content.Content
 sealed class ContentError(
     val message: String,
 ) {
-    object EmptyName : ContentError("Content name cannot be empty")
+    object EmptyField : ContentError("Content field cannot be empty")
+
+    object InvalidType : ContentError("Content type is invalid")
 
     object InvalidSlug : ContentError("Content slug must be unique")
 
     object SlugAlreadyExists : ContentError("Content slug already exists")
 
     object ContentNotFound : ContentError("Content not found")
+
+    object CategoryNotFound : ContentError("Category not found")
+
+    object FeaturedMediaIdNotFound : ContentError("Featured Media not found")
+
+    object AuthorNotFound : ContentError("Author not found")
+
+    object TagNotFound : ContentError("Not found")
 }
 
 typealias ContentResult = Either<ContentError, Content>
