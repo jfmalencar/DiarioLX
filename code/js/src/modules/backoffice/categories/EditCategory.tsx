@@ -39,7 +39,10 @@ type Action =
 const reduce = (state: State, action: Action): State => {
     switch (state.tag) {
         case 'editing':
-            if (action.type === 'init') {
+            if (action.type === 'error') {
+                return { tag: 'editing', error: action.message, inputs: state.inputs };
+            }
+            else if (action.type === 'init') {
                 return {
                     tag: 'editing',
                     inputs: {
@@ -95,7 +98,7 @@ const reduce = (state: State, action: Action): State => {
 }
 
 export const EditCategory = () => {
-    const { fetchOne, fetchAll, categories, create, update } = useCategories();
+    const { fetchOne, fetchAll, categories, create, update, error } = useCategories();
     const [isColorOpen, setIsColorOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -142,14 +145,19 @@ export const EditCategory = () => {
         return <Navigate to='/backoffice/categories' />;
     }
 
-    const handleChange = (ev: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (ev: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const value = ev.currentTarget.name === 'slug' ? slugify(ev.currentTarget.value) : ev.currentTarget.value;
         dispatch({ type: 'edit', inputName: ev.currentTarget.name, inputValue: value });
     }
 
-    const handleSubmit = (ev: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (ev: React.ChangeEvent<HTMLFormElement>) => {
         ev.preventDefault();
         if (state.tag !== 'editing') return;
+
+        if (state.inputs.slug.trim().length === 0) {
+            dispatch({ type: 'error', message: 'A slug é obrigatória.' });
+            return;
+        }
 
         if (state.inputs.name.trim().length === 0) {
             dispatch({ type: 'error', message: 'O nome da categoria é obrigatório.' });
@@ -169,8 +177,12 @@ export const EditCategory = () => {
         };
         (
             params.id === 'new' ? create(category) : update(params.id!, category)
-        ).then(() => {
-            dispatch({ type: 'success' });
+        ).then((result) => {
+            if (result) {
+                dispatch({ type: 'success' });
+            } else {
+                dispatch({ type: 'error', message: 'Erro ao processar seu pedido.' });
+            }
         });
     }
 
@@ -288,7 +300,7 @@ export const EditCategory = () => {
                                 )}
                             </FieldSection>
                             {state.tag === 'editing' && state.error && (
-                                <div className='alert alert-danger rounded-3 mb-4'>{state.error}</div>
+                                <div className='alert alert-danger rounded-3 mb-4'>{error || state.error}</div>
                             )}
                             <div className='d-flex justify-content-end gap-3 pt-4'>
                                 {state.tag !== 'submitting' &&

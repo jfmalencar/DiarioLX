@@ -214,6 +214,7 @@
         "common.no_email": "Sem email",
         "common.archive": "Arquivar",
         "common.unarchive": "Desarquivar",
+        "common.upload_error": "Não foi possível carregar o ficheiro. Tente novamente.",
         "myprofile.created_at": "Criado a",
         "myprofile.edit_profile": "Editar",
         "myprofile.logout": "Logout",

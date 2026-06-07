@@ -50,28 +50,45 @@ type ContentBlockBase = {
     position: number;
 };
 
+export type ContentH3Block = ContentBlockBase & {
+    type: 'H3';
+    content: string;
+};
+
+export type ContentH4Block = ContentBlockBase & {
+    type: 'H4';
+    content: string;
+};
+
 export type ContentQuoteBlock = ContentBlockBase & {
-    type: 'quote';
+    type: 'QUOTE';
     content: string;
 };
 
 export type ContentTextBlock = ContentBlockBase & {
-    type: 'text';
+    type: 'TEXT';
     content: string;
 };
 
 export type ContentImageBlock = ContentBlockBase & {
-    type: 'image';
+    type: 'IMAGE';
     media: Media;
     caption: string | null;
 };
 
-export type ContentBlock = ContentTextBlock | ContentQuoteBlock | ContentImageBlock;
+export type ContentBlock =
+    | ContentTextBlock
+    | ContentQuoteBlock
+    | ContentImageBlock
+    | ContentH3Block
+    | ContentH4Block
 
 export type ContentBlockRequest =
-    | { type: 'text'; id: string, position: number, content: string }
-    | { type: 'quote'; id: string, position: number, content: string }
-    | { type: 'image'; id: string, position: number, mediaId: string; };
+    | { type: 'H3'; id: string, position: number, content: string }
+    | { type: 'H4'; id: string, position: number, content: string }
+    | { type: 'TEXT'; id: string, position: number, content: string }
+    | { type: 'QUOTE'; id: string, position: number, content: string }
+    | { type: 'IMAGE'; id: string, position: number, mediaId: string; };
 
 export type ContentFormValues = {
     id: string;

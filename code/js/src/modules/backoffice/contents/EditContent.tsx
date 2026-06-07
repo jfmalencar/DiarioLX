@@ -1,8 +1,18 @@
-import { useReducer, useState, useEffect, useMemo } from 'react';
+import { useReducer, useState, useEffect, useMemo, type Dispatch } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
 import type { Editor } from '@tiptap/react';
-import { Upload, EditIcon } from 'lucide-react';
+import {
+    Upload,
+    EditIcon,
+    Plus,
+    Trash2,
+    Type,
+    Quote,
+    Heading3,
+    Heading4,
+    Image as ImageIcon,
+} from 'lucide-react';
 
 import { RichTextToolbar } from '@/shared/components/richtext/RichTextToolbar';
 import { RichTextBlock } from '@/shared/components/richtext/RichTextBlock';
@@ -19,11 +29,11 @@ import { useUsers } from '@/shared/hooks/useUsers';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { usePath } from '@/shared/hooks/usePath';
 
-import type { ImageBlockProps } from './EditContent.types';
+import type { ImageBlockProps, EditContentAction } from './EditContent.types';
 import { editContentReducer, initialState } from './EditContent.reducer';
 
 import icon from '@/assets/icon.svg';
-import type { ContentType } from '@/shared/services/contents/contents.types';
+import type { ContentType, ContentBlock } from '@/shared/services/contents/contents.types';
 
 const useDebouncedSearch = (
     value: string,
@@ -40,7 +50,7 @@ const useDebouncedSearch = (
 
 const ImageBlock = ({ url, alt = '', width = 400 }: ImageBlockProps) => {
     return (
-        <div className='mb-4'>
+        <div className='mb-2'>
             <img
                 src={url}
                 alt={alt}
@@ -62,13 +72,115 @@ const VideoBlock = ({ url }: { url: string }) => {
             />
         </div>
     );
-}
+};
+
+type Variant = 'paragraph' | 'quote' | 'h3' | 'h4';
+
+const getVariant = (block: ContentBlock): Variant => {
+    switch (block.type) {
+        case 'QUOTE':
+            return 'quote';
+        case 'H3':
+            return 'h3';
+        case 'H4':
+            return 'h4';
+        default:
+            return 'paragraph';
+    }
+};
+
+// Menu inline (estilo Editor.js) para inserir um bloco.
+// `afterId` indica ao reducer onde inserir; undefined = topo da lista.
+// Requer o bundle JS do Bootstrap (com Popper) carregado.
+const AddMenu = ({
+    afterId,
+    dispatch,
+    loading,
+    inline = false,
+}: {
+    afterId?: string;
+    dispatch: Dispatch<EditContentAction>;
+    loading: boolean;
+    inline?: boolean;
+}) => (
+    <div
+        className={`add-menu dropdown ${inline ? '' : 'd-flex justify-content-center my-2'}`}
+    >
+        <button
+            type='button'
+            className={`add-menu__toggle btn btn-sm p-0 d-flex align-items-center justify-content-center ${inline ? '' : 'btn-light border rounded-circle'}`}
+            style={inline ? { width: 22, height: 22 } : { width: 28, height: 28 }}
+            data-bs-toggle='dropdown'
+            aria-expanded='false'
+            aria-label='Adicionar bloco'
+            disabled={loading}
+        >
+            <Plus size={inline ? 15 : 16} />
+        </button>
+        <ul className='dropdown-menu shadow-sm'>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() => dispatch({ type: 'add-text-block', afterId })}
+                >
+                    <Type size={16} /> Texto
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() => dispatch({ type: 'add-quote-block', afterId })}
+                >
+                    <Quote size={16} /> Citação
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() =>
+                        dispatch({ type: 'add-heading-block', level: 3, afterId })
+                    }
+                >
+                    <Heading3 size={16} /> Título H3
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() =>
+                        dispatch({ type: 'add-heading-block', level: 4, afterId })
+                    }
+                >
+                    <Heading4 size={16} /> Título H4
+                </button>
+            </li>
+            <li>
+                <hr className='dropdown-divider' />
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() =>
+                        dispatch({ type: 'open-gallery', payload: 'block', afterId })
+                    }
+                >
+                    <ImageIcon size={16} /> Imagem
+                </button>
+            </li>
+        </ul>
+    </div>
+);
 
 export const EditContent = () => {
     const navigate = useNavigate();
     const params = useParams();
     const [searchParams] = useSearchParams();
-    const { buildMediaUrl } = usePath()
+    const { buildMediaUrl } = usePath();
     const { t } = useI18n();
 
     const type = (searchParams.get('type') || 'ARTICLE') as ContentType;
@@ -82,7 +194,14 @@ export const EditContent = () => {
     const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
 
     const content = state.contentData;
-    const authors = useMemo(() => users.map((user) => ({ id: user.userId, name: `${user.firstName} ${user.lastName}` })), [users]);
+    const authors = useMemo(
+        () =>
+            users.map((user) => ({
+                id: user.userId,
+                name: `${user.firstName} ${user.lastName}`,
+            })),
+        [users],
+    );
 
     useDebouncedSearch(content.categorySearch, fetchCategories);
     useDebouncedSearch(content.mainTagSearch, fetchTags);
@@ -90,14 +209,18 @@ export const EditContent = () => {
     useDebouncedSearch(content.mainAuthorSearch, fetchAuthors);
     useDebouncedSearch(content.secondaryAuthorSearch, fetchAuthors);
 
-    const filteredTags = tags.filter((tag) =>
-        tag.id !== content.mainTag.id &&
-        !content.secondaryTags.some((selectedTag) => selectedTag.id === tag.id),
+    const filteredTags = tags.filter(
+        (tag) =>
+            tag.id !== content.mainTag.id &&
+            !content.secondaryTags.some((selectedTag) => selectedTag.id === tag.id),
     );
 
-    const filteredAuthors = authors.filter((author) =>
-        author.id !== content.mainAuthor.id &&
-        !content.secondaryAuthors.some((selectedAuthor) => selectedAuthor.id === author.id),
+    const filteredAuthors = authors.filter(
+        (author) =>
+            author.id !== content.mainAuthor.id &&
+            !content.secondaryAuthors.some(
+                (selectedAuthor) => selectedAuthor.id === author.id,
+            ),
     );
 
     const handleBlurEditor = (event: FocusEvent) => {
@@ -165,7 +288,9 @@ export const EditContent = () => {
                             />
                         </div>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {t(`posts.${params.id === 'new' ? 'create' : 'edit'}.${type.toLowerCase()}`)}
+                            {t(
+                                `posts.${params.id === 'new' ? 'create' : 'edit'}.${type.toLowerCase()}`,
+                            )}
                         </div>
                         <div
                             className='d-flex align-items-center gap-4'
@@ -186,7 +311,7 @@ export const EditContent = () => {
             >
                 <div style={{ width: 320, flexShrink: 1, minWidth: 0 }} />
                 <div
-                    className='flex-grow-1 overflow-auto py-4 pe-4'
+                    className='flex-grow-1 overflow-y-auto py-4 pe-4 ps-5'
                     style={{ minWidth: 0, maxWidth: 'calc(100vw - 610px)' }}
                 >
                     <textarea
@@ -200,11 +325,13 @@ export const EditContent = () => {
                         disabled={loading}
                         value={content.title}
                         placeholder='Adiciona um título'
-                        onChange={(e) => dispatch({
-                            type: 'edit',
-                            field: 'title',
-                            value: e.target.value
-                        })}
+                        onChange={(e) =>
+                            dispatch({
+                                type: 'edit',
+                                field: 'title',
+                                value: e.target.value,
+                            })
+                        }
                         onInput={(e) => {
                             const el = e.currentTarget;
                             el.style.height = 'auto';
@@ -218,11 +345,13 @@ export const EditContent = () => {
                         style={{ minHeight: 0, fontSize: '1.25rem', resize: 'none' }}
                         placeholder='Adiciona uma entrada'
                         value={content.headline}
-                        onChange={(e) => dispatch({
-                            type: 'edit',
-                            field: 'headline',
-                            value: e.target.value
-                        })}
+                        onChange={(e) =>
+                            dispatch({
+                                type: 'edit',
+                                field: 'headline',
+                                value: e.target.value,
+                            })
+                        }
                         onInput={(e) => {
                             const el = e.currentTarget;
                             el.style.height = 'auto';
@@ -233,9 +362,14 @@ export const EditContent = () => {
                     {content.featuredMedia ? (
                         <div className='mb-4 position-relative' style={{ width: 600 }}>
                             {content.featuredMedia.mimeType.startsWith('video') ? (
-                                <VideoBlock url={buildMediaUrl(content.featuredMedia.path)} />
+                                <VideoBlock
+                                    url={buildMediaUrl(content.featuredMedia.path)}
+                                />
                             ) : (
-                                <ImageBlock url={buildMediaUrl(content.featuredMedia.path)} alt={content.featuredMedia.altText} />
+                                <ImageBlock
+                                    url={buildMediaUrl(content.featuredMedia.path)}
+                                    alt={content.featuredMedia.altText}
+                                />
                             )}
                             <button
                                 type='button'
@@ -244,10 +378,12 @@ export const EditContent = () => {
                                     width: 36,
                                     height: 36,
                                 }}
-                                onClick={() => dispatch({
-                                    type: 'open-gallery',
-                                    payload: 'featured',
-                                })}
+                                onClick={() =>
+                                    dispatch({
+                                        type: 'open-gallery',
+                                        payload: 'featured',
+                                    })
+                                }
                             >
                                 <EditIcon size={24} />
                             </button>
@@ -265,71 +401,76 @@ export const EditContent = () => {
                                 })
                             }
                         >
-                            {type === 'ARTICLE' || type === 'PODCAST' ?
+                            {type === 'ARTICLE' || type === 'PODCAST' ? (
                                 <span className='fs-5'>Imagem em destaque</span>
-                                : type === 'VIDEO' ?
-                                    <span className='fs-5'>Vídeo</span>
-                                    : type === 'EPISODE' ?
-                                        <span className='fs-5'>Áudio do Episódio</span>
-                                        : null
-                            }
+                            ) : type === 'VIDEO' ? (
+                                <span className='fs-5'>Vídeo</span>
+                            ) : type === 'EPISODE' ? (
+                                <span className='fs-5'>Áudio do Episódio</span>
+                            ) : null}
                             <Upload size={28} />
                         </button>
                     )}
                     {state.blocks.map((block) => (
-                        <div key={block.id} className='position-relative'>
-                            {block.type === 'image' ? (
-                                <ImageBlock url={buildMediaUrl(block.media.path)} alt={block.media.altText} />
-                            ) : (
-                                <RichTextBlock
-                                    value={block.content}
-                                    disabled={loading}
-                                    onChange={(html) => dispatch({
-                                        type: 'update-text-block',
-                                        payload: { blockId: block.id, content: html },
-                                    })}
-                                    onFocusEditor={(editor) => setActiveEditor(editor)}
-                                    onBlurEditor={(event) => handleBlurEditor(event)}
-                                    placeholder='Começa a escrever'
+                        <div key={block.id} className='ej-block'>
+                            {/* calha de controlos à esquerda */}
+                            <div className='ej-block__gutter'>
+                                <AddMenu
+                                    afterId={block.id}
+                                    dispatch={dispatch}
+                                    loading={loading}
+                                    inline
                                 />
-                            )}
-                            <button
-                                type='button'
-                                disabled={loading}
-                                className='btn-close position-absolute top-0 end-0 m-2'
-                                aria-label='Close'
-                                onClick={() =>
-                                    dispatch({
-                                        type: 'remove-block',
-                                        payload: { blockId: block.id },
-                                    })
-                                }
-                            />
+                                <button
+                                    type='button'
+                                    disabled={loading}
+                                    className='ej-block__delete btn btn-sm p-0 d-flex align-items-center justify-content-center'
+                                    aria-label='Remover bloco'
+                                    onClick={() =>
+                                        dispatch({
+                                            type: 'remove-block',
+                                            payload: { blockId: block.id },
+                                        })
+                                    }
+                                >
+                                    <Trash2 size={15} />
+                                </button>
+                            </div>
+
+                            {/* conteúdo */}
+                            <div className='ej-block__content'>
+                                {block.type === 'IMAGE' ? (
+                                    <ImageBlock
+                                        url={buildMediaUrl(block.media.path)}
+                                        alt={block.media.altText}
+                                    />
+                                ) : (
+                                    <RichTextBlock
+                                        value={block.content}
+                                        variant={getVariant(block)}
+                                        disabled={loading}
+                                        onChange={(html) =>
+                                            dispatch({
+                                                type: 'update-content-block',
+                                                payload: {
+                                                    blockId: block.id,
+                                                    content: html,
+                                                },
+                                            })
+                                        }
+                                        onFocusEditor={(editor) =>
+                                            setActiveEditor(editor)
+                                        }
+                                        onBlurEditor={(event) =>
+                                            handleBlurEditor(event)
+                                        }
+                                        placeholder='Começa a escrever'
+                                    />
+                                )}
+                            </div>
                         </div>
                     ))}
-                    <div className='d-flex gap-3 mt-4'>
-                        <button
-                            type='button'
-                            className='btn btn-dark'
-                            disabled={loading}
-                            onClick={() => dispatch({ type: 'add-text-block' })}
-                        >
-                            Adicionar texto
-                        </button>
-                        <button
-                            type='button'
-                            className='btn btn-outline-dark'
-                            disabled={loading}
-                            onClick={() =>
-                                dispatch({
-                                    type: 'open-gallery',
-                                    payload: 'block',
-                                })
-                            }
-                        >
-                            Adicionar imagem
-                        </button>
-                    </div>
+                    <AddMenu dispatch={dispatch} loading={loading} />
                 </div>
                 <div
                     className='pt-4 border-start border-dark'
@@ -343,11 +484,13 @@ export const EditContent = () => {
                                     name='slug'
                                     disabled={loading}
                                     placeholder={`slug-do-${type}`}
-                                    onChange={(e) => dispatch({
-                                        type: 'edit',
-                                        field: 'slug',
-                                        value: e.currentTarget.value
-                                    })}
+                                    onChange={(e) =>
+                                        dispatch({
+                                            type: 'edit',
+                                            field: 'slug',
+                                            value: e.currentTarget.value,
+                                        })
+                                    }
                                     dataTestId='content-slug-input'
                                 />
                             </FieldSection>
@@ -410,7 +553,7 @@ export const EditContent = () => {
                                             dispatch({
                                                 type: 'edit',
                                                 field: 'mainTagSearch',
-                                                value: e.currentTarget.value
+                                                value: e.currentTarget.value,
                                             })
                                         }
                                         onSelect={(option) =>
@@ -418,7 +561,7 @@ export const EditContent = () => {
                                                 type: 'select-single',
                                                 field: 'mainTag',
                                                 searchField: 'mainTagSearch',
-                                                option
+                                                option,
                                             })
                                         }
                                     />
@@ -434,7 +577,7 @@ export const EditContent = () => {
                                                 dispatch({
                                                     type: 'remove-secondary',
                                                     field: 'secondaryTags',
-                                                    id: tag.id
+                                                    id: tag.id,
                                                 })
                                             }
                                         />
@@ -450,7 +593,7 @@ export const EditContent = () => {
                                         dispatch({
                                             type: 'edit',
                                             field: 'secondaryTagSearch',
-                                            value: e.currentTarget.value
+                                            value: e.currentTarget.value,
                                         })
                                     }
                                     onSelect={(option) =>
@@ -458,7 +601,7 @@ export const EditContent = () => {
                                             type: 'add-secondary',
                                             field: 'secondaryTags',
                                             searchField: 'secondaryTagSearch',
-                                            option
+                                            option,
                                         })
                                     }
                                 />
@@ -486,7 +629,7 @@ export const EditContent = () => {
                                             dispatch({
                                                 type: 'edit',
                                                 field: 'mainAuthorSearch',
-                                                value: e.currentTarget.value
+                                                value: e.currentTarget.value,
                                             })
                                         }
                                         onSelect={(option) =>
@@ -494,7 +637,7 @@ export const EditContent = () => {
                                                 type: 'select-single',
                                                 field: 'mainAuthor',
                                                 searchField: 'mainAuthorSearch',
-                                                option
+                                                option,
                                             })
                                         }
                                     />
@@ -510,7 +653,7 @@ export const EditContent = () => {
                                                 dispatch({
                                                     type: 'remove-secondary',
                                                     field: 'secondaryAuthors',
-                                                    id: author.id
+                                                    id: author.id,
                                                 })
                                             }
                                         />
@@ -526,7 +669,7 @@ export const EditContent = () => {
                                         dispatch({
                                             type: 'edit',
                                             field: 'secondaryAuthorSearch',
-                                            value: e.currentTarget.value
+                                            value: e.currentTarget.value,
                                         })
                                     }
                                     onSelect={(option) =>
@@ -534,7 +677,7 @@ export const EditContent = () => {
                                             type: 'add-secondary',
                                             field: 'secondaryAuthors',
                                             searchField: 'secondaryAuthorSearch',
-                                            option
+                                            option,
                                         })
                                     }
                                 />
@@ -559,7 +702,13 @@ export const EditContent = () => {
                 </div>
             </main>
             <MediaGallery
-                mediaType={type === 'VIDEO' ? 'video' : type === 'EPISODE' ? 'audio' : 'image'}
+                mediaType={
+                    type === 'VIDEO'
+                        ? 'video'
+                        : type === 'EPISODE'
+                            ? 'audio'
+                            : 'image'
+                }
                 isOpen={state.galleryMode !== null}
                 onClose={() => dispatch({ type: 'close-gallery' })}
                 onSelect={(media) =>

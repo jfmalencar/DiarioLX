@@ -28,7 +28,7 @@ export const useMediaApiService = (): MediaService => {
           })
         ),
         originalFileName: media.file.name,
-        contentType: media.file.type,
+        mimeType: media.file.type,
         uploadType: media.uploadType
       });
       if (!result.success) {

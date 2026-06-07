@@ -20,7 +20,7 @@ export const useCategories = () => {
             setError(null)
             try {
                 const data = await categoriesService.fetchOne(id)
-                return data.category
+                return data
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to fetch category'
                 setError(message)
@@ -52,16 +52,16 @@ export const useCategories = () => {
     )
 
     const create = useCallback(
-        async (category: CategoryFormValues): Promise<string | undefined> => {
+        async (category: CategoryFormValues): Promise<boolean> => {
             setLoading(true)
             setError(null)
             try {
-                const newCategoryId = await categoriesService.create(category)
-                return newCategoryId
+                await categoriesService.create(category)
+                return true
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to create category'
                 setError(message)
-                return undefined
+                return false
             } finally {
                 setLoading(false)
             }
@@ -70,21 +70,23 @@ export const useCategories = () => {
     )
 
     const update = useCallback(
-        async (id: string, category: CategoryFormValues): Promise<void> => {
+        async (id: string, category: CategoryFormValues): Promise<boolean> => {
             setLoading(true)
             setError(null)
             try {
                 await categoriesService.update(id, category)
+                return true
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to update category'
+                console.log(message)
                 setError(message)
+                return false
             } finally {
                 setLoading(false)
             }
         },
         [categoriesService]
     )
-
 
     const archive = useCallback(
         async (id: string): Promise<void> => {

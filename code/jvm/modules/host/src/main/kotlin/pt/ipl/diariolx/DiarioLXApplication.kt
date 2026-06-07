@@ -60,25 +60,20 @@ class DiarioLXApplication {
     // To use in-memory mode, comment out the jdbiTransactionManager and uncomment memoryTransactionManager
 
     @Bean
-    fun jdbi(appEnv: AppEnvironment): Jdbi {
-        logger.info("Connecting to database...")
-        logger.info("Database URL: ${appEnv.dbUrl}")
-        return Jdbi
+    fun jdbi(appEnv: AppEnvironment) =
+        Jdbi
             .create(
                 PGSimpleDataSource().apply {
                     setURL(appEnv.dbUrl)
                 },
             ).configureWithAppRequirements()
-    }
 
     @Bean
-    fun transactionManager(jdbi: Jdbi): TransactionManager {
-        logger.info("Using JDBI Transaction Manager")
-        return JdbiTransactionManager(
+    fun transactionManager(jdbi: Jdbi) =
+        JdbiTransactionManager(
             jdbi = jdbi,
             logger(),
         )
-    }
 
     // === UNCOMMENT BELOW TO USE IN-MEMORY REPOSITORIES INSTEAD ===
 

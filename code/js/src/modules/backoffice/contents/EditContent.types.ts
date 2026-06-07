@@ -40,6 +40,7 @@ export type EditContentState = {
     contentData: ContentEditingInput;
     blocks: ContentBlock[];
     galleryMode: GalleryMode;
+    galleryAfterId?: string
 };
 
 export type EditContentAction =
@@ -75,10 +76,12 @@ export type EditContentAction =
         id: string;
     }
 
-    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null> }
+    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null>, afterId?: string }
     | { type: 'close-gallery' }
     | { type: 'select-media'; payload: Media }
 
-    | { type: 'add-text-block' }
+    | { type: 'add-text-block', afterId?: string }
+    | { type: 'add-heading-block', level: 3 | 4, afterId?: string }
+    | { type: 'add-quote-block', afterId?: string }
+    | { type: 'update-content-block'; payload: { blockId: string; content: string } }
     | { type: 'remove-block'; payload: { blockId: string } }
-    | { type: 'update-text-block'; payload: { blockId: string; content: string } };

@@ -4,8 +4,11 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 
+type Variant = 'paragraph' | 'quote' | 'h3' | 'h4';
+
 type Props = {
     value: string;
+    variant?: Variant;
     disabled?: boolean;
     placeholder?: string;
     onChange: (html: string) => void;
@@ -15,6 +18,7 @@ type Props = {
 
 export function RichTextBlock({
     value,
+    variant = 'paragraph',
     disabled,
     onChange,
     onFocusEditor,
@@ -48,7 +52,7 @@ export function RichTextBlock({
         content: value,
         editorProps: {
             attributes: {
-                class: 'outline-none font-noticia',
+                class: `outline-none font-noticia rt-content rt-${variant}`,
             },
             handlePaste(view, event) {
                 event.preventDefault();
@@ -82,13 +86,17 @@ export function RichTextBlock({
     const isEmpty = editor.getText().trim().length === 0;
 
     return (
-        <div className='position-relative py-2'>
+        <div className={`rt-block rt-block--${variant} position-relative py-2`}>
             {isEmpty && (
                 <span
-                    className='position-absolute text-muted'
-                    style={{ top: 8, left: 0, pointerEvents: 'none' }}
+                    className='rt-placeholder position-absolute text-muted'
+                    style={{ pointerEvents: 'none' }}
                 >
-                    {placeholder}
+                    {variant === 'quote'
+                        ? 'Escreve uma citação'
+                        : variant === 'h3' || variant === 'h4'
+                            ? 'Título'
+                            : placeholder}
                 </span>
             )}
             <EditorContent disabled={disabled} editor={editor} />

@@ -36,7 +36,7 @@ export interface UsersService {
         firstName?: string,
         lastName?: string,
         bio?: string | null
-    ): Promise<UserApiResponse | undefined>;
+    ): Promise<boolean | undefined>;
 
     completeAvatarUpload: (id: string) => Promise<void>;
 }

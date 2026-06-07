@@ -59,7 +59,7 @@ ON u.avatar_media_id = m.id;
 CREATE OR REPLACE VIEW v_medias AS
 SELECT
     m.id,
-    m.type,
+    m.purpose,
     m.bucket,
     m.object_key,
     m.thumbnail_bucket,
@@ -118,7 +118,6 @@ SELECT
         WHEN fm.id IS NULL THEN NULL
         ELSE json_build_object(
                 'id', fm.id,
-                'type', fm.type,
                 'url', fm.url,
                 'thumbnailUrl', fm.thumbnail_url,
                 'altText', fm.alt_text,
@@ -178,7 +177,6 @@ FROM contents a
                                WHEN m.id IS NULL THEN NULL
                                ELSE json_build_object(
                                        'id', m.id,
-                                       'type', m.type,
                                        'url', m.url,
                                        'thumbnailUrl', m.thumbnail_url,
                                        'altText', m.alt_text,

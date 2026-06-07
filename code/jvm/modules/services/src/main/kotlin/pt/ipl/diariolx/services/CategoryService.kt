@@ -133,7 +133,7 @@ class CategoryService(
                 null
             }
         if (parentId != null && parent == null) {
-            return failure(CategoryError.ParentNotFound)
+            return failure(CategoryError.InvalidParent)
         }
         return success(Unit)
     }

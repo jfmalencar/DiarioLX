@@ -38,8 +38,7 @@ export const useUsersApiService = (): UsersService => {
       if (!result.success) {
         return undefined;
       }
-
-      return result.data;
+      return true;
     },
 
     async completeAvatarUpload(id) {

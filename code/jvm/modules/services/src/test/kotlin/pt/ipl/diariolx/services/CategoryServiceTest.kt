@@ -106,7 +106,7 @@ class CategoryServiceTest {
             )
 
         val failure = assertIs<Failure<CategoryError>>(result)
-        assertEquals(CategoryError.ParentNotFound, failure.value)
+        assertEquals(CategoryError.InvalidParent, failure.value)
     }
 
     @Test

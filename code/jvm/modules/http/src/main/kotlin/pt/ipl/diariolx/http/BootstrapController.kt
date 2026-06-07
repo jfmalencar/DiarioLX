@@ -2,13 +2,16 @@ package pt.ipl.diariolx.http
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import pt.ipl.diariolx.domain.media.CreditRole
 import pt.ipl.diariolx.domain.media.MediaBaseUrl
+import pt.ipl.diariolx.http.annotations.MayReturnBootstrapOk
 import pt.ipl.diariolx.http.dto.bootstrap.ApiEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.AppBootstrapDTO
 import pt.ipl.diariolx.http.dto.bootstrap.AssetsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.AuthEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.CategoryEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.ContentEndpointsDTO
+import pt.ipl.diariolx.http.dto.bootstrap.CreditRolesDTO
 import pt.ipl.diariolx.http.dto.bootstrap.InviteEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.LinkDTO
 import pt.ipl.diariolx.http.dto.bootstrap.MediaEndpointsDTO
@@ -20,6 +23,7 @@ class BootstrapController(
     private val mediaBaseUrl: MediaBaseUrl,
 ) {
     @GetMapping(Uris.HOME)
+    @MayReturnBootstrapOk
     fun bootstrap(): AppBootstrapDTO =
         AppBootstrapDTO(
             version = "0.0.1",
@@ -82,5 +86,13 @@ class BootstrapController(
                             create = LinkDTO(Uris.Content.CREATE, HttpMethod.POST),
                         ),
                 ),
+            creditRoles =
+                CreditRole.entries.map {
+                    CreditRolesDTO(
+                        value = it,
+                        label = it.label,
+                        mediaTypes = it.mediaTypes.toList(),
+                    )
+                },
         )
 }

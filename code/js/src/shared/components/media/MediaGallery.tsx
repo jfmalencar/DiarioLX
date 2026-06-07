@@ -4,6 +4,7 @@ import { useMedia, type Media } from '@/shared/hooks/useMedia';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { useUsers } from '@/shared/hooks/useUsers';
 import { usePath } from '@/shared/hooks/usePath';
+import { useBootstrap } from '@/shared/hooks/useBootstrap';
 
 import { FieldSection } from '../inputs/FieldSection';
 import { UnderlineInput } from '../inputs/UnderlineInput';
@@ -13,15 +14,6 @@ import { Pill } from '../Pill';
 
 import type { MediaGalleryProps } from './MediaGallery.types';
 import { initialMediaGalleryState, mediaGalleryReducer } from './MediaGallery.reducer';
-
-const creditRoles = [
-    { value: 'PHOTOGRAPHER', label: 'Fotógrafo' },
-    { value: 'VIDEOGRAPHER', label: 'Videógrafo' },
-    { value: 'EDITOR', label: 'Editor' },
-    { value: 'DIRECTOR', label: 'Diretor' },
-    { value: 'NARRATOR', label: 'Narrador' },
-    { value: 'PRODUCER', label: 'Produtor' },
-];
 
 export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGalleryProps) {
     const [state, dispatch] = useReducer(
@@ -44,6 +36,9 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
     const { fetchAll: fetchUsers, users } = useUsers();
     const { buildQuery } = useFilters();
     const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
+    const { creditRoles } = useBootstrap();
+
+    console.log(creditRoles)
 
     const load = useCallback(async () => {
         const params = buildQuery({ p: 'page', total: 'size' }, { type: mediaType });
@@ -81,11 +76,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
-
-        dispatch({
-            type: 'set-selected-file',
-            file,
-        });
+        dispatch({ type: 'set-selected-file', file });
     };
 
     const handleUpload = async () => {
@@ -370,7 +361,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
                                                             }
                                                         >
                                                             <option value=''>Selecionar função...</option>
-                                                            {creditRoles.map((role) => (
+                                                            {creditRoles.filter(role => role.mediaTypes.includes(mediaType.toUpperCase())).map((role) => (
                                                                 <option key={role.value} value={role.value}>
                                                                     {role.label}
                                                                 </option>

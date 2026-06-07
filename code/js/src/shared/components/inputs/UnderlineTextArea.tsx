@@ -8,7 +8,7 @@ export const UnderlineTextArea = ({
     value: string;
     name: string;
     disabled?: boolean;
-    onChange: (ev: React.FormEvent<HTMLTextAreaElement>) => void;
+    onChange: (ev: React.ChangeEvent<HTMLTextAreaElement>) => void;
     placeholder?: string;
 }) => {
     return (

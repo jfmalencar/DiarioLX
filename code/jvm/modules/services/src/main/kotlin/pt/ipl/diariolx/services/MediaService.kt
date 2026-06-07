@@ -26,7 +26,7 @@ class MediaService(
     fun getSignedUrl(
         altText: String,
         credits: List<Credit> = listOf(),
-        contentType: String,
+        mimeType: String,
         originalFileName: String,
         uploadType: UploadType,
     ): MediaSignedUrlResult {
@@ -34,19 +34,20 @@ class MediaService(
         val objectName = buildObjectName(uploadType = uploadType, extension = extension)
         val upload =
             NewUpload(
-                "media",
+                buckets.public,
                 objectName,
                 altText,
                 credits,
                 originalFileName,
-                contentType,
+                mimeType,
+                uploadType,
             )
 
         val id =
             transactionManager.run {
                 it.mediaRepository.create(upload)
             }
-        val signedUrl = fileStorage.getUploadSignedUrl(buckets.public, objectName, upload.contentType)
+        val signedUrl = fileStorage.getUploadSignedUrl(buckets.public, objectName, upload.mimeType)
         return success(SignedUrl(id, signedUrl))
     }
 
@@ -70,7 +71,7 @@ class MediaService(
         transactionManager.run {
             paginate(page, size) { limit, offset ->
                 val type = type?.let { normalizeMimeTypeFilter(type) }
-                it.mediaRepository.getAll(limit, offset, type)
+                it.mediaRepository.getAll(limit, offset, type, "GALLERY")
             }
         }
 

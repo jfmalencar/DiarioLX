@@ -19,16 +19,16 @@ class JdbiMediaRepository(
             handle
                 .createQuery(
                     """
-                    insert into medias (type, original_file_name, bucket, object_key, thumbnail_bucket, thumbnail_object_key,alt_text, mime_type,status)
-                    values (:type, :original_file_name, :bucket, :object_key, :bucket, :object_key, :alt_text, :mime_type, :status)
+                    insert into medias (purpose, original_file_name, bucket, object_key, thumbnail_bucket, thumbnail_object_key,alt_text, mime_type,status)
+                    values (:purpose::media_purpose, :original_file_name, :bucket, :object_key, :bucket, :object_key, :alt_text, :mime_type, :status)
                     returning id
                     """.trimIndent(),
-                ).bind("type", "image")
+                ).bind("purpose", upload.uploadType.purpose)
                 .bind("bucket", upload.bucket)
                 .bind("original_file_name", upload.originalFileName)
-                .bind("object_key", upload.objectKey)
+                .bind("object_key", upload.objectName)
                 .bind("alt_text", upload.altText)
-                .bind("mime_type", upload.contentType)
+                .bind("mime_type", upload.mimeType)
                 .bind("status", "pending")
                 .mapTo<Int>()
                 .one()
@@ -41,12 +41,16 @@ class JdbiMediaRepository(
         limit: Int,
         offset: Int,
         type: String?,
+        purpose: String?,
     ): List<Media> {
         val sql =
             buildString {
                 append("select * from v_medias where status = :status")
                 if (type != null) {
                     append(" AND mime_type ILIKE :type")
+                }
+                if (purpose != null) {
+                    append(" AND purpose = :purpose::media_purpose")
                 }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
@@ -58,6 +62,7 @@ class JdbiMediaRepository(
             .bind("offset", offset)
             .bind("type", "$type%")
             .bind("status", "ready")
+            .bind("purpose", purpose)
             .mapTo<MediaModel>()
             .list()
             .map { it.media }
@@ -109,7 +114,7 @@ class JdbiMediaRepository(
             batch
                 .bind("media_id", mediaId)
                 .bind("user_id", user.userId)
-                .bind("role", user.role)
+                .bind("role", user.role.name)
                 .add()
         }
 
@@ -118,7 +123,7 @@ class JdbiMediaRepository(
 
     private data class MediaModel(
         val id: Int,
-        val type: String,
+        val purpose: String,
         val bucket: String,
         val objectKey: String,
         val thumbnailBucket: String?,

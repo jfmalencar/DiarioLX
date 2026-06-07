@@ -13,6 +13,7 @@ interface MediaRepository {
         limit: Int,
         offset: Int,
         type: String? = null,
+        purpose: String?,
     ): List<Media>
 
     fun delete(id: Int): Boolean

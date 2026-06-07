@@ -98,7 +98,7 @@ class S3FileStorage(
     override fun getUploadSignedUrl(
         bucket: String,
         objectName: String,
-        contentType: String,
+        mimeType: String,
         expiresIn: Duration,
     ): String {
         val putObjectRequest =
@@ -106,7 +106,7 @@ class S3FileStorage(
                 .builder()
                 .bucket(bucket)
                 .key(objectName)
-                .contentType(contentType)
+                .contentType(mimeType)
                 .build()
 
         val presignRequest =

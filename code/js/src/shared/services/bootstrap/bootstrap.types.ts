@@ -1,10 +1,17 @@
 export type BootstrapData = {
     api: Endpoints;
-    assets: Assets
+    assets: Assets;
+    creditRoles: CreditRole[]
 };
 
 export type Assets = {
     publicMediaBaseUrl: string
+}
+
+export type CreditRole = {
+    value: string;
+    label: string;
+    mediaTypes: string[]
 }
 
 export type Link = {

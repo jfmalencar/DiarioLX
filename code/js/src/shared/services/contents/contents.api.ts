@@ -49,17 +49,17 @@ export const useContentsApiService = (): ContentsService => {
           tagId: tag.tagId,
         })),
         blocks: content.blocks.map(block => {
-          if (block.type === 'text' || block.type === 'quote') {
+          if (block.type === 'IMAGE') {
             return {
               type: block.type,
-              content: block.content,
+              mediaId: block.media.id,
+              caption: block.caption,
               position: block.position
             }
           }
           return {
             type: block.type,
-            mediaId: block.media.id,
-            caption: block.caption,
+            content: block.content,
             position: block.position
           }
         })

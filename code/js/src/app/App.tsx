@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router';
 import { I18nProvider } from '@/app/providers/I18nProvider';
 import { AuthenticationProvider } from '@/app/providers/AuthenticationProvider';
 import { BootstrapProvider } from '@/app/providers/BootstrapProvider';
+import { SnackbarProvider } from '@/app/providers/SnackbarProvider'
 
 // Public
 import { Home } from '@/modules/public/home/Home';
@@ -21,7 +22,7 @@ import { Contents } from '@/modules/backoffice/contents/Contents';
 import { EditContent } from '@/modules/backoffice/contents/EditContent';
 import { SignUp } from '@/modules/backoffice/SignUp';
 import { Invites } from '@/modules/backoffice/invites/Invites';
-import { MyProfile } from '@/modules/backoffice/myProfile/MyProfile';
+import { MyProfile } from '@/modules/backoffice/profile/MyProfile';
 
 // Require Wrappers
 import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
@@ -219,9 +220,11 @@ export function App() {
   return (
     <BootstrapProvider>
       <I18nProvider>
-        <AuthenticationProvider>
-          <RouterProvider router={router} />
-        </AuthenticationProvider>
+        <SnackbarProvider>
+          <AuthenticationProvider>
+            <RouterProvider router={router} />
+          </AuthenticationProvider>
+        </SnackbarProvider>
       </I18nProvider>
     </BootstrapProvider>
   );
