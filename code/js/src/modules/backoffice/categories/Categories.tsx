@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { Edit, Archive, ArchiveRestore, Trash } from 'lucide-react';
+import { Edit, Archive, ArchiveRestore, Trash, ExternalLink } from 'lucide-react';
 
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { Tabs, Tab } from '@/shared/components/Tabs';
@@ -10,6 +10,7 @@ import { TableSearch } from '@/shared/components/table/TableSearch';
 import { type Category, useCategories } from '@/shared/hooks/useCategories';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
+import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
 type Props = {
     filter: { archived: boolean };
@@ -21,6 +22,9 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
     const { loading, categories, pagination, fetchAll } = useCategories();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
+    const { user } = useAuthentication();
+
+    const canManageCategories = user?.features?.includes('manage-categories');
 
     useEffect(() => {
         const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { archived: filter.archived });
@@ -82,23 +86,34 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                                    {row.archivedAt ?
-                                        <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
-                                            <Trash size={16} />
-                                        </button>
-                                        :
-                                        <Link
-                                            to={`/backoffice/categories/${row.id}`}
-                                            state={{ category: row }}
-                                            className='btn btn-dark rounded-2'
-                                            data-testid={`manage-category-button-${index}`}
-                                        >
-                                            <Edit size={16} />
-                                        </Link>
+                                    <Link
+                                        to={`/categories/${row.slug}`}
+                                        className='btn btn-outline-dark rounded-2'
+                                        data-testid={`visit-category-button-${index}`}
+                                    >
+                                        <ExternalLink size={16} />
+                                    </Link>
+                                    {canManageCategories &&
+                                        <>
+                                            {row.archivedAt ?
+                                                <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
+                                                    <Trash size={16} />
+                                                </button>
+                                                :
+                                                <Link
+                                                    to={`/backoffice/categories/${row.id}`}
+                                                    state={{ category: row }}
+                                                    className='btn btn-dark rounded-2'
+                                                    data-testid={`manage-category-button-${index}`}
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                            }
+                                            <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
+                                                {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
+                                            </button>
+                                        </>
                                     }
-                                    <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
-                                        {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
-                                    </button>
                                 </div>
                             </TableColumn>
                         </TableRow>

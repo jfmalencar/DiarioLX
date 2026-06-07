@@ -187,6 +187,7 @@ class ContentService(
         size: Int,
         query: String?,
         state: ContentState?,
+        type: ContentType?,
         user: User,
     ): PageResponse<ContentSummary> {
         val authorId = if (user.role < UserRole.EDITOR && state != ContentState.PUBLISHED) user.id else null
@@ -197,6 +198,7 @@ class ContentService(
                     offset = offset,
                     query = query,
                     state = state,
+                    type = type,
                     authorId = authorId,
                 )
             }

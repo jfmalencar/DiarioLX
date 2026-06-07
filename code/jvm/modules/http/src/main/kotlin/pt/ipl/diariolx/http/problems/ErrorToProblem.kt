@@ -64,4 +64,5 @@ fun InviteError.toProblem(): Problem =
     when (this) {
         is InviteError.InvalidRole -> Problem.invalidRole
         is InviteError.Unauthorized -> Problem.unauthorized
+        is InviteError.ActionError -> Problem.invalidAction
     }

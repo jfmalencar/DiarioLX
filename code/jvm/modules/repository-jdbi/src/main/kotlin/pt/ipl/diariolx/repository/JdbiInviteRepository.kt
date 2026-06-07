@@ -89,6 +89,15 @@ class JdbiInviteRepository(
         )
     }
 
+    override fun delete(id: Int): Boolean {
+        val rowsAffected =
+            handle
+                .createUpdate("DELETE FROM invites WHERE id = :id")
+                .bind("id", id)
+                .execute()
+        return rowsAffected > 0
+    }
+
     override fun consumeInvite(id: Int): Boolean {
         val rowsAffected =
             handle

@@ -47,10 +47,17 @@ export const BackofficeLayout = () => {
     { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/contents/new?type=ARTICLE') },
     { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/contents/new?type=VIDEO') },
     { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/contents/new?type=EPISODE') },
-    { key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/podcasts/new') },
-    { key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categories/new') },
-    { key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/tags/new') },
   ]
+  if (user?.features?.includes('manage-podcasts')) {
+    options.push({ key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/contents/new?type=PODCAST') })
+  }
+  if (user?.features?.includes('manage-tags')) {
+    options.push({ key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/tags/new') })
+  }
+  if (user?.features?.includes('manage-categories')) {
+    options.push({ key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categories/new') })
+  }
+
   return (
     <div className='d-flex min-vh-100'>
       <aside

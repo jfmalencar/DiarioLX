@@ -11,7 +11,7 @@ type Props = {
     options: ActionOption[];
 };
 
-export function FloatingActionMenu({ options }: Props) {
+export const FloatingActionMenu = ({ options }: Props) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleToggle = () => {

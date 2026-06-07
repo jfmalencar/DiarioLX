@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.content.ContentState
+import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
@@ -67,9 +68,10 @@ class ContentController(
         @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
         @RequestParam state: ContentState? = null,
+        @RequestParam type: ContentType? = null,
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
-        val response = contentService.getAll(page, size, query, state, me.user)
+        val response = contentService.getAll(page, size, query, state, type, me.user)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },

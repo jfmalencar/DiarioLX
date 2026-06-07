@@ -12,7 +12,7 @@ import {
 import type { EditContentAction } from './EditContent.types';
 
 type Props = {
-    afterId?: string;
+    afterId?: number;
     dispatch: Dispatch<EditContentAction>;
     loading: boolean;
     inline?: boolean;

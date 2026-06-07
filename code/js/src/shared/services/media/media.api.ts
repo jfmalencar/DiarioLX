@@ -38,7 +38,7 @@ export const useMediaApiService = (): MediaService => {
     },
 
     async completeUpload(id) {
-      const result = await post(endpoints.backoffice.medias.completeUpload.href.replace('{id}', id), {});
+      const result = await post(endpoints.backoffice.medias.completeUpload.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to complete upload');
       }

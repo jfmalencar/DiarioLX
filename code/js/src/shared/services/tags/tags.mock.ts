@@ -4,7 +4,7 @@ import type { TagsService, Tag } from './tags.types';
 
 const fakeTags: Tag[] = [
   {
-    id: '1',
+    id: 1,
     name: 'Tag 1',
     description: 'Description 1',
     slug: 'tag-1',
@@ -14,7 +14,7 @@ const fakeTags: Tag[] = [
     archivedAt: null,
   },
   {
-    id: '2',
+    id: 2,
     name: 'Tag 2',
     description: 'Description 2',
     slug: 'tag-2',
@@ -49,7 +49,7 @@ export const useTagsMockService = (): TagsService => {
 
     async create(tag) {
       const newTag = {
-        id: String(fakeTags.length + 1),
+        id: fakeTags.length + 1,
         name: tag.name,
         description: tag.description,
         slug: tag.slug,

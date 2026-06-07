@@ -15,7 +15,7 @@ export const useCategories = () => {
     const categoriesService = useCategoriesService()
 
     const fetchOne = useCallback(
-        async (id: string): Promise<Category | undefined> => {
+        async (id: number): Promise<Category | undefined> => {
             setLoading(true)
             setError(null)
             try {
@@ -70,7 +70,7 @@ export const useCategories = () => {
     )
 
     const update = useCallback(
-        async (id: string, category: CategoryFormValues): Promise<boolean> => {
+        async (id: number, category: CategoryFormValues): Promise<boolean> => {
             setLoading(true)
             setError(null)
             try {
@@ -89,7 +89,7 @@ export const useCategories = () => {
     )
 
     const archive = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -105,7 +105,7 @@ export const useCategories = () => {
     )
 
     const unarchive = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -121,7 +121,7 @@ export const useCategories = () => {
     )
 
     const remove = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {

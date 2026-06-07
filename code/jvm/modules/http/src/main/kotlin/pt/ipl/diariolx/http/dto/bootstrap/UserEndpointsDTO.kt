@@ -7,5 +7,6 @@ data class UserEndpointsDTO(
     val create: LinkDTO,
     val update: LinkDTO,
     val delete: LinkDTO,
+    val deactivate: LinkDTO,
     val avatar: LinkDTO,
 )

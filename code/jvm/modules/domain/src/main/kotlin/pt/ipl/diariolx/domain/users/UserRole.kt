@@ -10,7 +10,7 @@ enum class UserRole {
         buildList {
             add("request-review")
             if (this@UserRole >= EDITOR) {
-                addAll(listOf("review", "publish", "edit-published", "select-main-author"))
+                addAll(listOf("manage-podcasts", "review", "publish", "edit-published", "select-main-author"))
             }
             if (this@UserRole >= ADMIN) {
                 addAll(listOf("manage-invites", "manage-users", "manage-categories", "manage-tags", "manage-content"))

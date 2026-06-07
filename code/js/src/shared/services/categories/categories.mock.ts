@@ -4,7 +4,7 @@ import type { CategoriesService, Category } from './categories.types';
 
 const fakeCategories: Category[] = [
   {
-    id: '1',
+    id: 1,
     name: 'Category 1',
     description: 'Description 1',
     slug: 'category-1',
@@ -17,7 +17,7 @@ const fakeCategories: Category[] = [
     archivedAt: null,
   },
   {
-    id: '2',
+    id: 2,
     name: 'Category 2',
     description: 'Description 2',
     slug: 'category-2',
@@ -50,13 +50,13 @@ export const useCategoriesMockService = (): CategoriesService => {
       if (!category) {
         throw new Error('Category not found');
       }
-      return { category };
+      return category;
     },
 
     async create(category) {
       const newCategory = {
         ...category,
-        id: String(fakeCategories.length + 1),
+        id: fakeCategories.length + 1,
         parentName: category.parentId
           ? fakeCategories.find((cat) => cat.id === category.parentId)?.name || null
           : null,
@@ -67,7 +67,7 @@ export const useCategoriesMockService = (): CategoriesService => {
       };
       await new Promise((resolve) => setTimeout(resolve, 2000));
       fakeCategories.push(newCategory);
-      return newCategory.id;
+      return true;
     },
 
     async update(id, category) {

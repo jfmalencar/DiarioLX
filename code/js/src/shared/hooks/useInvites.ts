@@ -53,16 +53,14 @@ export const useInvites = () => {
     )
 
     const remove = useCallback(
-        async (id: string): Promise<boolean> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
                 await invitesService.delete(id)
-                return true
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to archive invite'
                 setError(message)
-                return false
             } finally {
                 setLoading(false)
             }

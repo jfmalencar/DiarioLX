@@ -31,7 +31,7 @@ object Uris {
 
         const val CREATE = ROOT
         const val GET_ALL = ROOT
-        const val GET_BY_ID = "$ROOT/{id}"
+        const val DELETE = "$ROOT/{id}"
     }
 
     object Auth {

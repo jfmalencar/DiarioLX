@@ -10,13 +10,13 @@ export type MediaGalleryProps = {
 };
 
 export type Credit = {
-    userId: string;
+    userId: number;
     userName: string;
     role: string;
 };
 
 export type CreditUser = {
-    id: string;
+    id: number;
     name: string;
 };
 

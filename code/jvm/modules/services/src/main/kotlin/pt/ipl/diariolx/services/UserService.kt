@@ -147,10 +147,11 @@ class UserService(
         size: Int,
         query: String?,
         deactivated: Boolean,
+        roles: List<UserRole>?,
     ): PageResponse<User> =
         transactionManager.run {
             paginate(page, size) { limit, offset ->
-                it.userRepository.getAll(limit, offset, query, deactivated)
+                it.userRepository.getAll(limit, offset, query, deactivated, roles)
             }
         }
 

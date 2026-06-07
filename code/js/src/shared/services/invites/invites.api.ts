@@ -30,7 +30,7 @@ export const useInvitesApiService = (): InvitesService => {
     },
 
     async delete(id) {
-      const result = await remove(endpoints.backoffice.invites.delete.href.replace('{id}', id), {});
+      const result = await remove(endpoints.backoffice.invites.delete.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to delete invite');
       }

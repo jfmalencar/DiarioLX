@@ -1,8 +1,8 @@
 import type { Media } from '@/shared/services/media/media.types';
-import type { ContentBlock, Content } from '@/shared/services/contents/contents.types';
+import type { ContentBlock, Content, ContentType } from '@/shared/services/contents/contents.types';
 
 export type Option = {
-    id: string;
+    id: number;
     name: string;
 };
 
@@ -13,6 +13,7 @@ export type ImageBlockProps = {
 };
 
 export type ContentEditingInput = {
+    type?: ContentType;
     title: string;
     headline: string;
     category: Option;
@@ -41,7 +42,7 @@ export type EditContentState = {
     contentData: ContentEditingInput;
     blocks: ContentBlock[];
     galleryMode: GalleryMode;
-    galleryAfterId?: string
+    galleryAfterId?: number
 };
 
 export type EditContentAction =
@@ -75,20 +76,19 @@ export type EditContentAction =
     | {
         type: 'remove-secondary';
         field: 'secondaryTags' | 'secondaryAuthors';
-        id: string;
+        id: number;
     }
 
-    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null>, afterId?: string }
+    | { type: 'open-gallery'; payload: Exclude<GalleryMode, null>, afterId?: number }
     | { type: 'close-gallery' }
     | { type: 'select-media'; payload: Media }
 
-    | { type: 'add-text-block', afterId?: string }
-    | { type: 'add-heading-block', level: 3 | 4, afterId?: string }
-    | { type: 'add-quote-block', afterId?: string }
-    | { type: 'update-content-block'; payload: { blockId: string; content: string } }
-    | { type: 'remove-block'; payload: { blockId: string } }
-    | { type: 'update-text-block'; payload: { blockId: string; content: string } }
+    | { type: 'add-text-block', afterId?: number }
+    | { type: 'add-heading-block', level: 3 | 4, afterId?: number }
+    | { type: 'add-quote-block', afterId?: number }
+    | { type: 'update-content-block'; payload: { blockId: number; content: string } }
+    | { type: 'remove-block'; payload: { blockId: number } }
+    | { type: 'update-text-block'; payload: { blockId: number; content: string } }
 
     | { type: 'set-content-id'; payload: number }
     | { type: 'set-dirty'; payload: boolean }
-    | { type: 'load-content'; payload: ContentEditingInput & { id: number; blocks: ContentBlock[] } };

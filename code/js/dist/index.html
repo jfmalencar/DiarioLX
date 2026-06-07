@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>DiárioLX</title>
+  <link rel='icon' type='image/x-icon' href='/assets/favicon-CJWoArsP.ico'>
+  <link rel='preconnect' href='https://fonts.googleapis.com'>
+  <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noticia+Text:ital,wght@0,400;0,700;1,400;1,700&family=Sora:wght@100..800&display=swap"
+    rel="stylesheet">
+  <script type="module" crossorigin src="/assets/index-CRjUIBgq.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CNP7TrdG.css">
+</head>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Sora', sans-serif;
+  }
+
+  .font-noticia {
+    font-family: 'Noticia Text', serif;
+  }
+
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+  }
+
+  dialog {
+    animation: modalIn 0.2s ease-out;
+  }
+
+  .ProseMirror:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .dropcap::first-letter {
+    float: left;
+    font-size: 4rem;
+    line-height: 0.85;
+    margin-right: 0.5rem;
+    font-weight: 600;
+  }
+
+  /* ---- variantes de bloco no editor ---- */
+  .rt-content.rt-quote {
+    font-style: italic;
+    font-size: 1.25rem;
+    color: #444;
+    border-left: 3px solid #111;
+    padding-left: 1rem;
+  }
+
+  .rt-content.rt-h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .rt-content.rt-h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* placeholder alinhado ao texto, seja qual for a fonte */
+  .rt-block {
+    position: relative;
+  }
+
+  .rt-placeholder {
+    top: 0.5rem;
+    left: 0;
+    line-height: 1.5;
+  }
+
+  .rt-block--quote .rt-placeholder {
+    left: 1rem;
+    font-style: italic;
+  }
+
+  .ej-block {
+    position: relative;
+  }
+
+  .ej-block__gutter {
+    position: absolute;
+    left: -44px;
+    top: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+
+  .ej-block:hover .ej-block__gutter,
+  .ej-block:focus-within .ej-block__gutter,
+  .ej-block__gutter:has(.dropdown.show) {
+    opacity: 1;
+  }
+
+  .ej-block__gutter .add-menu__toggle,
+  .ej-block__delete {
+    color: #888;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  .ej-block__gutter .add-menu__toggle:hover,
+  .ej-block__delete:hover {
+    color: #111;
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  .add-menu.d-flex .add-menu__toggle {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+
+  .add-menu.d-flex:hover .add-menu__toggle,
+  .add-menu.d-flex.show .add-menu__toggle {
+    opacity: 1;
+  }
+
+  .add-menu.d-flex.add-menu--always-visible .add-menu__toggle {
+    opacity: 1;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, #e8e8e8 25%, #f5f5f5 50%, #e8e8e8 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes modalIn {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+</style>
+
+<body>
+  <div id='container'></div>
+</body>
+
+</html>

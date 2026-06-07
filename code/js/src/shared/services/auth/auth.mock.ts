@@ -10,7 +10,7 @@ export const useAuthMockService = (): AuthService => {
     async authenticate(username, password) {
       if (password === "test") {
         const fakeUser = {
-          userId: '1',
+          userId: 1,
           username,
           email: `${username}@diariqlx.pt`,
           firstName: 'Test',
@@ -21,6 +21,7 @@ export const useAuthMockService = (): AuthService => {
           updatedAt: new Date().toISOString(),
           role: 'EDITOR' as UserRole,
           isActive: true,
+          features: ['manage-categories', 'manage-tags']
         };
         setFakeUser(fakeUser);
         cookieStore.set('authUser', JSON.stringify(fakeUser));
@@ -35,7 +36,7 @@ export const useAuthMockService = (): AuthService => {
 
     async register(username, email, _password, firstName, lastName) {
       const fakeUser = {
-        userId: '1',
+        userId: 1,
         username,
         email,
         firstName,
@@ -46,6 +47,7 @@ export const useAuthMockService = (): AuthService => {
         updatedAt: new Date().toISOString(),
         role: 'CONTRIBUTOR' as UserRole,
         isActive: true,
+        features: ['manage-categories', 'manage-tags']
       };
       setFakeUser(fakeUser);
       return true

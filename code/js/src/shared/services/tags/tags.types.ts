@@ -2,7 +2,7 @@ import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
 
 export type Tag = {
-  id: string;
+  id: number;
   name: string;
   description: string;
   slug: string;
@@ -13,14 +13,14 @@ export type Tag = {
 }
 
 export type TagFormValues = {
-  id: string;
+  id: number;
   name: string;
   description: string;
   slug: string;
 }
 
 export type TagRequest = {
-  id: string;
+  id: number;
   name: string;
   description: string;
   slug: string;
@@ -36,15 +36,15 @@ export type TagResponse = Tag
 export interface TagsService {
   fetchAll(params: Query): Promise<TagsResponse>;
 
-  fetchOne(id: string): Promise<TagResponse>;
+  fetchOne(id: number): Promise<TagResponse>;
 
-  create(tag: TagFormValues): Promise<string | undefined>;
+  create(tag: TagFormValues): Promise<number | undefined>;
 
-  update(id: string, tag: TagRequest): Promise<void>;
+  update(id: number, tag: TagRequest): Promise<void>;
 
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 
-  archive(id: string): Promise<void>;
+  archive(id: number): Promise<void>;
 
-  unarchive(id: string): Promise<void>;
+  unarchive(id: number): Promise<void>;
 }

@@ -12,7 +12,7 @@ export type UsersResponse = {
 export type UserApiResponse = User
 
 export type User = {
-    userId: string;
+    userId: number;
     username: string;
     email: string;
     firstName: string;
@@ -40,5 +40,9 @@ export interface UsersService {
         bio?: string | null
     ): Promise<boolean | undefined>;
 
-    completeAvatarUpload: (id: string) => Promise<void>;
+    completeAvatarUpload: (id: number) => Promise<void>;
+
+    deactivate: (id: number) => Promise<void>;
+
+    remove: (id: number) => Promise<void>;
 }

@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 export const useUsersApiService = (): UsersService => {
   const { endpoints } = useBootstrap()
-  const { get, patch } = useApi()
+  const { get, patch, remove, post } = useApi()
 
   return useMemo<UsersService>(() => ({
     async fetchAll(params) {
@@ -50,6 +50,21 @@ export const useUsersApiService = (): UsersService => {
       if (!result.success) {
         throw new Error('Failed to complete upload');
       }
-    }
-  }), [endpoints, get, patch]);
+    },
+
+    async remove(id: number) {
+      const result = await remove(endpoints.backoffice.users.delete.href.replace('{id}', id.toString()), {});
+      if (!result.success) {
+        throw new Error('Failed to delete user');
+      }
+    },
+
+    async deactivate(id: number) {
+      const result = await post(endpoints.backoffice.users.deactivate.href.replace('{id}', id.toString()), {});
+      if (!result.success) {
+        throw new Error('Failed to deactivate account');
+      }
+    },
+
+  }), [endpoints, get, patch, remove, post]);
 }

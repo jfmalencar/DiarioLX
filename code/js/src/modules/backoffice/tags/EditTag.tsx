@@ -87,12 +87,14 @@ export const EditTag = () => {
         },
     });
 
+    const tagId = params.id === 'new' ? 0 : parseInt(params.id!);
+
     useEffect(() => {
         if (location.state?.tag) {
             const tag = location.state.tag;
             dispatch({ type: 'init', tag });
-        } else if (params.id && params.id !== 'new') {
-            fetchOne(params.id).then((tag) => {
+        } else if (tagId) {
+            fetchOne(tagId).then((tag) => {
                 if (tag) {
                     dispatch({ type: 'init', tag });
                 } else {
@@ -100,7 +102,7 @@ export const EditTag = () => {
                 }
             });
         }
-    }, [location.state, fetchOne, params.id, navigate]);
+    }, [location.state, fetchOne, tagId, navigate]);
 
     const inputs = state.tag === 'submitting' || state.tag === 'editing' ? state.inputs : null;
     if (!inputs) {
@@ -124,13 +126,13 @@ export const EditTag = () => {
         dispatch({ type: 'submit' });
 
         const tag: TagFormValues = {
-            id: params.id === 'new' ? '' : params.id!,
+            id: tagId,
             name: inputs.name,
             description: inputs.description,
             slug: inputs.slug,
         };
         (
-            params.id === 'new' ? create(tag) : update(params.id!, tag)
+            params.id === 'new' ? create(tag) : update(tagId, tag)
         ).then(() => {
             dispatch({ type: 'success' });
         });

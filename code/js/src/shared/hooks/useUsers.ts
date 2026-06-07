@@ -57,13 +57,45 @@ export const useUsers = () => {
     )
 
     const completeAvatarUpload = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
                 await usersService.completeAvatarUpload(id)
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to complete avatar upload'
+                setError(message)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [usersService]
+    )
+
+    const remove = useCallback(
+        async (id: number): Promise<void> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await usersService.remove(id)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to remove user'
+                setError(message)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [usersService]
+    )
+
+    const deactivate = useCallback(
+        async (id: number): Promise<void> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await usersService.deactivate(id)
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to deactivate user'
                 setError(message)
             } finally {
                 setLoading(false)
@@ -79,6 +111,8 @@ export const useUsers = () => {
         pagination,
         fetchAll,
         updateProfile,
-        completeAvatarUpload
+        completeAvatarUpload,
+        deactivate,
+        remove
     }
 }

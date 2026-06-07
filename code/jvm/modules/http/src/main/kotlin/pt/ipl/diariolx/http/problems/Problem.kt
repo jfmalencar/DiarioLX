@@ -66,6 +66,14 @@ class Problem(
                 HttpStatus.BAD_REQUEST,
             )
 
+        val invalidAction =
+            Problem(
+                URI("$URL/invalid-action"),
+                "Invalid action",
+                "The provided action is invalid",
+                HttpStatus.BAD_REQUEST,
+            )
+
         val emptyName =
             Problem(
                 URI("$URL/empty-name"),

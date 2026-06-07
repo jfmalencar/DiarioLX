@@ -4,11 +4,11 @@ import type { Pagination } from '@/shared/types/Pagination';
 export type MediaType = 'IMAGE' | 'VIDEO' | 'AUDIO';
 
 export type Media = {
-    id: string;
+    id: number;
     path: string;
     thumbnailPath: string | null;
     credits: {
-        id: string
+        id: number
         name: string;
         role: string
         slug: string
@@ -23,7 +23,7 @@ export type MediaFormValues = {
     file: File;
     altText: string;
     credits: {
-        userId: string;
+        userId: number;
         role: string;
     }[];
 };
@@ -34,7 +34,7 @@ export type MediasResponse = {
 };
 
 export type SignedUpload = {
-    id: string;
+    id: number;
     signedUrl: string;
 }
 
@@ -43,5 +43,5 @@ export type MediaService = {
 
     getSignedUrl: (media: MediaFormValues) => Promise<SignedUpload>;
 
-    completeUpload: (id: string) => Promise<void>;
+    completeUpload: (id: number) => Promise<void>;
 };

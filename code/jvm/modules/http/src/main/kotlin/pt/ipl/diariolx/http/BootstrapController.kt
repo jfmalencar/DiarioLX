@@ -61,6 +61,7 @@ class BootstrapController(
                                         create = LinkDTO(Uris.Users.CREATE, HttpMethod.POST),
                                         update = LinkDTO(Uris.Users.UPDATE, HttpMethod.PUT),
                                         delete = LinkDTO(Uris.Users.DELETE, HttpMethod.DELETE),
+                                        deactivate = LinkDTO(Uris.Users.DEACTIVATE, HttpMethod.POST),
                                         avatar = LinkDTO(Uris.Users.AVATAR, HttpMethod.PATCH),
                                     ),
                                 tags =
@@ -93,6 +94,7 @@ class BootstrapController(
                                     InviteEndpointsDTO(
                                         list = LinkDTO(Uris.Invites.GET_ALL, HttpMethod.GET),
                                         create = LinkDTO(Uris.Invites.CREATE, HttpMethod.POST),
+                                        delete = LinkDTO(Uris.Invites.DELETE, HttpMethod.DELETE),
                                     ),
                                 contents =
                                     ContentEndpointsDTO(

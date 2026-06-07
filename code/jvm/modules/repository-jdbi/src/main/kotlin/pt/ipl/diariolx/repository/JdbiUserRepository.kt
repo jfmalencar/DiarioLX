@@ -136,6 +136,7 @@ class JdbiUserRepository(
         offset: Int,
         query: String?,
         deactivated: Boolean,
+        roles: List<UserRole>?,
     ): List<User> {
         val sql =
             buildString {
@@ -147,6 +148,9 @@ class JdbiUserRepository(
                 if (query != null) {
                     append(" AND (first_name ILIKE :query OR last_name ILIKE :query OR username ILIKE :query)")
                 }
+                if (roles != null) {
+                    append(" AND role::text IN (<roles>)")
+                }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
             }
@@ -156,7 +160,13 @@ class JdbiUserRepository(
             .bind("offset", offset)
             .bind("limit", limit)
             .bind("query", "%$query%")
-            .mapTo<UserDBModel>()
+            .let { q ->
+                if (!roles.isNullOrEmpty()) {
+                    q.bindList("roles", roles.map { it.name })
+                } else {
+                    q
+                }
+            }.mapTo<UserDBModel>()
             .list()
             .map { it.toUserDomain() }
     }

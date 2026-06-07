@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useSearchParams } from 'react-router';
+import { useEffect, useState, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router';
 import { UserPen, ShieldUser, Trash, UserRoundCheck } from 'lucide-react';
 
 import type { UserRole } from '@/shared/services/users/users.types';
@@ -7,14 +7,16 @@ import type { UserRole } from '@/shared/services/users/users.types';
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
-import { useInvites } from '@/shared/hooks/useInvites';
+import { useInvites, type Invite } from '@/shared/hooks/useInvites';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
 
 import { Button } from '@/shared/components/Button';
+import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 
 type Props = {
     filter: { expired: boolean };
+    remove: (invite: Invite) => void;
 };
 
 const OPACITY = 25
@@ -54,7 +56,7 @@ const RoleCard = ({ role, title, description, icon, onGenerate }: { role: UserRo
     )
 }
 
-const InvitesTable = ({ filter }: Props) => {
+const InvitesTable = ({ filter, remove }: Props) => {
     const { t } = useI18n();
     const { loading, invites, pagination, fetchAll } = useInvites();
     const { buildQuery } = useFilters();
@@ -117,7 +119,7 @@ const InvitesTable = ({ filter }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                                    <button onClick={() => alert('TO-DO')} className='btn btn-dark rounded-2'>
+                                    <button onClick={() => remove(row)} className='btn btn-dark rounded-2'>
                                         <Trash size={16} />
                                     </button>
                                 </div>
@@ -181,6 +183,27 @@ const GenerateInvite = () => {
 
 export function Invites() {
     const { t } = useI18n();
+    const { remove } = useInvites();
+    const [open, setOpen] = useState<null | Invite>(null);
+    const navigate = useNavigate();
+
+    const expiredFalse = useMemo(() => ({ expired: false }), []);
+    const expiredTrue = useMemo(() => ({ expired: true }), []);
+
+    const config: ModalConfig = {
+        title: 'Eliminar convite',
+        subtitle: 'Tem a certeza que deseja eliminar este convite?',
+        alert: 'Ao eliminar este convite, ninguém poderá utilizá-lo para criar uma conta.',
+        confirmLabel: 'Eliminar',
+        action: remove,
+        getRedirect: () => `/backoffice/invites?tab=archived&refresh=${Date.now()}`,
+        variant: 'danger',
+    }
+
+    const handleConfirm = () => {
+        if (!open || !config) return;
+        config.action(open.id).then(() => { setOpen(null); navigate(config.getRedirect()); });
+    };
 
     return (
         <>
@@ -193,12 +216,19 @@ export function Invites() {
                 }
             >
                 <Tab id='active' label={t('common.active-m')}>
-                    <InvitesTable filter={{ expired: false }} />
+                    <InvitesTable filter={expiredFalse} remove={(invite) => { setOpen(invite); }} />
                 </Tab>
                 <Tab id='expired' label={t('common.expired')}>
-                    <InvitesTable filter={{ expired: true }} />
+                    <InvitesTable filter={expiredTrue} remove={(invite) => { remove(invite.id); }} />
                 </Tab>
             </Tabs>
+            <ConfirmModal
+                open={!!open}
+                onConfirm={() => handleConfirm()}
+                config={config}
+                name='invite'
+                closeModal={() => setOpen(null)}
+            />
         </>
     );
 }

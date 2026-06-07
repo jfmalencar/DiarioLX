@@ -19,7 +19,7 @@ export type AuthenticationState = {
     lastName: string,
     inviteCode: string
   ) => Promise<boolean>;
-  refreshUser: (apiOverride: Endpoints) => Promise<AuthUser>;
+  refreshUser: (apiOverride?: Endpoints) => Promise<AuthUser>;
   setUser: (user: User) => void
 };
 

@@ -102,8 +102,9 @@ class UserController(
         @RequestParam size: Int = 30,
         @RequestParam query: String? = null,
         @RequestParam deactivated: Boolean = false,
+        @RequestParam role: List<UserRole>? = null,
     ): ResponseEntity<*> {
-        val response = userService.getAll(page, size, query, deactivated)
+        val response = userService.getAll(page, size, query, deactivated, role)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map {

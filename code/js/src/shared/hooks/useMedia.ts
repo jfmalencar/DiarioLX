@@ -52,7 +52,7 @@ export const useMedia = () => {
     )
 
     const completeUpload = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {

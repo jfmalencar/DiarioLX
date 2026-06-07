@@ -18,7 +18,7 @@ type Inputs = {
     description: string;
     slug: string;
     color: string;
-    parentId: string;
+    parentId: number;
     parentSearch: string;
 }
 
@@ -30,11 +30,10 @@ type State =
 type Action =
     | { type: 'init'; category: Category }
     | { type: 'edit'; inputName: string; inputValue: string }
-    | { type: 'select-parent'; parentId: string; parentName: string }
+    | { type: 'select-parent'; parentId: number; parentName: string }
     | { type: 'submit' }
     | { type: 'error'; message: string }
     | { type: 'success' };
-
 
 const reduce = (state: State, action: Action): State => {
     switch (state.tag) {
@@ -50,7 +49,7 @@ const reduce = (state: State, action: Action): State => {
                         description: action.category.description,
                         slug: action.category.slug,
                         color: action.category.color,
-                        parentId: action.category.parentId || '',
+                        parentId: action.category.parentId || 0,
                         parentSearch: action.category.parentName || '',
                     },
                 };
@@ -110,19 +109,20 @@ export const EditCategory = () => {
             description: '',
             slug: '',
             color: '#000000',
-            parentId: '',
+            parentId: 0,
             parentSearch: '',
         },
     });
 
+    const categoryId = params.id === 'new' ? 0 : parseInt(params.id!);
     const inputs = state.tag === 'submitting' || state.tag === 'editing' ? state.inputs : null;
 
     useEffect(() => {
         if (location.state?.category) {
             const category = location.state.category;
             dispatch({ type: 'init', category });
-        } else if (params.id && params.id !== 'new') {
-            fetchOne(params.id).then((category) => {
+        } else if (categoryId) {
+            fetchOne(categoryId).then((category) => {
                 if (category) {
                     dispatch({ type: 'init', category });
                 } else {
@@ -130,7 +130,7 @@ export const EditCategory = () => {
                 }
             });
         }
-    }, [location.state, fetchOne, params.id, navigate]);
+    }, [location.state, fetchOne, categoryId, navigate]);
 
     useEffect(() => {
         const timeout = setTimeout(async () => {
@@ -167,7 +167,7 @@ export const EditCategory = () => {
         dispatch({ type: 'submit' });
 
         const category: CategoryFormValues = {
-            id: params.id === 'new' ? '' : params.id!,
+            id: categoryId,
             name: inputs.name,
             description: inputs.description,
             slug: inputs.slug,
@@ -176,7 +176,7 @@ export const EditCategory = () => {
             parentName: inputs.parentSearch || null,
         };
         (
-            params.id === 'new' ? create(category) : update(params.id!, category)
+            params.id === 'new' ? create(category) : update(categoryId, category)
         ).then((result) => {
             if (result) {
                 dispatch({ type: 'success' });
@@ -245,7 +245,7 @@ export const EditCategory = () => {
                                         disabled={state.tag === 'submitting'}
                                         value={inputs.parentSearch}
                                         name='parentSearch'
-                                        options={categories}
+                                        options={categories.map((category) => ({ id: category.id, name: category.name }))}
                                         placeholder='Pesquisar categoria superior'
                                         onSearch={handleChange}
                                         onSelect={(option) =>

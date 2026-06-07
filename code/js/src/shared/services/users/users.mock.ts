@@ -14,7 +14,7 @@ export const setFakeUser = (user: User | undefined) => {
 
 const fakeUsers: User[] = [
   {
-    userId: '1',
+    userId: 1,
     username: 'johndoe',
     email: 'johndoe@test.pt',
     firstName: 'John',
@@ -25,6 +25,7 @@ const fakeUsers: User[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     isActive: true,
+    features: ['manage-categories', 'manage-tags']
   }
 ]
 
@@ -55,6 +56,15 @@ export const useUsersMockService = (): UsersService => {
 
     async completeAvatarUpload() {
       return;
-    }
+    },
+
+    async deactivate() {
+      return;
+    },
+
+    async remove() {
+      return;
+    },
   }), []);
 }
+

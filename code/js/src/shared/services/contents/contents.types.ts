@@ -16,17 +16,17 @@ export type Content = {
     featuredImage: Media | null;
     blocks: ContentBlock[];
     category: {
-        id: string;
+        id: number;
         name: string;
         slug: string;
     }
     authors: {
-        id: string;
+        id: number;
         slug: string;
         name: string;
     }[]
     tags: {
-        id: string;
+        id: number;
         name: string;
         slug: string;
     }[]
@@ -37,7 +37,7 @@ export type Content = {
 };
 
 export type ContentSummary = {
-    id: string;
+    id: number;
     title: string;
     state: ContentState;
     type: ContentType;
@@ -45,7 +45,7 @@ export type ContentSummary = {
     featuredImage: string
     category: string
     authors: {
-        id: string
+        id: number
         name: string
         slug: string
     }[]
@@ -54,7 +54,7 @@ export type ContentSummary = {
 }
 
 type ContentBlockBase = {
-    id: string;
+    id: number;
     position: number;
 };
 
@@ -92,11 +92,11 @@ export type ContentBlock =
     | ContentH4Block
 
 export type ContentBlockRequest =
-    | { type: 'H3'; id: string, position: number, content: string }
-    | { type: 'H4'; id: string, position: number, content: string }
-    | { type: 'TEXT'; id: string, position: number, content: string }
-    | { type: 'QUOTE'; id: string, position: number, content: string }
-    | { type: 'IMAGE'; id: string, position: number, mediaId: string; };
+    | { type: 'H3'; id: number, position: number, content: string }
+    | { type: 'H4'; id: number, position: number, content: string }
+    | { type: 'TEXT'; id: number, position: number, content: string }
+    | { type: 'QUOTE'; id: number, position: number, content: string }
+    | { type: 'IMAGE'; id: number, position: number, mediaId: number; };
 
 export type ContentFormValues = {
     title: string;

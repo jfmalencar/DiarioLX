@@ -21,7 +21,7 @@ export const useMediaMockService = (): MediaService => {
 
     async getSignedUrl() {
       return {
-        id: String(fakeMedia.length + 1),
+        id: fakeMedia.length + 1,
         signedUrl: '/api/media/'
       };
     },

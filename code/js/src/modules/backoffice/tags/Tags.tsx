@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-import { Edit, Archive, ArchiveRestore, Trash } from 'lucide-react';
+import { Edit, Archive, ArchiveRestore, Trash, ExternalLink } from 'lucide-react';
 
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { Tabs, Tab } from '@/shared/components/Tabs';
@@ -12,6 +12,7 @@ import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
 import { type Tag, useTags } from '@/shared/hooks/useTags';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters } from '@/shared/hooks/useFilters';
+import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
 const sections: FilterSection[] = [];
 
@@ -27,6 +28,9 @@ const TagsTable = ({ filter, openModal }: Props) => {
     const { loading, tags, pagination, fetchAll } = useTags();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
+    const { user } = useAuthentication();
+
+    const canManageTags = user?.features?.includes('manage-tags');
 
     useEffect(() => {
         const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { archived: filter.archived });
@@ -75,23 +79,34 @@ const TagsTable = ({ filter, openModal }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                                    {row.archivedAt ?
-                                        <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
-                                            <Trash size={16} />
-                                        </button>
-                                        :
-                                        <Link
-                                            to={`/backoffice/tags/${row.id}`}
-                                            state={{ tag: row }}
-                                            className='btn btn-dark rounded-2'
-                                            data-testid={`manage-tag-button-${index}`}
-                                        >
-                                            <Edit size={16} />
-                                        </Link>
+                                    <Link
+                                        to={`/tags/${row.slug}`}
+                                        className='btn btn-outline-dark rounded-2'
+                                        data-testid={`visit-tag-button-${index}`}
+                                    >
+                                        <ExternalLink size={16} />
+                                    </Link>
+                                    {canManageTags &&
+                                        <>
+                                            {row.archivedAt ?
+                                                <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
+                                                    <Trash size={16} />
+                                                </button>
+                                                :
+                                                <Link
+                                                    to={`/backoffice/tags/${row.id}`}
+                                                    state={{ tag: row }}
+                                                    className='btn btn-dark rounded-2'
+                                                    data-testid={`manage-tag-button-${index}`}
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                            }
+                                            <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
+                                                {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
+                                            </button>
+                                        </>
                                     }
-                                    <button onClick={() => openModal(row.archivedAt ? 'unarchive' : 'archive', row)} className='btn btn-outline-dark rounded-2'>
-                                        {row.archivedAt ? <ArchiveRestore size={16} data-testid={`restore-button-${index}`} /> : <Archive size={16} data-testid={`archive-button-${index}`} />}
-                                    </button>
                                 </div>
                             </TableColumn>
                         </TableRow>
@@ -131,7 +146,7 @@ export const Tags = () => {
             getRedirect: () => '/backoffice/tags?tab=all',
         },
         delete: {
-            title: 'Elimiar etiqueta',
+            title: 'Eliminar etiqueta',
             subtitle: 'Tem a certeza que deseja eliminar esta etiqueta?',
             alert: 'Esta ação é permanente e não pode ser revertida.',
             confirmLabel: 'Eliminar',

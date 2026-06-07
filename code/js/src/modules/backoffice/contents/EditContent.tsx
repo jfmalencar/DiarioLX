@@ -71,7 +71,7 @@ const getVariant = (block: ContentBlock): Variant => {
 const canPublish = (content: ContentEditingInput): boolean =>
     content.title.trim() !== '' &&
     content.slug.trim() !== '' &&
-    content.category.id !== '' &&
+    content.category.id > 0 &&
     content.featuredMedia !== null &&
     content.mainAuthor !== null &&
     content.mainTag !== null;
@@ -96,9 +96,14 @@ export const EditContent = () => {
     const [openConfirmaModal, setOpenConfirmModal] = useState<boolean>(false);
 
     const canSelectMainAuthor = user?.features?.includes("select-main-author")
+    const canManagePodcasts = user?.features?.includes("manage-podcasts")
 
-    const type = (searchParams.get('type') || 'ARTICLE') as ContentType;
     const content = state.contentData;
+    const type = content.type || (searchParams.get('type') as ContentType);
+
+    if (type === 'PODCAST' && !canManagePodcasts) {
+        navigate('/backoffice/contents', { replace: true });
+    }
 
     useEffect(() => {
         const load = async () => {
@@ -161,16 +166,16 @@ export const EditContent = () => {
         const res = await update(id, {
             title: content.title,
             headline: content.headline,
-            featuredMediaId: content.featuredMedia ? parseInt(content.featuredMedia.id) : null,
+            featuredMediaId: content.featuredMedia ? content.featuredMedia.id : null,
             slug: content.slug,
-            categoryId: content.category.id ? parseInt(content.category.id) : null,
+            categoryId: content.category.id ? content.category.id : null,
             tags: [
-                ...(content.mainTag.id ? [{ tagId: parseInt(content.mainTag.id) }] : []),
-                ...content.secondaryTags.map((tag) => ({ tagId: parseInt(tag.id) })),
+                ...(content.mainTag.id ? [{ tagId: content.mainTag.id }] : []),
+                ...content.secondaryTags.map((tag) => ({ tagId: tag.id })),
             ],
             authors: [
-                ...(content.mainAuthor.id ? [{ authorId: parseInt(content.mainAuthor.id) }] : []),
-                ...content.secondaryAuthors.map((author) => ({ authorId: parseInt(author.id) })),
+                ...(content.mainAuthor.id ? [{ authorId: content.mainAuthor.id }] : []),
+                ...content.secondaryAuthors.map((author) => ({ authorId: author.id })),
             ],
             blocks: state.blocks,
         });
@@ -247,7 +252,7 @@ export const EditContent = () => {
                             <RichTextToolbar key={activeEditor?.instanceId} editor={loading ? null : activeEditor} />
                         </div>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {t(`posts.${params.id === 'new' ? 'create' : 'edit'}.${type.toLowerCase()}`)}
+                            {t(`posts.${params.id === 'new' ? 'create' : 'edit'}.${type?.toLowerCase()}`)}
                         </div>
                         <div className='d-flex align-items-center gap-4' style={{ width: 320 }}>
                             <div className='border-start border-white opacity-75' style={{ height: 30 }} />
@@ -366,7 +371,7 @@ export const EditContent = () => {
                                     value={content.slug}
                                     name='slug'
                                     disabled={loading}
-                                    placeholder={`slug-do-${type}`}
+                                    placeholder={`slug-do-${type?.toLocaleLowerCase()}`}
                                     onChange={(e) => dispatch({ type: 'edit', field: 'slug', value: slugify(e.currentTarget.value) })}
                                     dataTestId='content-slug-input'
                                 />

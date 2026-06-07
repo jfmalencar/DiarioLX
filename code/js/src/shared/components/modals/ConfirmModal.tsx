@@ -6,7 +6,7 @@ export type ModalConfig = {
     subtitle: string;
     alert: string;
     confirmLabel: string;
-    action: (id: string) => Promise<void>;
+    action: (id: number) => Promise<void>;
     getRedirect: () => string;
     variant?: AlertVariant;
 }
@@ -22,7 +22,7 @@ type Props = {
 export const ConfirmModal = ({ name, config, open, closeModal, onConfirm }: Props) => {
     return (
         <Modal
-            isOpen={open !== null && config !== undefined}
+            isOpen={open && config !== undefined}
             title={config?.title ?? ''}
             onClose={closeModal}
             buttons={[

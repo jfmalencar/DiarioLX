@@ -2,10 +2,10 @@ import { slugify } from '@/shared/utils/format';
 import type { EditContentState, EditContentAction, Option } from './EditContent.types';
 import type { ContentBlock } from '@/shared/services/contents/contents.types';
 
-const generateId = () => crypto.randomUUID().toString();
+const generateId = () => parseInt(crypto.randomUUID().slice(0, 8), 16);
 
 const emptyOption: Option = {
-    id: '',
+    id: 0,
     name: '',
 };
 
@@ -34,7 +34,7 @@ export const initialState: EditContentState = {
     galleryAfterId: undefined,
 };
 
-const insertBlock = (blocks: ContentBlock[], newBlock: ContentBlock, afterId?: string,) => {
+const insertBlock = (blocks: ContentBlock[], newBlock: ContentBlock, afterId?: number) => {
     if (!afterId) return [...blocks, newBlock];
     const idx = blocks.findIndex((b) => b.id === afterId);
     if (idx === -1) return [...blocks, newBlock];
@@ -56,6 +56,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                 contentId: content.id,
                 isDirty: false,
                 contentData: {
+                    type: content.type,
                     title: content.title,
                     slug: content.slug,
                     headline: content.headline,
@@ -270,30 +271,6 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
             return {
                 ...state,
                 isDirty: action.payload,
-            };
-
-        case 'load-content':
-            return {
-                ...state,
-                contentId: action.payload.id,
-                isDirty: false,
-                contentData: {
-                    title: action.payload.title,
-                    slug: action.payload.slug,
-                    headline: action.payload.headline,
-                    category: action.payload.category,
-                    categorySearch: '',
-                    mainTag: action.payload.mainTag,
-                    mainTagSearch: '',
-                    secondaryTags: action.payload.secondaryTags,
-                    secondaryTagSearch: '',
-                    mainAuthor: action.payload.mainAuthor,
-                    mainAuthorSearch: '',
-                    secondaryAuthors: action.payload.secondaryAuthors,
-                    secondaryAuthorSearch: '',
-                    featuredMedia: action.payload.featuredMedia,
-                },
-                blocks: action.payload.blocks,
             };
 
         default:

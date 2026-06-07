@@ -4,6 +4,7 @@ import type { InvitesService, Invite } from './invites.types';
 
 const fakeInvites: Invite[] = [
   {
+    id: 1,
     invite: 'abc123',
     role: 'ADMIN',
     createdAt: new Date().toISOString(),
@@ -29,6 +30,7 @@ export const useInvitesMockService = (): InvitesService => {
 
     async create(invite) {
       const newInvite = {
+        id: fakeInvites.length > 0 ? Math.max(...fakeInvites.map((i) => i.id)) + 1 : 1,
         invite: 'invite_' + Math.random().toString(36).substr(2, 9),
         role: invite.role,
         createdAt: new Date().toISOString(),
@@ -41,7 +43,7 @@ export const useInvitesMockService = (): InvitesService => {
     },
 
     async delete(id) {
-      const index = fakeInvites.findIndex((t) => t.invite === id);
+      const index = fakeInvites.findIndex((t) => t.id === id);
       if (index === -1) {
         throw new Error('Invite not found');
       }

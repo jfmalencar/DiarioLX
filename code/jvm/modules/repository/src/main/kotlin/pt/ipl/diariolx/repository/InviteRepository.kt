@@ -15,5 +15,7 @@ interface InviteRepository {
 
     fun create(invite: NewInvite): Invite
 
+    fun delete(id: Int): Boolean
+
     fun consumeInvite(id: Int): Boolean
 }

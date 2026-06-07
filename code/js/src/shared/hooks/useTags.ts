@@ -16,7 +16,7 @@ export const useTags = () => {
     const tagsService = useTagsService()
 
     const fetchOne = useCallback(
-        async (id: string): Promise<Tag | undefined> => {
+        async (id: number): Promise<Tag | undefined> => {
             setLoading(true)
             setError(null)
             try {
@@ -53,7 +53,7 @@ export const useTags = () => {
     )
 
     const create = useCallback(
-        async (tag: TagFormValues): Promise<string | undefined> => {
+        async (tag: TagFormValues): Promise<number | undefined> => {
             setLoading(true)
             setError(null)
             try {
@@ -71,7 +71,7 @@ export const useTags = () => {
     )
 
     const update = useCallback(
-        async (id: string, tag: TagFormValues): Promise<void> => {
+        async (id: number, tag: TagFormValues): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -87,7 +87,7 @@ export const useTags = () => {
     )
 
     const archive = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -103,7 +103,7 @@ export const useTags = () => {
     )
 
     const unarchive = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {
@@ -119,7 +119,7 @@ export const useTags = () => {
     )
 
     const remove = useCallback(
-        async (id: string): Promise<void> => {
+        async (id: number): Promise<void> => {
             setLoading(true)
             setError(null)
             try {

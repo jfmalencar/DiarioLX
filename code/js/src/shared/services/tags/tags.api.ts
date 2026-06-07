@@ -19,7 +19,7 @@ export const useTagsApiService = (): TagsService => {
     },
 
     async fetchOne(id) {
-      const result = await get<TagResponse>(endpoints.backoffice.tags.get.href.replace('{id}', id));
+      const result = await get<TagResponse>(endpoints.backoffice.tags.get.href.replace('{id}', id.toString()));
       if (!result.success) {
         throw new Error('Failed to fetch tag');
       }
@@ -33,7 +33,7 @@ export const useTagsApiService = (): TagsService => {
         description: tag.description,
         slug: tag.slug
       }
-      const result = await post<string>(endpoints.backoffice.tags.create.href, request);
+      const result = await post<number>(endpoints.backoffice.tags.create.href, request);
       if (!result.success) {
         throw new Error('Failed to create tag');
       }
@@ -47,27 +47,27 @@ export const useTagsApiService = (): TagsService => {
         description: tag.description,
         slug: tag.slug
       }
-      const result = await put(endpoints.backoffice.tags.update.href.replace('{id}', id), request);
+      const result = await put(endpoints.backoffice.tags.update.href.replace('{id}', id.toString()), request);
       if (!result.success) {
         throw new Error('Failed to update tag');
       }
     },
 
     async delete(id) {
-      const result = await remove(endpoints.backoffice.tags.delete.href.replace('{id}', id), {});
+      const result = await remove(endpoints.backoffice.tags.delete.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to delete tag');
       }
     },
 
     async archive(id) {
-      const result = await post(endpoints.backoffice.tags.archive.href.replace('{id}', id), {});
+      const result = await post(endpoints.backoffice.tags.archive.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to archive tag');
       }
     },
     async unarchive(id) {
-      const result = await post(endpoints.backoffice.tags.unarchive.href.replace('{id}', id), {});
+      const result = await post(endpoints.backoffice.tags.unarchive.href.replace('{id}', id.toString()), {});
       if (!result.success) {
         throw new Error('Failed to unarchive tag');
       }

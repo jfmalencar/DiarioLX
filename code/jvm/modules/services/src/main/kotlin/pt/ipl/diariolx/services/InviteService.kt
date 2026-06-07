@@ -9,6 +9,7 @@ import pt.ipl.diariolx.domain.invites.internal.NewInvite
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.repository.TransactionManager
+import pt.ipl.diariolx.utils.InviteActionResult
 import pt.ipl.diariolx.utils.InviteCreateResult
 import pt.ipl.diariolx.utils.InviteError
 import pt.ipl.diariolx.utils.failure
@@ -71,7 +72,14 @@ class InviteService(
         }
     }
 
-    // private fun generateInviteCode(): String = UUID.randomUUID().toString()
+    fun deleteInvite(id: Int): InviteActionResult =
+        transactionManager.run {
+            if (it.inviteRepository.delete(id)) {
+                return@run success(Unit)
+            } else {
+                return@run failure(InviteError.ActionError)
+            }
+        }
 
     private val alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 

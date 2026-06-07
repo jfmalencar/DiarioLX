@@ -38,6 +38,7 @@ export type Endpoints = {
             create: Link;
             update: Link;
             delete: Link;
+            deactivate: Link;
             avatar: Link;
         }
         tags: {

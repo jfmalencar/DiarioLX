@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 
 type Option = {
-    id: string;
+    id: number;
     name: string;
 };
 

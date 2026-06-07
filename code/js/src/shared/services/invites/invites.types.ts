@@ -3,6 +3,7 @@ import type { UserRole } from '../users/users.types';
 import type { Pagination } from '@/shared/types/Pagination';
 
 export type Invite = {
+  id: number;
   invite: string;
   role: UserRole;
   createdAt: string;
@@ -32,5 +33,5 @@ export interface InvitesService {
 
   create(invite: InviteFormValues): Promise<string | undefined>;
 
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 }

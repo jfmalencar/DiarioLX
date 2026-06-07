@@ -24,6 +24,11 @@ class InviteRepositoryMem : InviteRepository {
 
     override fun get(invite: String): Invite? = invites.find { it.invite == invite }
 
+    override fun delete(id: Int): Boolean {
+        invites.removeIf { it.id == id }
+        return true
+    }
+
     override fun getAll(
         limit: Int,
         offset: Int,

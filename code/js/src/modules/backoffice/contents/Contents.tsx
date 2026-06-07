@@ -1,16 +1,37 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router';
-import { ExternalLink, Edit, ClipboardCheck } from 'lucide-react';
+import { ExternalLink, Edit, ClipboardCheck, FileText, Video, Mic, Radio } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { TableBody, Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
+import { TableFilters } from '@/shared/components/table/TableFilters';
 import { useContents, type ContentState } from '@/shared/hooks/useContents';
 import { useI18n } from '@/shared/hooks/useI18n';
-import { useFilters } from '@/shared/hooks/useFilters';
+import { useFilters, type FilterSection } from '@/shared/hooks/useFilters';
 import { usePath } from '@/shared/hooks/usePath';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
+
+const typeIcon = {
+    ARTICLE: <FileText size={14} className='text-muted' />,
+    VIDEO: <Video size={14} className='text-muted' />,
+    EPISODE: <Mic size={14} className='text-muted' />,
+    PODCAST: <Radio size={14} className='text-muted' />,
+};
+
+const sections: FilterSection[] = [
+    {
+        key: 'type',
+        title: 'TIPO',
+        options: [
+            { value: 'VIDEO', label: 'Vídeo' },
+            { value: 'ARTICLE', label: 'Artigo' },
+            { value: 'EPISODE', label: 'Episódio' },
+            { value: 'PODCAST', label: 'Podcast' },
+        ],
+    }
+];
 
 type Props = {
     filter: {
@@ -29,7 +50,7 @@ const ContentsTable = ({ filter }: Props) => {
     const canEditPublished = user?.features?.includes('edit-published')
 
     useEffect(() => {
-        const params = buildQuery({ p: 'page', total: 'size', search: 'query' }, { state: filter.state });
+        const params = buildQuery({ p: 'page', total: 'size', search: 'query', type: 'type' }, { state: filter.state });
         fetchAll(params)
     }, [fetchAll, searchParams, filter, buildQuery]);
 
@@ -57,29 +78,32 @@ const ContentsTable = ({ filter }: Props) => {
                                 <div className='d-flex align-items-center gap-3'>
                                     <div
                                         className='d-flex align-items-center justify-content-center border border-dark flex-shrink-0'
-                                        style={{ width: 135, height: 80, overflow: 'hidden' }}
+                                        style={{ width: 135, height: 80, overflow: 'hidden', backgroundColor: '#f0f0f0' }}
                                     >
-                                        {row.type === 'VIDEO' ?
-                                            <video
-                                                src={`${buildMediaUrl(row.featuredImage)}#t=1`}
-                                                poster={undefined}
-                                                muted
-                                                preload='metadata'
-                                                className='w-100'
-                                                style={{
-                                                    height: 180,
-                                                    objectFit: 'cover',
-                                                    display: 'block',
-                                                }}
-                                            />
-                                            :
-                                            <img src={buildMediaUrl(row.featuredImage)}
-                                                alt={row.title}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            />
-                                        }
+                                        {row.featuredImage ? (
+                                            row.type === 'VIDEO' ? (
+                                                <video
+                                                    src={`${buildMediaUrl(row.featuredImage)}#t=1`}
+                                                    muted
+                                                    preload='metadata'
+                                                    className='w-100'
+                                                    style={{ height: 180, objectFit: 'cover', display: 'block' }}
+                                                />
+                                            ) : (
+                                                <img
+                                                    src={buildMediaUrl(row.featuredImage)}
+                                                    alt={row.title}
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                            )
+                                        ) : (
+                                            <div className='d-flex align-items-center justify-content-center w-100 h-100 text-muted'>
+                                                {typeIcon[row.type]}
+                                            </div>
+                                        )}
                                     </div>
-                                    <div>
+                                    <div className='d-flex align-items-center gap-2'>
+                                        {typeIcon[row.type]}
                                         <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
                                             {row.title}
                                         </div>
@@ -138,6 +162,7 @@ export const Contents = () => {
                 toolbar={
                     <>
                         <TableSearch placeholder='Pesquisar publicação' />
+                        <TableFilters sections={sections} />
                     </>
                 }
             >

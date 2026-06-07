@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.users.User
+import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.internal.UpdateUser
 import pt.ipl.diariolx.domain.users.value.Email
@@ -84,6 +85,7 @@ class UserRepositoryMem : UserRepository {
         offset: Int,
         query: String?,
         deactivated: Boolean,
+        roles: List<UserRole>?,
     ): List<User> {
         val users: List<User> = users.toList().drop(offset).take(limit)
         return users.filter {
