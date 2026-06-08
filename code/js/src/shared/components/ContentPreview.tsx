@@ -34,6 +34,14 @@ export const ContentPreview = ({ content }: Props) => {
                                 preload='metadata'
                                 className='w-100 rounded'
                             />
+                        ) : content.type === 'EPISODE' ? (
+                            <audio
+                                src={heroImageUrl}
+                                preload='metadata'
+                                className='w-100'
+                                controls
+                                style={{ height: 80, objectFit: 'cover', display: 'block' }}
+                            />
                         ) : (
                             <img
                                 src={heroImageUrl}
