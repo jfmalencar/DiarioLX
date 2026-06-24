@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 
 import { useContentsService } from '../services/contents';
 
-import type { Content, UpdateContentRequest, ContentSummary, CreateContentRequest, ContentState } from '../services/contents/contents.types';
+import type { Content, UpdateContentRequest, ContentSummary, CreateContentRequest, ContentState, ContentHistory } from '../services/contents/contents.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
 
@@ -90,6 +90,24 @@ export const useContents = () => {
         [contentsService]
     )
 
+    const fetchHistoryById = useCallback(
+        async (id: number): Promise<ContentHistory | undefined> => {
+            setLoading(true)
+            setError(null)
+            try {
+                const data = await contentsService.fetchHistoryById(id)
+                return data
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch content history'
+                setError(message)
+                return undefined
+            } finally {
+                setLoading(false)
+            }
+        },
+        [contentsService]
+    )
+
     const create = useCallback(
         async (content: CreateContentRequest): Promise<number> => {
             setLoading(true)
@@ -127,11 +145,11 @@ export const useContents = () => {
     )
 
     const publish = useCallback(
-        async (id: number): Promise<boolean> => {
+        async (id: number, comment: string | undefined = undefined): Promise<boolean> => {
             setLoading(true)
             setError(null)
             try {
-                await contentsService.publish(id)
+                await contentsService.publish(id, comment)
                 return true
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to publish content'
@@ -153,6 +171,24 @@ export const useContents = () => {
                 return true
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Failed to submit content'
+                setError(message)
+                return false
+            } finally {
+                setLoading(false)
+            }
+        },
+        [contentsService]
+    )
+
+    const reject = useCallback(
+        async (id: number, comment: string): Promise<boolean> => {
+            setLoading(true)
+            setError(null)
+            try {
+                await contentsService.reject(id, comment)
+                return true
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Failed to reject content'
                 setError(message)
                 return false
             } finally {
@@ -204,10 +240,12 @@ export const useContents = () => {
         fetchPublished,
         fetchById,
         fetchBySlug,
+        fetchHistoryById,
         create,
         update,
         publish,
         submit,
+        reject,
         archive,
         delete: deleteContent
     }

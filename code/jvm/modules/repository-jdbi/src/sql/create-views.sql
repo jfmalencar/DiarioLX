@@ -221,3 +221,16 @@ SELECT * FROM v_contents_summary
 WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
   AND slug IS NOT NULL
   AND category_id IS NOT NULL;
+
+-- -----------------------------------------------------------------------
+-- Contents history
+-- -----------------------------------------------------------------------
+CREATE OR REPLACE VIEW v_content_review_history AS
+SELECT
+    ch.content_id AS content_id,
+    COALESCE(u.first_name || ' ' || u.last_name) AS reviewer_name,
+    ch.action     AS action_performed,
+    ch.comment    AS review_comment,
+    ch.performed_at
+FROM content_history ch
+         LEFT JOIN users u ON u.id = ch.performed_by;

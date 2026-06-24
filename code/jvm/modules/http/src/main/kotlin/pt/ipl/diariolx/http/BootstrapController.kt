@@ -100,6 +100,7 @@ class BootstrapController(
                                     ContentEndpointsDTO(
                                         internalList = LinkDTO(Uris.Content.INTERNAL_GET_ALL, HttpMethod.GET),
                                         internalGetById = LinkDTO(Uris.Content.CONTENT_BY_ID, HttpMethod.GET),
+                                        internalGetHistory = LinkDTO(Uris.Content.INTERNAL_HISTORY_BY_ID, HttpMethod.GET),
                                         create = LinkDTO(Uris.Content.MAIN, HttpMethod.POST),
                                         update = LinkDTO(Uris.Content.MAIN, HttpMethod.PUT),
                                         delete = LinkDTO(Uris.Content.CONTENT_BY_ID, HttpMethod.DELETE),

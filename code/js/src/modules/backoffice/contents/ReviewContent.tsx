@@ -10,61 +10,19 @@ import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
 import icon from '@/assets/icon.svg';
 
-import { PublishModal } from './PublishModal';
-
-type HistoryEntryType = 'change-approved' | 'change-rejected' | 'publish-approved' | 'publish-rejected';
-
-type HistoryEntry = {
-    id: string;
-    type: HistoryEntryType;
-    date: string;
-    by: string;
-    excerpt?: string;
-    comment?: string;
-};
-
-const MOCK_HISTORY: HistoryEntry[] = [
-    {
-        id: '1',
-        type: 'change-approved',
-        date: '02.10.2024',
-        by: 'ALEXANDRA CENTENO',
-        excerpt: '"mesas rústicas de madeira, com toalhas de tecido e um conjunto completo de talheres"',
-    },
-    {
-        id: '2',
-        type: 'change-rejected',
-        date: '02.10.2024',
-        by: 'ALEXANDRA CENTENO',
-        excerpt: '"S. José, perto da Avenida da Liberdade, em Lisboa"',
-        comment: 'Informação precisa de ser verificada.',
-    },
-    {
-        id: '3',
-        type: 'publish-approved',
-        date: '02.10.2024',
-        by: 'ALEXANDRA CENTENO',
-    },
-    {
-        id: '4',
-        type: 'publish-rejected',
-        date: '02.10.2024',
-        by: 'ALEXANDRA CENTENO',
-        comment: 'Existem os seguintes erros ortográficos: ... e inconsistências na estrutura dos parágrafos x e y.',
-    },
-];
+import { ReviewModal } from './ReviewModal';
+import type { HistoryEntry, HistoryEntryType } from '@/shared/services/contents/contents.types';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 const historyConfig: Record<HistoryEntryType, { label: string; sublabel: string; sublabelColor: string; icon: typeof CheckCircle; iconColor: string }> = {
-    'change-approved': { label: 'ALTERAÇÃO', sublabel: 'APROVADA', sublabelColor: '#2d6a4f', icon: CheckCircle, iconColor: '#2d6a4f' },
-    'change-rejected': { label: 'ALTERAÇÃO', sublabel: 'REJEITADA', sublabelColor: '#9b2335', icon: XCircle, iconColor: '#9b2335' },
-    'publish-approved': { label: 'PUBLICAÇÃO', sublabel: 'APROVADA', sublabelColor: '#2d6a4f', icon: CheckCircle, iconColor: '#2d6a4f' },
-    'publish-rejected': { label: 'PUBLICAÇÃO', sublabel: 'REJEITADA', sublabelColor: '#9b2335', icon: XCircle, iconColor: '#9b2335' },
+    'approved': { label: 'PUBLICAÇÃO', sublabel: 'APROVADA', sublabelColor: '#2d6a4f', icon: CheckCircle, iconColor: '#2d6a4f' },
+    'rejected': { label: 'PUBLICAÇÃO', sublabel: 'REJEITADA', sublabelColor: '#9b2335', icon: XCircle, iconColor: '#9b2335' },
 };
 
 const HistoryEntryCard = ({ entry }: { entry: HistoryEntry }) => {
     const config = historyConfig[entry.type];
     const Icon = config.icon;
-
+    const { t } = useI18n();
     return (
         <div className='pb-4 mb-4 border-bottom'>
             <div className='d-flex align-items-center justify-content-between mb-2'>
@@ -75,65 +33,83 @@ const HistoryEntryCard = ({ entry }: { entry: HistoryEntry }) => {
                         <strong style={{ color: config.sublabelColor }}>{config.sublabel}</strong>
                     </span>
                 </div>
-                <span className='text-muted' style={{ fontSize: '0.75rem' }}>{entry.date}</span>
+                <span className='text-muted' style={{ fontSize: '0.75rem' }}>{new Date(entry.date).toLocaleDateString()}</span>
             </div>
-            {entry.excerpt && (
-                <div
-                    className='rounded p-2 mb-2'
-                    style={{ backgroundColor: '#f5f5f5', fontSize: '0.85rem', color: '#555', fontStyle: 'italic' }}
-                >
-                    {entry.excerpt}
-                </div>
-            )}
             {entry.comment && (
                 <div className='mb-2' style={{ fontSize: '0.85rem', color: '#333' }}>
                     {entry.comment}
                 </div>
             )}
             <div style={{ fontSize: '0.75rem', color: '#888' }}>
-                POR <strong>{entry.by}</strong>
+                {t('common.by_uppercase')} <strong>{entry.by ? entry.by : t('common.unknown_uppercase')}</strong>
             </div>
         </div>
     );
 };
 
 export const ReviewContent = () => {
-    const params = useParams()
+    const params = useParams();
     const navigate = useNavigate();
-    const { fetchById, publish } = useContents();
-    const [content, setContent] = useState<Content | null>(null)
-    const [openConfirmaModal, setOpenConfirmModal] = useState<boolean>(false);
-    const { showSnackbar } = useSnackbar()
+    const { fetchById, fetchHistoryById, publish, reject } = useContents();
+    const [content, setContent] = useState<Content | null>(null);
+    const [historyList, setHistoryList] = useState<HistoryEntry[]>([]);
+    const [openConfirmModal, setOpenConfirmModal] = useState<boolean>(false);
+    const { t } = useI18n();
+    
+    const [modalAction, setModalAction] = useState<'approve' | 'reject'>('approve');
+    const { showSnackbar } = useSnackbar();
 
     useEffect(() => {
         const load = async () => {
             if (params.id && params.id !== 'new') {
                 await fetchById(Number(params.id)).then((content) => {
                     if (content && content.state !== 'PENDING_REVIEW') {
-                        navigate('/backoffice/contents')
+                        navigate('/backoffice/contents');
                     }
                     if (content) {
-                        setContent(content)
+                        setContent(content);
                     }
                 });
             }
-        }
+        };
         load();
     }, [fetchById, params.id, navigate]);
 
-    const handleApprove = async () => {
-        const result = await publish(Number(params.id))
-        if (result) {
-            showSnackbar('Conteúdo publicado com sucesso!', 'success');
-            navigate('/p/' + content?.slug)
+    useEffect(() => {
+        const loadHistory = async () => {
+            if (content?.id) {
+                const data = await fetchHistoryById(content.id);
+                if (data?.history) {
+                    setHistoryList(data.history);
+                }
+            }
+        };
+        loadHistory();
+    }, [fetchHistoryById, content?.id]);
+
+    const handleConfirmReview = async (comment: string) => {
+        setOpenConfirmModal(false);
+        
+        if (modalAction === 'approve') {
+            const result = await publish(Number(params.id), comment); 
+            if (result) {
+                showSnackbar('Conteúdo publicado com sucesso!', 'success');
+                navigate('/p/' + content?.slug);
+            } else {
+                showSnackbar('Algo deu errado. Tente novamente');
+            }
         } else {
-            showSnackbar('Algo deu errado. Tente novamente')
+            const result = await reject(Number(params.id), comment);
+            if (result) {
+                showSnackbar('Conteúdo rejeitado com sucesso!', 'success');
+                navigate('/backoffice/contents');
+            }
         }
-    }
+    };
 
     const [historyOpen, setHistoryOpen] = useState(true);
 
-    if (content === null) return null
+    if (content === null) return null;
     return (
         <div className='d-flex flex-column vh-100 bg-light'>
             <header className='bg-black text-white border-bottom border-secondary position-sticky top-0' style={{ zIndex: 10 }}>
@@ -149,7 +125,7 @@ export const ReviewContent = () => {
                                 className='d-flex align-items-center ps-3 ms-5'
                                 style={{ borderLeft: '1px solid rgba(255,255,255,0.3)', height: 32 }}
                             >
-                                <span className='fw-medium' style={{ fontSize: '1rem' }}>Artigo pendente</span>
+                                <span className='fw-medium' style={{ fontSize: '1rem' }}>{t('common.pending_article')}</span>
                             </div>
                         </div>
                     </div>
@@ -159,7 +135,7 @@ export const ReviewContent = () => {
                     >
                         <div className='d-flex align-items-center gap-2'>
                             <History size={18} />
-                            <span style={{ fontSize: '0.9rem' }}>Histórico</span>
+                            <span style={{ fontSize: '0.9rem' }}>{t('contents.history')}</span>
                         </div>
                         <button
                             type='button'
@@ -177,7 +153,7 @@ export const ReviewContent = () => {
                         <ContentPreview content={content} />
                     ) : (
                         <div className='d-flex align-items-center justify-content-center h-100 text-muted'>
-                            A carregar...
+                            {t('common.loading')}
                         </div>
                     )}
                 </div>
@@ -199,7 +175,7 @@ export const ReviewContent = () => {
                             style={{ borderLeft: '1px solid rgba(255,255,255,0.3)', height: '100%' }}
                         >
                             <History size={18} />
-                            <span className='fw-medium' style={{ fontSize: '0.95rem' }}>Histórico</span>
+                            <span className='fw-medium' style={{ fontSize: '0.95rem' }}>{t('contents.history')}</span>
                         </div>
                         <button
                             type='button'
@@ -210,9 +186,15 @@ export const ReviewContent = () => {
                         </button>
                     </div>
                     <div className='p-4'>
-                        {MOCK_HISTORY.map(entry => (
-                            <HistoryEntryCard key={entry.id} entry={entry} />
-                        ))}
+                        {historyList.length > 0 ? (
+                            historyList.map(entry => (
+                                <HistoryEntryCard key={entry.id} entry={entry} />
+                            ))
+                        ) : (
+                            <div className='text-muted text-center' style={{ fontSize: '0.85rem' }}>
+                                {t('contents.no_history')}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -223,28 +205,29 @@ export const ReviewContent = () => {
                 <button
                     type='button'
                     className='btn btn-outline-dark px-4'
-                    onClick={() => {/* handleReject */ }}
+                    onClick={() => { 
+                        setModalAction('reject'); 
+                        setOpenConfirmModal(true); 
+                    }}
                 >
-                    Rejeitar
+                    {t('common.reject')}
                 </button>
                 <button
                     type='button'
                     className='btn btn-dark px-4'
-                    onClick={() => setOpenConfirmModal(true)}
+                    onClick={() => { 
+                        setModalAction('approve'); 
+                        setOpenConfirmModal(true); 
+                    }}
                 >
-                    Aprovar
+                    {t('common.approve')}
                 </button>
             </div>
-            <PublishModal
-                isOpen={openConfirmaModal}
+            <ReviewModal
+                isOpen={openConfirmModal}
+                actionType={modalAction}
                 onClose={() => setOpenConfirmModal(false)}
-                content={{
-                    title: content.title,
-                    category: content.category.name,
-                    featured: content.featuredImage,
-                    authors: content.authors.map((a) => a.name),
-                }}
-                onPublish={() => handleApprove()}
+                onConfirm={handleConfirmReview}
             />
         </div>
     );

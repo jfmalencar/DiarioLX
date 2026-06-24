@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.utils
 
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentHistory
 
 sealed class ContentError(
     val message: String,
@@ -27,6 +28,8 @@ sealed class ContentError(
 typealias ContentResult = Either<ContentError, Content>
 
 typealias ContentUpdateResult = Either<ContentError, Unit>
+
+typealias ContentHistoryResult = Either<ContentError, List<ContentHistory>>
 
 typealias ContentCreateResult = Either<ContentError, Int>
 

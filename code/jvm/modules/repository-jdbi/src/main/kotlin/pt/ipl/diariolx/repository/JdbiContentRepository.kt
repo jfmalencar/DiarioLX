@@ -8,9 +8,11 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentHistory
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
+import pt.ipl.diariolx.domain.content.ReviewAction
 import pt.ipl.diariolx.domain.content.UpdateContent
 import pt.ipl.diariolx.domain.content.value.ContentAuthor
 import pt.ipl.diariolx.domain.content.value.ContentTag
@@ -52,7 +54,7 @@ class JdbiContentRepository(
                 UPDATE contents 
                 SET title = :title, headline = :headline, featured_media_id = :featured_media_id,
                     slug = :slug, category_id = :category_id, updated_at = :updated_at,
-                    published_at = NULL, state = 'DRAFT'::content_state
+                    published_at = NULL, state = :new_state::content_state
                 WHERE id = :id
                 """,
             ).bind("title", content.title)
@@ -61,6 +63,7 @@ class JdbiContentRepository(
             .bind("slug", content.slug)
             .bind("category_id", content.categoryId)
             .bind("updated_at", now.epochSeconds)
+            .bind("new_state", content.state.name)
             .bind("id", contentId)
             .execute()
 
@@ -198,6 +201,22 @@ class JdbiContentRepository(
             .map { it.content }
     }
 
+    override fun historyById(id: Int): List<ContentHistory> {
+        return handle
+            .createQuery(
+                """
+                SELECT *
+                FROM v_content_review_history
+                WHERE content_id = :id
+                ORDER BY performed_at DESC
+                """
+            )
+            .bind("id", id)
+            .mapTo<ContentHistoryModel>()
+            .list()
+            .map { it.contentHistory }
+    }
+
     override fun delete(id: Int): Boolean {
         val result =
             handle
@@ -211,6 +230,8 @@ class JdbiContentRepository(
         id: Int,
         newState: ContentState,
         now: Instant,
+        comment: String?,
+        reviewerId: Int?,
     ): Boolean {
         val result =
             handle
@@ -225,12 +246,26 @@ class JdbiContentRepository(
                 .bind("newState", newState.name)
                 .bind("id", id)
                 .execute()
+        if (result > 0 && newState == ContentState.PUBLISHED && reviewerId != null)
+            handle
+                .createUpdate(
+                    """
+                        INSERT INTO content_history (content_id, performed_by, action, comment, performed_at)
+                        VALUES (:id, :performed_by, 'APPROVED'::content_history_action, :comment, :performed_at)
+                    """,
+                ).bind("id", id)
+                .bind("performed_by", reviewerId)
+                .bind("comment", comment)
+                .bind("performed_at", now.epochSeconds)
+                .execute()
         return result > 0
     }
 
     override fun reject(
         id: Int,
         now: Instant,
+        comment: String?,
+        reviewerId: Int,
     ): Boolean {
         val result =
             handle
@@ -243,6 +278,18 @@ class JdbiContentRepository(
                 ).bind("updated_at", now.epochSeconds)
                 .bind("newState", ContentState.REJECTED.name)
                 .bind("id", id)
+                .execute()
+        if (result > 0)
+            handle
+                .createUpdate(
+                    """
+                        INSERT INTO content_history (content_id, performed_by, action, comment, performed_at)
+                        VALUES (:id, :performed_by, 'REJECTED'::content_history_action, :comment, :performed_at)
+                    """,
+                ).bind("id", id)
+                .bind("performed_by", reviewerId)
+                .bind("comment", comment)
+                .bind("performed_at", now.epochSeconds)
                 .execute()
         return result > 0
     }
@@ -367,6 +414,24 @@ class JdbiContentRepository(
         }
 
         batch.execute()
+    }
+
+    private data class ContentHistoryModel(
+        val contentId: Int,
+        val reviewerName: String,
+        val actionPerformed: String,
+        val reviewComment: String?,
+        val performedAt: Long,
+    ) {
+        val contentHistory: ContentHistory
+            get() =
+                ContentHistory(
+                    contentId = contentId,
+                    reviewerName = reviewerName,
+                    action = ReviewAction.valueOf(actionPerformed),
+                    comment = reviewComment,
+                    performedAt = Instant.fromEpochSeconds(performedAt),
+                )
     }
 
     private data class ContentModel(

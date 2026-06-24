@@ -97,20 +97,20 @@ export function useApi() {
   );
 
   const post = useCallback(
-    <T>(url: string, body: JSONValue, options: RequestInit = {}) =>
-      request<T>(url, { ...options, method: 'POST', body: JSON.stringify(body) }, onUnauthorized, refreshUri),
+    <T>(url: string, body: JSONValue | null, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'POST', body: body ? JSON.stringify(body) : undefined }, onUnauthorized, refreshUri),
     [onUnauthorized, refreshUri],
   );
 
   const put = useCallback(
-    <T>(url: string, body: JSONValue, options: RequestInit = {}) =>
-      request<T>(url, { ...options, method: 'PUT', body: JSON.stringify(body) }, onUnauthorized, refreshUri),
+    <T>(url: string, body: JSONValue | null, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'PUT', body: body ? JSON.stringify(body) : undefined }, onUnauthorized, refreshUri),
     [onUnauthorized, refreshUri],
   );
 
   const patch = useCallback(
-    <T>(url: string, body: JSONValue, options: RequestInit = {}) =>
-      request<T>(url, { ...options, method: 'PATCH', body: JSON.stringify(body) }, onUnauthorized, refreshUri),
+    <T>(url: string, body: JSONValue | null, options: RequestInit = {}) =>
+      request<T>(url, { ...options, method: 'PATCH', body: body ? JSON.stringify(body) : undefined }, onUnauthorized, refreshUri),
     [onUnauthorized, refreshUri],
   );
 

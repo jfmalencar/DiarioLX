@@ -36,6 +36,20 @@ export type Content = {
     publishedAt: string | null;
 };
 
+export type HistoryEntryType = 'approved' | 'rejected';
+
+export type HistoryEntry = {
+    id: string;
+    type: HistoryEntryType;
+    date: string;
+    by: string | null;
+    comment: string | null;
+};
+
+export type ContentHistory = {
+    history: HistoryEntry[]
+}
+
 export type ContentSummary = {
     id: number;
     title: string;
@@ -152,13 +166,17 @@ export interface ContentsService {
 
     fetchBySlug(slug: string): Promise<ContentResponse>;
 
+    fetchHistoryById(id: number): Promise<ContentHistory>;
+
     create(content: CreateContentRequest): Promise<NewContentResponse>;
 
     update(id: number, content: UpdateContentRequest): Promise<void>;
 
-    publish(id: number): Promise<void>;
+    publish(id: number, comment: string | undefined): Promise<void>;
 
     submit(id: number): Promise<void>;
+
+    reject(id: number, comment: string | undefined): Promise<void>;
 
     delete(id: number): Promise<void>;
 

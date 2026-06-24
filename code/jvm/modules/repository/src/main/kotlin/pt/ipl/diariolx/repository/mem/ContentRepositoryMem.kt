@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentHistory
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
@@ -237,6 +238,8 @@ class ContentRepositoryMem(
         id: Int,
         newState: ContentState,
         now: Instant,
+        comment: String?,
+        reviewerId: Int?,
     ): Boolean {
         TODO("Not yet implemented")
     }
@@ -244,7 +247,13 @@ class ContentRepositoryMem(
     override fun reject(
         id: Int,
         now: Instant,
+        comment: String?,
+        reviewerId: Int,
     ): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun historyById(id: Int): List<ContentHistory> {
         TODO("Not yet implemented")
     }
 }

@@ -2,6 +2,7 @@ package pt.ipl.diariolx.repository
 
 import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentHistory
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
@@ -63,10 +64,18 @@ interface ContentRepository {
         id: Int,
         newState: ContentState,
         now: Instant,
+        comment: String? = null,
+        reviewerId: Int? = null,
     ): Boolean
 
     fun reject(
         id: Int,
         now: Instant,
+        comment: String? = null,
+        reviewerId: Int,
     ): Boolean
+
+    fun historyById(
+        id: Int
+    ): List<ContentHistory>
 }

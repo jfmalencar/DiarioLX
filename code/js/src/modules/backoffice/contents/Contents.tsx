@@ -175,6 +175,9 @@ export const Contents = () => {
                 <Tab id='draft' label={t('common.draft')}>
                     <ContentsTable filter={{ state: 'DRAFT' }} />
                 </Tab>
+                <Tab id='rejected' label={t('common.rejected')}>
+                    <ContentsTable filter={{ state: 'REJECTED' }} />
+                </Tab>
             </Tabs>
         </>
     );

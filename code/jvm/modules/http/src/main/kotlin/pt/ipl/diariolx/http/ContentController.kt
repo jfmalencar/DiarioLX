@@ -28,6 +28,8 @@ import pt.ipl.diariolx.http.dto.content.ContentResponseDTO
 import pt.ipl.diariolx.http.dto.content.ContentSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentResponseDTO
+import pt.ipl.diariolx.http.dto.content.FullHistoryResponseDTO
+import pt.ipl.diariolx.http.dto.content.ReviewContentDTO
 import pt.ipl.diariolx.http.dto.content.UpdateContentDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
@@ -84,6 +86,24 @@ class ContentController(
             ),
         )
     }
+
+    @RequireRole(UserRole.EDITOR)
+    @GetMapping(Uris.Content.INTERNAL_HISTORY_BY_ID)
+    @MayReturnPaginationOk
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
+    fun getContentHistory(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val response = contentService.historyById(id)) {
+            is Success -> ResponseEntity.ok(
+                FullHistoryResponseDTO.from(response.value)
+            )
+            is Failure -> Problem.response(
+                Problem.notFound,
+                Uris.Content.INTERNAL_HISTORY_BY_ID,
+            )
+        }
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Content.MAIN)
@@ -185,9 +205,11 @@ class ContentController(
     @MayReturnUnauthorized
     @MayReturnBadRequest
     fun publishContent(
+        authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
+        @RequestBody body: ReviewContentDTO?
     ): ResponseEntity<*> =
-        when (val response = contentService.publish(id)) {
+        when (val response = contentService.publish(id, body?.comment, authenticatedUser.user.id)) {
             is Success ->
                 ResponseEntity
                     .status(HttpStatus.NO_CONTENT)
@@ -225,12 +247,16 @@ class ContentController(
     @MayReturnUnauthorized
     @MayReturnBadRequest
     fun rejectContent(
+        authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
+        @RequestBody body: ReviewContentDTO?
     ): ResponseEntity<*> =
         when (
             val response =
                 contentService.reject(
                     id,
+                    body?.comment,
+                    authenticatedUser.user.id
                 )
         ) {
             is Success ->

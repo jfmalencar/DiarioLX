@@ -3,6 +3,7 @@ package pt.ipl.diariolx.http.dto.bootstrap
 data class ContentEndpointsDTO(
     val internalList: LinkDTO,
     val internalGetById: LinkDTO,
+    val internalGetHistory: LinkDTO,
     val create: LinkDTO,
     val update: LinkDTO,
     val delete: LinkDTO,

@@ -141,6 +141,17 @@ CREATE TABLE contents (
     state             content_state NOT NULL DEFAULT 'DRAFT'
 );
 
+CREATE TYPE content_history_action AS ENUM ('APPROVED', 'REJECTED');
+
+CREATE TABLE content_history (
+    id              SERIAL PRIMARY KEY,
+    content_id      INTEGER NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
+    performed_by    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action          content_history_action NOT NULL,
+    comment         TEXT,
+    performed_at    BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
+);
+
 CREATE TABLE content_authors (
     content_id      INTEGER NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
     author_id       INTEGER NOT NULL REFERENCES users(id),

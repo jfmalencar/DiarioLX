@@ -95,6 +95,7 @@ object Uris {
         const val REJECT = "$ROOT/{id}/reject"
         const val CONTENT_BY_ID = "$ROOT/{id}"
         const val INTERNAL_GET_ALL = ROOT
+        const val INTERNAL_HISTORY_BY_ID = "$ROOT/{id}/history"
     }
 
     object Guest {

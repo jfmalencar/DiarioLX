@@ -64,6 +64,7 @@ export type Endpoints = {
             getById: Link;
             internalList: Link;
             internalGetById: Link;
+            internalGetHistory: Link;
             create: Link;
             update: Link;
             delete: Link;

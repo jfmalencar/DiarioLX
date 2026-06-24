@@ -15,6 +15,7 @@ import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.utils.ContentCreateResult
 import pt.ipl.diariolx.utils.ContentError
+import pt.ipl.diariolx.utils.ContentHistoryResult
 import pt.ipl.diariolx.utils.ContentResult
 import pt.ipl.diariolx.utils.ContentUpdateResult
 import pt.ipl.diariolx.utils.failure
@@ -56,7 +57,7 @@ class ContentService(
             if (it.isBlank()) return failure(ContentError.InvalidSlug)
         }
         return transactionManager.run { tx ->
-            tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            val oldContent = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
             categoryId?.let {
                 tx.categoryRepository.getById(it) ?: return@run failure(ContentError.CategoryNotFound)
             }
@@ -87,7 +88,10 @@ class ContentService(
                     authors,
                     tags,
                     blocks,
-                    ContentState.DRAFT,
+                    if (oldContent.state == ContentState.REJECTED || oldContent.state == ContentState.PUBLISHED)
+                            ContentState.DRAFT
+                    else
+                        oldContent.state,
                 )
             tx.contentRepository.updateContent(updateContent, clock.now())
             return@run success(Unit)
@@ -104,13 +108,15 @@ class ContentService(
             }
         }
 
-    fun publish(id: Int): ContentUpdateResult = send(id, ContentState.PUBLISHED)
+    fun publish(id: Int, comment: String?, reviewerId: Int): ContentUpdateResult = send(id, ContentState.PUBLISHED, comment, reviewerId)
 
     fun submit(id: Int): ContentUpdateResult = send(id, ContentState.PENDING_REVIEW)
 
     fun send(
         id: Int,
         newState: ContentState,
+        comment: String? = null,
+        reviewerId: Int? = null
     ): ContentUpdateResult {
         return transactionManager.run { tx ->
             val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
@@ -129,16 +135,23 @@ class ContentService(
             if (content.featuredImage == null) {
                 return@run failure(ContentError.EmptyField)
             }
-            tx.contentRepository.publish(id, newState, clock.now())
+            tx.contentRepository.publish(id, newState, clock.now(), comment, reviewerId)
             return@run success(Unit)
         }
     }
 
-    fun reject(id: Int): ContentUpdateResult {
+    fun reject(id: Int, comment: String?, reviewerId: Int): ContentUpdateResult {
         return transactionManager.run { tx ->
             tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
-            tx.contentRepository.reject(id, clock.now())
+            tx.contentRepository.reject(id, clock.now(), comment, reviewerId)
             return@run success(Unit)
+        }
+    }
+
+    fun historyById(id: Int): ContentHistoryResult {
+        return transactionManager.run { tx ->
+            val history = tx.contentRepository.historyById(id)
+            return@run success(history)
         }
     }
 

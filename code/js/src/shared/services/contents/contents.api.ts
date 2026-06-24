@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 
-import type { ContentsService, ContentsResponse, ContentResponse, NewContentResponse } from './contents.types';
+import type { ContentsService, ContentsResponse, ContentResponse, NewContentResponse, ContentHistory } from './contents.types';
 import { useApi } from '../http/client';
 
 export const useContentsApiService = (): ContentsService => {
@@ -38,6 +38,14 @@ export const useContentsApiService = (): ContentsService => {
       const result = await get<ContentResponse>(endpoints.guest.getContent.href.replace('{slug}', slug));
       if (!result.success) {
         throw new Error('Failed to fetch content');
+      }
+      return result.data;
+    },
+
+    async fetchHistoryById(id) {
+      const result = await get<ContentHistory>(endpoints.backoffice.contents.internalGetHistory.href.replace('{id}', id.toString()));
+      if (!result.success) {
+        throw new Error('Failed to fetch content history');
       }
       return result.data;
     },
@@ -93,14 +101,21 @@ export const useContentsApiService = (): ContentsService => {
     async submit(id) {
       const result = await post(endpoints.backoffice.contents.submit.href.replace('{id}', id.toString()), {});
       if (!result.success) {
+        throw new Error('Failed to submit content');
+      }
+    },
+
+    async publish(id, comment) {
+      const result = await post(endpoints.backoffice.contents.publish.href.replace('{id}', id.toString()), comment ? { comment } : null);
+      if (!result.success) {
         throw new Error('Failed to publish content');
       }
     },
 
-    async publish(id) {
-      const result = await post(endpoints.backoffice.contents.publish.href.replace('{id}', id.toString()), {});
+    async reject(id, comment) {
+      const result = await post(endpoints.backoffice.contents.reject.href.replace('{id}', id.toString()), comment ? { comment } : null);
       if (!result.success) {
-        throw new Error('Failed to publish content');
+        throw new Error('Failed to reject content');
       }
     },
 
