@@ -7,6 +7,7 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.returnResult
 import pt.ipl.diariolx.http.Uris
+import pt.ipl.diariolx.http.dto.auth.LoginUserDTO
 import pt.ipl.diariolx.http.dto.category.CreateUpdateCategoryRequestDTO
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -22,9 +23,25 @@ class CategoryTests {
     @LocalServerPort
     var port: Int = 0
 
+    // Logs in as the seeded admin and returns the accessToken cookie value.
+    private fun loginAsAdmin(): String =
+        client
+            .post()
+            .uri(Uris.Auth.LOGIN)
+            .bodyValue(LoginUserDTO(username = "admin", password = "Test_123"))
+            .exchange()
+            .expectStatus()
+            .isNoContent
+            .returnResult<Void>()
+            .responseCookies
+            .getFirst("accessToken")
+            ?.value
+            ?: throw IllegalStateException("Login did not return an accessToken cookie")
+
     @Test
     fun `can create and edit category`() {
-        // given: an HTTP client and a category payload
+        // given: an authenticated admin and a category payload
+        val accessToken = loginAsAdmin()
         val category =
             CreateUpdateCategoryRequestDTO(name = "Test Category", description = "Test Description", slug = "test", color = "#ec6b43")
 
@@ -34,8 +51,8 @@ class CategoryTests {
             client
                 .post()
                 .uri(Uris.Categories.CREATE)
+                .cookie("accessToken", accessToken)
                 .bodyValue(category)
-                // .header("Authorization", "Bearer")
                 .exchange()
                 .expectStatus()
                 .isCreated
@@ -59,8 +76,8 @@ class CategoryTests {
         client
             .put()
             .uri(Uris.Categories.byId(categoryId.toInt()).toString())
+            .cookie("accessToken", accessToken)
             .bodyValue(request)
-            // .header("Authorization", "Bearer")
             .exchange()
             .expectStatus()
             .isNoContent

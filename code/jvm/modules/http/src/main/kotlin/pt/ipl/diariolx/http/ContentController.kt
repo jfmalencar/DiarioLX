@@ -19,6 +19,7 @@ import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnContentOk
 import pt.ipl.diariolx.http.annotations.MayReturnCreated
+import pt.ipl.diariolx.http.annotations.MayReturnForbidden
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
@@ -92,6 +93,7 @@ class ContentController(
     @GetMapping(Uris.Content.INTERNAL_HISTORY_BY_ID)
     @MayReturnPaginationOk
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
     fun getContentHistory(
         @PathVariable id: Int,
@@ -133,6 +135,7 @@ class ContentController(
     @MayReturnContentOk
     @MayReturnUnauthorized
     @MayReturnBadRequest
+    @MayReturnNotFound
     fun updateContent(
         @RequestBody body: UpdateContentDTO,
     ): ResponseEntity<*> =
@@ -168,6 +171,7 @@ class ContentController(
     @MayReturnContentOk
     @MayReturnUnauthorized
     @MayReturnBadRequest
+    @MayReturnNotFound
     fun deleteContent(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
@@ -187,7 +191,9 @@ class ContentController(
     @PostMapping(Uris.Content.ARCHIVE)
     @MayReturnContentOk
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
+    @MayReturnNotFound
     fun archiveContent(
         @PathVariable id: Int,
         @RequestParam archive: Boolean,
@@ -208,7 +214,9 @@ class ContentController(
     @PostMapping(Uris.Content.PUBLISH)
     @MayReturnNoContent
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
+    @MayReturnNotFound
     fun publishContent(
         authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
@@ -231,6 +239,7 @@ class ContentController(
     @MayReturnNoContent
     @MayReturnUnauthorized
     @MayReturnBadRequest
+    @MayReturnNotFound
     fun submitContent(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
@@ -250,7 +259,9 @@ class ContentController(
     @PostMapping(Uris.Content.REJECT)
     @MayReturnContentOk
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
+    @MayReturnNotFound
     fun rejectContent(
         authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,

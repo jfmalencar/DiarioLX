@@ -126,7 +126,7 @@ export const ContentCard = ({ content, variant = 'vertical', dark = false }: Pro
     }
     return (
         <Link to={href} className={`text-decoration-none ${dark ? 'text-white' : 'text-dark'} h-100`}>
-            <div className='card border-0 h-100'>
+            <div className={`card border-0 h-100${dark ? ' bg-transparent' : ''}`}>
                 <div className='position-relative overflow-hidden' style={{ maxHeight: 200 }}>
                     <MediaPreview
                         src={thumb}
@@ -152,7 +152,7 @@ export const ContentCard = ({ content, variant = 'vertical', dark = false }: Pro
                         </span>
                     </div>
                     <h3
-                        className='card-title mb-1 lh-sm'
+                        className={dark ? 'text-white' : 'text-dark' + ' card-title mb-1 lh-sm'}
                         style={{ fontSize: '0.95rem' }}
                     >
                         {content.title}

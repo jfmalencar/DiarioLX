@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.http
 
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.featured.SectionPolicy
@@ -30,6 +31,10 @@ import pt.ipl.diariolx.http.dto.bootstrap.UserEndpointsDTO
 import pt.ipl.diariolx.services.SettingsService
 
 @RestController
+@Tag(
+    name = "Bootstrap",
+    description = "API for fetching the application bootstrap configuration.",
+)
 class BootstrapController(
     private val mediaBaseUrl: MediaBaseUrl,
     private val settingsService: SettingsService,

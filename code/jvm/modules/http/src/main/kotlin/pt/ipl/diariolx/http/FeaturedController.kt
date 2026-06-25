@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnForbidden
+import pt.ipl.diariolx.http.annotations.MayReturnHomepageOk
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
@@ -28,6 +29,7 @@ class FeaturedController(
 ) {
     @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Featured.HOMEPAGE)
+    @MayReturnHomepageOk
     @MayReturnUnauthorized
     fun getHomepage(): ResponseEntity<*> {
         val sections = featuredService.getHomepage()

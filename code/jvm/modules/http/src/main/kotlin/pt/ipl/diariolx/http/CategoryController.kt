@@ -10,14 +10,17 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnCategoryOk
 import pt.ipl.diariolx.http.annotations.MayReturnConflict
 import pt.ipl.diariolx.http.annotations.MayReturnCreated
+import pt.ipl.diariolx.http.annotations.MayReturnForbidden
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
+import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.category.CategoryResponseDTO
 import pt.ipl.diariolx.http.dto.category.CreateUpdateCategoryRequestDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
@@ -33,6 +36,7 @@ import pt.ipl.diariolx.utils.Success
 class CategoryController(
     private val categoryService: CategoryService,
 ) {
+    @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Categories.GET_BY_ID)
     @MayReturnCategoryOk
     @MayReturnUnauthorized
@@ -49,6 +53,7 @@ class CategoryController(
                 )
         }
 
+    @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Categories.GET_ALL)
     @MayReturnPaginationOk
     @MayReturnUnauthorized
@@ -72,9 +77,12 @@ class CategoryController(
         )
     }
 
+    @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Categories.CREATE)
-    @MayReturnBadRequest
     @MayReturnCreated
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnBadRequest
     @MayReturnConflict
     fun createCategory(
         @RequestBody body: CreateUpdateCategoryRequestDTO,
@@ -91,10 +99,13 @@ class CategoryController(
                 )
         }
 
+    @RequireRole(UserRole.ADMIN)
     @PutMapping(Uris.Categories.UPDATE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnNotFound
     @MayReturnBadRequest
-    @MayReturnNoContent
     @MayReturnConflict
     fun updateCategory(
         @PathVariable id: Int,
@@ -109,10 +120,13 @@ class CategoryController(
                 )
         }
 
+    @RequireRole(UserRole.ADMIN)
     @DeleteMapping(Uris.Categories.DELETE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnNotFound
     @MayReturnBadRequest
-    @MayReturnNoContent
     fun deleteCategory(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
@@ -125,10 +139,13 @@ class CategoryController(
                 )
         }
 
+    @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Categories.ARCHIVE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnNotFound
     @MayReturnBadRequest
-    @MayReturnNoContent
     fun archiveCategory(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
@@ -141,10 +158,13 @@ class CategoryController(
                 )
         }
 
+    @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Categories.UNARCHIVE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnNotFound
     @MayReturnBadRequest
-    @MayReturnNoContent
     fun unarchiveCategory(
         @PathVariable id: Int,
     ): ResponseEntity<*> =

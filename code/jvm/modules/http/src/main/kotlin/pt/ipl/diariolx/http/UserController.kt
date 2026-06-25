@@ -15,8 +15,10 @@ import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
+import pt.ipl.diariolx.http.annotations.MayReturnForbidden
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
+import pt.ipl.diariolx.http.annotations.MayReturnOk
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
 import pt.ipl.diariolx.http.annotations.MayReturnUserOk
@@ -135,6 +137,10 @@ class UserController(
 
     @RequireRole(UserRole.ADMIN)
     @DeleteMapping(Uris.Users.DELETE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
     fun removeUser(
         @Parameter(hidden = true) author: AuthenticatedUser,
         @PathVariable id: Int,
@@ -150,6 +156,10 @@ class UserController(
 
     @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Users.DEACTIVATE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
     fun deactivateUser(
         @Parameter(hidden = true) author: AuthenticatedUser,
         @PathVariable id: Int,
@@ -165,6 +175,9 @@ class UserController(
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @PatchMapping(Uris.Auth.USER_AVATAR)
+    @MayReturnOk
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
     fun completeAvatarUpload(
         @Parameter(hidden = true) me: AuthenticatedUser,
         @RequestBody body: UpdateAvatarDTO,

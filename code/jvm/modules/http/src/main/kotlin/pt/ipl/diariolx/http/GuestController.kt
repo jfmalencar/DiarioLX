@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
+import pt.ipl.diariolx.http.annotations.MayReturnAuthorOk
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnContentOk
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
-import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
+import pt.ipl.diariolx.http.annotations.MayReturnPublicHomepageOk
+import pt.ipl.diariolx.http.annotations.MayReturnResourceContentsOk
+import pt.ipl.diariolx.http.annotations.MayReturnTeamOk
 import pt.ipl.diariolx.http.dto.content.CategorySummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.ContentSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.PublicContentResponseDTO
@@ -43,9 +46,11 @@ class GuestController(
     private val categoryService: CategoryService,
 ) {
     @GetMapping(Uris.Guest.TEAM)
+    @MayReturnTeamOk
     fun getTeam(): ResponseEntity<*> = ResponseEntity.ok(userService.getTeam().map { TeamMemberResponseDTO.from(it) })
 
     @GetMapping(Uris.Guest.AUTHOR)
+    @MayReturnAuthorOk
     @MayReturnNotFound
     fun getAuthor(
         @PathVariable slug: String,
@@ -56,6 +61,7 @@ class GuestController(
             ?: Problem.response(Problem.notFound, Uris.Guest.AUTHOR)
 
     @GetMapping(Uris.Guest.TAG)
+    @MayReturnResourceContentsOk
     @MayReturnNotFound
     fun getTagPage(
         @PathVariable slug: String,
@@ -75,6 +81,7 @@ class GuestController(
     }
 
     @GetMapping(Uris.Guest.CATEGORY)
+    @MayReturnResourceContentsOk
     @MayReturnNotFound
     fun getCategoryPage(
         @PathVariable slug: String,
@@ -94,6 +101,7 @@ class GuestController(
     }
 
     @GetMapping(Uris.Guest.HOMEPAGE)
+    @MayReturnPublicHomepageOk
     @MayReturnBadRequest
     fun getHomePage(): ResponseEntity<*> {
         val response =
@@ -125,7 +133,6 @@ class GuestController(
 
     @GetMapping(Uris.Guest.LIST_CONTENT)
     @MayReturnPaginationOk
-    @MayReturnUnauthorized
     fun getAllContent(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,

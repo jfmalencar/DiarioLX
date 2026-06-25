@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnForbidden
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
+import pt.ipl.diariolx.http.annotations.MayReturnSettingsOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.settings.SettingsRequestDTO
@@ -22,6 +23,7 @@ class SettingsController(
 ) {
     @RequireRole(UserRole.ADMIN)
     @GetMapping(Uris.Settings.ROOT)
+    @MayReturnSettingsOk
     @MayReturnUnauthorized
     @MayReturnForbidden
     fun getSettings(): ResponseEntity<*> = ResponseEntity.ok(SettingsResponseDTO.from(settingsService.getAll()))

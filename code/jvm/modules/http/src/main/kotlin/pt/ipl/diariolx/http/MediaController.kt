@@ -12,6 +12,12 @@ import org.springframework.web.multipart.MultipartFile
 import pt.ipl.diariolx.domain.media.Credit
 import pt.ipl.diariolx.domain.media.CreditRole
 import pt.ipl.diariolx.domain.users.UserRole
+import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
+import pt.ipl.diariolx.http.annotations.MayReturnOk
+import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
+import pt.ipl.diariolx.http.annotations.MayReturnSignedUrlOk
+import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
+import pt.ipl.diariolx.http.annotations.MayReturnUploadCompleteOk
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.media.MediaResponseDTO
 import pt.ipl.diariolx.http.dto.media.SignedUrlRequestDTO
@@ -28,6 +34,8 @@ class MediaController(
 ) {
     @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Media.GET_ALL)
+    @MayReturnPaginationOk
+    @MayReturnUnauthorized
     fun getAllFiles(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
@@ -49,6 +57,9 @@ class MediaController(
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Media.UPLOAD)
+    @MayReturnUploadCompleteOk
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
     fun upload(
         @RequestParam("file") file: MultipartFile,
     ): ResponseEntity<UploadCompleteResponseDTO> {
@@ -69,6 +80,9 @@ class MediaController(
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Media.GET_SIGNED_URL)
+    @MayReturnSignedUrlOk
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
     fun getSignedUrl(
         @RequestBody body: SignedUrlRequestDTO,
     ): ResponseEntity<*> {
@@ -88,6 +102,9 @@ class MediaController(
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @PostMapping(Uris.Media.COMPLETE_UPLOAD)
+    @MayReturnOk
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
     fun completeUpload(
         @PathVariable id: Int,
     ): ResponseEntity<*> {

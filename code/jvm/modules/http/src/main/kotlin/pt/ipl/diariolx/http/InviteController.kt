@@ -13,6 +13,13 @@ import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.invites.InviteRole
 import pt.ipl.diariolx.domain.users.AuthenticatedUser
 import pt.ipl.diariolx.domain.users.UserRole
+import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
+import pt.ipl.diariolx.http.annotations.MayReturnForbidden
+import pt.ipl.diariolx.http.annotations.MayReturnInviteOk
+import pt.ipl.diariolx.http.annotations.MayReturnNoContent
+import pt.ipl.diariolx.http.annotations.MayReturnNotFound
+import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
+import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.invite.InviteResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
@@ -30,6 +37,10 @@ class InviteController(
 ) {
     @RequireRole(UserRole.ADMIN)
     @PostMapping(Uris.Invites.CREATE)
+    @MayReturnInviteOk
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnBadRequest
     fun createInvite(
         @Parameter(hidden = true) author: AuthenticatedUser,
         @RequestBody body: InviteRole,
@@ -41,6 +52,9 @@ class InviteController(
 
     @RequireRole(UserRole.ADMIN)
     @GetMapping(Uris.Invites.GET_ALL)
+    @MayReturnPaginationOk
+    @MayReturnUnauthorized
+    @MayReturnForbidden
     fun getAllInvites(
         @RequestParam page: Int = 1,
         @RequestParam limit: Int = 10,
@@ -63,6 +77,10 @@ class InviteController(
 
     @RequireRole(UserRole.ADMIN)
     @DeleteMapping(Uris.Invites.DELETE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnNotFound
     fun deleteInvite(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
