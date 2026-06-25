@@ -133,8 +133,12 @@ export const EditTag = () => {
         };
         (
             params.id === 'new' ? create(tag) : update(tagId, tag)
-        ).then(() => {
-            dispatch({ type: 'success' });
+        ).then((result) => {
+            if (result.ok) {
+                dispatch({ type: 'success' });
+            } else {
+                dispatch({ type: 'error', message: result.error });
+            }
         });
     }
 

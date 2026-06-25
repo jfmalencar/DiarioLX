@@ -23,6 +23,7 @@ import pt.ipl.diariolx.http.annotations.MayReturnUserOk
 import pt.ipl.diariolx.http.annotations.RequireRole
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
+import pt.ipl.diariolx.http.dto.user.SetTeamMembershipRequestDTO
 import pt.ipl.diariolx.http.dto.user.UpdateAvatarDTO
 import pt.ipl.diariolx.http.dto.user.UpdateUserRequestDTO
 import pt.ipl.diariolx.http.dto.user.UserResponseDTO
@@ -39,7 +40,7 @@ class UserController(
     private val logger: Logger,
 ) {
     @RequireRole(UserRole.CONTRIBUTOR)
-    @PatchMapping(Uris.Users.UPDATE)
+    @PatchMapping(Uris.Auth.USER)
     @MayReturnNoContent
     @MayReturnUnauthorized
     @MayReturnBadRequest
@@ -56,24 +57,41 @@ class UserController(
                     body.password,
                     body.firstName,
                     body.lastName,
+                    body.position,
                     body.bio,
+                    body.onTeam,
                 )
         ) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Users.UPDATE,
+                    Uris.Auth.USER,
                 )
         }
 
     @RequireRole(UserRole.CONTRIBUTOR)
-    @GetMapping(Uris.Users.HOME)
+    @GetMapping(Uris.Auth.USER)
     @MayReturnUserOk
     @MayReturnUnauthorized
     fun getCurrentUser(
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<*> = ResponseEntity.ok(UserResponseDTO.from(me.user))
+
+    @RequireRole(UserRole.ADMIN)
+    @PatchMapping(Uris.Users.SET_TEAM)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnNotFound
+    fun setTeamMembership(
+        @PathVariable id: Int,
+        @RequestBody body: SetTeamMembershipRequestDTO,
+    ): ResponseEntity<*> =
+        if (userService.setTeamMembership(id, body.onTeam)) {
+            ResponseEntity.noContent().build<Unit>()
+        } else {
+            Problem.response(Problem.notFound, Uris.Users.SET_TEAM)
+        }
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Users.GET_BY_ID)
@@ -146,7 +164,7 @@ class UserController(
         }
 
     @RequireRole(UserRole.CONTRIBUTOR)
-    @PatchMapping(Uris.Users.AVATAR)
+    @PatchMapping(Uris.Auth.USER_AVATAR)
     fun completeAvatarUpload(
         @Parameter(hidden = true) me: AuthenticatedUser,
         @RequestBody body: UpdateAvatarDTO,

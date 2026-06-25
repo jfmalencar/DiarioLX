@@ -16,10 +16,10 @@ DROP TYPE IF EXISTS credit_role CASCADE;
 DROP TYPE IF EXISTS content_type CASCADE;
 
 CREATE TYPE user_role AS ENUM ('ADMIN', 'EDITOR', 'CONTRIBUTOR');
-CREATE TYPE content_type AS ENUM ('ARTICLE', 'VIDEO', 'EPISODE', 'PODCAST');
+CREATE TYPE content_type AS ENUM ('ARTICLE', 'VIDEO', 'EPISODE', 'PODCAST', 'PHOTO_ESSAY');
 CREATE TYPE content_state AS ENUM ('DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'REJECTED');
 CREATE TYPE media_purpose AS ENUM ('GALLERY', 'PROFILE');
-CREATE TYPE block_type AS ENUM ('TEXT', 'QUOTE', 'IMAGE', 'H3', 'H4');
+CREATE TYPE block_type AS ENUM ('TEXT', 'QUOTE', 'MEDIA', 'H3', 'H4', 'GALLERY', 'EMBED');
 CREATE TYPE credit_role AS ENUM (
     'PHOTOGRAPHER',
     'VIDEOGRAPHER',
@@ -60,7 +60,9 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
+    position TEXT DEFAULT '',
     bio TEXT DEFAULT '',
+    on_team BOOLEAN DEFAULT FALSE,
     avatar_media_id INTEGER NULL REFERENCES medias(id),
     active_account BOOLEAN DEFAULT TRUE,
     created_at BIGINT NOT NULL,
@@ -133,6 +135,10 @@ CREATE TABLE contents (
     featured_media_id INTEGER NULL REFERENCES medias(id) DEFAULT NULL,
     slug              VARCHAR(255) NULL UNIQUE DEFAULT NULL,
     category_id       INTEGER NULL REFERENCES categories(id) DEFAULT NULL,
+    -- Episodes belong to a Podcast (self-reference); deleting the podcast removes its episodes.
+    parent_id         INTEGER NULL REFERENCES contents(id) ON DELETE CASCADE DEFAULT NULL,
+    -- External embed for VIDEO (YouTube) / EPISODE (Spotify) instead of an uploaded file.
+    embed_url         TEXT NULL DEFAULT NULL,
     published_at      BIGINT DEFAULT NULL,
     archived_at       BIGINT DEFAULT NULL,
     -----------------------------------------------------------------------
@@ -161,10 +167,21 @@ CREATE TABLE content_blocks (
 
     CONSTRAINT uq_content_blocks_content_position UNIQUE (content_id, position),
     CONSTRAINT chk_content_blocks_content CHECK (
-        (type IN ('TEXT', 'QUOTE', 'H3', 'H4') AND content IS NOT NULL)
+        (type IN ('TEXT', 'QUOTE', 'H3', 'H4', 'EMBED') AND content IS NOT NULL)
             OR
-        (type = 'IMAGE' AND media_id IS NOT NULL)
+        (type = 'MEDIA' AND media_id IS NOT NULL)
+            OR
+        (type = 'GALLERY' AND media_id IS NULL AND content IS NULL)
     )
+);
+
+CREATE TABLE content_block_images (
+    block_id        INTEGER NOT NULL REFERENCES content_blocks(id) ON DELETE CASCADE,
+    media_id        INTEGER NOT NULL REFERENCES medias(id),
+    caption         TEXT NULL,
+    position        INTEGER NOT NULL,
+
+    PRIMARY KEY (block_id, position)
 );
 
 CREATE TABLE content_tags (
@@ -174,11 +191,31 @@ CREATE TABLE content_tags (
     PRIMARY KEY (content_id, tag_id)
 );
 
-CREATE TABLE featured_contents (
-    key         VARCHAR(50) PRIMARY KEY,
-    content_id  INTEGER REFERENCES contents(id) ON DELETE SET NULL,
-    position    INT NOT NULL DEFAULT 0,
-    description VARCHAR(100),
-    created_at  BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
-    updated_at  BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
+CREATE TABLE featured_sections (
+    id          SERIAL PRIMARY KEY,
+    type        VARCHAR(30) NOT NULL,
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+    position    INTEGER NOT NULL,
+    CONSTRAINT uq_section_position UNIQUE (position),
+    CONSTRAINT chk_type_category CHECK (
+        (type = 'CATEGORY' AND category_id IS NOT NULL) OR
+        (type <> 'CATEGORY' AND category_id IS NULL)
+    )
 );
+
+CREATE TABLE featured_contents (
+    id          SERIAL PRIMARY KEY,
+    section_id  INTEGER  NOT NULL REFERENCES featured_sections(id) ON DELETE CASCADE,
+    content_id  INTEGER  NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
+    position    INTEGER  NOT NULL,
+    CONSTRAINT uq_section_content  UNIQUE (section_id, content_id),
+    CONSTRAINT uq_section_position_content UNIQUE (section_id, position)
+);
+
+-- Generic key/value site settings (social links, contact info, navigation config)
+CREATE TABLE settings (
+    key   VARCHAR(255) PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+

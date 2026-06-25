@@ -7,4 +7,10 @@ data class ContentBlock(
     val type: String,
     val content: String?,
     val media: MediaSummary?,
+    val images: List<GalleryImage> = emptyList(),
+)
+
+data class GalleryImage(
+    val media: MediaSummary,
+    val caption: String?,
 )

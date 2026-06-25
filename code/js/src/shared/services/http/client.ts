@@ -31,7 +31,7 @@ async function refreshToken(refreshUri: string): Promise<boolean> {
 async function request<T>(
   url: string,
   options: RequestInit = {},
-  onUnauthorized?: () => void,
+  onUnauthorized?: (url?: string) => void,
   refreshUri?: string,
 ): Promise<ApiResult<T>> {
   try {
@@ -39,7 +39,11 @@ async function request<T>(
     const isUpload = rest.body instanceof FormData;
     const response = await fetch(url, {
       ...rest,
-      headers: isUpload ? { ...(headers || {}) } : { 'Content-Type': 'application/json', ...(headers || {}) },
+      headers: isUpload ? { ...(headers || {}) } : {
+        'Content-Type': 'application/json',
+        'Accept-Language': 'pt-PT',
+        ...(headers || {})
+      },
       credentials: 'include',
     });
 
@@ -49,11 +53,11 @@ async function request<T>(
         if (refreshed) {
           return request<T>(url, options, onUnauthorized);
         } else {
-          onUnauthorized?.();
+          onUnauthorized?.(url);
           return { success: false, error: 'Session expired' };
         }
       } else {
-        onUnauthorized?.();
+        onUnauthorized?.(url);
         return { success: false, error: 'Unauthorized' };
       }
     }
@@ -62,7 +66,7 @@ async function request<T>(
       const contentType = response.headers.get('content-type');
       if (contentType?.includes('application/problem+json')) {
         const problem = await response.json();
-        return { success: false, error: problem.detail || `Action failed: ${response.status}` };
+        return { success: false, error: problem.detail || problem.title || `Action failed: ${response.status}` };
       } else {
         const errorText = await response.text();
         return { success: false, error: `Action failed: ${response.status} - ${errorText}` };
@@ -87,8 +91,11 @@ export function useApi() {
   const { endpoints } = useBootstrap();
   const refreshUri = endpoints.auth.refresh.href;
 
-  const onUnauthorized = useCallback(() => {
-  }, []);
+  const onUnauthorized = useCallback((url?: string) => {
+    if (window.location.pathname !== '/backoffice/login' && url !== endpoints.auth.me.href) {
+      window.location.href = '/backoffice/login';
+    }
+  }, [endpoints]);
 
   const get = useCallback(
     <T>(url: string, options: RequestInit = {}) =>

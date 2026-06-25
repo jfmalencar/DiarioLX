@@ -67,11 +67,12 @@ class ContentController(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
+        @RequestParam category: String? = null,
         @RequestParam state: ContentState? = null,
         @RequestParam type: ContentType? = null,
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
-        val response = contentService.getAll(page, size, query, state, type, me.user)
+        val response = contentService.getAll(page, size, query, state, type, category, me.user)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },
@@ -122,6 +123,8 @@ class ContentController(
                     body.featuredMediaId,
                     body.slug,
                     body.categoryId,
+                    body.parentId,
+                    body.embedUrl,
                     body.authors,
                     body.tags,
                     body.blocks,

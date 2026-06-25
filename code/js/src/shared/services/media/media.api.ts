@@ -13,7 +13,7 @@ export const useMediaApiService = (): MediaService => {
     async fetchAll(params) {
       const result = await get<MediasResponse>(`${endpoints.backoffice.medias.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
-        throw new Error('Failed to fetch media');
+        throw new Error(result.error || 'Failed to fetch media');
       }
       return result.data;
     },
@@ -32,7 +32,7 @@ export const useMediaApiService = (): MediaService => {
         uploadType: media.uploadType
       });
       if (!result.success) {
-        throw new Error('Failed to get signed URL');
+        throw new Error(result.error || 'Failed to get signed URL');
       }
       return result.data;
     },
@@ -40,7 +40,7 @@ export const useMediaApiService = (): MediaService => {
     async completeUpload(id) {
       const result = await post(endpoints.backoffice.medias.completeUpload.href.replace('{id}', id.toString()), {});
       if (!result.success) {
-        throw new Error('Failed to complete upload');
+        throw new Error(result.error || 'Failed to complete upload');
       }
     },
 

@@ -19,7 +19,7 @@ data class MediaResponseDTO(
             MediaResponseDTO(
                 id = media.id,
                 path = "${media.bucket}/${media.objectKey}",
-                thumbnailPath = "${media.thumbnailBucket}/${media.thumbnailObjectKey}",
+                thumbnailPath = media.thumbnailBucket?.let { "${media.thumbnailBucket}/${media.thumbnailObjectKey}" },
                 altText = media.altText,
                 credits = media.credits,
                 mimeType = media.mimeType,

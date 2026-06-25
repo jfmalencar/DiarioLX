@@ -5,6 +5,8 @@ import { useUsersService } from '@/shared/services/users';
 import type { User } from '@/shared/services/users/users.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
+import type { Result } from '@/shared/types/Result';
+import { runAction } from '@/shared/utils/action';
 
 export type { User };
 
@@ -35,72 +37,37 @@ export const useUsers = () => {
     )
 
     const updateProfile = useCallback(
-        async (username?: string, email?: string, password?: string, firstName?: string, lastName?: string, bio?: string | null): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                const updatedUser = await usersService.updateProfile(username, email, password, firstName, lastName, bio)
-                if (!updatedUser) {
-                    setError('Failed to update profile')
-                    return false
-                }
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to update profile'
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (username?: string, email?: string, password?: string, firstName?: string, lastName?: string, bio?: string | null, position?: string | null, onTeam?: boolean): Promise<Result<boolean | undefined>> =>
+            runAction(
+                () => usersService.updateProfile(username, email, password, firstName, lastName, bio, position, onTeam),
+                'Failed to update profile',
+                setLoading,
+                setError,
+            ),
         [usersService]
     )
 
     const completeAvatarUpload = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await usersService.completeAvatarUpload(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to complete avatar upload'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => usersService.completeAvatarUpload(id), 'Failed to complete avatar upload', setLoading, setError),
+        [usersService]
+    )
+
+    const setOnTeam = useCallback(
+        (id: number, onTeam: boolean): Promise<Result> =>
+            runAction(() => usersService.setOnTeam(id, onTeam), 'Failed to update team membership', setLoading, setError),
         [usersService]
     )
 
     const remove = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await usersService.remove(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to remove user'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => usersService.remove(id), 'Failed to remove user', setLoading, setError),
         [usersService]
     )
 
     const deactivate = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await usersService.deactivate(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to deactivate user'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => usersService.deactivate(id), 'Failed to deactivate user', setLoading, setError),
         [usersService]
     )
 
@@ -111,6 +78,7 @@ export const useUsers = () => {
         pagination,
         fetchAll,
         updateProfile,
+        setOnTeam,
         completeAvatarUpload,
         deactivate,
         remove

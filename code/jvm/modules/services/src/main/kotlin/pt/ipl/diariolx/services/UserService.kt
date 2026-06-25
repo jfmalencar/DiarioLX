@@ -85,7 +85,9 @@ class UserService(
         password: String?,
         firstName: String?,
         lastName: String?,
+        position: String?,
         bio: String?,
+        onTeam: Boolean?,
     ): UserUpdateResult {
         logger.info(
             "Updating user ${oldUser.id}: new username: $username, new email: $email, new password: $password, " +
@@ -103,7 +105,9 @@ class UserService(
             }
         val firstName = Name.parse(firstName) ?: return failure(UserError.InvalidName)
         val lastName = Name.parse(lastName) ?: return failure(UserError.InvalidName)
+        val position = position ?: oldUser.position
         val bio = bio ?: oldUser.bio
+        val onTeam = onTeam ?: oldUser.onTeam
 
         return transactionManager.run { tx ->
             if (username != oldUser.username) {
@@ -119,11 +123,24 @@ class UserService(
                 }
             }
 
-            val updatedUser = UpdateUser(username, email, passwordHash, firstName, lastName, bio)
+            val updatedUser = UpdateUser(username, email, passwordHash, firstName, lastName, position, bio, onTeam)
             tx.userRepository.update(updatedUser, oldUser.id, clock.now())
             success(Unit)
         }
     }
+
+    fun getTeam(): List<User> = transactionManager.run { it.userRepository.getTeam() }
+
+    // Public profile lookup by username — any user (author/credited), not just team members.
+    fun getByUsername(username: String): User? =
+        transactionManager.run { tx ->
+            Username.parse(username)?.let { tx.userRepository.getByUsername(it) }
+        }
+
+    fun setTeamMembership(
+        userId: Int,
+        onTeam: Boolean,
+    ): Boolean = transactionManager.run { it.userRepository.setTeamMembership(userId, onTeam, clock.now()) }
 
     fun get(
         me: User,
@@ -225,7 +242,10 @@ class UserService(
         }
     }
 
-    fun refresh(refreshToken: RefreshToken): LoginResult {
+    fun refresh(refreshToken: RefreshToken?): LoginResult {
+        if (refreshToken == null) {
+            return failure(AuthError.InvalidCredentials)
+        }
         return transactionManager.run {
             val session =
                 it.userRepository.getSessionByRefreshToken(refreshToken)

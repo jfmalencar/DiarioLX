@@ -1,14 +1,16 @@
 import { useContext } from 'react';
 import { createContext } from 'react';
 
-import type { Endpoints, Assets, CreditRole } from '../services/bootstrap/bootstrap.types';
+import type { Endpoints, Assets, CreditRole, SectionTypeConfig, SiteSettings } from '../services/bootstrap/bootstrap.types';
 
-export type { Endpoints, Assets, CreditRole }
+export type { Endpoints, Assets, CreditRole, SectionTypeConfig, SiteSettings }
 
 export type BootstrapState = {
   endpoints: Endpoints;
   assets: Assets;
   creditRoles: CreditRole[];
+  sections: SectionTypeConfig[];
+  settings: SiteSettings;
   loading: boolean;
   reload: () => Promise<{ api: Endpoints }>;
 };

@@ -13,6 +13,9 @@ import { RichTextBlock } from '@/shared/components/richtext/RichTextBlock';
 import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { MediaGallery } from '@/shared/components/media/MediaGallery';
+import { EmbedPlayer } from '@/shared/components/EmbedPlayer';
+import { embedSrc, detectProvider } from '@/shared/utils/embed';
+import { GalleryBlockEditor } from './GalleryBlockEditor';
 import { SearchField } from '@/shared/components/inputs/SearchField';
 import { Pill } from '@/shared/components/Pill';
 
@@ -68,11 +71,21 @@ const getVariant = (block: ContentBlock): Variant => {
     }
 };
 
-const canPublish = (content: ContentEditingInput): boolean =>
+// Videos embed YouTube, episodes embed Spotify — nothing else is accepted as the
+// primary source.
+const requiredEmbedProvider = (type?: ContentType): 'youtube' | 'spotify' | null =>
+    type === 'VIDEO' ? 'youtube' : type === 'EPISODE' ? 'spotify' : null;
+
+const hasValidEmbed = (embedUrl: string, type?: ContentType): boolean => {
+    const required = requiredEmbedProvider(type);
+    return required !== null && detectProvider(embedUrl) === required;
+};
+
+const canPublish = (content: ContentEditingInput, type?: ContentType): boolean =>
     content.title.trim() !== '' &&
     content.slug.trim() !== '' &&
-    content.category.id > 0 &&
-    content.featuredMedia !== null &&
+    (type === 'EPISODE' ? content.parent.id > 0 : content.category.id > 0) &&
+    (content.featuredMedia !== null || hasValidEmbed(content.embedUrl, type)) &&
     content.mainAuthor !== null &&
     content.mainTag !== null;
 
@@ -86,6 +99,7 @@ export const EditContent = () => {
     const { user } = useAuthentication()
 
     const { fetchById, create, update, loading, publish, submit, delete: deleteContent } = useContents();
+    const { fetchAll: fetchPodcasts, contents: podcasts } = useContents();
     const { fetchAll: fetchCategories, categories } = useCategories();
     const { fetchAll: fetchAuthors, users } = useUsers();
     const { fetchAll: fetchTags, tags } = useTags();
@@ -128,7 +142,18 @@ export const EditContent = () => {
         [users],
     );
 
+    const fetchPodcastsByQuery = useCallback(
+        async ({ query }: { query: string }) => { await fetchPodcasts({ query, type: 'PODCAST' }); },
+        [fetchPodcasts],
+    );
+
+    const podcastOptions = useMemo(
+        () => podcasts.map((p) => ({ id: p.id, name: p.title })),
+        [podcasts],
+    );
+
     useDebouncedSearch(content.categorySearch, fetchCategories);
+    useDebouncedSearch(content.parentSearch, fetchPodcastsByQuery);
     useDebouncedSearch(content.mainTagSearch, fetchTags);
     useDebouncedSearch(content.secondaryTagSearch, fetchTags);
     useDebouncedSearch(content.mainAuthorSearch, fetchAuthors);
@@ -154,13 +179,13 @@ export const EditContent = () => {
         let id = state.contentId;
 
         if (!id) {
-            try {
-                id = await create({ type });
-                dispatch({ type: 'set-content-id', payload: id });
-            } catch (error) {
-                showSnackbar('Erro ao criar conteúdo: ' + error, 'error');
+            const createRes = await create({ type });
+            if (!createRes.ok || createRes.data == null) {
+                showSnackbar(createRes.ok ? 'Erro ao criar conteúdo' : createRes.error, 'error');
                 return null;
             }
+            id = createRes.data;
+            dispatch({ type: 'set-content-id', payload: id });
         }
 
         const res = await update(id, {
@@ -169,6 +194,8 @@ export const EditContent = () => {
             featuredMediaId: content.featuredMedia ? content.featuredMedia.id : null,
             slug: content.slug,
             categoryId: content.category.id ? content.category.id : null,
+            parentId: type === 'EPISODE' && content.parent.id ? content.parent.id : null,
+            embedUrl: hasValidEmbed(content.embedUrl, type) ? content.embedUrl.trim() : null,
             tags: [
                 ...(content.mainTag.id ? [{ tagId: content.mainTag.id }] : []),
                 ...content.secondaryTags.map((tag) => ({ tagId: tag.id })),
@@ -180,8 +207,8 @@ export const EditContent = () => {
             blocks: state.blocks,
         });
 
-        if (!res) {
-            showSnackbar('Erro ao guardar alterações', 'error');
+        if (!res.ok) {
+            showSnackbar(res.error, 'error');
             return null;
         }
 
@@ -197,33 +224,33 @@ export const EditContent = () => {
     };
 
     const handleSubmit = async (mode: 'publish' | 'review') => {
-        if (!canPublish(content)) {
+        if (!canPublish(content, type)) {
             setOpenConfirmModal(false)
-            showSnackbar('Preencha os campos obrigatórios: Título, Slug e Categoria', 'error');
+            showSnackbar(`Preencha os campos obrigatórios: Título, Slug e ${type === 'EPISODE' ? 'Podcast' : 'Categoria'}`, 'error');
             return;
         }
 
         const id = await ensureSaved();
         if (!id) return;
 
-        try {
-            if (mode === 'publish') {
-                const success = await publish(id);
-                if (success) {
-                    showSnackbar('Conteúdo publicado com sucesso!', 'success');
-                    navigate(`/p/${content.slug}`);
-                }
-            } else {
-                const success = await submit(id);
-                if (success) {
-                    showSnackbar('Revisão solicitada com sucesso!', 'success');
-                    navigate('/backoffice/contents?tab=pending');
-                }
+        if (mode === 'publish') {
+            const res = await publish(id);
+            if (!res.ok) {
+                setOpenConfirmModal(false)
+                showSnackbar(res.error, 'error');
+                return;
             }
-        } catch (error) {
-            console.error(error)
-            const msg = mode === 'publish' ? 'Erro ao publicar conteúdo' : 'Erro ao solicitar revisão';
-            showSnackbar(msg, 'error');
+            showSnackbar('Conteúdo publicado com sucesso!', 'success');
+            navigate(`/p/${content.slug}`);
+        } else {
+            const res = await submit(id);
+            if (!res.ok) {
+                setOpenConfirmModal(false)
+                showSnackbar(res.error, 'error');
+                return;
+            }
+            showSnackbar('Revisão solicitada com sucesso!', 'success');
+            navigate('/backoffice/contents?tab=pending');
         }
     };
 
@@ -312,28 +339,59 @@ export const EditContent = () => {
                                 <EditIcon size={24} />
                             </button>
                         </div>
+                    ) : (type === 'VIDEO' || type === 'EPISODE') && hasValidEmbed(content.embedUrl, type) && embedSrc(content.embedUrl) ? (
+                        <div className='mb-4 position-relative' style={{ maxWidth: 600 }}>
+                            <EmbedPlayer url={content.embedUrl} />
+                            <button
+                                type='button'
+                                className='btn btn-dark position-absolute top-0 end-0 m-2 d-flex align-items-center justify-content-center'
+                                style={{ width: 36, height: 36 }}
+                                onClick={() => dispatch({ type: 'edit', field: 'embedUrl', value: '' })}
+                            >
+                                <Trash2 size={20} />
+                            </button>
+                        </div>
                     ) : (
-                        <button
-                            type='button'
-                            disabled={loading}
-                            className='btn btn-outline-dark w-100 d-flex align-items-center justify-content-between rounded-0 px-2 mb-3'
-                            style={{ height: 48 }}
-                            onClick={() => dispatch({ type: 'open-gallery', payload: 'featured' })}
-                        >
-                            {type === 'ARTICLE' || type === 'PODCAST' ? (
-                                <span className='fs-5'>Imagem em destaque</span>
-                            ) : type === 'VIDEO' ? (
-                                <span className='fs-5'>Vídeo</span>
-                            ) : type === 'EPISODE' ? (
-                                <span className='fs-5'>Áudio do Episódio</span>
-                            ) : null}
-                            <Upload size={28} />
-                        </button>
+                        <div className='mb-3'>
+                            <button
+                                type='button'
+                                disabled={loading}
+                                className='btn btn-outline-dark w-100 d-flex align-items-center justify-content-between rounded-0 px-2 mb-2'
+                                style={{ height: 48 }}
+                                onClick={() => dispatch({ type: 'open-gallery', payload: 'featured' })}
+                            >
+                                {type === 'ARTICLE' || type === 'PODCAST' ? (
+                                    <span className='fs-5'>Imagem em destaque</span>
+                                ) : type === 'VIDEO' ? (
+                                    <span className='fs-5'>Vídeo</span>
+                                ) : type === 'EPISODE' ? (
+                                    <span className='fs-5'>Áudio do Episódio</span>
+                                ) : null}
+                                <Upload size={28} />
+                            </button>
+                            {(type === 'VIDEO' || type === 'EPISODE') && (
+                                <input
+                                    type='text'
+                                    className='form-control'
+                                    placeholder={type === 'VIDEO' ? 'ou colar link do YouTube' : 'ou colar link do Spotify'}
+                                    value={content.embedUrl}
+                                    disabled={loading}
+                                    onChange={(e) => dispatch({ type: 'edit', field: 'embedUrl', value: e.currentTarget.value })}
+                                />
+                            )}
+                            {(type === 'VIDEO' || type === 'EPISODE') && content.embedUrl.trim() !== '' && !hasValidEmbed(content.embedUrl, type) && (
+                                <div className='form-text text-danger'>
+                                    {type === 'VIDEO' ? 'Para vídeos, cole um link do YouTube.' : 'Para episódios, cole um link do Spotify.'}
+                                </div>
+                            )}
+                        </div>
                     )}
                     {state.blocks.map((block) => (
                         <div key={block.id} className='ej-block'>
                             <div className='ej-block__gutter'>
-                                <AddMenu afterId={block.id} dispatch={dispatch} loading={loading} inline />
+                                {type !== 'PHOTO_ESSAY' && (
+                                    <AddMenu afterId={block.id} dispatch={dispatch} loading={loading} inline />
+                                )}
                                 <button
                                     type='button'
                                     disabled={loading}
@@ -345,8 +403,28 @@ export const EditContent = () => {
                                 </button>
                             </div>
                             <div className='ej-block__content'>
-                                {block.type === 'IMAGE' ? (
-                                    <ImageBlock url={buildMediaUrl(block.media.path)} alt={block.media.altText} />
+                                {block.type === 'MEDIA' ? (
+                                    block.media.mimeType.startsWith('video') ? (
+                                        <VideoBlock url={buildMediaUrl(block.media.path)} />
+                                    ) : block.media.mimeType.startsWith('audio') ? (
+                                        <audio src={buildMediaUrl(block.media.path)} controls className='w-100' />
+                                    ) : (
+                                        <ImageBlock url={buildMediaUrl(block.media.path)} alt={block.media.altText} />
+                                    )
+                                ) : block.type === 'GALLERY' ? (
+                                    <GalleryBlockEditor block={block} dispatch={dispatch} loading={loading} />
+                                ) : block.type === 'EMBED' ? (
+                                    <div className='border rounded p-3'>
+                                        <input
+                                            type='text'
+                                            className='form-control mb-2'
+                                            placeholder='Colar link do YouTube ou Spotify'
+                                            value={block.content}
+                                            disabled={loading}
+                                            onChange={(e) => dispatch({ type: 'update-content-block', payload: { blockId: block.id, content: e.currentTarget.value } })}
+                                        />
+                                        {embedSrc(block.content) && <EmbedPlayer url={block.content} />}
+                                    </div>
                                 ) : (
                                     <RichTextBlock
                                         value={block.content}
@@ -361,7 +439,21 @@ export const EditContent = () => {
                             </div>
                         </div>
                     ))}
-                    <AddMenu dispatch={dispatch} loading={loading} />
+                    {type === 'PHOTO_ESSAY' ? (
+                        !state.blocks.some((b) => b.type === 'GALLERY') && (
+                            <button
+                                type='button'
+                                disabled={loading}
+                                className='btn btn-outline-dark w-100 d-flex align-items-center justify-content-center gap-2 rounded-0 my-2'
+                                style={{ height: 56 }}
+                                onClick={() => dispatch({ type: 'open-gallery', payload: 'gallery' })}
+                            >
+                                <Upload size={22} /> Adicionar fotografias
+                            </button>
+                        )
+                    ) : (
+                        <AddMenu dispatch={dispatch} loading={loading} />
+                    )}
                 </div>
                 <div className='pt-4 border-start border-dark' style={{ width: 366, flexShrink: 0, overflowY: 'auto' }}>
                     <form onSubmit={handleUpdate} className='bg-transparent'>
@@ -376,20 +468,37 @@ export const EditContent = () => {
                                     dataTestId='content-slug-input'
                                 />
                             </FieldSection>
-                            <FieldSection title='Categoria'>
-                                {content.category.id ? (
-                                    <Pill label={content.category.name} onRemove={() => dispatch({ type: 'clear-single', field: 'category', searchField: 'categorySearch' })} />
-                                ) : (
-                                    <SearchField
-                                        value={content.categorySearch}
-                                        name='categorySearch'
-                                        options={categories}
-                                        placeholder='Pesquisar categoria'
-                                        onSearch={(e) => dispatch({ type: 'edit', field: 'categorySearch', value: e.currentTarget.value })}
-                                        onSelect={(option) => dispatch({ type: 'select-single', field: 'category', searchField: 'categorySearch', option })}
-                                    />
-                                )}
-                            </FieldSection>
+                            {type === 'EPISODE' ? (
+                                <FieldSection title='Podcast'>
+                                    {content.parent.id ? (
+                                        <Pill label={content.parent.name} onRemove={() => dispatch({ type: 'clear-single', field: 'parent', searchField: 'parentSearch' })} />
+                                    ) : (
+                                        <SearchField
+                                            value={content.parentSearch}
+                                            name='parentSearch'
+                                            options={podcastOptions}
+                                            placeholder='Pesquisar podcast'
+                                            onSearch={(e) => dispatch({ type: 'edit', field: 'parentSearch', value: e.currentTarget.value })}
+                                            onSelect={(option) => dispatch({ type: 'select-single', field: 'parent', searchField: 'parentSearch', option })}
+                                        />
+                                    )}
+                                </FieldSection>
+                            ) : (
+                                <FieldSection title='Categoria'>
+                                    {content.category.id ? (
+                                        <Pill label={content.category.name} onRemove={() => dispatch({ type: 'clear-single', field: 'category', searchField: 'categorySearch' })} />
+                                    ) : (
+                                        <SearchField
+                                            value={content.categorySearch}
+                                            name='categorySearch'
+                                            options={categories}
+                                            placeholder='Pesquisar categoria'
+                                            onSearch={(e) => dispatch({ type: 'edit', field: 'categorySearch', value: e.currentTarget.value })}
+                                            onSelect={(option) => dispatch({ type: 'select-single', field: 'category', searchField: 'categorySearch', option })}
+                                        />
+                                    )}
+                                </FieldSection>
+                            )}
                             <FieldSection title='Tag principal'>
                                 {content.mainTag.id ? (
                                     <Pill label={content.mainTag.name} onRemove={() => dispatch({ type: 'clear-single', field: 'mainTag', searchField: 'mainTagSearch' })} />
@@ -505,10 +614,19 @@ export const EditContent = () => {
                 onRequestReview={() => handleSubmit('review')}
             />
             <MediaGallery
-                mediaType={type === 'VIDEO' ? 'VIDEO' : type === 'EPISODE' ? 'AUDIO' : 'IMAGE'}
+                mediaType={
+                    state.galleryMode === 'video-block' ? 'VIDEO'
+                        : state.galleryMode === 'audio-block' ? 'AUDIO'
+                            : state.galleryMode === 'gallery' || state.galleryMode === 'block' ? 'IMAGE'
+                                : type === 'VIDEO' ? 'VIDEO'
+                                    : type === 'EPISODE' ? 'AUDIO'
+                                        : 'IMAGE'
+                }
                 isOpen={state.galleryMode !== null}
+                multiple={state.galleryMode === 'gallery'}
                 onClose={() => dispatch({ type: 'close-gallery' })}
                 onSelect={(media) => dispatch({ type: 'select-media', payload: media })}
+                onSelectMany={(media) => dispatch({ type: 'select-media-many', payload: media })}
             />
         </div>
     );

@@ -9,6 +9,7 @@ data class ContentSummary(
     val id: Int,
     val type: ContentType,
     val title: String,
+    val headline: String,
     val category: CategorySummary?,
     val tag: TagSummary?,
     val state: ContentState,
@@ -16,8 +17,7 @@ data class ContentSummary(
     val publishedAt: Instant?,
     val createdAt: Instant,
     val archivedAt: Instant?,
-    val categoryId: Int?,
-    val categoryName: String?,
     val featuredImage: String?,
     val authors: List<Author>,
+    val embedUrl: String? = null,
 )

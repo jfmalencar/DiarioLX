@@ -17,11 +17,8 @@ object Uris {
         const val GET_ALL = ROOT
         const val GET_BY_ID = "$ROOT/{id}"
         const val DELETE = "$ROOT/{id}"
-        const val UPDATE = "$ROOT/me"
         const val DEACTIVATE = "$ROOT/{id}/deactivate"
-        const val AVATAR = "$ROOT/me/avatar"
-
-        const val HOME = "$ROOT/me"
+        const val SET_TEAM = "$ROOT/{id}/team"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
     }
@@ -41,6 +38,8 @@ object Uris {
         const val LOGIN = "$ROOT/login"
         const val LOGOUT = "$ROOT/logout"
         const val REFRESH = "$ROOT/refresh"
+        const val USER = "$ROOT/me"
+        const val USER_AVATAR = "${Users.ROOT}/me/avatar"
     }
 
     object Categories {
@@ -97,10 +96,21 @@ object Uris {
         const val INTERNAL_GET_ALL = ROOT
     }
 
+    object Featured {
+        const val ROOT = "$BACKOFFICE/featured"
+        const val HOMEPAGE = "$ROOT/homepage"
+    }
+
+    object Settings {
+        const val ROOT = "$BACKOFFICE/settings"
+    }
+
     object Guest {
         const val HOMEPAGE = "$PREFIX/homepage"
         const val NAVIGATION = "$PREFIX/navigation"
         const val LIST_CONTENT = "$PREFIX/contents"
         const val GET_CONTENT = "$PREFIX/contents/{slug}"
+        const val TEAM = "$PREFIX/team"
+        const val AUTHOR = "$PREFIX/authors/{slug}"
     }
 }

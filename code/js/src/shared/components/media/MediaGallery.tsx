@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 
 import { useMedia, type Media } from '@/shared/hooks/useMedia';
 import { useFilters } from '@/shared/hooks/useFilters';
@@ -15,11 +15,37 @@ import { Pill } from '../Pill';
 import type { MediaGalleryProps } from './MediaGallery.types';
 import { initialMediaGalleryState, mediaGalleryReducer } from './MediaGallery.reducer';
 
-export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGalleryProps) {
+export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = false, onSelectMany }: MediaGalleryProps) {
     const [state, dispatch] = useReducer(
         mediaGalleryReducer,
         initialMediaGalleryState,
     );
+
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+    // Clear any pending multi-selection whenever the picker opens/closes.
+    useEffect(() => {
+        if (!isOpen) setSelectedIds([]);
+    }, [isOpen]);
+
+    const toggleSelected = (id: number) =>
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((it) => it !== id) : [...prev, id]));
+
+    const confirmMany = () => {
+        const chosen = selectedIds
+            .map((id) => medias.find((m) => m.id === id))
+            .filter((m): m is Media => Boolean(m));
+        onSelectMany?.(chosen);
+        setSelectedIds([]);
+    };
+
+    const handleItemClick = (item: Media) => {
+        if (multiple) {
+            toggleSelected(item.id);
+        } else {
+            onSelect(item);
+        }
+    };
 
     const {
         isUploading,
@@ -310,7 +336,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
                                                                 onRemove={() =>
                                                                     dispatch({
                                                                         type: 'set-credit-user',
-                                                                        user: { id: '', name: '' },
+                                                                        user: { id: 0, name: '' },
                                                                     })
                                                                 }
                                                             />
@@ -328,7 +354,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
                                                                     dispatch({
                                                                         type: 'set-credit-user',
                                                                         user: {
-                                                                            id: '',
+                                                                            id: 0,
                                                                             name: event.currentTarget.value,
                                                                         },
                                                                     })
@@ -450,9 +476,20 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
                                     <div key={item.id} className='col-6 col-md-4 col-lg-3'>
                                         <button
                                             type='button'
-                                            className='btn p-0 border w-100 text-start overflow-hidden'
-                                            onClick={() => onSelect(item)}
+                                            className={`btn p-0 w-100 text-start overflow-hidden position-relative ${multiple && selectedIds.includes(item.id)
+                                                ? 'border border-3 border-primary'
+                                                : 'border'
+                                                }`}
+                                            onClick={() => handleItemClick(item)}
                                         >
+                                            {multiple && selectedIds.includes(item.id) && (
+                                                <span
+                                                    className='position-absolute top-0 start-0 m-1 badge rounded-pill bg-primary'
+                                                    style={{ zIndex: 1 }}
+                                                >
+                                                    {selectedIds.indexOf(item.id) + 1}
+                                                </span>
+                                            )}
                                             {renderMediaPreview(item)}
 
                                             <div className='p-2'>
@@ -479,6 +516,16 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect }: MediaGall
                         >
                             Fechar
                         </button>
+                        {multiple && (
+                            <button
+                                type='button'
+                                className='btn btn-primary'
+                                disabled={selectedIds.length === 0}
+                                onClick={confirmMany}
+                            >
+                                Adicionar ({selectedIds.length})
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

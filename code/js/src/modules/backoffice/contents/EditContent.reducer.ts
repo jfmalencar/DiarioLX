@@ -19,6 +19,8 @@ export const initialState: EditContentState = {
         headline: '',
         category: emptyOption,
         categorySearch: '',
+        parent: emptyOption,
+        parentSearch: '',
         mainTag: emptyOption,
         mainTagSearch: '',
         secondaryTags: [],
@@ -28,6 +30,7 @@ export const initialState: EditContentState = {
         secondaryAuthors: [],
         secondaryAuthorSearch: '',
         featuredMedia: null,
+        embedUrl: '',
     },
     blocks: [],
     galleryMode: null,
@@ -64,6 +67,10 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                         ? { id: content.category.id, name: content.category.name }
                         : emptyOption,
                     categorySearch: '',
+                    parent: content.parent
+                        ? { id: content.parent.id, name: content.parent.title }
+                        : emptyOption,
+                    parentSearch: '',
                     mainTag: mainTag ?? emptyOption,
                     mainTagSearch: '',
                     secondaryTags: secondaryTags ?? [],
@@ -73,6 +80,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                     secondaryAuthors: secondaryAuthors ?? [],
                     secondaryAuthorSearch: '',
                     featuredMedia: content.featuredImage,
+                    embedUrl: content.embedUrl ?? '',
                 },
                 blocks: content.blocks,
             };
@@ -142,6 +150,15 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                 ...state,
                 galleryMode: action.payload,
                 galleryAfterId: action.afterId,
+                galleryTargetBlockId: undefined,
+            };
+
+        case 'open-gallery-add-more':
+            return {
+                ...state,
+                galleryMode: 'gallery',
+                galleryAfterId: undefined,
+                galleryTargetBlockId: action.blockId,
             };
 
         case 'close-gallery':
@@ -149,6 +166,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                 ...state,
                 galleryMode: null,
                 galleryAfterId: undefined,
+                galleryTargetBlockId: undefined,
             };
 
         case 'select-media': {
@@ -164,13 +182,13 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                 };
             }
 
-            if (state.galleryMode === 'block') {
+            if (state.galleryMode === 'block' || state.galleryMode === 'video-block' || state.galleryMode === 'audio-block') {
                 const newBlock: ContentBlock = {
                     id: generateId(),
-                    type: 'IMAGE',
+                    type: 'MEDIA',
                     position: 0, // recalculado pelo reindex
                     media: action.payload,
-                    caption: '',
+                    caption: null,
                 };
 
                 return {
@@ -185,6 +203,70 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
 
             return state;
         }
+
+        case 'select-media-many': {
+            const newImages = action.payload.map((media) => ({ media, caption: null }));
+
+            // Append to an existing gallery block when "adicionar mais" was used.
+            if (state.galleryTargetBlockId !== undefined) {
+                return {
+                    ...state,
+                    blocks: state.blocks.map((block) =>
+                        block.id === state.galleryTargetBlockId && block.type === 'GALLERY'
+                            ? { ...block, images: [...block.images, ...newImages] }
+                            : block,
+                    ),
+                    galleryMode: null,
+                    galleryAfterId: undefined,
+                    galleryTargetBlockId: undefined,
+                };
+            }
+
+            const newBlock: ContentBlock = {
+                id: generateId(),
+                type: 'GALLERY',
+                position: 0, // recalculado pelo reindex
+                images: newImages,
+            };
+
+            return {
+                ...state,
+                blocks: reindex(insertBlock(state.blocks, newBlock, state.galleryAfterId)),
+                galleryMode: null,
+                galleryAfterId: undefined,
+                galleryTargetBlockId: undefined,
+            };
+        }
+
+        case 'update-gallery-caption':
+            return {
+                ...state,
+                blocks: state.blocks.map((block) =>
+                    block.id === action.payload.blockId && block.type === 'GALLERY'
+                        ? {
+                            ...block,
+                            images: block.images.map((image, index) =>
+                                index === action.payload.imageIndex
+                                    ? { ...image, caption: action.payload.caption }
+                                    : image,
+                            ),
+                        }
+                        : block,
+                ),
+            };
+
+        case 'remove-gallery-image':
+            return {
+                ...state,
+                blocks: state.blocks.map((block) =>
+                    block.id === action.payload.blockId && block.type === 'GALLERY'
+                        ? {
+                            ...block,
+                            images: block.images.filter((_, index) => index !== action.payload.imageIndex),
+                        }
+                        : block,
+                ),
+            };
 
         case 'add-text-block':
             return {
@@ -212,6 +294,23 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                         {
                             id: generateId(),
                             type: 'QUOTE',
+                            position: 0,
+                            content: '',
+                        },
+                        action.afterId,
+                    ),
+                ),
+            };
+
+        case 'add-embed-block':
+            return {
+                ...state,
+                blocks: reindex(
+                    insertBlock(
+                        state.blocks,
+                        {
+                            id: generateId(),
+                            type: 'EMBED',
                             position: 0,
                             content: '',
                         },

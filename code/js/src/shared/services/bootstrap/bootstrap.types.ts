@@ -1,16 +1,39 @@
+import type { SectionType } from "../contents/contents.types";
+
 export type BootstrapData = {
     api: Endpoints;
     assets: Assets;
     creditRoles: CreditRole[]
+    sections: SectionTypeConfig[]
+    settings: SiteSettings
 };
 
 export type Assets = {
     publicMediaBaseUrl: string
 }
 
+export type NavCategory = {
+    name: string;
+    slug: string;
+    color: string;
+}
+
+export type SiteSettings = {
+    social: { facebook: string; twitter: string; instagram: string };
+    contact: { email: string; address: string };
+    navigation: {
+        featured: NavCategory[];
+        sections: NavCategory[];
+        showPhotos: boolean;
+        showPodcasts: boolean;
+        showVideos: boolean;
+    };
+}
+
 export type CreditRole = {
     value: string;
     label: string;
+    byline: string;
     mediaTypes: string[]
 }
 
@@ -19,27 +42,37 @@ export type Link = {
     method: string;
 }
 
+export type SectionTypeConfig = {
+    type: SectionType;
+    maxArticles: number;
+    canBeAdded: boolean;
+    hasCategory: boolean;
+};
+
 export type Endpoints = {
     auth: {
         register: Link;
         login: Link;
         logout: Link;
         refresh: Link;
+        me: Link;
     }
     guest: {
         homepage: Link;
         listContent: Link;
         getContent: Link;
+        team: Link;
+        author: Link;
     }
     backoffice: {
         users: {
-            me: Link;
             list: Link;
             create: Link;
             update: Link;
             delete: Link;
             deactivate: Link;
             avatar: Link;
+            setTeam: Link;
         }
         tags: {
             list: Link;
@@ -83,6 +116,14 @@ export type Endpoints = {
             signedUrl: Link;
             completeUpload: Link;
         };
+        featured: {
+            get: Link;
+            update: Link;
+        }
+        settings: {
+            get: Link;
+            update: Link;
+        }
     }
 };
 

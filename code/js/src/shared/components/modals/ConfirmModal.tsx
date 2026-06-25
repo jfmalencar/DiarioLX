@@ -1,12 +1,13 @@
 import { Modal } from '@/shared/components/modals/Modal';
 import { Alert, type AlertVariant } from '@/shared/components/Alert';
+import type { Result } from '@/shared/types/Result';
 
 export type ModalConfig = {
     title: string;
     subtitle: string;
     alert: string;
     confirmLabel: string;
-    action: (id: number) => Promise<void>;
+    action: (id: number) => Promise<Result>;
     getRedirect: () => string;
     variant?: AlertVariant;
 }

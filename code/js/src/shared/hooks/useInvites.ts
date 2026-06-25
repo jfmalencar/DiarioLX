@@ -5,6 +5,8 @@ import { useInvitesService } from '@/shared/services/invites';
 import type { Invite, InviteFormValues } from '@/shared/services/invites/invites.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
+import type { Result } from '@/shared/types/Result';
+import { runAction } from '@/shared/utils/action';
 
 export type { Invite, InviteFormValues };
 
@@ -35,36 +37,14 @@ export const useInvites = () => {
     )
 
     const create = useCallback(
-        async (tag: InviteFormValues): Promise<string | undefined> => {
-            setLoading(true)
-            setError(null)
-            try {
-                const newTagId = await invitesService.create(tag)
-                return newTagId
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to create invite'
-                setError(message)
-                return undefined
-            } finally {
-                setLoading(false)
-            }
-        },
+        (invite: InviteFormValues): Promise<Result<string>> =>
+            runAction(() => invitesService.create(invite), 'Failed to create invite', setLoading, setError),
         [invitesService]
     )
 
     const remove = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await invitesService.delete(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to archive invite'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => invitesService.delete(id), 'Failed to delete invite', setLoading, setError),
         [invitesService]
     )
 

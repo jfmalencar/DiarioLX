@@ -59,13 +59,15 @@ class JdbiUserRepository(
         handle
             .createUpdate(
                 """
-            UPDATE users 
-            SET username = :username, 
-                email = :email, 
-                password_hash = :password_hash, 
-                first_name = :first_name, 
-                last_name = :last_name, 
-                bio = :bio, 
+            UPDATE users
+            SET username = :username,
+                email = :email,
+                password_hash = :password_hash,
+                first_name = :first_name,
+                last_name = :last_name,
+                position = :position,
+                bio = :bio,
+                on_team = :on_team,
                 updated_at = :updated_at
             WHERE id = :userId
             """,
@@ -74,11 +76,37 @@ class JdbiUserRepository(
             .bind("password_hash", updateUser.password.value)
             .bind("first_name", updateUser.fName.value)
             .bind("last_name", updateUser.lName.value)
+            .bind("position", updateUser.position)
             .bind("bio", updateUser.bio)
+            .bind("on_team", updateUser.onTeam)
             .bind("updated_at", now.epochSeconds)
             .bind("userId", userId)
             .execute()
     }
+
+    override fun getTeam(): List<User> =
+        handle
+            .createQuery(
+                """
+                SELECT * FROM v_users
+                WHERE on_team = true AND active_account = true
+                ORDER BY CASE role::text WHEN 'ADMIN' THEN 0 WHEN 'EDITOR' THEN 1 ELSE 2 END, first_name
+                """.trimIndent(),
+            ).mapTo<UserDBModel>()
+            .list()
+            .map { it.toUserDomain() }
+
+    override fun setTeamMembership(
+        userId: Int,
+        onTeam: Boolean,
+        now: Instant,
+    ): Boolean =
+        handle
+            .createUpdate("UPDATE users SET on_team = :on_team, updated_at = :updated_at WHERE id = :id")
+            .bind("on_team", onTeam)
+            .bind("updated_at", now.epochSeconds)
+            .bind("id", userId)
+            .execute() > 0
 
     override fun delete(id: Int): Boolean {
         val rowsAffected =
@@ -275,7 +303,9 @@ class JdbiUserRepository(
         val role: String,
         val firstName: String,
         val lastName: String,
+        val position: String,
         val bio: String,
+        val onTeam: Boolean = false,
         val avatarMediaId: Int?,
         val avatarBucket: String?,
         val avatarObjectKey: String?,
@@ -292,7 +322,9 @@ class JdbiUserRepository(
                 role = UserRole.valueOf(role),
                 firstName = Name(firstName),
                 lastName = Name(lastName),
+                position = position,
                 bio = bio,
+                onTeam = onTeam,
                 createdAt = createdAt,
                 updatedAt = updatedAt,
                 avatar =

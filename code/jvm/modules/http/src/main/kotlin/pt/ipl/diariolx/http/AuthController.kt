@@ -119,7 +119,7 @@ class AuthController(
     @MayReturnNoContent
     @MayReturnUnauthorized
     fun refresh(
-        @Parameter(hidden = true) refreshToken: RefreshToken,
+        @Parameter(hidden = true) refreshToken: RefreshToken?,
         response: HttpServletResponse,
     ): ResponseEntity<*> =
         when (val result = userService.refresh(refreshToken)) {

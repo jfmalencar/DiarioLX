@@ -7,18 +7,40 @@ import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.ipl.diariolx.domain.category.CategorySummary
+import pt.ipl.diariolx.domain.category.value.Color
 import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.domain.content.UpdateContent
 import pt.ipl.diariolx.domain.content.value.ContentAuthor
+import pt.ipl.diariolx.domain.content.value.ContentParent
 import pt.ipl.diariolx.domain.content.value.ContentTag
 import pt.ipl.diariolx.domain.content.value.NewContentBlock
 import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.TagSummary
 import java.time.LocalDate
+
+// Shared across all row models in this file — registering the Kotlin module is
+// not free, so we do it once instead of per-row.
+private val contentJson = ObjectMapper().registerKotlinModule()
+
+private inline fun <reified T> parseJson(json: String): T = contentJson.readValue(json)
+
+private fun epoch(seconds: Long?): Instant? = seconds?.let { Instant.fromEpochSeconds(it) }
+
+private fun categorySummaryOf(
+    id: Int?,
+    name: String?,
+    slug: String?,
+    color: String?,
+): CategorySummary? =
+    if (id != null && name != null && slug != null && color != null) {
+        CategorySummary(id, name, Slug(slug), Color(color))
+    } else {
+        null
+    }
 
 class JdbiContentRepository(
     private val handle: Handle,
@@ -49,10 +71,10 @@ class JdbiContentRepository(
         handle
             .createUpdate(
                 """
-                UPDATE contents 
+                UPDATE contents
                 SET title = :title, headline = :headline, featured_media_id = :featured_media_id,
-                    slug = :slug, category_id = :category_id, updated_at = :updated_at,
-                    published_at = NULL, state = 'DRAFT'::content_state
+                    slug = :slug, category_id = :category_id, parent_id = :parent_id, embed_url = :embed_url,
+                    updated_at = :updated_at, published_at = NULL, state = 'DRAFT'::content_state
                 WHERE id = :id
                 """,
             ).bind("title", content.title)
@@ -60,6 +82,8 @@ class JdbiContentRepository(
             .bind("featured_media_id", content.featuredMediaId)
             .bind("slug", content.slug)
             .bind("category_id", content.categoryId)
+            .bind("parent_id", content.parentId)
+            .bind("embed_url", content.embedUrl)
             .bind("updated_at", now.epochSeconds)
             .bind("id", contentId)
             .execute()
@@ -69,19 +93,23 @@ class JdbiContentRepository(
         updateBlocks(contentId, content.blocks)
     }
 
-    override fun getById(id: Int): Content? =
-        handle
-            .createQuery("select * from v_published_contents where id = :id")
-            .bind("id", id)
-            .mapTo<PublicContentModel>()
-            .singleOrNull()
-            ?.content
+    override fun getById(id: Int): Content? = findContent("v_published_contents", "id", id)
 
-    override fun getBySlug(slug: String): Content? =
+    override fun getBySlug(slug: String): Content? = findContent("v_published_contents", "slug", slug)
+
+    override fun internalGetById(id: Int): Content? = findContent("v_contents", "id", id)
+
+    override fun internalGetBySlug(slug: String): Content? = findContent("v_contents", "slug", slug)
+
+    private fun findContent(
+        view: String,
+        column: String,
+        value: Any,
+    ): Content? =
         handle
-            .createQuery("select * from v_published_contents where slug = :slug")
-            .bind("slug", slug)
-            .mapTo<PublicContentModel>()
+            .createQuery("select * from $view where $column = :value")
+            .bind("value", value)
+            .mapTo<ContentModel>()
             .singleOrNull()
             ?.content
 
@@ -96,42 +124,53 @@ class JdbiContentRepository(
         from: LocalDate?,
         to: LocalDate?,
         authorId: Int?,
+        parentId: Int?,
+        author: String?,
+        creditedTo: String?,
     ): List<ContentSummary> {
-        val sql =
-            buildString {
-                append("select * from v_contents_summary WHERE 1 = 1".trimIndent())
-                if (query != null) {
-                    append(" AND (title ILIKE :query OR slug ILIKE :query)")
+        val conditions =
+            buildList {
+                if (query != null) add("(title ILIKE :query OR slug ILIKE :query)")
+                if (type != null) add("type = :type")
+                if (tag != null) add("tag_slug = :tag")
+                if (category != null) add("category_slug = :category")
+                if (parentId != null) add("parent_id = :parentId")
+                if (author != null) {
+                    add("authors::jsonb @> jsonb_build_array(jsonb_build_object('slug', :author))")
                 }
-                if (type != null) {
-                    append(" AND type = :type")
-                }
-                if (tag != null) {
-                    append(" AND tag_slug = :tag")
-                }
-                if (category != null) {
-                    append(" AND category_slug = :category")
+                if (creditedTo != null) {
+                    // Credited on any of the content's media (featured / in-body / gallery),
+                    // and not already an author (so the two views don't overlap).
+                    add(
+                        """
+                        (EXISTS (
+                            SELECT 1 FROM media_credits mc
+                            JOIN users u ON u.id = mc.user_id
+                            WHERE u.username = :creditedTo
+                              AND mc.media_id IN (
+                                  SELECT featured_media_id FROM contents WHERE id = v_contents_summary.id AND featured_media_id IS NOT NULL
+                                  UNION SELECT media_id FROM content_blocks WHERE content_id = v_contents_summary.id AND media_id IS NOT NULL
+                                  UNION SELECT cbi.media_id FROM content_block_images cbi
+                                        JOIN content_blocks cb ON cb.id = cbi.block_id
+                                        WHERE cb.content_id = v_contents_summary.id
+                              )
+                        )
+                        AND NOT authors::jsonb @> jsonb_build_array(jsonb_build_object('slug', :creditedTo)))
+                        """.trimIndent(),
+                    )
                 }
                 if (state == ContentState.PUBLISHED) {
-                    append(" AND published_at IS NOT NULL AND published_at <= EXTRACT(EPOCH FROM NOW())")
+                    add("published_at IS NOT NULL AND published_at <= EXTRACT(EPOCH FROM NOW())")
                 }
-                if (state != null) {
-                    append(" AND content_state = :state::content_state")
-                }
-                if (from != null) {
-                    append(" AND published_at >= :from")
-                }
-                if (to != null) {
-                    append(" AND published_at <= :to")
-                }
+                if (state != null) add("content_state = :state::content_state")
+                if (from != null) add("published_at >= :from")
+                if (to != null) add("published_at <= :to")
                 if (authorId != null) {
-                    append(" AND authors::jsonb @> jsonb_build_array(jsonb_build_object('id', :authorId))")
+                    add("authors::jsonb @> jsonb_build_array(jsonb_build_object('id', :authorId))")
                 }
-                append(" ORDER BY id desc")
-                append(" LIMIT :limit OFFSET :offset")
             }
         return handle
-            .createQuery(sql)
+            .createQuery(summaryQuery(conditions))
             .bind("limit", limit)
             .bind("offset", offset)
             .bind("query", "%$query%")
@@ -142,26 +181,13 @@ class JdbiContentRepository(
             .bind("from", from?.toEpochDay())
             .bind("to", to?.toEpochDay())
             .bind("authorId", authorId)
+            .bind("parentId", parentId)
+            .bind("author", author)
+            .bind("creditedTo", creditedTo)
             .mapTo<ContentSummaryModel>()
             .list()
             .map { it.content }
     }
-
-    override fun internalGetById(id: Int): Content? =
-        handle
-            .createQuery("select * from v_contents where id = :id")
-            .bind("id", id)
-            .mapTo<ContentModel>()
-            .singleOrNull()
-            ?.content
-
-    override fun internalGetBySlug(slug: String): Content? =
-        handle
-            .createQuery("select * from v_contents where slug = :slug")
-            .bind("slug", slug)
-            .mapTo<ContentModel>()
-            .singleOrNull()
-            ?.content
 
     override fun internalGetAll(
         limit: Int,
@@ -169,27 +195,13 @@ class JdbiContentRepository(
         query: String?,
         archived: Boolean,
     ): List<ContentSummary> {
-        val sql =
-            buildString {
-                append("select * from v_contents_summary WHERE 1 = 1".trimIndent())
-                if (archived) {
-                    append(" AND archived_at IS NOT NULL")
-                } else {
-                    append(" AND archived_at IS NULL")
-                }
-                if (query != null) {
-                    append(" AND (title ILIKE :query OR slug ILIKE :query)")
-                }
-                if (archived) {
-                    append(" AND archived_at IS NOT NULL")
-                } else {
-                    append(" AND archived_at IS NULL")
-                }
-                append(" ORDER BY id desc")
-                append(" LIMIT :limit OFFSET :offset")
+        val conditions =
+            buildList {
+                add(if (archived) "archived_at IS NOT NULL" else "archived_at IS NULL")
+                if (query != null) add("(title ILIKE :query OR slug ILIKE :query)")
             }
         return handle
-            .createQuery(sql)
+            .createQuery(summaryQuery(conditions))
             .bind("limit", limit)
             .bind("offset", offset)
             .bind("query", "%$query%")
@@ -197,6 +209,16 @@ class JdbiContentRepository(
             .list()
             .map { it.content }
     }
+
+    private fun summaryQuery(conditions: List<String>): String =
+        buildString {
+            append("select * from v_contents_summary")
+            if (conditions.isNotEmpty()) {
+                append(" WHERE ")
+                append(conditions.joinToString(" AND "))
+            }
+            append(" ORDER BY id desc LIMIT :limit OFFSET :offset")
+        }
 
     override fun delete(id: Int): Boolean {
         val result =
@@ -284,30 +306,12 @@ class JdbiContentRepository(
         authors: List<ContentAuthor>,
     ) {
         if (authors.isEmpty()) return
-
-        // Delete and replace authors
-        handle
-            .createUpdate("DELETE FROM content_authors WHERE content_id = :content_id")
-            .bind("content_id", contentId)
-            .execute()
-
-        val batch =
-            handle.prepareBatch(
-                """
-                insert into content_authors (content_id, author_id, role)
-                values (:content_id, :author_id, :role)
-                """.trimIndent(),
-            )
-
-        authors.forEachIndexed { idx, author ->
-            batch
-                .bind("content_id", contentId)
-                .bind("author_id", author.authorId)
-                .bind("role", if (idx == 0) "primary" else "secondary")
-                .add()
-        }
-
-        batch.execute()
+        replaceRoles(
+            contentId = contentId,
+            deleteFrom = "content_authors",
+            insertInto = "insert into content_authors (content_id, author_id, role) values (:content_id, :ref_id, :role)",
+            refIds = authors.map { it.authorId },
+        )
     }
 
     private fun updateTags(
@@ -315,26 +319,35 @@ class JdbiContentRepository(
         tags: List<ContentTag>,
     ) {
         if (tags.isEmpty()) return
-        // Delete and replace tags
+        replaceRoles(
+            contentId = contentId,
+            deleteFrom = "content_tags",
+            insertInto = "insert into content_tags (content_id, tag_id, role) values (:content_id, :ref_id, :role)",
+            refIds = tags.map { it.tagId },
+        )
+    }
+
+    // content_authors / content_tags share the same "delete then re-insert with a
+    // primary/secondary role" shape, so they go through one helper.
+    private fun replaceRoles(
+        contentId: Int,
+        deleteFrom: String,
+        insertInto: String,
+        refIds: List<Int>,
+    ) {
         handle
-            .createUpdate("DELETE FROM content_tags WHERE content_id = :content_id")
+            .createUpdate("DELETE FROM $deleteFrom WHERE content_id = :content_id")
             .bind("content_id", contentId)
             .execute()
-        val batch =
-            handle.prepareBatch(
-                """
-                insert into content_tags (content_id, tag_id, role)
-                values (:content_id, :tag_id, :role)
-                """.trimIndent(),
-            )
-        tags.forEachIndexed { idx, tag ->
+
+        val batch = handle.prepareBatch(insertInto)
+        refIds.forEachIndexed { idx, refId ->
             batch
                 .bind("content_id", contentId)
-                .bind("tag_id", tag.tagId)
+                .bind("ref_id", refId)
                 .bind("role", if (idx == 0) "primary" else "secondary")
                 .add()
         }
-
         batch.execute()
     }
 
@@ -343,30 +356,48 @@ class JdbiContentRepository(
         blocks: List<NewContentBlock>,
     ) {
         if (blocks.isEmpty()) return
-        // Delete and replace blocks
+        // ON DELETE CASCADE also clears the old content_block_images rows.
         handle
             .createUpdate("DELETE FROM content_blocks WHERE content_id = :content_id")
             .bind("content_id", contentId)
             .execute()
-        val batch =
-            handle.prepareBatch(
-                """
-                insert into content_blocks (content_id, type, content, media_id, position)
-                values (:content_id, :type::block_type, :content, :media_id, :position)
-                """.trimIndent(),
-            )
 
         blocks.forEachIndexed { index, block ->
-            batch
-                .bind("content_id", contentId)
-                .bind("type", block.type)
-                .bind("content", block.content)
-                .bind("media_id", block.mediaId)
-                .bind("position", index)
-                .add()
-        }
+            val blockId =
+                handle
+                    .createQuery(
+                        """
+                        insert into content_blocks (content_id, type, content, media_id, position)
+                        values (:content_id, :type::block_type, :content, :media_id, :position)
+                        returning id
+                        """.trimIndent(),
+                    ).bind("content_id", contentId)
+                    .bind("type", block.type)
+                    .bind("content", block.content)
+                    .bind("media_id", block.mediaId)
+                    .bind("position", index)
+                    .mapTo<Int>()
+                    .one()
 
-        batch.execute()
+            if (block.images.isNotEmpty()) {
+                val imageBatch =
+                    handle.prepareBatch(
+                        """
+                        insert into content_block_images (block_id, media_id, caption, position)
+                        values (:block_id, :media_id, :caption, :position)
+                        """.trimIndent(),
+                    )
+                block.images.forEachIndexed { imageIndex, image ->
+                    imageBatch
+                        .bind("block_id", blockId)
+                        .bind("media_id", image.mediaId)
+                        .bind("caption", image.caption)
+                        .bind("position", imageIndex)
+                        .add()
+                }
+                imageBatch.execute()
+            }
+        }
     }
 
     private data class ContentModel(
@@ -383,16 +414,15 @@ class JdbiContentRepository(
         val categoryId: Int?,
         val categoryName: String?,
         val categorySlug: String?,
+        val categoryColor: String?,
+        val parentId: Int?,
+        val parent: String?,
+        val embedUrl: String?,
         val featuredImage: String?,
         val tags: String,
         val authors: String,
         val blocks: String,
     ) {
-        private inline fun <reified T> parseJson(json: String): T {
-            val objectMapper = ObjectMapper().registerKotlinModule()
-            return objectMapper.readValue(json)
-        }
-
         val content: Content
             get() =
                 Content(
@@ -402,68 +432,12 @@ class JdbiContentRepository(
                     headline = headline,
                     featuredImage = featuredImage?.let { parseJson<MediaSummary>(it) },
                     slug = slug,
-                    category =
-                        if (categoryId != null && categoryName != null && categorySlug != null) {
-                            CategorySummary(
-                                id = categoryId,
-                                name = categoryName,
-                                slug = Slug(categorySlug),
-                            )
-                        } else {
-                            null
-                        },
-                    publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) },
-                    archivedAt = archivedAt?.let { Instant.fromEpochSeconds(it) },
-                    createdAt = Instant.fromEpochSeconds(createdAt),
-                    updatedAt = Instant.fromEpochSeconds(updatedAt),
-                    state = ContentState.valueOf(contentState),
-                    tags = parseJson(tags),
-                    authors = parseJson(authors),
-                    blocks = parseJson(blocks),
-                )
-    }
-
-    private data class PublicContentModel(
-        val id: Int,
-        val type: String,
-        val title: String,
-        val headline: String,
-        val contentState: String,
-        val slug: String,
-        val archivedAt: Long?,
-        val publishedAt: Long?,
-        val createdAt: Long,
-        val updatedAt: Long,
-        val categoryId: Int,
-        val categoryName: String,
-        val categorySlug: String,
-        val featuredImage: String?,
-        val tags: String,
-        val authors: String,
-        val blocks: String,
-    ) {
-        private inline fun <reified T> parseJson(json: String): T {
-            val objectMapper = ObjectMapper().registerKotlinModule()
-            return objectMapper.readValue(json)
-        }
-
-        val content: Content
-            get() =
-                Content(
-                    id = id,
-                    type = ContentType.valueOf(type),
-                    title = title,
-                    headline = headline,
-                    featuredImage = featuredImage?.let { parseJson<MediaSummary>(it) },
-                    slug = slug,
-                    category =
-                        CategorySummary(
-                            id = categoryId,
-                            name = categoryName,
-                            slug = Slug(categorySlug),
-                        ),
-                    publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) },
-                    archivedAt = archivedAt?.let { Instant.fromEpochSeconds(it) },
+                    category = categorySummaryOf(categoryId, categoryName, categorySlug, categoryColor),
+                    parentId = parentId,
+                    parent = parent?.let { parseJson<ContentParent>(it) },
+                    embedUrl = embedUrl,
+                    publishedAt = epoch(publishedAt),
+                    archivedAt = epoch(archivedAt),
                     createdAt = Instant.fromEpochSeconds(createdAt),
                     updatedAt = Instant.fromEpochSeconds(updatedAt),
                     state = ContentState.valueOf(contentState),
@@ -477,42 +451,33 @@ class JdbiContentRepository(
         val id: Int,
         val type: String,
         val title: String,
+        val headline: String,
         val tagId: Int?,
         val tagName: String?,
         val tagSlug: String?,
         val contentState: String,
         val slug: String?,
         val createdAt: Long,
-        val archivedAt: Long,
-        val publishedAt: Long,
+        val archivedAt: Long?,
+        val publishedAt: Long?,
         val categoryId: Int?,
         val categorySlug: String?,
         val categoryName: String?,
+        val categoryColor: String?,
         val featuredImage: String?,
+        val embedUrl: String?,
         val authors: String,
     ) {
-        private inline fun <reified T> parseJson(json: String): T {
-            val objectMapper = ObjectMapper().registerKotlinModule()
-            return objectMapper.readValue(json)
-        }
-
         val content: ContentSummary
             get() =
                 ContentSummary(
                     id = id,
                     type = ContentType.valueOf(type),
                     title = title,
+                    headline = headline,
                     state = ContentState.valueOf(contentState),
                     slug = slug,
-                    category =
-                        if (categoryId != null &&
-                            categoryName !== null &&
-                            categorySlug != null
-                        ) {
-                            CategorySummary(categoryId, categoryName, Slug(categorySlug))
-                        } else {
-                            null
-                        },
+                    category = categorySummaryOf(categoryId, categoryName, categorySlug, categoryColor),
                     tag =
                         if (tagId != null && tagName != null && tagSlug != null) {
                             TagSummary(tagId, tagName, tagSlug)
@@ -520,11 +485,10 @@ class JdbiContentRepository(
                             null
                         },
                     createdAt = Instant.fromEpochSeconds(createdAt),
-                    archivedAt = Instant.fromEpochSeconds(archivedAt),
-                    publishedAt = Instant.fromEpochSeconds(publishedAt),
-                    categoryId = categoryId,
-                    categoryName = categoryName,
+                    archivedAt = epoch(archivedAt),
+                    publishedAt = epoch(publishedAt),
                     featuredImage = featuredImage,
+                    embedUrl = embedUrl,
                     authors = parseJson(authors),
                 )
     }

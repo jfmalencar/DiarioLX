@@ -11,5 +11,7 @@ data class UpdateUser(
     val password: PasswordHash,
     val fName: Name,
     val lName: Name,
+    val position: String = "",
     val bio: String = "",
+    val onTeam: Boolean = false,
 )

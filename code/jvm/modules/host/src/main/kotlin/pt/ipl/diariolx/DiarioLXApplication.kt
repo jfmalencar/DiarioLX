@@ -16,6 +16,9 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import pt.ipl.diariolx.domain.auth.JwtConfig
+import pt.ipl.diariolx.domain.featured.SectionPolicy
+import pt.ipl.diariolx.domain.featured.SectionRule
+import pt.ipl.diariolx.domain.featured.SectionType
 import pt.ipl.diariolx.domain.invites.config.InviteDomainConfig
 import pt.ipl.diariolx.domain.media.Buckets
 import pt.ipl.diariolx.domain.media.MediaBaseUrl
@@ -110,6 +113,20 @@ class DiarioLXApplication {
     fun inviteDomainConfig() =
         InviteDomainConfig(
             inviteExpirationTime = 60.minutes,
+        )
+
+    @Bean
+    fun sectionPolicy() =
+        SectionPolicy(
+            linkedMapOf(
+                SectionType.HIGHLIGHT to SectionRule(maxArticles = 1, canBeAdded = false, hasCategory = false),
+                SectionType.FEATURED to SectionRule(maxArticles = 3, canBeAdded = false, hasCategory = false),
+                SectionType.CATEGORY to SectionRule(maxArticles = 4, canBeAdded = true, hasCategory = true),
+                SectionType.CATEGORY_ROW to SectionRule(maxArticles = 4, canBeAdded = false, hasCategory = false),
+                SectionType.PHOTOS to SectionRule(maxArticles = 4, canBeAdded = false, hasCategory = false),
+                SectionType.PODCASTS to SectionRule(maxArticles = 4, canBeAdded = false, hasCategory = false),
+                SectionType.VIDEOS to SectionRule(maxArticles = 4, canBeAdded = false, hasCategory = false),
+            ),
         )
 
     @Bean fun mediaBaseUrl(appEnv: AppEnvironment) = MediaBaseUrl(appEnv.imageBaseUrl)

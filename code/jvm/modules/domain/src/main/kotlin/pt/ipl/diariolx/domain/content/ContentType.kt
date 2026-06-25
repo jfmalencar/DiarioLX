@@ -2,7 +2,7 @@ package pt.ipl.diariolx.domain.content
 
 enum class ContentType {
     ARTICLE,
-    PHOTOS,
+    PHOTO_ESSAY,
     VIDEO,
     EPISODE,
     PODCAST,

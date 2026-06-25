@@ -8,11 +8,11 @@ data class UpdateContentDTO(
     val id: Int,
     val title: String,
     val headline: String,
-    // --------------------------
     val featuredMediaId: Int?,
     val slug: String?,
     val categoryId: Int?,
-    // --------------------------
+    val parentId: Int?,
+    val embedUrl: String?,
     val authors: List<ContentAuthor>,
     val tags: List<ContentTag>,
     val blocks: List<NewContentBlock>,

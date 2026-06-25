@@ -4,6 +4,7 @@ import pt.ipl.diariolx.domain.author.Author
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.value.ContentBlock
+import pt.ipl.diariolx.domain.content.value.ContentParent
 import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.tag.TagSummary
 
@@ -15,6 +16,9 @@ data class PublicContentResponseDTO(
     val headline: String,
     val featuredImage: MediaSummary?,
     val category: CategorySummary,
+    val parentId: Int?,
+    val parent: ContentParent?,
+    val embedUrl: String?,
     val tags: List<TagSummary>,
     val authors: List<Author>,
     val blocks: List<ContentBlock>,
@@ -31,6 +35,9 @@ data class PublicContentResponseDTO(
                 headline = content.headline,
                 featuredImage = content.featuredImage,
                 category = content.category ?: error("missing category"),
+                parentId = content.parentId,
+                parent = content.parent,
+                embedUrl = content.embedUrl,
                 tags = content.tags,
                 authors = content.authors,
                 blocks = content.blocks,

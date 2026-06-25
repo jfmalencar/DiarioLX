@@ -19,7 +19,9 @@ const fakeUsers: User[] = [
     email: 'johndoe@test.pt',
     firstName: 'John',
     lastName: 'Doe',
+    position: 'Editor',
     bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+    onTeam: false,
     profilePicturePath: 'https://randomuser.me/api/portraits/men/1.jpg',
     role: 'ADMIN',
     createdAt: new Date().toISOString(),
@@ -52,6 +54,10 @@ export const useUsersMockService = (): UsersService => {
 
     async updateProfile() {
       return undefined;
+    },
+
+    async setOnTeam() {
+      return;
     },
 
     async completeAvatarUpload() {

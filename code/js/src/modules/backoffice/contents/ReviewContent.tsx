@@ -123,11 +123,11 @@ export const ReviewContent = () => {
 
     const handleApprove = async () => {
         const result = await publish(Number(params.id))
-        if (result) {
+        if (result.ok) {
             showSnackbar('Conteúdo publicado com sucesso!', 'success');
             navigate('/p/' + content?.slug)
         } else {
-            showSnackbar('Algo deu errado. Tente novamente')
+            showSnackbar(result.error, 'error')
         }
     }
 

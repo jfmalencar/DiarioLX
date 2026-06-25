@@ -6,5 +6,7 @@ data class UpdateUserRequestDTO(
     val password: String?,
     val firstName: String?,
     val lastName: String?,
+    val position: String?,
     val bio: String?,
+    val onTeam: Boolean?,
 )

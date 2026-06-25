@@ -1,12 +1,16 @@
-import type { Article } from "./Home";
+import { Link } from 'react-router-dom';
+
+import type { ContentSummary } from '@/shared/services/contents/contents.types';
+
+import { contentHref, contentDate } from '@/shared/utils/content';
 
 type Props = {
-    articles: Article[];
+    contents: ContentSummary[];
     verTodasHref?: string;
 }
 
-export const Latest = ({ articles, verTodasHref = "#" }: Props) => (
-    <div className='container-xl py-4'>
+export const Latest = ({ contents, verTodasHref = "#" }: Props) => (
+    <div className='container-diariolx'>
         <div
             style={{
                 display: "flex",
@@ -26,18 +30,18 @@ export const Latest = ({ articles, verTodasHref = "#" }: Props) => (
             >
                 Últimas
             </h2>
-            <a
-                href={verTodasHref}
+            <Link
+                to={verTodasHref}
                 style={{ fontSize: "0.78rem", color: "#111", textDecoration: "none" }}
             >
                 Ver todas →
-            </a>
+            </Link>
         </div>
         <div className="dlx-ultimas-grid">
-            {articles.slice(0, 4).map((a, i) => (
-                <a
-                    key={a.id}
-                    href={a.href ?? "#"}
+            {contents.slice(0, 4).map((c, i) => (
+                <Link
+                    key={c.id}
+                    to={contentHref(c)}
                     className={`dlx-ultimas-col${i < 3 ? " dlx-ultimas-col--bordered" : ""}`}
                     style={{ textDecoration: "none", color: "inherit" }}
                 >
@@ -58,7 +62,7 @@ export const Latest = ({ articles, verTodasHref = "#" }: Props) => (
                                 color: i === 3 ? "#c8a000" : "#555",
                             }}
                         >
-                            {a.category}
+                            {c.category?.name}
                         </span>
                         <span
                             style={{
@@ -69,7 +73,7 @@ export const Latest = ({ articles, verTodasHref = "#" }: Props) => (
                                 marginLeft: "0.5rem",
                             }}
                         >
-                            {a.date}
+                            {contentDate(c)}
                         </span>
                     </div>
                     <p
@@ -81,9 +85,9 @@ export const Latest = ({ articles, verTodasHref = "#" }: Props) => (
                             color: "#111",
                         }}
                     >
-                        {a.title}
+                        {c.title}
                     </p>
-                </a>
+                </Link>
             ))}
         </div>
     </div>

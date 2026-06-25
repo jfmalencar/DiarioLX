@@ -50,7 +50,9 @@ class UserRepositoryMem : UserRepository {
                     passwordHash = updateUser.password,
                     firstName = updateUser.fName,
                     lastName = updateUser.lName,
+                    position = updateUser.position,
                     bio = updateUser.bio,
+                    onTeam = updateUser.onTeam,
                     updatedAt = now,
                 )
             users.remove(user)
@@ -101,6 +103,19 @@ class UserRepositoryMem : UserRepository {
                     }
                 )
         }
+    }
+
+    override fun getTeam(): List<User> = users.filter { it.onTeam && it.active }
+
+    override fun setTeamMembership(
+        userId: Int,
+        onTeam: Boolean,
+        now: Instant,
+    ): Boolean {
+        val user = users.find { it.id == userId } ?: return false
+        users.remove(user)
+        users.add(user.copy(onTeam = onTeam, updatedAt = now))
+        return true
     }
 
     override fun updateAvatar(

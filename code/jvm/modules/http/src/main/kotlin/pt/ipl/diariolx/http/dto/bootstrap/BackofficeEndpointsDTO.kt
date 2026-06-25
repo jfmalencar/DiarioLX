@@ -7,4 +7,6 @@ data class BackofficeEndpointsDTO(
     val invites: InviteEndpointsDTO,
     val contents: ContentEndpointsDTO,
     val medias: MediaEndpointsDTO,
+    val featured: FeaturedEndpointsDTO,
+    val settings: SettingsEndpointsDTO,
 )
