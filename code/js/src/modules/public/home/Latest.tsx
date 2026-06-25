@@ -54,20 +54,21 @@ export const Latest = ({ contents, verTodasHref = "#" }: Props) => (
                         }}
                     >
                         <span
+                            className='fw-bold'
                             style={{
                                 fontSize: "0.62rem",
-                                fontWeight: 700,
                                 letterSpacing: "0.08em",
                                 textTransform: "uppercase",
-                                color: i === 3 ? "#c8a000" : "#555",
+                                color: c.category?.color ?? "#111",
                             }}
                         >
                             {c.category?.name}
                         </span>
                         <span
+                            className='fw-bold'
                             style={{
                                 fontSize: "0.62rem",
-                                color: i === 3 ? "#c8a000" : "#888",
+                                color: c.category?.color ?? "#111",
                                 letterSpacing: "0.04em",
                                 whiteSpace: "nowrap",
                                 marginLeft: "0.5rem",

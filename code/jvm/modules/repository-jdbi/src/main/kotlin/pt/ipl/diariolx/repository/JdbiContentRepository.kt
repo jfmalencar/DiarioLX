@@ -76,7 +76,7 @@ class JdbiContentRepository(
                 UPDATE contents
                 SET title = :title, headline = :headline, featured_media_id = :featured_media_id,
                 slug = :slug, category_id = :category_id, parent_id = :parent_id, embed_url = :embed_url,
-                updated_at = :updated_at, published_at = NULL, state = 'new_state'::content_state
+                updated_at = :updated_at, published_at = NULL, state = :new_state::content_state
                 WHERE id = :id
                 """,
             ).bind("title", content.title)
@@ -130,20 +130,30 @@ class JdbiContentRepository(
         parentId: Int?,
         author: String?,
         creditedTo: String?,
+        excludeArchivedCategory: Boolean,
     ): List<ContentSummary> {
         val conditions =
             buildList {
+                if (excludeArchivedCategory) add("category_archived IS NOT TRUE")
                 if (query != null) add("(title ILIKE :query OR slug ILIKE :query)")
                 if (type != null) add("type = :type")
-                if (tag != null) add("tag_slug = :tag")
+                if (tag != null) {
+                    add(
+                        """
+                        EXISTS (
+                            SELECT 1 FROM content_tags ct
+                            JOIN tags t ON t.id = ct.tag_id
+                            WHERE ct.content_id = v_contents_summary.id AND t.slug = :tag
+                        )
+                        """.trimIndent(),
+                    )
+                }
                 if (category != null) add("category_slug = :category")
                 if (parentId != null) add("parent_id = :parentId")
                 if (author != null) {
                     add("authors::jsonb @> jsonb_build_array(jsonb_build_object('slug', :author))")
                 }
                 if (creditedTo != null) {
-                    // Credited on any of the content's media (featured / in-body / gallery),
-                    // and not already an author (so the two views don't overlap).
                     add(
                         """
                         (EXISTS (
@@ -374,8 +384,6 @@ class JdbiContentRepository(
         )
     }
 
-    // content_authors / content_tags share the same "delete then re-insert with a
-    // primary/secondary role" shape, so they go through one helper.
     private fun replaceRoles(
         contentId: Int,
         deleteFrom: String,

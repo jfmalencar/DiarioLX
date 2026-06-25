@@ -12,6 +12,8 @@ sealed class TagError(
     object SlugAlreadyExists : TagError("Tag slug already exists")
 
     object TagNotFound : TagError("Tag not found")
+
+    object TagHasContents : TagError("Tag cannot be deleted while it has associated contents")
 }
 
 typealias TagResult = Either<TagError, Tag>

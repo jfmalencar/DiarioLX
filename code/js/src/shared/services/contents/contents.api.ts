@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 
-import type { ContentsService, ContentsResponse, ContentResponse, NewContentResponse, ContentHistory } from './contents.types';
+import type { ContentsService, ContentsResponse, ContentResponse, NewContentResponse, ContentHistory, ResourceContentsResponse, TagResource, CategoryResource } from './contents.types';
 import { useApi } from '../http/client';
 
 export const useContentsApiService = (): ContentsService => {
@@ -22,6 +22,32 @@ export const useContentsApiService = (): ContentsService => {
       const result = await get<ContentsResponse>(`${endpoints.backoffice.contents.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
         throw new Error(result.error || 'Failed to fetch contents');
+      }
+      return result.data;
+    },
+
+    async fetchPublicContents(params) {
+      const result = await get<ContentsResponse>(`${endpoints.guest.listContent.href}?${new URLSearchParams(params as Record<string, string>)}`);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch contents');
+      }
+      return result.data;
+    },
+
+    async fetchTag(slug, params) {
+      const url = `${endpoints.guest.tag.href.replace('{slug}', slug)}?${new URLSearchParams(params as Record<string, string>)}`;
+      const result = await get<ResourceContentsResponse<TagResource>>(url);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch tag');
+      }
+      return result.data;
+    },
+
+    async fetchCategory(slug, params) {
+      const url = `${endpoints.guest.category.href.replace('{slug}', slug)}?${new URLSearchParams(params as Record<string, string>)}`;
+      const result = await get<ResourceContentsResponse<CategoryResource>>(url);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch category');
       }
       return result.data;
     },

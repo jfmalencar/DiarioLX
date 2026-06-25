@@ -23,7 +23,6 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
 
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-    // Clear any pending multi-selection whenever the picker opens/closes.
     useEffect(() => {
         if (!isOpen) setSelectedIds([]);
     }, [isOpen]);
@@ -63,8 +62,6 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
     const { buildQuery } = useFilters();
     const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
     const { creditRoles } = useBootstrap();
-
-    console.log(creditRoles)
 
     const load = useCallback(async () => {
         const params = buildQuery({ p: 'page', total: 'size' }, { type: mediaType });

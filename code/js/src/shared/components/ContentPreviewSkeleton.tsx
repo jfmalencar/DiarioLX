@@ -2,10 +2,10 @@ export const ContentPreviewSkeleton = () => (
     <div className='bg-light min-vh-100 py-2 py-md-5'>
         <div className='container px-4 px-md-5'>
             <section className='row g-4 g-lg-5 align-items-start mb-5'>
-                <div className='col-12 col-lg-6'>
+                <div className='col-12 col-lg-7'>
                     <div className='rounded skeleton' style={{ width: '100%', height: 380 }} />
                 </div>
-                <div className='col-12 col-lg-6 d-flex flex-column justify-content-start pt-lg-4'>
+                <div className='col-12 col-lg-5 d-flex flex-column justify-content-start pt-lg-4'>
                     <div className='d-flex justify-content-between mb-3'>
                         <div className='skeleton rounded' style={{ width: 80, height: 16 }} />
                         <div className='skeleton rounded' style={{ width: 60, height: 16 }} />

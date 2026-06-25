@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { BootstrapContext, type Endpoints, type Assets, type CreditRole, type SectionTypeConfig, type SiteSettings } from '@/shared/hooks/useBootstrap';
 import { LoadingScreen } from '@/shared/components/LoadingScreen';
+import { SiteError } from '@/shared/components/SiteError';
 import { useBootstrapService } from '@/shared/services/bootstrap';
 
 export const BootstrapProvider = ({ children }: { children: React.ReactNode }) => {
@@ -47,7 +48,7 @@ export const BootstrapProvider = ({ children }: { children: React.ReactNode }) =
   }
 
   if (!endpoints || !assets || !creditRoles || !sections || !settings) {
-    return <div>Erro ao carregar configurações do site</div>;
+    return <SiteError />;
   }
 
   return (

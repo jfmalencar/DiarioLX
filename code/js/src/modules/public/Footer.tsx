@@ -30,7 +30,7 @@ export const Footer = () => {
     }));
 
     const mediaLinks: FooterLink[] = [
-        navigation.showPhotos && { label: 'Fotografia', to: '/fotografia' },
+        navigation.showPhotos && { label: 'Fotografia', to: '/photo-essays' },
         navigation.showPodcasts && { label: 'Podcasts', to: '/podcasts' },
         navigation.showVideos && { label: 'Vídeos', to: '/videos' },
     ].filter(Boolean) as FooterLink[];

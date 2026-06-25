@@ -1,36 +1,28 @@
 import { useState, useEffect } from 'react';
 
-import { useApi } from '@/shared/services/http/client';
-import { useBootstrap } from '@/shared/hooks/useBootstrap';
+import { useTeamService } from '@/shared/services/team';
+import type { TeamMember } from '@/shared/services/team/team.types';
 
-export type TeamMember = {
-    id: number;
-    name: string;
-    slug: string;
-    position: string;
-    bio: string;
-    photoPath: string | null;
-};
+export type { TeamMember };
 
 export const useTeam = () => {
-    const { get } = useApi();
-    const { endpoints } = useBootstrap();
+    const teamService = useTeamService();
     const [team, setTeam] = useState<TeamMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         let active = true;
-        get<TeamMember[]>(endpoints.guest.team.href)
-            .then((result) => {
+        teamService.fetchTeam()
+            .then((members) => {
                 if (!active) return;
-                if (result.success) {
-                    setTeam(result.data);
-                    setError(null);
-                } else {
-                    setError(result.error);
-                    setTeam([]);
-                }
+                setTeam(members);
+                setError(null);
+            })
+            .catch((err) => {
+                if (!active) return;
+                setError(err instanceof Error ? err.message : 'Failed to fetch team');
+                setTeam([]);
             })
             .finally(() => {
                 if (active) setLoading(false);
@@ -38,7 +30,7 @@ export const useTeam = () => {
         return () => {
             active = false;
         };
-    }, [get, endpoints]);
+    }, [teamService]);
 
     return { team, loading, error };
 };

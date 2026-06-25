@@ -48,7 +48,7 @@ const useDebouncedSearch = (value: string, fetchFn: (args: { query: string }) =>
     }, [value, fetchFn]);
 };
 
-const ImageBlock = ({ url, alt = '', width = 400 }: ImageBlockProps) => (
+const ImageBlock = ({ url, alt = '', width = 600 }: ImageBlockProps) => (
     <div className='mb-2'>
         <img src={url} alt={alt} className='img-fluid rounded' style={{ width }} />
     </div>
@@ -86,8 +86,8 @@ const canPublish = (content: ContentEditingInput, type?: ContentType): boolean =
     content.slug.trim() !== '' &&
     (type === 'EPISODE' ? content.parent.id > 0 : content.category.id > 0) &&
     (content.featuredMedia !== null || hasValidEmbed(content.embedUrl, type)) &&
-    content.mainAuthor !== null &&
-    content.mainTag !== null;
+    content.mainAuthor.id > 0 &&
+    content.mainTag.id > 0;
 
 export const EditContent = () => {
     const navigate = useNavigate();
@@ -226,7 +226,7 @@ export const EditContent = () => {
     const handleSubmit = async (mode: 'publish' | 'review') => {
         if (!canPublish(content, type)) {
             setOpenConfirmModal(false)
-            showSnackbar(`Preencha os campos obrigatórios: Título, Slug e ${type === 'EPISODE' ? 'Podcast' : 'Categoria'}`, 'error');
+            showSnackbar(`Preencha os campos obrigatórios: Título, Slug, ${type === 'EPISODE' ? 'Podcast' : 'Categoria'}, Tag e Autor`, 'error');
             return;
         }
 
@@ -360,13 +360,13 @@ export const EditContent = () => {
                                 style={{ height: 48 }}
                                 onClick={() => dispatch({ type: 'open-gallery', payload: 'featured' })}
                             >
-                                {type === 'ARTICLE' || type === 'PODCAST' ? (
-                                    <span className='fs-5'>Imagem em destaque</span>
-                                ) : type === 'VIDEO' ? (
+                                {type === 'VIDEO' ? (
                                     <span className='fs-5'>Vídeo</span>
                                 ) : type === 'EPISODE' ? (
                                     <span className='fs-5'>Áudio do Episódio</span>
-                                ) : null}
+                                ) :
+                                    <span className='fs-5'>Imagem em destaque</span>
+                                }
                                 <Upload size={28} />
                             </button>
                             {(type === 'VIDEO' || type === 'EPISODE') && (

@@ -108,7 +108,7 @@ export const Header = () => {
                         )}
 
                         {nav.showPhotos && (
-                            <Link className={navLinkClass} to='/fotografia'>
+                            <Link className={navLinkClass} to='/photo-essays'>
                                 Fotografia
                             </Link>
                         )}

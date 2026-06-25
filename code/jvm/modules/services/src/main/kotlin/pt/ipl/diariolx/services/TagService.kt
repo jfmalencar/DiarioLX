@@ -67,6 +67,11 @@ class TagService(
             }
         }
 
+    fun getBySlug(slug: String): Tag? =
+        transactionManager.run { tx ->
+            Slug.parse(slug)?.let { tx.tagRepository.getBySlug(it) }
+        }
+
     fun getAll(
         page: Int,
         size: Int,
@@ -81,6 +86,9 @@ class TagService(
 
     fun delete(id: Int): TagUpdateResult =
         transactionManager.run {
+            if (it.tagRepository.hasContents(id)) {
+                return@run failure(TagError.TagHasContents)
+            }
             val result = it.tagRepository.delete(id)
             if (result) {
                 return@run success(Unit)

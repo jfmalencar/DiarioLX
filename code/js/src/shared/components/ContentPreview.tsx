@@ -118,7 +118,7 @@ export const ContentPreview = ({ content }: Props) => {
                 <div className={isDark ? 'bg-black text-white' : 'bg-light'}>
                     <div className='container px-4 px-md-5 py-4 py-md-5'>
                         <section className='row g-4 g-lg-5 align-items-start'>
-                            <div className='col-12 col-lg-6'>
+                            <div className='col-12 col-lg-7'>
                                 {isVideo ? (
                                     content.embedUrl ? (
                                         <EmbedPlayer url={content.embedUrl} title={content.title} />
@@ -151,8 +151,8 @@ export const ContentPreview = ({ content }: Props) => {
                                     />
                                 )}
                             </div>
-                            <div className='col-12 col-lg-6 d-flex flex-column justify-content-start pt-lg-4'>
-                                <div className='d-flex justify-content-between align-items-start mb-3'>
+                            <div className='col-12 col-lg-5 d-flex flex-column justify-content-start pt-lg-4'>
+                                <div className='d-flex justify-content-between align-items-start'>
                                     {isEpisode && content.parent ? (
                                         <Link
                                             to={`/p/${content.parent.slug}`}
@@ -162,9 +162,13 @@ export const ContentPreview = ({ content }: Props) => {
                                             {content.parent.title.toUpperCase()}
                                         </Link>
                                     ) : (
-                                        <span className='fw-semibold' style={{ color: accent, fontSize: '0.95rem', letterSpacing: '0.02em' }}>
+                                        <Link
+                                            to={`/category/${content.category.slug}`}
+                                            className='fw-semibold text-decoration-none'
+                                            style={{ color: accent, fontSize: '0.95rem', letterSpacing: '0.02em' }}
+                                        >
                                             {category}
-                                        </span>
+                                        </Link>
                                     )}
                                     <span className='fw-medium' style={{ color: accent, fontSize: '0.9rem' }}>
                                         {date}

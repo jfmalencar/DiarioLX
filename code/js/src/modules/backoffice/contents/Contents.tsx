@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router';
-import { ExternalLink, Edit, ClipboardCheck, FileText, Video, Mic, Radio } from 'lucide-react';
+import { ExternalLink, Edit, ClipboardCheck, ClipboardList, FileText, Video, Mic, Radio } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { TableBody, Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
@@ -134,6 +134,14 @@ const ContentsTable = ({ filter }: Props) => {
                                             className='btn btn-outline-dark rounded-2'
                                         >
                                             <ClipboardCheck size={16} />
+                                        </Link>
+                                    }
+                                    {row.state === 'REJECTED' &&
+                                        <Link
+                                            to={`/backoffice/contents/${row.id}/review`}
+                                            className='btn btn-outline-dark rounded-2'
+                                        >
+                                            <ClipboardList size={16} />
                                         </Link>
                                     }
                                 </div>

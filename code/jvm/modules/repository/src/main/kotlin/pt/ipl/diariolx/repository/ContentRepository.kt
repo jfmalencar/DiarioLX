@@ -38,6 +38,7 @@ interface ContentRepository {
         parentId: Int? = null,
         author: String? = null,
         creditedTo: String? = null,
+        excludeArchivedCategory: Boolean = false,
     ): List<ContentSummary>
 
     fun internalGetById(id: Int): Content?

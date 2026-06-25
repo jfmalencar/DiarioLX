@@ -15,19 +15,19 @@ type Props = {
     emptyMessage?: string;
     color?: string;
     icon?: ReactNode;
-    /** Dark header/hero only (videos, podcasts). */
     dark?: boolean;
-    /** Dark whole page, grid included (photo essays). Implies a dark header too. */
     fullDark?: boolean;
+    hasMore?: boolean;
+    loadingMore?: boolean;
+    onLoadMore?: () => void;
 }
 
-export const ContentListPage = ({ title, color = '#000', icon, dark = false, fullDark = false, contents, loading, error, emptyMessage = 'Não há conteúdos para mostrar.' }: Props) => {
+export const ContentListPage = ({ title, color = '#000', icon, dark = false, fullDark = false, contents, loading, error, emptyMessage = 'Não há conteúdos para mostrar.', hasMore = false, loadingMore = false, onLoadMore }: Props) => {
     usePageTheme(dark || fullDark ? 'dark' : 'light');
 
-    // `dark` only tints the header; `fullDark` tints the entire page. When the
-    // whole page is dark the header inherits it, so it doesn't need its own tint.
-    const pageClass = fullDark ? 'bg-black text-white min-vh-100' : '';
+    const pageClass = fullDark ? 'bg-black text-white' : '';
     const headerClass = !fullDark && dark ? 'bg-black text-white' : '';
+    const emptyClass = fullDark ? 'py-5 text-center text-white' : ' py-5 text-center text-muted';
 
     if (loading) {
         return <ContentListSkeleton />;
@@ -43,7 +43,9 @@ export const ContentListPage = ({ title, color = '#000', icon, dark = false, ful
                         </h1>
                     </div>
                 </div>
-                <div className='py-5 text-center text-muted'>{emptyMessage}</div>
+                <div className={emptyClass}>
+                    {emptyMessage}
+                </div>
             </div>
         )
     }
@@ -68,6 +70,19 @@ export const ContentListPage = ({ title, color = '#000', icon, dark = false, ful
                         </div>
                     ))}
                 </div>
+                {onLoadMore && hasMore && (
+                    <div className='text-center mt-5'>
+                        <button
+                            type='button'
+                            className={`btn btn-outline-${fullDark ? 'light' : 'dark'} rounded-0 px-4 py-2 text-uppercase`}
+                            style={{ letterSpacing: '0.08em', fontSize: '0.85rem' }}
+                            onClick={onLoadMore}
+                            disabled={loadingMore}
+                        >
+                            {loadingMore ? 'A carregar…' : 'Ver mais'}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

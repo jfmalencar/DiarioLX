@@ -66,6 +66,8 @@ class TagRepositoryMem : TagRepository {
         return true
     }
 
+    override fun hasContents(id: Int): Boolean = false
+
     override fun getById(id: Int): Tag? = tags.find { it.id == id }
 
     override fun getBySlug(slug: Slug): Tag? = tags.find { it.slug == slug }

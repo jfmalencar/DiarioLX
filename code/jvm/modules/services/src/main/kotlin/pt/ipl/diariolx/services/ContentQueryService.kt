@@ -57,6 +57,7 @@ class ContentQueryService(
                     parentId = parentId,
                     author = author,
                     creditedTo = creditedTo,
+                    excludeArchivedCategory = true,
                 )
             }
         }

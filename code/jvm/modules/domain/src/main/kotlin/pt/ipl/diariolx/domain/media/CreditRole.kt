@@ -1,9 +1,7 @@
 package pt.ipl.diariolx.domain.media
 
 enum class CreditRole(
-    // Person/role label, used in the editor (e.g. "Fotógrafo").
     val label: String,
-    // Byline label, used in public credits (e.g. "FOTOGRAFIA Sofia Almeida").
     val byline: String,
     val mediaTypes: Set<MediaType>,
 ) {

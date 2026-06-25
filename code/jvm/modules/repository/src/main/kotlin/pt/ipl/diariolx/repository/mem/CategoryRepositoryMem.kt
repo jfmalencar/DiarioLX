@@ -71,6 +71,8 @@ class CategoryRepositoryMem : CategoryRepository {
         return true
     }
 
+    override fun hasContents(id: Int): Boolean = false
+
     override fun getById(id: Int): Category? = categories.find { it.id == id }
 
     override fun getBySlug(slug: Slug): Category? = categories.find { it.slug == slug }

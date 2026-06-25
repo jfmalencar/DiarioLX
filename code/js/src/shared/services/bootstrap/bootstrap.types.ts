@@ -63,6 +63,8 @@ export type Endpoints = {
         getContent: Link;
         team: Link;
         author: Link;
+        tag: Link;
+        category: Link;
     }
     backoffice: {
         users: {

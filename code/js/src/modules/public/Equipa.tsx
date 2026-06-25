@@ -1,14 +1,10 @@
 import { Link } from 'react-router-dom';
 
 import { useTeam } from '@/shared/hooks/useTeam';
-import { usePath } from '@/shared/hooks/usePath';
-
-const resolvePhoto = (path: string | null, buildMediaUrl: (p: string) => string) =>
-    !path ? 'https://placehold.co/213x213' : path.startsWith('http') ? path : buildMediaUrl(path);
+import { Avatar } from '@/shared/components/Avatar';
 
 export function Equipa() {
     const { team, loading, error } = useTeam();
-    const { buildMediaUrl } = usePath();
 
     if (loading) {
         return <div className='container py-5 text-center text-muted'>A carregar…</div>;
@@ -24,12 +20,7 @@ export function Equipa() {
                 <div key={m.id} className='row g-4 mb-5 align-items-start'>
                     <div className='col-12 col-md-3 text-center text-md-start'>
                         <Link to={`/author/${m.slug}`}>
-                            <img
-                                src={resolvePhoto(m.photoPath, buildMediaUrl)}
-                                alt={m.name}
-                                className='rounded-circle object-fit-cover'
-                                style={{ width: 200, height: 200, objectFit: 'cover' }}
-                            />
+                            <Avatar src={m.photoPath} alt={m.name} size={200} />
                         </Link>
                     </div>
                     <div className='col-12 col-md-9'>

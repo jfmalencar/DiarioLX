@@ -1,45 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useCallback } from 'react';
 
-import { useApi } from '@/shared/services/http/client';
-import { useBootstrap } from '@/shared/hooks/useBootstrap';
+import { useContentsService } from '@/shared/services/contents';
 import type { ContentSummary, ContentsResponse } from '@/shared/services/contents/contents.types';
 
+import { useLoadMore } from './useLoadMore';
+
+const PAGE_SIZE = 12;
+
 export const useContentList = (params: Record<string, string | undefined>) => {
-    const { get } = useApi();
-    const { endpoints } = useBootstrap();
+    const contentsService = useContentsService();
 
     const search = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
         if (value) search.set(key, value);
     });
-    const queryString = search.toString();
+    search.set('size', String(PAGE_SIZE));
+    const baseQuery = search.toString();
+    const enabled = Object.values(params).some(Boolean);
 
-    const [contents, setContents] = useState<ContentSummary[]>([]);
-    const [loading, setLoading] = useState(queryString.length > 0);
-    const [error, setError] = useState<string | null>(null);
+    const fetchPage = useCallback(
+        (page: number) =>
+            contentsService.fetchPublicContents({ ...Object.fromEntries(new URLSearchParams(baseQuery)), page }),
+        [contentsService, baseQuery],
+    );
 
-    useEffect(() => {
-        if (!queryString) return;
-        let active = true;
-        const url = `${endpoints.guest.listContent.href}?${queryString}`;
-        get<ContentsResponse>(url)
-            .then((result) => {
-                if (!active) return;
-                if (result.success) {
-                    setContents(result.data.items);
-                    setError(null);
-                } else {
-                    setError(result.error);
-                    setContents([]);
-                }
-            })
-            .finally(() => {
-                if (active) setLoading(false);
-            });
-        return () => {
-            active = false;
-        };
-    }, [queryString, endpoints, get]);
+    const { items: contents, loading, loadingMore, hasMore, loadMore, error } =
+        useLoadMore<ContentSummary, ContentsResponse>(enabled ? fetchPage : null);
 
-    return { contents, loading, error };
+    return { contents, loading, loadingMore, hasMore, loadMore, error };
 };

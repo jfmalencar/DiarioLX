@@ -74,6 +74,20 @@ export const useContentsMockService = (): ContentsService => {
       return this.fetchAll(params)
     },
 
+    async fetchPublicContents(params) {
+      return this.fetchAll(params)
+    },
+
+    async fetchTag(slug, params) {
+      const { items, pagination } = await this.fetchAll(params);
+      return { resource: { id: 1, name: 'Tag 1', slug }, items, pagination };
+    },
+
+    async fetchCategory(slug, params) {
+      const { items, pagination } = await this.fetchAll(params);
+      return { resource: { id: 1, name: 'Category 1', slug, color: '#FF0000' }, items, pagination };
+    },
+
     async fetchById(id) {
       const content = fakeContents.find((art) => art.id === id);
       if (!content) {

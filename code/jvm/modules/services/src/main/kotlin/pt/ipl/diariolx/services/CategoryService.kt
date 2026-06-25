@@ -74,6 +74,11 @@ class CategoryService(
             }
         }
 
+    fun getBySlug(slug: String): Category? =
+        transactionManager.run { tx ->
+            Slug.parse(slug)?.let { tx.categoryRepository.getBySlug(it) }
+        }
+
     fun getAll(
         page: Int,
         size: Int,
@@ -88,6 +93,9 @@ class CategoryService(
 
     fun delete(id: Int): CategoryUpdateResult =
         transactionManager.run {
+            if (it.categoryRepository.hasContents(id)) {
+                return@run failure(CategoryError.CategoryHasContents)
+            }
             val result = it.categoryRepository.delete(id)
             if (result) {
                 return@run success(Unit)

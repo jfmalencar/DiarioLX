@@ -15,9 +15,7 @@ data class User(
     val role: UserRole,
     val firstName: Name,
     val lastName: Name,
-    // Short role/title shown on the team (e.g. "Diretora e editora").
     val position: String = "",
-    // Long biography shown on the team page.
     val bio: String = "",
     val onTeam: Boolean = false,
     val avatar: Avatar? = null,

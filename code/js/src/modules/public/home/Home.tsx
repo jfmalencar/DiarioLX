@@ -59,11 +59,11 @@ export const Home = () => {
             case 'CATEGORY_ROW':
                 return <CategoryRow contents={section.contents} />;
             case 'PHOTOS':
-                return <ThreeColSection title='Fotografia' contents={section.contents} href='#' />;
+                return <ThreeColSection title='Fotografia' contents={section.contents} href='/photo-essays' />;
             case 'PODCASTS':
-                return <ThreeColSection title='Podcasts' contents={section.contents} href='#' />;
+                return <ThreeColSection title='Podcasts' contents={section.contents} href='/podcasts' />;
             case 'VIDEOS':
-                return <ThreeColSection title='Vídeos' contents={section.contents} href='#' />;
+                return <ThreeColSection title='Vídeos' contents={section.contents} href='/videos' />;
             default:
                 return null;
         }

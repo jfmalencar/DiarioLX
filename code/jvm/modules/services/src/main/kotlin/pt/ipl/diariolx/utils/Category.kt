@@ -16,6 +16,8 @@ sealed class CategoryError(
     object InvalidColor : CategoryError("Invalid color")
 
     object CategoryNotFound : CategoryError("Category not found")
+
+    object CategoryHasContents : CategoryError("Category cannot be deleted while it has associated contents")
 }
 
 typealias CategoryResult = Either<CategoryError, Category>

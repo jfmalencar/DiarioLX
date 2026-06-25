@@ -58,8 +58,6 @@ class ContentService(
         tags: List<ContentTag>,
         blocks: List<NewContentBlock>,
     ): ContentUpdateResult {
-        // if (title.isBlank()) return failure(ContentError.EmptyField)
-        // if (headline.isBlank()) return failure(ContentError.EmptyField)
         slug?.let {
             if (it.isBlank()) return failure(ContentError.InvalidSlug)
         }
@@ -84,7 +82,6 @@ class ContentService(
                     null
                 }
 
-            // The primary embed is YouTube for videos, Spotify for episodes; ignored elsewhere.
             val embed = embedUrl?.takeIf { it.isNotBlank() }
             val resolvedEmbedUrl =
                 when (content.type) {
@@ -164,8 +161,6 @@ class ContentService(
             if (content.slug == null) {
                 return@run failure(ContentError.EmptyField)
             }
-            // Episodes belong to a podcast (and inherit its category) instead of
-            // having one of their own.
             if (content.type == ContentType.EPISODE) {
                 if (content.parentId == null) {
                     return@run failure(ContentError.ParentRequired)
@@ -173,7 +168,9 @@ class ContentService(
             } else if (content.category == null) {
                 return@run failure(ContentError.EmptyField)
             }
-            // Videos and episodes may instead provide an external embed (YouTube/Spotify).
+            if (content.tags.isEmpty()) {
+                return@run failure(ContentError.EmptyField)
+            }
             val canEmbed = content.type == ContentType.VIDEO || content.type == ContentType.EPISODE
             if (content.featuredImage == null && !(canEmbed && content.embedUrl != null)) {
                 return@run failure(ContentError.EmptyField)
@@ -225,26 +222,6 @@ class ContentService(
                 return@run success(Unit)
             } else {
                 return@run failure(ContentError.ContentNotFound)
-            }
-        }
-
-    fun getById(id: Int): ContentResult =
-        transactionManager.run {
-            val content = it.contentRepository.getById(id)
-            if (content == null) {
-                return@run failure(ContentError.ContentNotFound)
-            } else {
-                return@run success(content)
-            }
-        }
-
-    fun getBySlug(slug: String): ContentResult =
-        transactionManager.run {
-            val content = it.contentRepository.getBySlug(slug)
-            if (content == null) {
-                return@run failure(ContentError.ContentNotFound)
-            } else {
-                return@run success(content)
             }
         }
 

@@ -122,6 +122,7 @@ SELECT
     c.name        AS category_name,
     c.slug        AS category_slug,
     c.color       AS category_color,
+    (c.archived_at IS NOT NULL) AS category_archived,
     -- featured image
     CASE
         WHEN fm.id IS NULL THEN NULL
@@ -214,7 +215,8 @@ CREATE OR REPLACE VIEW v_published_contents AS
 SELECT * FROM v_contents
 WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
   AND slug IS NOT NULL
-  AND category_id IS NOT NULL;
+  AND category_id IS NOT NULL
+  AND category_archived IS NOT TRUE;
 
 -- -----------------------------------------------------------------------
 -- Contents summary (full)
@@ -236,6 +238,7 @@ SELECT
     c.name        AS category_name,
     c.slug        AS category_slug,
     c.color       AS category_color,
+    (c.archived_at IS NOT NULL) AS category_archived,
     -- An episode's own featured media is its audio (not an image), so episodes
     -- always use the parent podcast's image for cards.
     CASE
@@ -280,7 +283,8 @@ CREATE OR REPLACE VIEW v_published_contents_summary AS
 SELECT * FROM v_contents_summary
 WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
   AND slug IS NOT NULL
-  AND category_id IS NOT NULL;
+  AND category_id IS NOT NULL
+  AND category_archived IS NOT TRUE;
 
 -- -----------------------------------------------------------------------
 -- Contents history

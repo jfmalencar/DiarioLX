@@ -24,6 +24,8 @@ interface TagRepository {
 
     fun delete(id: Int): Boolean
 
+    fun hasContents(id: Int): Boolean
+
     fun update(tag: TagUpdate): Boolean
 
     fun archive(id: Int): Boolean

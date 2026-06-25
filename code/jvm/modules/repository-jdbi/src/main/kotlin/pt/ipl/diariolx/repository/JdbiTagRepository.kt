@@ -77,6 +77,13 @@ class JdbiTagRepository(
             .bind("id", id)
             .execute() > 0
 
+    override fun hasContents(id: Int): Boolean =
+        handle
+            .createQuery("select exists(select 1 from content_tags where tag_id = :id)")
+            .bind("id", id)
+            .mapTo(Boolean::class.java)
+            .one()
+
     override fun getById(id: Int): Tag? =
         handle
             .createQuery("select * from v_tags where id = :id ")

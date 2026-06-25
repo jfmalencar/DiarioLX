@@ -25,7 +25,7 @@ const THEME: Partial<Record<ContentType, TypeTheme>> = {
 };
 
 export function TypeList({ type, title }: Props) {
-    const { contents, loading, error } = useContentList({ type });
+    const { contents, loading, error, hasMore, loadingMore, loadMore } = useContentList({ type });
     const theme = THEME[type];
 
     return (
@@ -34,6 +34,9 @@ export function TypeList({ type, title }: Props) {
             contents={contents}
             loading={loading}
             error={error}
+            hasMore={hasMore}
+            loadingMore={loadingMore}
+            onLoadMore={loadMore}
             emptyMessage='Não há conteúdos para mostrar.'
             color={theme?.color}
             icon={theme?.icon}

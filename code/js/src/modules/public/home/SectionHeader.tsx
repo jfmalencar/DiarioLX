@@ -9,9 +9,7 @@ export const SectionHeader = ({ title, href = '#' }: Props) => (
     <div className='d-flex align-items-baseline justify-content-between border-bottom border-2 border-dark pb-1 mb-3'>
         <h2
             className='mb-0 fw-bold'
-            style={{
-                fontSize: '1.15rem',
-            }}
+            style={{ fontSize: '1.15rem' }}
         >
             {title}
         </h2>

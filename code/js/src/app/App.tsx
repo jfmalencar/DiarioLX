@@ -14,6 +14,7 @@ import { TypeList } from '@/modules/public/TypeList';
 import { Equipa } from '@/modules/public/Equipa';
 import { Author } from '@/modules/public/Author';
 import { Content } from '@/modules/public/Content';
+import { NotFound } from '@/modules/public/NotFound';
 
 // Backoffice
 import { Login } from '@/modules/backoffice/Login';
@@ -62,7 +63,7 @@ const router = createBrowserRouter([
         element: <Tag />,
       },
       {
-        path: 'fotografia',
+        path: 'photo-essays',
         element: <TypeList type='PHOTO_ESSAY' title='Fotografia' />,
       },
       {
@@ -84,6 +85,10 @@ const router = createBrowserRouter([
       {
         path: 'p/:slug',
         element: <Content />,
+      },
+      {
+        path: '*',
+        element: <NotFound />,
       }
     ],
   },

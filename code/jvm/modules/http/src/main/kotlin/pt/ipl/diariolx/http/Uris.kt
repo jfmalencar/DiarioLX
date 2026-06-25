@@ -113,5 +113,7 @@ object Uris {
         const val GET_CONTENT = "$PREFIX/contents/{slug}"
         const val TEAM = "$PREFIX/team"
         const val AUTHOR = "$PREFIX/authors/{slug}"
+        const val TAG = "$PREFIX/tags/{slug}"
+        const val CATEGORY = "$PREFIX/categories/{slug}"
     }
 }

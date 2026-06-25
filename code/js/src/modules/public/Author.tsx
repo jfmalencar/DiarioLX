@@ -2,12 +2,9 @@ import { useParams } from 'react-router-dom';
 
 import { useAuthorProfile } from '@/shared/hooks/useAuthorProfile';
 import { useContentList } from '@/shared/hooks/useContentList';
-import { usePath } from '@/shared/hooks/usePath';
 import { ContentCard } from '@/shared/components/ContentCard';
+import { Avatar } from '@/shared/components/Avatar';
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
-
-const resolvePhoto = (path: string | null, buildMediaUrl: (p: string) => string) =>
-    !path ? 'https://placehold.co/213x213' : path.startsWith('http') ? path : buildMediaUrl(path);
 
 const Grid = ({ items }: { items: ContentSummary[] }) => (
     <div className='row g-3 mb-5'>
@@ -30,7 +27,6 @@ export function Author() {
     const { author: member, loading: authorLoading, error: authorError } = useAuthorProfile(slug);
     const { contents: written, loading: writtenLoading } = useContentList({ author: slug });
     const { contents: credited, loading: creditedLoading } = useContentList({ creditedTo: slug });
-    const { buildMediaUrl } = usePath();
 
     if (authorLoading) {
         return <div className='container py-5 text-center text-muted'>A carregar…</div>;
@@ -47,12 +43,7 @@ export function Author() {
         <div className='container py-5'>
             <div className='row g-4 mb-5 align-items-start'>
                 <div className='col-12 col-md-3 text-center text-md-start'>
-                    <img
-                        src={resolvePhoto(member.photoPath, buildMediaUrl)}
-                        alt={member.name}
-                        className='rounded-circle object-fit-cover'
-                        style={{ width: 200, height: 200, objectFit: 'cover' }}
-                    />
+                    <Avatar src={member.photoPath} alt={member.name} size={200} />
                 </div>
                 <div className='col-12 col-md-9'>
                     <h1 className='fw-bold mb-1' style={{ fontSize: '2.4rem' }}>

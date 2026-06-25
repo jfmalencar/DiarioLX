@@ -27,6 +27,8 @@ interface CategoryRepository {
 
     fun delete(id: Int): Boolean
 
+    fun hasContents(id: Int): Boolean
+
     fun update(category: CategoryUpdate): Boolean
 
     fun archive(id: Int): Boolean

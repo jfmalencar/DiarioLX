@@ -193,6 +193,16 @@ export type ContentsResponse = {
     pagination: Pagination
 };
 
+export type TagResource = { id: number; name: string; slug: string };
+
+export type CategoryResource = { id: number; name: string; slug: string; color: string };
+
+export type ResourceContentsResponse<T> = {
+    resource: T;
+    items: ContentSummary[];
+    pagination: Pagination;
+};
+
 export type NewContentResponse = {
     id: number
 }
@@ -211,7 +221,11 @@ export type SectionType =
 export interface ContentsService {
     fetchAll(params: Query): Promise<ContentsResponse>;
 
-    fetchPublished(params: Query): Promise<ContentsResponse>;
+    fetchPublicContents(params: Query): Promise<ContentsResponse>;
+
+    fetchTag(slug: string, params: Query): Promise<ResourceContentsResponse<TagResource>>;
+
+    fetchCategory(slug: string, params: Query): Promise<ResourceContentsResponse<CategoryResource>>;
 
     fetchById(id: number): Promise<ContentResponse>;
 

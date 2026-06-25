@@ -16,6 +16,7 @@ fun CategoryError.toProblem() =
         is CategoryError.InvalidParent -> Problem.invalidParent
         is CategoryError.CategoryNotFound -> Problem.notFound
         is CategoryError.SlugAlreadyExists -> Problem.invalidSlug
+        is CategoryError.CategoryHasContents -> Problem.categoryHasContents
     }
 
 fun TagError.toProblem() =
@@ -24,6 +25,7 @@ fun TagError.toProblem() =
         is TagError.InvalidSlug -> Problem.invalidSlug
         is TagError.TagNotFound -> Problem.notFound
         is TagError.SlugAlreadyExists -> Problem.invalidSlug
+        is TagError.TagHasContents -> Problem.tagHasContents
     }
 
 fun ContentError.toProblem() =

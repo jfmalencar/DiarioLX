@@ -14,16 +14,21 @@ import pt.ipl.diariolx.http.annotations.MayReturnContentOk
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
+import pt.ipl.diariolx.http.dto.content.CategorySummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.ContentSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.PublicContentResponseDTO
+import pt.ipl.diariolx.http.dto.content.ResourceContentsResponseDTO
+import pt.ipl.diariolx.http.dto.content.TagSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.guest.HomepageResponseDTO
 import pt.ipl.diariolx.http.dto.guest.SectionDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
 import pt.ipl.diariolx.http.dto.pagination.Pagination
 import pt.ipl.diariolx.http.dto.user.TeamMemberResponseDTO
 import pt.ipl.diariolx.http.problems.Problem
+import pt.ipl.diariolx.services.CategoryService
 import pt.ipl.diariolx.services.ContentQueryService
 import pt.ipl.diariolx.services.FeaturedService
+import pt.ipl.diariolx.services.TagService
 import pt.ipl.diariolx.services.UserService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -34,6 +39,8 @@ class GuestController(
     private val contentQueryService: ContentQueryService,
     private val featuredService: FeaturedService,
     private val userService: UserService,
+    private val tagService: TagService,
+    private val categoryService: CategoryService,
 ) {
     @GetMapping(Uris.Guest.TEAM)
     fun getTeam(): ResponseEntity<*> = ResponseEntity.ok(userService.getTeam().map { TeamMemberResponseDTO.from(it) })
@@ -47,6 +54,44 @@ class GuestController(
             .getByUsername(slug)
             ?.let { ResponseEntity.ok(TeamMemberResponseDTO.from(it)) }
             ?: Problem.response(Problem.notFound, Uris.Guest.AUTHOR)
+
+    @GetMapping(Uris.Guest.TAG)
+    @MayReturnNotFound
+    fun getTagPage(
+        @PathVariable slug: String,
+        @RequestParam page: Int = 1,
+        @RequestParam size: Int = 10,
+        @RequestParam type: ContentType? = null,
+    ): ResponseEntity<*> {
+        val tag = tagService.getBySlug(slug) ?: return Problem.response(Problem.notFound, Uris.Guest.TAG)
+        val response = contentQueryService.getPublished(page = page, size = size, tag = slug, type = type)
+        return ResponseEntity.ok(
+            ResourceContentsResponseDTO(
+                resource = TagSummaryResponseDTO(tag.id, tag.name, tag.slug.value),
+                items = response.items.map { ContentSummaryResponseDTO.from(it) },
+                pagination = paginationOf(response),
+            ),
+        )
+    }
+
+    @GetMapping(Uris.Guest.CATEGORY)
+    @MayReturnNotFound
+    fun getCategoryPage(
+        @PathVariable slug: String,
+        @RequestParam page: Int = 1,
+        @RequestParam size: Int = 10,
+        @RequestParam type: ContentType? = null,
+    ): ResponseEntity<*> {
+        val category = categoryService.getBySlug(slug) ?: return Problem.response(Problem.notFound, Uris.Guest.CATEGORY)
+        val response = contentQueryService.getPublished(page = page, size = size, category = slug, type = type)
+        return ResponseEntity.ok(
+            ResourceContentsResponseDTO(
+                resource = CategorySummaryResponseDTO(category.id, category.name, category.slug.value, category.color.value),
+                items = response.items.map { ContentSummaryResponseDTO.from(it) },
+                pagination = paginationOf(response),
+            ),
+        )
+    }
 
     @GetMapping(Uris.Guest.HOMEPAGE)
     @MayReturnBadRequest
@@ -104,21 +149,19 @@ class GuestController(
                 author = author,
                 creditedTo = creditedTo,
             )
-        return paginatedResponse(response)
-    }
-
-    private fun paginatedResponse(
-        response: PageResponse<ContentSummary>,
-    ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> =
-        ResponseEntity.ok().body(
+        return ResponseEntity.ok(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },
-                Pagination(
-                    response.page,
-                    response.pageSize,
-                    response.hasPrevious,
-                    response.hasNext,
-                ),
+                paginationOf(response),
             ),
+        )
+    }
+
+    private fun paginationOf(response: PageResponse<ContentSummary>): Pagination =
+        Pagination(
+            response.page,
+            response.pageSize,
+            response.hasPrevious,
+            response.hasNext,
         )
 }

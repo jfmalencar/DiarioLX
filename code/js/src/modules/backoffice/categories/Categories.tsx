@@ -158,7 +158,7 @@ export const Categories = () => {
         delete: {
             title: 'Elimiar categoria',
             subtitle: 'Tem a certeza que deseja eliminar esta categoria?',
-            alert: 'Esta ação é permanente e não pode ser revertida.',
+            alert: 'Esta ação é permanente e não pode ser revertida. Se a categoria tiver subcategorias, estas passarão a categorias principais.',
             confirmLabel: 'Eliminar',
             action: remove,
             getRedirect: () => `/backoffice/categories?tab=archived&refresh=${Date.now()}`,

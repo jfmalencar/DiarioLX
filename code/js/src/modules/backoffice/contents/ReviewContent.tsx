@@ -125,7 +125,9 @@ export const ReviewContent = () => {
                                 className='d-flex align-items-center ps-3 ms-5'
                                 style={{ borderLeft: '1px solid rgba(255,255,255,0.3)', height: 32 }}
                             >
-                                <span className='fw-medium' style={{ fontSize: '1rem' }}>{t('common.pending_article')}</span>
+                                <span className='fw-medium' style={{ fontSize: '1rem' }}>
+                                    {t(content.state === 'REJECTED' ? 'common.rejected_article' : 'common.pending_article')}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -202,26 +204,35 @@ export const ReviewContent = () => {
                 className='position-fixed bottom-0 start-0 end-0 d-flex justify-content-end gap-2 p-3 bg-white border-top'
                 style={{ zIndex: 9 }}
             >
-                <button
-                    type='button'
-                    className='btn btn-outline-dark px-4'
-                    onClick={() => {
-                        setModalAction('reject');
-                        setOpenConfirmModal(true);
-                    }}
-                >
-                    {t('common.reject')}
-                </button>
-                <button
-                    type='button'
-                    className='btn btn-dark px-4'
-                    onClick={() => {
-                        setModalAction('approve');
-                        setOpenConfirmModal(true);
-                    }}
-                >
-                    {t('common.approve')}
-                </button>
+                {content.state === 'REJECTED' ?
+                    <button
+                        type='button'
+                        className='btn btn-dark px-4'
+                        onClick={() => navigate('/backoffice/contents/' + content.id)}
+                    >
+                        {t('common.edit')}
+                    </button>
+                    : <>                <button
+                        type='button'
+                        className='btn btn-outline-dark px-4'
+                        onClick={() => {
+                            setModalAction('reject');
+                            setOpenConfirmModal(true);
+                        }}
+                    >
+                        {t('common.reject')}
+                    </button>
+                        <button
+                            type='button'
+                            className='btn btn-dark px-4'
+                            onClick={() => {
+                                setModalAction('approve');
+                                setOpenConfirmModal(true);
+                            }}
+                        >
+                            {t('common.approve')}
+                        </button>
+                    </>}
             </div>
             <ReviewModal
                 isOpen={openConfirmModal}

@@ -69,5 +69,7 @@ class Problem(
         val featuredMediaIdNotFound = Problem("featured-media-not-found", HttpStatus.BAD_REQUEST)
         val tagNotFound = Problem("tag-not-found", HttpStatus.BAD_REQUEST)
         val insufficientPhotos = Problem("insufficient-photos", HttpStatus.BAD_REQUEST)
+        val categoryHasContents = Problem("category-has-contents", HttpStatus.CONFLICT)
+        val tagHasContents = Problem("tag-has-contents", HttpStatus.CONFLICT)
     }
 }

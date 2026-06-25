@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useAuthService } from '@/shared/services/auth'
 import { useUsersService } from '@/shared/services/users'
+import { useBootstrap } from '@/shared/hooks/useBootstrap'
 
 import {
   AuthenticationContext,
@@ -15,6 +16,7 @@ type AuthProviderProps = {
 export function AuthenticationProvider({ children }: AuthProviderProps) {
   const authService = useAuthService()
   const usersService = useUsersService()
+  const { reload } = useBootstrap()
   const [user, setUser] = useState<AuthUser>(undefined)
   const [loading, setLoading] = useState(false)
   const [hydrated, setHydrated] = useState(false)
@@ -51,7 +53,9 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
           setUser(undefined)
           return undefined
         }
-        return await refreshUser()
+        const result = await refreshUser()
+        await reload()
+        return result
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Login failed'
         setError(message)
@@ -61,7 +65,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    [authService, refreshUser]
+    [authService, refreshUser, reload]
   )
 
   const logout = useCallback(async (): Promise<void> => {

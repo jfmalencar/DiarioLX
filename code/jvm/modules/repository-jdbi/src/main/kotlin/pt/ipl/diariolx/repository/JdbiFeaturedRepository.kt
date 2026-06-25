@@ -22,7 +22,7 @@ class JdbiFeaturedRepository(
 ) : FeaturedRepository {
     override fun getHomepage(): List<FeaturedSection> =
         handle
-            .createQuery("select * from v_featured_sections")
+            .createQuery("select * from v_featured_sections where category_archived is not true")
             .mapTo<FeaturedSectionRow>()
             .list()
             .groupBy { it.sectionId }

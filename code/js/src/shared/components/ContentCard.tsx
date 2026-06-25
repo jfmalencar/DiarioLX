@@ -3,7 +3,7 @@ import { CirclePlay, AudioLines } from 'lucide-react';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 
-import { contentHref, contentAccent, contentThumbnail, isVideoThumbnail } from '../utils/content';
+import { contentHref, contentAccent, contentThumbnail, isVideoThumbnail, contentDate } from '../utils/content';
 import { MediaPreview } from './MediaPreview';
 import { PlayOverlay } from './PlayOverlay';
 
@@ -78,12 +78,17 @@ export const ContentCard = ({ content, variant = 'vertical', dark = false }: Pro
                         className='position-absolute bottom-0 start-0 end-0 p-3'
                         style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.35) 55%, transparent 100%)' }}
                     >
-                        <span
-                            className='d-block text-uppercase fw-bold mb-1'
-                            style={{ color: accent, fontSize: '0.62rem', letterSpacing: '0.1em' }}
-                        >
-                            {content.tag?.name}
-                        </span>
+                        <div className='d-flex justify-content-between align-items-baseline gap-2 mb-1'>
+                            <span
+                                className='text-uppercase fw-bold text-truncate'
+                                style={{ color: accent, fontSize: '0.62rem', letterSpacing: '0.1em' }}
+                            >
+                                {content.tag?.name}
+                            </span>
+                            <span className='fw-bold' style={{ color: accent, fontSize: '0.62rem', letterSpacing: '0.04em' }}>
+                                {contentDate(content)}
+                            </span>
+                        </div>
                         <h3 className='text-white mb-0 lh-sm fw-semibold' style={{ fontSize: '1rem' }}>
                             {content.title}
                         </h3>
@@ -135,16 +140,17 @@ export const ContentCard = ({ content, variant = 'vertical', dark = false }: Pro
                     {indicator && <PlayOverlay placement='corner' size={40} icon={indicator} />}
                 </div>
                 <div className='card-body px-0 pt-2 pb-0'>
-                    <span
-                        className='d-block text-uppercase fw-bold mb-1'
-                        style={{
-                            color: accent,
-                            fontSize: '0.6rem',
-                            letterSpacing: '0.1em',
-                        }}
-                    >
-                        {content.tag?.name}
-                    </span>
+                    <div className='d-flex justify-content-between align-items-baseline gap-2 mb-1'>
+                        <span
+                            className='text-uppercase fw-bold text-truncate'
+                            style={{ color: accent, fontSize: '0.6rem', letterSpacing: '0.1em' }}
+                        >
+                            {content.tag?.name}
+                        </span>
+                        <span className='fw-bold' style={{ color: accent, fontSize: '0.6rem', letterSpacing: '0.04em' }}>
+                            {contentDate(content)}
+                        </span>
+                    </div>
                     <h3
                         className='card-title mb-1 lh-sm'
                         style={{ fontSize: '0.95rem' }}

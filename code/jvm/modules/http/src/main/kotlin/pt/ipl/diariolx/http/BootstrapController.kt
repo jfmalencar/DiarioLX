@@ -61,6 +61,8 @@ class BootstrapController(
                             getContent = LinkDTO(Uris.Guest.GET_CONTENT, HttpMethod.GET),
                             team = LinkDTO(Uris.Guest.TEAM, HttpMethod.GET),
                             author = LinkDTO(Uris.Guest.AUTHOR, HttpMethod.GET),
+                            tag = LinkDTO(Uris.Guest.TAG, HttpMethod.GET),
+                            category = LinkDTO(Uris.Guest.CATEGORY, HttpMethod.GET),
                         ),
                     backoffice =
                         role?.let {

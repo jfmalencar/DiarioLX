@@ -6,4 +6,6 @@ data class GuestEndpointsDTO(
     val getContent: LinkDTO,
     val team: LinkDTO,
     val author: LinkDTO,
+    val tag: LinkDTO,
+    val category: LinkDTO,
 )

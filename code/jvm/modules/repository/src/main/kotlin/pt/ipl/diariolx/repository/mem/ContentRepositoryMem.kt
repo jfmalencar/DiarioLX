@@ -116,6 +116,7 @@ class ContentRepositoryMem(
         parentId: Int?,
         author: String?,
         creditedTo: String?,
+        excludeArchivedCategory: Boolean,
     ): List<ContentSummary> =
         contents
             .filter { content ->

@@ -1,14 +1,12 @@
+import { Link } from 'react-router-dom';
+
 import { useTeam } from '@/shared/hooks/useTeam';
-import { usePath } from '@/shared/hooks/usePath';
+import { Avatar } from '@/shared/components/Avatar';
 
 import { SectionHeader } from './SectionHeader'
 
-const resolvePhoto = (path: string | null, buildMediaUrl: (p: string) => string) =>
-    !path ? 'https://placehold.co/213x213' : path.startsWith('http') ? path : buildMediaUrl(path);
-
 export const TeamSection = () => {
     const { team } = useTeam();
-    const { buildMediaUrl } = usePath();
 
     if (team.length === 0) return null;
 
@@ -18,27 +16,20 @@ export const TeamSection = () => {
             <div className='row g-3 justify-content-center'>
                 {team.slice(0, 4).map((m) => (
                     <div key={m.id} className='col-6 col-sm-4 col-md-3 text-center'>
-                        <img
-                            src={resolvePhoto(m.photoPath, buildMediaUrl)}
-                            alt={m.name}
-                            className='rounded-circle mb-2 object-fit-cover'
-                            style={{
-                                width: 150,
-                                height: 150,
-                                objectFit: 'cover',
-                            }}
-                        />
-                        <p
-                            className='mb-0 fw-semibold'
-                            style={{
-                                fontSize: '0.88rem',
-                            }}
-                        >
-                            {m.name}
-                        </p>
-                        <small className='text-muted' style={{ fontSize: '0.7rem' }}>
-                            {m.position}
-                        </small>
+                        <Link to={`/author/${m.slug}`} className='text-decoration-none text-dark d-flex flex-column align-items-center'>
+                            <Avatar src={m.photoPath} alt={m.name} size={150} className='mb-2' />
+                            <p
+                                className='mb-0 fw-semibold'
+                                style={{
+                                    fontSize: '0.88rem',
+                                }}
+                            >
+                                {m.name}
+                            </p>
+                            <small className='text-muted' style={{ fontSize: '0.7rem' }}>
+                                {m.position}
+                            </small>
+                        </Link>
                     </div>
                 ))}
             </div>
