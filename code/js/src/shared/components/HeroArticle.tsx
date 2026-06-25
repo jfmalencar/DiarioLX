@@ -12,7 +12,7 @@ type Props = {
 
 export const HeroArticle = ({ content }: Props) => {
     return (
-        <Link to={contentHref(content)} className='text-decoration-none text-dark'>
+        <Link to={contentHref(content)} data-testid='hero-article' className='text-decoration-none text-dark'>
             <div
                 className='position-relative overflow-hidden'
                 style={{ maxHeight: '520px' }}

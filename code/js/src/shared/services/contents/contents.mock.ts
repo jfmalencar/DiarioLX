@@ -1,6 +1,29 @@
 import { useMemo } from 'react';
 
-import type { ContentsService, Content, ContentType, ContentState } from './contents.types';
+import type { ContentsService, ContentSummary, Content, ContentType, ContentState } from './contents.types';
+
+// A larger summary feed so public listings can render cards and paginate
+// ("Ver mais") deterministically in mock mode.
+const PUBLIC_FEED_SIZE = 15;
+
+const fakeSummaries: ContentSummary[] = Array.from({ length: PUBLIC_FEED_SIZE }, (_, i) => {
+  const id = i + 1;
+  return {
+    id,
+    title: `Conteúdo de teste ${id}`,
+    headline: 'Resumo de teste para o conteúdo público.',
+    state: 'PUBLISHED',
+    type: 'ARTICLE',
+    slug: `mock-${id}`,
+    featuredImage: `https://picsum.photos/seed/${id}/640/420`,
+    embedUrl: null,
+    category: { id: 1, name: 'Category 1', slug: 'category-1', color: '#FF0000' },
+    tag: { id: 1, name: 'Tag 1', slug: 'tag-1' },
+    authors: [{ id: 1, name: 'Author 1', slug: 'author-1' }],
+    createdAt: '2026-01-01T00:00:00Z',
+    publishedAt: '2026-01-01T00:00:00Z',
+  };
+});
 
 const fakeContents: Content[] = [
   {
@@ -44,34 +67,20 @@ const fakeContents: Content[] = [
 
 export const useContentsMockService = (): ContentsService => {
   return useMemo<ContentsService>(() => ({
-    async fetchAll() {
+    async fetchAll(params) {
+      const page = Number(params?.page ?? 1);
+      const size = Number(params?.size ?? 10);
+      const start = (page - 1) * size;
+      const items = fakeSummaries.slice(start, start + size);
       return {
-        items: fakeContents.map((art) => ({
-          id: art.id,
-          embedUrl: art.embedUrl,
-          headline: art.headline,
-          state: art.state,
-          title: art.title,
-          type: art.type,
-          slug: art.slug,
-          featuredImage: art.featuredImage ? art.featuredImage.path : '',
-          category: art.category,
-          authors: art.authors,
-          tag: art.tags[0],
-          createdAt: art.createdAt,
-          publishedAt: art.publishedAt,
-        })),
+        items,
         pagination: {
-          page: 1,
-          size: 10,
-          hasPrevious: false,
-          hasNext: false,
+          page,
+          size,
+          hasPrevious: page > 1,
+          hasNext: start + size < fakeSummaries.length,
         }
       };
-    },
-
-    async fetchPublished(params) {
-      return this.fetchAll(params)
     },
 
     async fetchPublicContents(params) {

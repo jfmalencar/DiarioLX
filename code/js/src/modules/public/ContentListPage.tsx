@@ -65,7 +65,7 @@ export const ContentListPage = ({ title, color = '#000', icon, dark = false, ful
             <div className="container-xl px-lg-5 pb-5" style={{ maxWidth: 1200 }}>
                 <div className='row g-3 mt-2'>
                     {rest.map((c) => (
-                        <div key={c.id} className='col-12 col-sm-6 col-md-4'>
+                        <div key={c.id} data-testid='content-card' className='col-12 col-sm-6 col-md-4'>
                             <ContentCard content={c} variant='vertical' dark={fullDark} />
                         </div>
                     ))}
@@ -74,6 +74,7 @@ export const ContentListPage = ({ title, color = '#000', icon, dark = false, ful
                     <div className='text-center mt-5'>
                         <button
                             type='button'
+                            data-testid='load-more'
                             className={`btn btn-outline-${fullDark ? 'light' : 'dark'} rounded-0 px-4 py-2 text-uppercase`}
                             style={{ letterSpacing: '0.08em', fontSize: '0.85rem' }}
                             onClick={onLoadMore}

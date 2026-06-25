@@ -52,7 +52,7 @@ export const Footer = () => {
     const columns = chunk(pages, 5);
 
     return (
-        <footer className='bg-dark text-white py-5'>
+        <footer data-testid='site-footer' className='bg-dark text-white py-5'>
             <div className='container'>
                 <div className='d-flex justify-content-center mb-5'>
                     <img src={logo} alt='DiárioLX' style={{ width: 190 }} />

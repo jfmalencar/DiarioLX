@@ -41,6 +41,7 @@ export default defineConfig({
         },
         {
             name: 'chromium',
+            testIgnore: '**/public/**',
             use: {
                 ...devices['Desktop Chrome'],
                 storageState: 'test-storageState.json',

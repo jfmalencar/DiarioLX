@@ -7,6 +7,7 @@ export function NotFound() {
 
     return (
         <div
+            data-testid='not-found'
             className='container d-flex flex-column align-items-center justify-content-center text-center px-4'
             style={{ minHeight: '60vh' }}
         >
@@ -22,7 +23,7 @@ export function NotFound() {
             <p className='text-secondary mb-4' style={{ maxWidth: 440 }}>
                 A página que procura não existe, foi removida ou o endereço está incorreto.
             </p>
-            <Link to='/' className='btn btn-dark px-4 py-2 rounded'>
+            <Link to='/' data-testid='home-link' className='btn btn-dark px-4 py-2 rounded'>
                 Voltar à página inicial
             </Link>
         </div>

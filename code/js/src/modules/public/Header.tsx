@@ -44,6 +44,7 @@ export const Header = () => {
 
     return (
         <header
+            data-testid='site-header'
             className={`fixed-top ${dark ? 'bg-black' : 'bg-white border-bottom'}`}
             style={{
                 height: isShrunk ? 75 : 130,

@@ -18,14 +18,6 @@ export const useContentsApiService = (): ContentsService => {
       return result.data;
     },
 
-    async fetchPublished(params) {
-      const result = await get<ContentsResponse>(`${endpoints.backoffice.contents.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch contents');
-      }
-      return result.data;
-    },
-
     async fetchPublicContents(params) {
       const result = await get<ContentsResponse>(`${endpoints.guest.listContent.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {

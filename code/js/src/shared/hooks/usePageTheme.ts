@@ -12,10 +12,8 @@ export const PageThemeContext = createContext<PageThemeState>({
     setTheme: () => { },
 });
 
-/** Read the current page theme (used by the layout chrome, e.g. the header). */
 export const usePageThemeState = () => useContext(PageThemeContext);
 
-/** A page declares its theme while mounted; it resets to light on unmount. */
 export const usePageTheme = (theme: PageTheme) => {
     const { setTheme } = useContext(PageThemeContext);
     useEffect(() => {
