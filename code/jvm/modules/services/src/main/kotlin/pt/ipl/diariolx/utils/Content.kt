@@ -23,6 +23,14 @@ sealed class ContentError(
     object AuthorNotFound : ContentError("Author not found")
 
     object TagNotFound : ContentError("Not found")
+
+    object InsufficientPhotos : ContentError("A photo essay must have at least 3 photos")
+
+    object ParentRequired : ContentError("An episode must belong to a podcast")
+
+    object InvalidParent : ContentError("Parent content not found or is not a podcast")
+
+    object InvalidEmbed : ContentError("Embed URL is not valid for this content type")
 }
 
 typealias ContentResult = Either<ContentError, Content>

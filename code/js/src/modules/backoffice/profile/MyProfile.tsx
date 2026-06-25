@@ -43,6 +43,7 @@ export function MyProfile() {
         password: '',
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
+        position: user?.position || '',
         bio: user?.bio || '',
     });
     const [saveLoading, setSaveLoading] = useState(false);
@@ -68,6 +69,7 @@ export function MyProfile() {
             password: '',
             firstName: user?.firstName || '',
             lastName: user?.lastName || '',
+            position: user?.position || '',
             bio: user?.bio || '',
         });
         setEditModalOpen(true);
@@ -118,14 +120,14 @@ export function MyProfile() {
                 editFormData.password || undefined,
                 editFormData.firstName,
                 editFormData.lastName,
-                editFormData.bio || null
+                editFormData.bio || null,
+                editFormData.position || null
             );
-            if (result) {
-                showSnackbar('Perfil atualizado com sucesso!', 'success');
-            } else {
-                showSnackbar(t('common.save_error'), 'error');
+            if (!result.ok) {
+                showSnackbar(result.error, 'error');
+                return;
             }
-
+            showSnackbar('Perfil atualizado com sucesso!', 'success');
             await refreshUser();
             setEditModalOpen(false);
         } catch (err) {
@@ -196,24 +198,24 @@ export function MyProfile() {
                         disabled={uploadLoading}
                     />
                     <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', position: 'relative' }}>
-                        <div style={{ color: 'black', fontSize: 41, fontFamily: 'Sora, sans-serif', fontWeight: 600, wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
+                        <div style={{ color: 'black', fontSize: 41, fontWeight: 600, wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
                             {displayName}
                         </div>
                     </div>
-                    <div style={{ color: 'black', fontSize: 22, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'lowercase', wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
+                    <div style={{ color: 'black', fontSize: 22, fontWeight: 400, textTransform: 'lowercase', wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
                         {email}
                     </div>
-                    <div style={{ color: 'black', fontSize: 16, fontFamily: 'Sora, sans-serif', fontWeight: 400, wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
+                    <div style={{ color: 'black', fontSize: 16, fontWeight: 400, wordWrap: 'break-word', textAlign: 'center', position: 'relative' }}>
                         {bio}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', position: 'relative', marginTop: '0px' }}>
-                        <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{t('myprofile.created_at')} </span>
-                        <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{createdAtDate}</span>
-                        <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>|</span>
-                        <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{role}</span>
-                        <span style={{ color: 'black', fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>|</span>
+                        <span style={{ color: 'black', fontSize: 15, fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{t('myprofile.created_at')} </span>
+                        <span style={{ color: 'black', fontSize: 15, fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{createdAtDate}</span>
+                        <span style={{ color: 'black', fontSize: 15, fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>|</span>
+                        <span style={{ color: 'black', fontSize: 15, fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>{role}</span>
+                        <span style={{ color: 'black', fontSize: 15, fontWeight: 400, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>|</span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', position: 'relative' }}>
-                            <span style={{ color: statusColor, fontSize: 15, fontFamily: 'Sora, sans-serif', fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>
+                            <span style={{ color: statusColor, fontSize: 15, fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>
                                 {statusLabel}
                             </span>
                             <div style={{ width: 14, height: 14, position: 'relative', overflow: 'hidden' }}>
@@ -229,7 +231,6 @@ export function MyProfile() {
                             style={{
                                 padding: '8px 16px',
                                 fontSize: 15,
-                                fontFamily: 'Sora, sans-serif',
                                 fontWeight: 600,
                                 textTransform: 'uppercase',
                                 border: '1px solid #ccc',
@@ -257,7 +258,6 @@ export function MyProfile() {
                             style={{
                                 padding: '8px 16px',
                                 fontSize: 15,
-                                fontFamily: 'Sora, sans-serif',
                                 fontWeight: 600,
                                 textTransform: 'uppercase',
                                 border: '1px solid #dc3545',
@@ -367,8 +367,16 @@ export function MyProfile() {
                             onChange={(e) => setEditFormData(prev => ({ ...prev, lastName: e.target.value }))}
                         />
                     </div>
-
-                    {/* Bio */}
+                    <div>
+                        <label className='form-label'>Cargo</label>
+                        <input
+                            type='text'
+                            className='form-control'
+                            placeholder='Ex.: Editora de Infografia'
+                            value={editFormData.position}
+                            onChange={(e) => setEditFormData(prev => ({ ...prev, position: e.target.value }))}
+                        />
+                    </div>
                     <div>
                         <label className='form-label'>{t('common.bio')}</label>
                         <textarea

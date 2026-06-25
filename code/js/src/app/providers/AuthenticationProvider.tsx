@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useAuthService } from '@/shared/services/auth'
 import { useUsersService } from '@/shared/services/users'
-import { useBootstrap, type Endpoints } from '@/shared/hooks/useBootstrap'
 
 import {
   AuthenticationContext,
@@ -20,14 +19,13 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { reload } = useBootstrap()
 
-  const refreshUser = useCallback(async (apiOverride: Endpoints): Promise<AuthUser> => {
+  const refreshUser = useCallback(async (): Promise<AuthUser> => {
     setLoading(true)
     setError(null)
 
     try {
-      const currentUser = await usersService.getCurrentUser(apiOverride)
+      const currentUser = await usersService.getCurrentUser()
       setUser(currentUser)
       return currentUser
     } catch (err) {
@@ -53,12 +51,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
           setUser(undefined)
           return undefined
         }
-
-        const { api } = await reload()
-
-        console.log('API + ', api)
-
-        return await refreshUser(api)
+        return await refreshUser()
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Login failed'
         setError(message)
@@ -68,7 +61,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    [authService, refreshUser, reload]
+    [authService, refreshUser]
   )
 
   const logout = useCallback(async (): Promise<void> => {

@@ -9,6 +9,10 @@ import { SnackbarProvider } from '@/app/providers/SnackbarProvider'
 import { Home } from '@/modules/public/home/Home';
 import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
+import { Tag } from '@/modules/public/Tag';
+import { TypeList } from '@/modules/public/TypeList';
+import { Equipa } from '@/modules/public/Equipa';
+import { Author } from '@/modules/public/Author';
 import { Content } from '@/modules/public/Content';
 
 // Backoffice
@@ -24,6 +28,8 @@ import { ReviewContent } from '@/modules/backoffice/contents/ReviewContent';
 import { SignUp } from '@/modules/backoffice/SignUp';
 import { Invites } from '@/modules/backoffice/invites/Invites';
 import { MyProfile } from '@/modules/backoffice/profile/MyProfile';
+import { Homepage } from '@/modules/backoffice/home/Homepage';
+import { Settings } from '@/modules/backoffice/settings/Settings';
 
 // Require Wrappers
 import { RequireAuthentication } from '@/shared/components/RequireAuthentication';
@@ -48,8 +54,32 @@ const router = createBrowserRouter([
         element: <Categories />,
       },
       {
-        path: 'categories/:id',
+        path: 'category/:slug',
         element: <Category />,
+      },
+      {
+        path: 'tag/:slug',
+        element: <Tag />,
+      },
+      {
+        path: 'fotografia',
+        element: <TypeList type='PHOTO_ESSAY' title='Fotografia' />,
+      },
+      {
+        path: 'podcasts',
+        element: <TypeList type='PODCAST' title='Podcasts' />,
+      },
+      {
+        path: 'videos',
+        element: <TypeList type='VIDEO' title='Vídeos' />,
+      },
+      {
+        path: 'team',
+        element: <Equipa />,
+      },
+      {
+        path: 'author/:slug',
+        element: <Author />,
       },
       {
         path: 'p/:slug',
@@ -63,6 +93,19 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
+        index: true,
+        element: (
+          <RequireAuthentication>
+            <Homepage />,
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'backoffice_layout.homepage',
+          subtitle: 'backoffice_layout.homepage_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
         path: 'login',
         element: <Login />,
         handle: {
@@ -74,19 +117,6 @@ const router = createBrowserRouter([
         element: <SignUp />,
         handle: {
           layout: 'none'
-        }
-      },
-      {
-        index: true,
-        element: (
-          <RequireAuthentication>
-            <div></div>
-          </RequireAuthentication>
-        ),
-        handle: {
-          title: 'backoffice_layout.homepage',
-          subtitle: 'backoffice_layout.homepage_subtitle',
-          layout: 'dashboard'
         }
       },
       {
@@ -208,6 +238,19 @@ const router = createBrowserRouter([
         handle: {
           title: 'backoffice_layout.invites',
           subtitle: 'backoffice_layout.invites_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
+        path: 'settings',
+        element: (
+          <RequireRole role='ADMIN'>
+            <Settings />
+          </RequireRole>
+        ),
+        handle: {
+          title: 'backoffice_layout.settings',
+          subtitle: 'backoffice_layout.settings_subtitle',
           layout: 'dashboard'
         }
       },

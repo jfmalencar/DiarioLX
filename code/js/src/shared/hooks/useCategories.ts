@@ -4,6 +4,8 @@ import { useCategoriesService } from '@/shared/services/categories';
 import type { Category, CategoryFormValues } from '@/shared/services/categories/categories.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
+import type { Result } from '@/shared/types/Result';
+import { runAction } from '@/shared/utils/action';
 
 export type { Category, CategoryFormValues };
 
@@ -52,87 +54,32 @@ export const useCategories = () => {
     )
 
     const create = useCallback(
-        async (category: CategoryFormValues): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await categoriesService.create(category)
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to create category'
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (category: CategoryFormValues): Promise<Result<boolean>> =>
+            runAction(() => categoriesService.create(category), 'Failed to create category', setLoading, setError),
         [categoriesService]
     )
 
     const update = useCallback(
-        async (id: number, category: CategoryFormValues): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await categoriesService.update(id, category)
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to update category'
-                console.log(message)
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number, category: CategoryFormValues): Promise<Result> =>
+            runAction(() => categoriesService.update(id, category), 'Failed to update category', setLoading, setError),
         [categoriesService]
     )
 
     const archive = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await categoriesService.archive(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to archive category'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => categoriesService.archive(id), 'Failed to archive category', setLoading, setError),
         [categoriesService]
     )
 
     const unarchive = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await categoriesService.unarchive(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to unarchive category'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => categoriesService.unarchive(id), 'Failed to unarchive category', setLoading, setError),
         [categoriesService]
     )
 
     const remove = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await categoriesService.delete(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to delete category'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => categoriesService.delete(id), 'Failed to delete category', setLoading, setError),
         [categoriesService]
     )
 

@@ -9,6 +9,7 @@ import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody }
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { type Category, useCategories } from '@/shared/hooks/useCategories';
 import { useI18n } from '@/shared/hooks/useI18n';
+import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
@@ -87,7 +88,7 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
                                     <Link
-                                        to={`/categories/${row.slug}`}
+                                        to={`/category/${row.slug}`}
                                         className='btn btn-outline-dark rounded-2'
                                         data-testid={`visit-category-button-${index}`}
                                     >
@@ -170,9 +171,17 @@ export const Categories = () => {
         setModalAction(null);
     };
 
-    const handleConfirm = () => {
+    const { showSnackbar } = useSnackbar();
+
+    const handleConfirm = async () => {
         if (!open || !config) return;
-        config.action(open.id).then(() => { closeModal(); navigate(config.getRedirect()); });
+        const res = await config.action(open.id);
+        if (!res.ok) {
+            showSnackbar(res.error, 'error');
+            return;
+        }
+        closeModal();
+        navigate(config.getRedirect());
     };
 
     const config = modalAction ? modalConfig[modalAction] : undefined;

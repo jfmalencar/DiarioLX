@@ -38,6 +38,9 @@ class ContentQueryService(
         type: ContentType? = null,
         from: LocalDate? = null,
         to: LocalDate? = null,
+        parentId: Int? = null,
+        author: String? = null,
+        creditedTo: String? = null,
     ): PageResponse<ContentSummary> =
         transactionManager.run {
             paginate(page, size) { limit, offset ->
@@ -48,8 +51,12 @@ class ContentQueryService(
                     query = query,
                     tag = tag,
                     category = category,
+                    state = ContentState.PUBLISHED,
                     from = from,
                     to = to,
+                    parentId = parentId,
+                    author = author,
+                    creditedTo = creditedTo,
                 )
             }
         }

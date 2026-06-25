@@ -4,6 +4,7 @@ import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.repository.mem.BlockRepositoryMem
 import pt.ipl.diariolx.repository.mem.CategoryRepositoryMem
 import pt.ipl.diariolx.repository.mem.ContentRepositoryMem
+import pt.ipl.diariolx.repository.mem.FeaturedRepositoryMem
 import pt.ipl.diariolx.repository.mem.InviteRepositoryMem
 import pt.ipl.diariolx.repository.mem.MediaRepositoryMem
 import pt.ipl.diariolx.repository.mem.TagRepositoryMem
@@ -302,6 +303,18 @@ class CategoryServiceTest {
                     blockRepo = blockRepo,
                     categoryRepo = categoryRepo,
                 ),
-        ): CategoryService = CategoryService(TransactionManagerMem(categoryRepo, userRepo, inviteRepo, tagRepo, contentRepo, mediaRepo))
+            featuredRepo: FeaturedRepositoryMem = FeaturedRepositoryMem(contentRepo),
+        ): CategoryService =
+            CategoryService(
+                TransactionManagerMem(
+                    categoryRepo,
+                    userRepo,
+                    inviteRepo,
+                    tagRepo,
+                    contentRepo,
+                    mediaRepo,
+                    featuredRepo,
+                ),
+            )
     }
 }

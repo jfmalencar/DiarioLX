@@ -7,5 +7,5 @@ data class ContentHistory(
     val reviewerName: String?,
     val action: ReviewAction,
     val comment: String?,
-    val performedAt: Instant
+    val performedAt: Instant,
 )

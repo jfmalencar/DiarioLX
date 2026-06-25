@@ -15,3 +15,5 @@ CREATE UNIQUE INDEX uq_content_primary_author
 CREATE UNIQUE INDEX uq_content_primary_tag
     ON content_tags(content_id)
     WHERE role = 'primary';
+
+CREATE INDEX idx_contents_section  ON featured_contents (section_id, position);

@@ -9,6 +9,7 @@ import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody }
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { useInvites, type Invite } from '@/shared/hooks/useInvites';
 import { useI18n } from '@/shared/hooks/useI18n';
+import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { useFilters } from '@/shared/hooks/useFilters';
 
 import { Button } from '@/shared/components/Button';
@@ -135,17 +136,20 @@ const InvitesTable = ({ filter, remove }: Props) => {
 
 const GenerateInvite = () => {
     const { create } = useInvites();
+    const { showSnackbar } = useSnackbar();
     const [, setSearchParams] = useSearchParams();
 
     const handleGenerate = async (role: UserRole) => {
         const invite = await create({ role: role })
-        if (invite) {
-            setSearchParams((previous) => {
-                const params = new URLSearchParams(previous)
-                params.set('refresh', Date.now().toString())
-                return params
-            })
+        if (!invite.ok) {
+            showSnackbar(invite.error, 'error');
+            return;
         }
+        setSearchParams((previous) => {
+            const params = new URLSearchParams(previous)
+            params.set('refresh', Date.now().toString())
+            return params
+        })
     }
 
     return (
@@ -200,9 +204,17 @@ export function Invites() {
         variant: 'danger',
     }
 
-    const handleConfirm = () => {
+    const { showSnackbar } = useSnackbar();
+
+    const handleConfirm = async () => {
         if (!open || !config) return;
-        config.action(open.id).then(() => { setOpen(null); navigate(config.getRedirect()); });
+        const res = await config.action(open.id);
+        if (!res.ok) {
+            showSnackbar(res.error, 'error');
+            return;
+        }
+        setOpen(null);
+        navigate(config.getRedirect());
     };
 
     return (

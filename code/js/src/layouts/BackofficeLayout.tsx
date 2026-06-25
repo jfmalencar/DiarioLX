@@ -47,6 +47,7 @@ export const BackofficeLayout = () => {
     { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/contents/new?type=ARTICLE') },
     { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/contents/new?type=VIDEO') },
     { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/contents/new?type=EPISODE') },
+    { key: 'new-photo-essay', label: 'Reportagem fotográfica', action: () => navigate('/backoffice/contents/new?type=PHOTO_ESSAY') },
   ]
   if (user?.features?.includes('manage-podcasts')) {
     options.push({ key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/contents/new?type=PODCAST') })
@@ -99,6 +100,11 @@ export const BackofficeLayout = () => {
               {canManageInvites &&
                 <Link to='/backoffice/invites' className='nav-link text-white p-0'>
                   {t('backoffice_layout.invites')}
+                </Link>
+              }
+              {canManageInvites &&
+                <Link to='/backoffice/settings' className='nav-link text-white p-0'>
+                  {t('backoffice_layout.settings')}
                 </Link>
               }
             </nav>

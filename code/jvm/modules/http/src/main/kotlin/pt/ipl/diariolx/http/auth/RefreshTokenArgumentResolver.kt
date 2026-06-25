@@ -23,7 +23,7 @@ class RefreshTokenArgumentResolver : HandlerMethodArgumentResolver {
         val request =
             webRequest.getNativeRequest(HttpServletRequest::class.java)
                 ?: throw IllegalStateException("TODO")
-        return getRefreshTokenFrom(request) ?: throw IllegalStateException("TODO")
+        return getRefreshTokenFrom(request)
     }
 
     companion object {

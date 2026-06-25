@@ -2,7 +2,7 @@ import type { Query } from '@/shared/types/Query';
 import type { Media } from '@/shared/services/media/media.types';
 import type { Pagination } from '@/shared/types/Pagination';
 
-export type ContentType = 'ARTICLE' | 'VIDEO' | 'EPISODE' | 'PODCAST';
+export type ContentType = 'ARTICLE' | 'VIDEO' | 'EPISODE' | 'PODCAST' | 'PHOTO_ESSAY';
 
 export type ContentState = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED'
 
@@ -19,7 +19,16 @@ export type Content = {
         id: number;
         name: string;
         slug: string;
+        color: string
     }
+    parentId: number | null;
+    parent: {
+        id: number;
+        title: string;
+        slug: string | null;
+        image: string | null;
+    } | null;
+    embedUrl: string | null;
     authors: {
         id: number;
         slug: string;
@@ -53,11 +62,23 @@ export type ContentHistory = {
 export type ContentSummary = {
     id: number;
     title: string;
+    headline: string;
     state: ContentState;
     type: ContentType;
     slug: string;
-    featuredImage: string
-    category: string
+    featuredImage: string | null;
+    embedUrl: string | null;
+    category: {
+        id: number
+        name: string
+        slug: string
+        color: string
+    }
+    tag: {
+        id: number
+        name: string
+        slug: string
+    }
     authors: {
         id: number
         name: string
@@ -92,16 +113,33 @@ export type ContentTextBlock = ContentBlockBase & {
     content: string;
 };
 
-export type ContentImageBlock = ContentBlockBase & {
-    type: 'IMAGE';
+export type ContentMediaBlock = ContentBlockBase & {
+    type: 'MEDIA';
     media: Media;
     caption: string | null;
+};
+
+export type GalleryImage = {
+    media: Media;
+    caption: string | null;
+};
+
+export type ContentGalleryBlock = ContentBlockBase & {
+    type: 'GALLERY';
+    images: GalleryImage[];
+};
+
+export type ContentEmbedBlock = ContentBlockBase & {
+    type: 'EMBED';
+    content: string;
 };
 
 export type ContentBlock =
     | ContentTextBlock
     | ContentQuoteBlock
-    | ContentImageBlock
+    | ContentMediaBlock
+    | ContentGalleryBlock
+    | ContentEmbedBlock
     | ContentH3Block
     | ContentH4Block
 
@@ -110,7 +148,9 @@ export type ContentBlockRequest =
     | { type: 'H4'; id: number, position: number, content: string }
     | { type: 'TEXT'; id: number, position: number, content: string }
     | { type: 'QUOTE'; id: number, position: number, content: string }
-    | { type: 'IMAGE'; id: number, position: number, mediaId: number; };
+    | { type: 'MEDIA'; id: number, position: number, mediaId: number; }
+    | { type: 'EMBED'; id: number, position: number, content: string }
+    | { type: 'GALLERY'; id: number, position: number, images: { mediaId: number; caption: string | null }[] };
 
 export type ContentFormValues = {
     title: string;
@@ -137,6 +177,8 @@ export type UpdateContentRequest = {
     featuredMediaId: number | null;
     slug: string | null;
     categoryId: number | null;
+    parentId: number | null;
+    embedUrl: string | null;
     authors: {
         authorId: number;
     }[];
@@ -156,6 +198,15 @@ export type NewContentResponse = {
 }
 
 export type ContentResponse = Content
+
+export type SectionType =
+    | 'HIGHLIGHT'
+    | 'FEATURED'
+    | 'CATEGORY'
+    | 'CATEGORY_ROW'
+    | 'PHOTOS'
+    | 'PODCASTS'
+    | 'VIDEOS';
 
 export interface ContentsService {
     fetchAll(params: Query): Promise<ContentsResponse>;

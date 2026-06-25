@@ -5,5 +5,5 @@ data class HistoryResponseDTO(
     val date: String,
     val type: String,
     val by: String?,
-    val comment: String?
+    val comment: String?,
 )

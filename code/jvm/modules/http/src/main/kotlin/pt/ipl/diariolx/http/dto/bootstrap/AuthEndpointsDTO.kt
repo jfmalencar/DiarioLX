@@ -5,4 +5,5 @@ data class AuthEndpointsDTO(
     val login: LinkDTO,
     val logout: LinkDTO,
     val refresh: LinkDTO,
+    val me: LinkDTO,
 )

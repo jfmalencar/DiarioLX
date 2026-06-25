@@ -48,6 +48,14 @@ interface UserRepository {
         roles: List<UserRole>? = null,
     ): List<User>
 
+    fun getTeam(): List<User>
+
+    fun setTeamMembership(
+        userId: Int,
+        onTeam: Boolean,
+        now: Instant,
+    ): Boolean
+
     fun completeAvatarUpload(userId: Int): Boolean
 
     fun createSession(

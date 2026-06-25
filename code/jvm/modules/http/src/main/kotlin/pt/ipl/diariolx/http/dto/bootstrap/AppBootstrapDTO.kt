@@ -5,4 +5,6 @@ data class AppBootstrapDTO(
     val api: ApiEndpointsDTO,
     val assets: AssetsDTO,
     val creditRoles: List<CreditRolesDTO>,
+    val sections: List<SectionTypeConfigDTO>,
+    val settings: SettingsBootstrapDTO,
 )

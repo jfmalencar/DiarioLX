@@ -18,6 +18,7 @@ import pt.ipl.diariolx.utils.ContentError
 import pt.ipl.diariolx.utils.ContentHistoryResult
 import pt.ipl.diariolx.utils.ContentResult
 import pt.ipl.diariolx.utils.ContentUpdateResult
+import pt.ipl.diariolx.utils.Embed
 import pt.ipl.diariolx.utils.failure
 import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
@@ -27,6 +28,10 @@ class ContentService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
 ) {
+    companion object {
+        const val MIN_PHOTO_ESSAY_IMAGES = 3
+    }
+
     fun createEmpty(type: String): ContentCreateResult {
         val type =
             try {
@@ -47,6 +52,8 @@ class ContentService(
         featuredMediaId: Int?,
         slug: String?,
         categoryId: Int?,
+        parentId: Int?,
+        embedUrl: String?,
         authors: List<ContentAuthor>,
         tags: List<ContentTag>,
         blocks: List<NewContentBlock>,
@@ -57,13 +64,34 @@ class ContentService(
             if (it.isBlank()) return failure(ContentError.InvalidSlug)
         }
         return transactionManager.run { tx ->
-            val oldContent = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
             categoryId?.let {
                 tx.categoryRepository.getById(it) ?: return@run failure(ContentError.CategoryNotFound)
             }
             featuredMediaId?.let {
                 tx.mediaRepository.get(it) ?: return@run failure(ContentError.FeaturedMediaIdNotFound)
             }
+            // Only episodes carry a parent, and it must be a podcast.
+            val resolvedParentId =
+                if (content.type == ContentType.EPISODE) {
+                    parentId?.also {
+                        val parent = tx.contentRepository.internalGetById(it)
+                        if (parent == null || parent.type != ContentType.PODCAST) {
+                            return@run failure(ContentError.InvalidParent)
+                        }
+                    }
+                } else {
+                    null
+                }
+
+            // The primary embed is YouTube for videos, Spotify for episodes; ignored elsewhere.
+            val embed = embedUrl?.takeIf { it.isNotBlank() }
+            val resolvedEmbedUrl =
+                when (content.type) {
+                    ContentType.VIDEO -> embed?.also { if (!Embed.isYoutube(it)) return@run failure(ContentError.InvalidEmbed) }
+                    ContentType.EPISODE -> embed?.also { if (!Embed.isSpotify(it)) return@run failure(ContentError.InvalidEmbed) }
+                    else -> null
+                }
             slug?.let {
                 tx.contentRepository.internalGetBySlug(it)?.let { existing ->
                     if (existing.id != id) {
@@ -85,13 +113,16 @@ class ContentService(
                     featuredMediaId,
                     slug,
                     categoryId,
+                    resolvedParentId,
+                    resolvedEmbedUrl,
                     authors,
                     tags,
                     blocks,
-                    if (oldContent.state == ContentState.REJECTED || oldContent.state == ContentState.PUBLISHED)
-                            ContentState.DRAFT
-                    else
-                        oldContent.state,
+                    if (content.state == ContentState.REJECTED || content.state == ContentState.PUBLISHED) {
+                        ContentState.DRAFT
+                    } else {
+                        content.state
+                    },
                 )
             tx.contentRepository.updateContent(updateContent, clock.now())
             return@run success(Unit)
@@ -108,7 +139,11 @@ class ContentService(
             }
         }
 
-    fun publish(id: Int, comment: String?, reviewerId: Int): ContentUpdateResult = send(id, ContentState.PUBLISHED, comment, reviewerId)
+    fun publish(
+        id: Int,
+        comment: String?,
+        reviewerId: Int,
+    ): ContentUpdateResult = send(id, ContentState.PUBLISHED, comment, reviewerId)
 
     fun submit(id: Int): ContentUpdateResult = send(id, ContentState.PENDING_REVIEW)
 
@@ -116,7 +151,7 @@ class ContentService(
         id: Int,
         newState: ContentState,
         comment: String? = null,
-        reviewerId: Int? = null
+        reviewerId: Int? = null,
     ): ContentUpdateResult {
         return transactionManager.run { tx ->
             val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
@@ -129,18 +164,36 @@ class ContentService(
             if (content.slug == null) {
                 return@run failure(ContentError.EmptyField)
             }
-            if (content.category == null) {
+            // Episodes belong to a podcast (and inherit its category) instead of
+            // having one of their own.
+            if (content.type == ContentType.EPISODE) {
+                if (content.parentId == null) {
+                    return@run failure(ContentError.ParentRequired)
+                }
+            } else if (content.category == null) {
                 return@run failure(ContentError.EmptyField)
             }
-            if (content.featuredImage == null) {
+            // Videos and episodes may instead provide an external embed (YouTube/Spotify).
+            val canEmbed = content.type == ContentType.VIDEO || content.type == ContentType.EPISODE
+            if (content.featuredImage == null && !(canEmbed && content.embedUrl != null)) {
                 return@run failure(ContentError.EmptyField)
+            }
+            if (content.type == ContentType.PHOTO_ESSAY) {
+                val photoCount = content.blocks.filter { it.type == "GALLERY" }.sumOf { it.images.size }
+                if (photoCount < MIN_PHOTO_ESSAY_IMAGES) {
+                    return@run failure(ContentError.InsufficientPhotos)
+                }
             }
             tx.contentRepository.publish(id, newState, clock.now(), comment, reviewerId)
             return@run success(Unit)
         }
     }
 
-    fun reject(id: Int, comment: String?, reviewerId: Int): ContentUpdateResult {
+    fun reject(
+        id: Int,
+        comment: String?,
+        reviewerId: Int,
+    ): ContentUpdateResult {
         return transactionManager.run { tx ->
             tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
             tx.contentRepository.reject(id, clock.now(), comment, reviewerId)
@@ -201,6 +254,7 @@ class ContentService(
         query: String?,
         state: ContentState?,
         type: ContentType?,
+        category: String?,
         user: User,
     ): PageResponse<ContentSummary> {
         val authorId = if (user.role < UserRole.EDITOR && state != ContentState.PUBLISHED) user.id else null
@@ -210,6 +264,7 @@ class ContentService(
                     limit = limit,
                     offset = offset,
                     query = query,
+                    category = category,
                     state = state,
                     type = type,
                     authorId = authorId,

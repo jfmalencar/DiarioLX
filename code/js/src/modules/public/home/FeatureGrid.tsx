@@ -1,17 +1,17 @@
-import type { Article } from './Home';
+import type { ContentSummary } from '@/shared/services/contents/contents.types';
 
-import { ArticleCard } from './ArticleCard';
+import { ContentCard } from '@/shared/components/ContentCard';
 
 type Props = {
-    articles: Article[];
+    contents: ContentSummary[];
 }
 
-export const FeaturedGrid = ({ articles }: Props) => (
-    <div className='container-xl py-4'>
+export const FeaturedGrid = ({ contents }: Props) => (
+    <div className='container-diariolx'>
         <div className='row g-3'>
-            {articles.slice(0, 3).map((a) => (
-                <div key={a.id} className='col-12 col-sm-6 col-md-4'>
-                    <ArticleCard article={a} variant='vertical' />
+            {contents.slice(0, 3).map((c) => (
+                <div key={c.id} className='col-12 col-sm-6 col-md-4'>
+                    <ContentCard content={c} variant='vertical' />
                 </div>
             ))}
         </div>

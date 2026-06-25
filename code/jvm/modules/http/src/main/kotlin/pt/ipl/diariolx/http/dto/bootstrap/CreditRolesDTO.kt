@@ -6,5 +6,6 @@ import pt.ipl.diariolx.domain.media.MediaType
 data class CreditRolesDTO(
     val value: CreditRole,
     val label: String,
+    val byline: String,
     val mediaTypes: List<MediaType>,
 )

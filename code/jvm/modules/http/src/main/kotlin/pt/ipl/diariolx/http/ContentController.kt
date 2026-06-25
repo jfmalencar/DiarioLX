@@ -69,11 +69,12 @@ class ContentController(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
         @RequestParam query: String? = null,
+        @RequestParam category: String? = null,
         @RequestParam state: ContentState? = null,
         @RequestParam type: ContentType? = null,
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
-        val response = contentService.getAll(page, size, query, state, type, me.user)
+        val response = contentService.getAll(page, size, query, state, type, category, me.user)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },
@@ -96,13 +97,15 @@ class ContentController(
         @PathVariable id: Int,
     ): ResponseEntity<*> =
         when (val response = contentService.historyById(id)) {
-            is Success -> ResponseEntity.ok(
-                FullHistoryResponseDTO.from(response.value)
-            )
-            is Failure -> Problem.response(
-                Problem.notFound,
-                Uris.Content.INTERNAL_HISTORY_BY_ID,
-            )
+            is Success ->
+                ResponseEntity.ok(
+                    FullHistoryResponseDTO.from(response.value),
+                )
+            is Failure ->
+                Problem.response(
+                    Problem.notFound,
+                    Uris.Content.INTERNAL_HISTORY_BY_ID,
+                )
         }
 
     @RequireRole(UserRole.CONTRIBUTOR)
@@ -142,6 +145,8 @@ class ContentController(
                     body.featuredMediaId,
                     body.slug,
                     body.categoryId,
+                    body.parentId,
+                    body.embedUrl,
                     body.authors,
                     body.tags,
                     body.blocks,
@@ -207,7 +212,7 @@ class ContentController(
     fun publishContent(
         authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
-        @RequestBody body: ReviewContentDTO?
+        @RequestBody body: ReviewContentDTO?,
     ): ResponseEntity<*> =
         when (val response = contentService.publish(id, body?.comment, authenticatedUser.user.id)) {
             is Success ->
@@ -249,14 +254,14 @@ class ContentController(
     fun rejectContent(
         authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
-        @RequestBody body: ReviewContentDTO?
+        @RequestBody body: ReviewContentDTO?,
     ): ResponseEntity<*> =
         when (
             val response =
                 contentService.reject(
                     id,
                     body?.comment,
-                    authenticatedUser.user.id
+                    authenticatedUser.user.id,
                 )
         ) {
             is Success ->

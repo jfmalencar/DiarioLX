@@ -86,7 +86,9 @@ class ContentRepositoryMem(
                         )
                     },
                 slug = content.slug,
-                category = categoryRepo.getById(content.categoryId ?: -1)?.let { CategorySummary(it.id, it.name, it.slug) },
+                category = categoryRepo.getById(content.categoryId ?: -1)?.let { CategorySummary(it.id, it.name, it.slug, it.color) },
+                parentId = content.parentId,
+                embedUrl = content.embedUrl,
                 publishedAt = null,
                 archivedAt = null,
                 createdAt = Clock.System.now(),
@@ -111,10 +113,14 @@ class ContentRepositoryMem(
         from: LocalDate?,
         to: LocalDate?,
         authorId: Int?,
+        parentId: Int?,
+        author: String?,
+        creditedTo: String?,
     ): List<ContentSummary> =
         contents
             .filter { content ->
-                content.state == ContentState.PUBLISHED &&
+                (parentId == null || content.parentId == parentId) &&
+                    content.state == ContentState.PUBLISHED &&
                     content.slug != null &&
                     content.category != null &&
                     (
@@ -134,15 +140,14 @@ class ContentRepositoryMem(
                     id = it.id,
                     type = it.type,
                     title = it.title,
+                    headline = it.headline,
                     state = it.state,
                     slug = it.slug,
-                    category = it.category?.let { c -> CategorySummary(c.id, c.name, c.slug) },
+                    category = it.category?.let { c -> CategorySummary(c.id, c.name, c.slug, c.color) },
                     tag = TagSummary(1, "Tag Test", "tag"),
                     createdAt = it.createdAt,
                     archivedAt = it.archivedAt,
                     publishedAt = it.publishedAt,
-                    categoryId = it.category?.id ?: -1,
-                    categoryName = it.category?.name ?: "",
                     featuredImage = it.featuredImage?.path,
                     authors = it.authors,
                 )
@@ -180,13 +185,12 @@ class ContentRepositoryMem(
                     id = it.id,
                     type = it.type,
                     title = it.title,
+                    headline = it.headline,
                     state = it.state,
                     slug = it.slug,
                     createdAt = it.createdAt,
                     archivedAt = it.archivedAt,
                     publishedAt = it.publishedAt,
-                    categoryId = it.category?.id ?: -1,
-                    categoryName = it.category?.name ?: "",
                     featuredImage = it.featuredImage?.path,
                     authors = it.authors,
                     category = null,

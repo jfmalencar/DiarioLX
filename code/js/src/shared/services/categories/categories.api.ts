@@ -13,7 +13,7 @@ export const useCategoriesApiService = (): CategoriesService => {
     async fetchAll(params) {
       const result = await get<CategoriesResponse>(`${endpoints.backoffice.categories.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
-        throw new Error('Failed to fetch categories');
+        throw new Error(result.error || 'Failed to fetch categories');
       }
       return result.data;
     },

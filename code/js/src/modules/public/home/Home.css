@@ -6,11 +6,11 @@
 .dlx-ultimas-col {
     display: block;
     padding-right: 1.25rem;
+    padding-left: 1.25rem;
 }
 
 .dlx-ultimas-col--bordered {
     border-right: 1px solid #ddd;
-    margin-right: 1.25rem;
 }
 
 .dlx-lisboa-grid {

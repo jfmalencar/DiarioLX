@@ -12,6 +12,8 @@ data class UpdateContent(
     val featuredMediaId: Int?,
     val slug: String?,
     val categoryId: Int?,
+    val parentId: Int?,
+    val embedUrl: String?,
     // ----------------------------
     val authors: List<ContentAuthor>,
     val tags: List<ContentTag>,

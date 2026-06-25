@@ -9,6 +9,7 @@ import { TableFilters } from '@/shared/components/table/TableFilters';
 import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
 import { useUsers, type User } from '@/shared/hooks/useUsers';
 import { useI18n } from '@/shared/hooks/useI18n';
+import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { usePath } from '@/shared/hooks/usePath';
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
@@ -35,7 +36,7 @@ type ModalAction = 'deactivate' | 'delete';
 
 const UsersTable = ({ filter, openModal }: Props) => {
     const { t } = useI18n();
-    const { loading, users, pagination, fetchAll } = useUsers();
+    const { loading, users, pagination, fetchAll, setOnTeam } = useUsers();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
     const { buildMediaUrl } = usePath();
@@ -47,6 +48,12 @@ const UsersTable = ({ filter, openModal }: Props) => {
         const params = buildQuery({ p: 'page', total: 'size', search: 'query', role: 'role' }, { deactivated: filter.deactivated });
         fetchAll(params)
     }, [fetchAll, searchParams, filter, buildQuery]);
+
+    const handleToggleTeam = async (row: User) => {
+        await setOnTeam(row.userId, !row.onTeam);
+        const params = buildQuery({ p: 'page', total: 'size', search: 'query', role: 'role' }, { deactivated: filter.deactivated });
+        fetchAll(params);
+    };
 
     return (
         <>
@@ -88,7 +95,7 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                             {row.firstName} {row.lastName}
                                         </div>
                                         <div className='text-muted small mt-1'>
-                                            {row.bio || '-'}
+                                            {row.position || '-'}
                                         </div>
                                     </div>
                                 </div>
@@ -102,9 +109,19 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                 <div className='text-secondary'>{row.email}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
-                                <div className='d-flex d-lg-flex justify-content-center gap-2'>
+                                <div className='d-flex d-lg-flex justify-content-center align-items-center gap-3'>
                                     {canManageUsers &&
                                         <>
+                                            <div className='form-check form-switch m-0' title='Mostrar na equipa'>
+                                                <input
+                                                    className='form-check-input'
+                                                    type='checkbox'
+                                                    role='switch'
+                                                    checked={row.onTeam}
+                                                    onChange={() => handleToggleTeam(row)}
+                                                    aria-label='Mostrar na equipa'
+                                                />
+                                            </div>
                                             {row.isActive ?
                                                 <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2'>
                                                     <UserX size={16} />
@@ -162,9 +179,17 @@ export function Users() {
         setModalAction(null);
     };
 
-    const handleConfirm = () => {
+    const { showSnackbar } = useSnackbar();
+
+    const handleConfirm = async () => {
         if (!open || !config) return;
-        config.action(open.userId).then(() => { closeModal(); navigate(config.getRedirect()); });
+        const res = await config.action(open.userId);
+        if (!res.ok) {
+            showSnackbar(res.error, 'error');
+            return;
+        }
+        closeModal();
+        navigate(config.getRedirect());
     };
 
     const config = modalAction ? modalConfig[modalAction] : undefined;

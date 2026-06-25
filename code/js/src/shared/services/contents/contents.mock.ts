@@ -5,6 +5,9 @@ import type { ContentsService, Content, ContentType, ContentState } from './cont
 const fakeContents: Content[] = [
   {
     id: 1,
+    parentId: null,
+    parent: null,
+    embedUrl: null,
     type: 'ARTICLE',
     title: 'Content 1',
     slug: 'content-1',
@@ -13,20 +16,21 @@ const fakeContents: Content[] = [
     blocks: [],
     featuredImage: null,
     category: {
-      id: '1',
+      id: 1,
       name: 'Category 1',
       slug: 'category-1',
+      color: '#FF0000',
     },
     authors: [
       {
-        id: '1',
+        id: 1,
         name: 'Author 1',
         slug: 'author-1',
       },
     ],
     tags: [
       {
-        id: '1',
+        id: 1,
         name: 'Tag 1',
         slug: 'tag-1',
       },
@@ -44,12 +48,16 @@ export const useContentsMockService = (): ContentsService => {
       return {
         items: fakeContents.map((art) => ({
           id: art.id,
+          embedUrl: art.embedUrl,
+          headline: art.headline,
+          state: art.state,
           title: art.title,
           type: art.type,
           slug: art.slug,
           featuredImage: art.featuredImage ? art.featuredImage.path : '',
-          category: art.category.name,
-          authors: art.authors.map((author) => author.name),
+          category: art.category,
+          authors: art.authors,
+          tag: art.tags[0],
           createdAt: art.createdAt,
           publishedAt: art.publishedAt,
         })),
@@ -90,9 +98,10 @@ export const useContentsMockService = (): ContentsService => {
         state: 'DRAFT' as ContentState,
         slug: '',
         category: {
-          id: '1',
+          id: 1,
           name: 'Category 1',
           slug: 'category-1',
+          color: '#FF0000',
         },
         headline: '',
         blocks: [],
@@ -103,6 +112,9 @@ export const useContentsMockService = (): ContentsService => {
         publishedAt: null,
         archivedAt: null,
         featuredImage: null,
+        parentId: null,
+        parent: null,
+        embedUrl: null,
       };
       await new Promise((resolve) => setTimeout(resolve, 2000));
       fakeContents.push(newContent);
@@ -128,6 +140,71 @@ export const useContentsMockService = (): ContentsService => {
         throw new Error('Content not found');
       }
       fakeContents.splice(index, 1);
+    },
+
+    async publish(id) {
+      const index = fakeContents.findIndex((art) => art.id === id);
+      if (index === -1) {
+        throw new Error('Content not found');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      fakeContents[index] = {
+        ...fakeContents[index],
+        state: 'PUBLISHED',
+        publishedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    },
+
+    async submit(id) {
+      const index = fakeContents.findIndex((art) => art.id === id);
+      if (index === -1) {
+        throw new Error('Content not found');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      fakeContents[index] = {
+        ...fakeContents[index],
+        state: 'PENDING_REVIEW',
+        updatedAt: new Date().toISOString(),
+      };
+    },
+
+    async reject(id) {
+      const index = fakeContents.findIndex((art) => art.id === id);
+      if (index === -1) {
+        throw new Error('Content not found');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      fakeContents[index] = {
+        ...fakeContents[index],
+        state: 'REJECTED',
+        updatedAt: new Date().toISOString(),
+      };
+    },
+
+    async fetchHistoryById(id) {
+      const content = fakeContents.find((art) => art.id === id);
+      if (!content) {
+        throw new Error('Content not found');
+      }
+      return {
+        history: [
+          {
+            id: '1',
+            type: 'approved',
+            date: new Date().toISOString(),
+            by: 'Editor 1',
+            comment: 'Looks good!',
+          },
+          {
+            id: '2',
+            type: 'rejected',
+            date: new Date().toISOString(),
+            by: 'Editor 2',
+            comment: 'Needs more work.',
+          },
+        ],
+      };
     },
 
     async archive(id) {

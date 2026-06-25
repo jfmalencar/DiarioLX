@@ -55,7 +55,8 @@ export const ReviewContent = () => {
     const [historyList, setHistoryList] = useState<HistoryEntry[]>([]);
     const [openConfirmModal, setOpenConfirmModal] = useState<boolean>(false);
     const { t } = useI18n();
-    
+
+    const [historyOpen, setHistoryOpen] = useState(false);
     const [modalAction, setModalAction] = useState<'approve' | 'reject'>('approve');
     const { showSnackbar } = useSnackbar();
 
@@ -63,7 +64,7 @@ export const ReviewContent = () => {
         const load = async () => {
             if (params.id && params.id !== 'new') {
                 await fetchById(Number(params.id)).then((content) => {
-                    if (content && content.state !== 'PENDING_REVIEW') {
+                    if (content && (content.state !== 'PENDING_REVIEW' && content.state !== 'REJECTED')) {
                         navigate('/backoffice/contents');
                     }
                     if (content) {
@@ -89,9 +90,9 @@ export const ReviewContent = () => {
 
     const handleConfirmReview = async (comment: string) => {
         setOpenConfirmModal(false);
-        
+
         if (modalAction === 'approve') {
-            const result = await publish(Number(params.id), comment); 
+            const result = await publish(Number(params.id), comment);
             if (result) {
                 showSnackbar('Conteúdo publicado com sucesso!', 'success');
                 navigate('/p/' + content?.slug);
@@ -107,7 +108,6 @@ export const ReviewContent = () => {
         }
     };
 
-    const [historyOpen, setHistoryOpen] = useState(true);
 
     if (content === null) return null;
     return (
@@ -205,9 +205,9 @@ export const ReviewContent = () => {
                 <button
                     type='button'
                     className='btn btn-outline-dark px-4'
-                    onClick={() => { 
-                        setModalAction('reject'); 
-                        setOpenConfirmModal(true); 
+                    onClick={() => {
+                        setModalAction('reject');
+                        setOpenConfirmModal(true);
                     }}
                 >
                     {t('common.reject')}
@@ -215,9 +215,9 @@ export const ReviewContent = () => {
                 <button
                     type='button'
                     className='btn btn-dark px-4'
-                    onClick={() => { 
-                        setModalAction('approve'); 
-                        setOpenConfirmModal(true); 
+                    onClick={() => {
+                        setModalAction('approve');
+                        setOpenConfirmModal(true);
                     }}
                 >
                     {t('common.approve')}

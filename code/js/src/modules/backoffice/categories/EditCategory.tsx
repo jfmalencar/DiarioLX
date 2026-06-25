@@ -178,10 +178,10 @@ export const EditCategory = () => {
         (
             params.id === 'new' ? create(category) : update(categoryId, category)
         ).then((result) => {
-            if (result) {
+            if (result.ok) {
                 dispatch({ type: 'success' });
             } else {
-                dispatch({ type: 'error', message: 'Erro ao processar seu pedido.' });
+                dispatch({ type: 'error', message: result.error });
             }
         });
     }

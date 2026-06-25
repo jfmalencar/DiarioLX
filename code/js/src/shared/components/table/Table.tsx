@@ -45,7 +45,7 @@ export const Table = ({ children, dataTestId }: TableProps) => {
 
 export const TableHeader = ({ children }: TableHeaderProps) => {
     return (
-        <thead>
+        <thead className="position-sticky top-0 bg-light" style={{ zIndex: 1 }}>
             <tr>
                 {children}
             </tr>

@@ -10,7 +10,8 @@ import { TableFilters } from '@/shared/components/table/TableFilters';
 import { useContents, type ContentState } from '@/shared/hooks/useContents';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useFilters, type FilterSection } from '@/shared/hooks/useFilters';
-import { usePath } from '@/shared/hooks/usePath';
+import { MediaPreview } from '@/shared/components/MediaPreview';
+import { contentThumbnail, isVideoThumbnail } from '@/shared/utils/content';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
 const typeIcon = {
@@ -18,6 +19,7 @@ const typeIcon = {
     VIDEO: <Video size={14} className='text-muted' />,
     EPISODE: <Mic size={14} className='text-muted' />,
     PODCAST: <Radio size={14} className='text-muted' />,
+    PHOTO_ESSAY: <ExternalLink size={14} className='text-muted' />,
 };
 
 const sections: FilterSection[] = [
@@ -29,6 +31,7 @@ const sections: FilterSection[] = [
             { value: 'ARTICLE', label: 'Artigo' },
             { value: 'EPISODE', label: 'Episódio' },
             { value: 'PODCAST', label: 'Podcast' },
+            { value: 'PHOTO_ESSAY', label: 'Fotografia' },
         ],
     }
 ];
@@ -44,7 +47,6 @@ const ContentsTable = ({ filter }: Props) => {
     const { loading, contents, pagination, fetchAll } = useContents();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
-    const { buildMediaUrl } = usePath();
     const { user } = useAuthentication();
 
     const canEditPublished = user?.features?.includes('edit-published')
@@ -80,22 +82,14 @@ const ContentsTable = ({ filter }: Props) => {
                                         className='d-flex align-items-center justify-content-center border border-dark flex-shrink-0'
                                         style={{ width: 135, height: 80, overflow: 'hidden', backgroundColor: '#f0f0f0' }}
                                     >
-                                        {row.featuredImage ? (
-                                            row.type === 'VIDEO' ? (
-                                                <video
-                                                    src={`${buildMediaUrl(row.featuredImage)}#t=1`}
-                                                    muted
-                                                    preload='metadata'
-                                                    className='w-100'
-                                                    style={{ height: 180, objectFit: 'cover', display: 'block' }}
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={buildMediaUrl(row.featuredImage)}
-                                                    alt={row.title}
-                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                />
-                                            )
+                                        {contentThumbnail(row) ? (
+                                            <MediaPreview
+                                                src={contentThumbnail(row)}
+                                                isVideo={isVideoThumbnail(row)}
+                                                alt={row.title}
+                                                className='w-100 h-100'
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                            />
                                         ) : (
                                             <div className='d-flex align-items-center justify-content-center w-100 h-100 text-muted'>
                                                 {typeIcon[row.type]}

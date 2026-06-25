@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 type Props = {
     title: string;
     href?: string;
@@ -13,12 +15,12 @@ export const SectionHeader = ({ title, href = '#' }: Props) => (
         >
             {title}
         </h2>
-        <a
-            href={href}
+        <Link
+            to={href}
             className='text-muted text-decoration-none'
             style={{ fontSize: '0.72rem', letterSpacing: '0.06em' }}
         >
             Ver todas →
-        </a>
+        </Link>
     </div>
 );

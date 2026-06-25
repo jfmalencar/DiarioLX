@@ -7,6 +7,10 @@ import {
     Heading3,
     Heading4,
     Image as ImageIcon,
+    Images as ImagesIcon,
+    MonitorPlay,
+    Film,
+    Music,
 } from 'lucide-react';
 
 import type { EditContentAction } from './EditContent.types';
@@ -84,6 +88,48 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                     }
                 >
                     <ImageIcon size={16} /> Imagem
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() =>
+                        dispatch({ type: 'open-gallery', payload: 'gallery', afterId })
+                    }
+                >
+                    <ImagesIcon size={16} /> Galeria
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() =>
+                        dispatch({ type: 'open-gallery', payload: 'video-block', afterId })
+                    }
+                >
+                    <Film size={16} /> Vídeo
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() =>
+                        dispatch({ type: 'open-gallery', payload: 'audio-block', afterId })
+                    }
+                >
+                    <Music size={16} /> Áudio
+                </button>
+            </li>
+            <li>
+                <button
+                    type='button'
+                    className='dropdown-item d-flex align-items-center gap-2'
+                    onClick={() => dispatch({ type: 'add-embed-block', afterId })}
+                >
+                    <MonitorPlay size={16} /> Embed
                 </button>
             </li>
         </ul>

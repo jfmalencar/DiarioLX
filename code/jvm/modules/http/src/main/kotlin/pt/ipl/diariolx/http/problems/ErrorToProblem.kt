@@ -3,6 +3,7 @@ package pt.ipl.diariolx.http.problems
 import pt.ipl.diariolx.utils.AuthError
 import pt.ipl.diariolx.utils.CategoryError
 import pt.ipl.diariolx.utils.ContentError
+import pt.ipl.diariolx.utils.FeaturedError
 import pt.ipl.diariolx.utils.InviteError
 import pt.ipl.diariolx.utils.TagError
 import pt.ipl.diariolx.utils.UserError
@@ -36,6 +37,10 @@ fun ContentError.toProblem() =
         is ContentError.CategoryNotFound -> Problem.categoryNotFound
         is ContentError.FeaturedMediaIdNotFound -> Problem.featuredMediaIdNotFound
         is ContentError.TagNotFound -> Problem.tagNotFound
+        is ContentError.InsufficientPhotos -> Problem.insufficientPhotos
+        is ContentError.ParentRequired -> Problem.emptyField
+        is ContentError.InvalidParent -> Problem.invalidParent
+        is ContentError.InvalidEmbed -> Problem.invalidField
     }
 
 fun UserError.toProblem(): Problem =
@@ -65,4 +70,13 @@ fun InviteError.toProblem(): Problem =
         is InviteError.InvalidRole -> Problem.invalidRole
         is InviteError.Unauthorized -> Problem.unauthorized
         is InviteError.ActionError -> Problem.invalidAction
+    }
+
+fun FeaturedError.toProblem(): Problem =
+    when (this) {
+        is FeaturedError.ContentNotFound -> Problem.notFound
+        is FeaturedError.TooManyArticles -> Problem.invalidField
+        is FeaturedError.DuplicateSingleton -> Problem.invalidField
+        is FeaturedError.CategoryRequired -> Problem.invalidField
+        is FeaturedError.CategoryNotAllowed -> Problem.invalidField
     }

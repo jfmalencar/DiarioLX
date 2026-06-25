@@ -6,6 +6,8 @@ import { useContentsService } from '../services/contents';
 import type { Content, UpdateContentRequest, ContentSummary, CreateContentRequest, ContentState, ContentHistory } from '../services/contents/contents.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
+import type { Result } from '@/shared/types/Result';
+import { runAction } from '@/shared/utils/action';
 
 export type { Content, ContentSummary, UpdateContentRequest as ContentRequest, ContentState };
 
@@ -109,74 +111,26 @@ export const useContents = () => {
     )
 
     const create = useCallback(
-        async (content: CreateContentRequest): Promise<number> => {
-            setLoading(true)
-            setError(null)
-            try {
-                const data = await contentsService.create(content)
-                return data.id
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to create category'
-                setError(message)
-                throw err
-            } finally {
-                setLoading(false)
-            }
-        },
+        (content: CreateContentRequest): Promise<Result<number>> =>
+            runAction(() => contentsService.create(content).then((d) => d.id), 'Failed to create content', setLoading, setError),
         [contentsService]
     )
 
     const update = useCallback(
-        async (id: number, content: UpdateContentRequest): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await contentsService.update(id, content)
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to update content'
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number, content: UpdateContentRequest): Promise<Result> =>
+            runAction(() => contentsService.update(id, content), 'Failed to update content', setLoading, setError),
         [contentsService]
     )
 
     const publish = useCallback(
-        async (id: number, comment: string | undefined = undefined): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await contentsService.publish(id, comment)
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to publish content'
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number, comment?: string): Promise<Result> =>
+            runAction(() => contentsService.publish(id, comment), 'Failed to publish content', setLoading, setError),
         [contentsService]
     )
 
     const submit = useCallback(
-        async (id: number): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await contentsService.submit(id)
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to submit content'
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => contentsService.submit(id), 'Failed to submit content', setLoading, setError),
         [contentsService]
     )
 
@@ -199,35 +153,14 @@ export const useContents = () => {
     )
 
     const archive = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await contentsService.archive(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to archive content'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => contentsService.archive(id), 'Failed to archive content', setLoading, setError),
         [contentsService]
     )
 
     const deleteContent = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await contentsService.delete(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to delete content'
-                setError(message)
-                throw err
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => contentsService.delete(id), 'Failed to delete content', setLoading, setError),
         [contentsService]
     )
 

@@ -7,6 +7,9 @@ export type MediaGalleryProps = {
     isOpen: boolean;
     onClose: () => void;
     onSelect: (media: Media) => void;
+    /** When true, the picker lets the user select several items and confirm them together. */
+    multiple?: boolean;
+    onSelectMany?: (media: Media[]) => void;
 };
 
 export type Credit = {

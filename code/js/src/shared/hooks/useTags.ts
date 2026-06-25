@@ -5,6 +5,8 @@ import { useTagsService } from '@/shared/services/tags';
 import type { Tag, TagFormValues } from '@/shared/services/tags/tags.types';
 import type { Query } from '@/shared/types/Query';
 import type { Pagination } from '@/shared/types/Pagination';
+import type { Result } from '@/shared/types/Result';
+import { runAction } from '@/shared/utils/action';
 
 export type { Tag, TagFormValues };
 
@@ -53,84 +55,32 @@ export const useTags = () => {
     )
 
     const create = useCallback(
-        async (tag: TagFormValues): Promise<number | undefined> => {
-            setLoading(true)
-            setError(null)
-            try {
-                const newTagId = await tagsService.create(tag)
-                return newTagId
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to create tag'
-                setError(message)
-                return undefined
-            } finally {
-                setLoading(false)
-            }
-        },
+        (tag: TagFormValues): Promise<Result<number>> =>
+            runAction(() => tagsService.create(tag), 'Failed to create tag', setLoading, setError),
         [tagsService]
     )
 
     const update = useCallback(
-        async (id: number, tag: TagFormValues): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await tagsService.update(id, tag)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to update tag'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number, tag: TagFormValues): Promise<Result> =>
+            runAction(() => tagsService.update(id, tag), 'Failed to update tag', setLoading, setError),
         [tagsService]
     )
 
     const archive = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await tagsService.archive(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to archive tag'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => tagsService.archive(id), 'Failed to archive tag', setLoading, setError),
         [tagsService]
     )
 
     const unarchive = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await tagsService.unarchive(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to unarchive tag'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => tagsService.unarchive(id), 'Failed to unarchive tag', setLoading, setError),
         [tagsService]
     )
 
     const remove = useCallback(
-        async (id: number): Promise<void> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await tagsService.delete(id)
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to delete tag'
-                setError(message)
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number): Promise<Result> =>
+            runAction(() => tagsService.delete(id), 'Failed to delete tag', setLoading, setError),
         [tagsService]
     )
 

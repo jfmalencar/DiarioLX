@@ -13,7 +13,7 @@ export const useContentsApiService = (): ContentsService => {
     async fetchAll(params) {
       const result = await get<ContentsResponse>(`${endpoints.backoffice.contents.internalList.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
-        throw new Error('Failed to fetch contents');
+        throw new Error(result.error || 'Failed to fetch contents');
       }
       return result.data;
     },
@@ -21,7 +21,7 @@ export const useContentsApiService = (): ContentsService => {
     async fetchPublished(params) {
       const result = await get<ContentsResponse>(`${endpoints.backoffice.contents.list.href}?${new URLSearchParams(params as Record<string, string>)}`);
       if (!result.success) {
-        throw new Error('Failed to fetch contents');
+        throw new Error(result.error || 'Failed to fetch contents');
       }
       return result.data;
     },
@@ -29,7 +29,7 @@ export const useContentsApiService = (): ContentsService => {
     async fetchById(id) {
       const result = await get<ContentResponse>(endpoints.backoffice.contents.internalGetById.href.replace('{id}', id.toString()));
       if (!result.success) {
-        throw new Error('Failed to fetch content');
+        throw new Error(result.error || 'Failed to fetch content');
       }
       return result.data;
     },
@@ -37,7 +37,7 @@ export const useContentsApiService = (): ContentsService => {
     async fetchBySlug(slug) {
       const result = await get<ContentResponse>(endpoints.guest.getContent.href.replace('{slug}', slug));
       if (!result.success) {
-        throw new Error('Failed to fetch content');
+        throw new Error(result.error || 'Failed to fetch content');
       }
       return result.data;
     },
@@ -57,7 +57,7 @@ export const useContentsApiService = (): ContentsService => {
 
       const result = await post<NewContentResponse>(endpoints.backoffice.contents.create.href, request);
       if (!result.success) {
-        throw new Error('Failed to create content');
+        throw new Error(result.error || 'Failed to create content');
       }
       return result.data
     },
@@ -70,6 +70,8 @@ export const useContentsApiService = (): ContentsService => {
         featuredMediaId: content.featuredMediaId,
         slug: content.slug,
         categoryId: content.categoryId,
+        parentId: content.parentId,
+        embedUrl: content.embedUrl,
         authors: content.authors.map((author) => ({
           authorId: typeof author.authorId === 'string' ? parseInt(author.authorId) : author.authorId,
         })),
@@ -77,12 +79,22 @@ export const useContentsApiService = (): ContentsService => {
           tagId: typeof tag.tagId === 'string' ? parseInt(tag.tagId) : tag.tagId,
         })),
         blocks: content.blocks.map(block => {
-          if (block.type === 'IMAGE') {
+          if (block.type === 'MEDIA') {
             return {
               type: block.type,
               mediaId: block.media.id,
               caption: block.caption,
               position: block.position
+            }
+          }
+          if (block.type === 'GALLERY') {
+            return {
+              type: block.type,
+              position: block.position,
+              images: block.images.map((image) => ({
+                mediaId: image.media.id,
+                caption: image.caption,
+              })),
             }
           }
           return {
@@ -94,7 +106,7 @@ export const useContentsApiService = (): ContentsService => {
       };
       const result = await put(endpoints.backoffice.contents.update.href, request);
       if (!result.success) {
-        throw new Error('Failed to update content');
+        throw new Error(result.error || 'Failed to update content');
       }
     },
 
@@ -108,28 +120,28 @@ export const useContentsApiService = (): ContentsService => {
     async publish(id, comment) {
       const result = await post(endpoints.backoffice.contents.publish.href.replace('{id}', id.toString()), comment ? { comment } : null);
       if (!result.success) {
-        throw new Error('Failed to publish content');
+        throw new Error(result.error || 'Failed to publish content');
       }
     },
 
     async reject(id, comment) {
       const result = await post(endpoints.backoffice.contents.reject.href.replace('{id}', id.toString()), comment ? { comment } : null);
       if (!result.success) {
-        throw new Error('Failed to reject content');
+        throw new Error(result.error || 'Failed to reject content');
       }
     },
 
     async delete(id) {
       const result = await remove(endpoints.backoffice.contents.delete.href.replace('{id}', id.toString()), {});
       if (!result.success) {
-        throw new Error('Failed to delete content');
+        throw new Error(result.error || 'Failed to delete content');
       }
     },
 
     async archive(id) {
       const result = await post(endpoints.backoffice.contents.archive.href.replace('{id}', id.toString()), {});
       if (!result.success) {
-        throw new Error('Failed to archive content');
+        throw new Error(result.error || 'Failed to archive content');
       }
     }
   }), [get, post, put, remove, endpoints])

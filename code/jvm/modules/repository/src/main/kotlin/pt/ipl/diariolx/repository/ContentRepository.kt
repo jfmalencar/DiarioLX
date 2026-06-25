@@ -35,6 +35,9 @@ interface ContentRepository {
         from: LocalDate? = null,
         to: LocalDate? = null,
         authorId: Int? = null,
+        parentId: Int? = null,
+        author: String? = null,
+        creditedTo: String? = null,
     ): List<ContentSummary>
 
     fun internalGetById(id: Int): Content?
@@ -75,7 +78,5 @@ interface ContentRepository {
         reviewerId: Int,
     ): Boolean
 
-    fun historyById(
-        id: Int
-    ): List<ContentHistory>
+    fun historyById(id: Int): List<ContentHistory>
 }

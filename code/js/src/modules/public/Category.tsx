@@ -1,14 +1,22 @@
-import { useParams } from 'react-router';
-import { useI18n } from '@/shared/hooks/useI18n';
+import { useParams } from 'react-router-dom';
+
+import { useContentList } from '@/shared/hooks/useContentList';
+
+import { ContentListPage } from './ContentListPage';
 
 export function Category() {
-    const { id } = useParams();
-    const { t } = useI18n();
+    const { slug } = useParams<{ slug: string }>();
+    const { contents, loading, error } = useContentList({ category: slug, type: 'ARTICLE' });
+    const title = contents[0]?.category?.name;
 
-    if (!id) return <div>{t('category.not_found')}</div>;
     return (
-        <div>
-            <h3>{t('category.page', { id })}</h3>
-        </div>
+        <ContentListPage
+            title={title}
+            contents={contents}
+            color={contents[0]?.category?.color || '#000'}
+            loading={loading}
+            error={error}
+            emptyMessage='Não há conteúdos nesta categoria.'
+        />
     );
 }
