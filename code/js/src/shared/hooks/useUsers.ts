@@ -71,6 +71,12 @@ export const useUsers = () => {
         [usersService]
     )
 
+    const activate = useCallback(
+        (id: number): Promise<Result> =>
+            runAction(() => usersService.activate(id), 'Failed to activate user', setLoading, setError),
+        [usersService]
+    )
+
     return {
         loading,
         error,
@@ -81,6 +87,7 @@ export const useUsers = () => {
         setOnTeam,
         completeAvatarUpload,
         deactivate,
+        activate,
         remove
     }
 }

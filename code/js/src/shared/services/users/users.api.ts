@@ -65,9 +65,16 @@ export const useUsersApiService = (): UsersService => {
     },
 
     async deactivate(id: number) {
-      const result = await post(endpoints.backoffice.users.deactivate.href.replace('{id}', id.toString()), {});
+      const result = await post(`${endpoints.backoffice.users.status.href.replace('{id}', id.toString())}?isActive=false`, {});
       if (!result.success) {
         throw new Error(result.error || 'Failed to deactivate account');
+      }
+    },
+
+    async activate(id: number) {
+      const result = await post(endpoints.backoffice.users.status.href.replace('{id}', id.toString()), {});
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to activate account');
       }
     },
 

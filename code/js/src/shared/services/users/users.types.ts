@@ -49,5 +49,7 @@ export interface UsersService {
 
     deactivate: (id: number) => Promise<void>;
 
+    activate: (id: number) => Promise<void>;
+
     remove: (id: number) => Promise<void>;
 }

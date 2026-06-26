@@ -29,9 +29,10 @@ interface UserRepository {
 
     fun delete(id: Int): Boolean
 
-    fun deactivate(
+    fun changeStatus(
         id: Int,
         now: Instant,
+        isActive: Boolean,
     ): Boolean
 
     fun getById(id: Int): User?

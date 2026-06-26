@@ -66,13 +66,14 @@ class UserRepositoryMem : UserRepository {
         return true
     }
 
-    override fun deactivate(
+    override fun changeStatus(
         id: Int,
         now: Instant,
+        isActive: Boolean,
     ): Boolean {
         val user = users.find { it.id == id } ?: return false
         users.removeIf { it.id == id }
-        users.add(user.copy(active = false, updatedAt = now))
+        users.add(user.copy(active = isActive, updatedAt = now))
         return true
     }
 

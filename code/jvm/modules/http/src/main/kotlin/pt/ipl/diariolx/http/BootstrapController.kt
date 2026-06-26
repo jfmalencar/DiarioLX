@@ -79,7 +79,7 @@ class BootstrapController(
                                         create = LinkDTO(Uris.Users.CREATE, HttpMethod.POST),
                                         update = LinkDTO(Uris.Auth.USER, HttpMethod.PUT),
                                         delete = LinkDTO(Uris.Users.DELETE, HttpMethod.DELETE),
-                                        deactivate = LinkDTO(Uris.Users.DEACTIVATE, HttpMethod.POST),
+                                        status = LinkDTO(Uris.Users.MANAGE_STATUS, HttpMethod.POST),
                                         avatar = LinkDTO(Uris.Auth.USER_AVATAR, HttpMethod.PATCH),
                                         setTeam = LinkDTO(Uris.Users.SET_TEAM, HttpMethod.PATCH),
                                     ),

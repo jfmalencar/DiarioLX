@@ -17,7 +17,7 @@ object Uris {
         const val GET_ALL = ROOT
         const val GET_BY_ID = "$ROOT/{id}"
         const val DELETE = "$ROOT/{id}"
-        const val DEACTIVATE = "$ROOT/{id}/deactivate"
+        const val MANAGE_STATUS = "$ROOT/{id}/account-status"
         const val SET_TEAM = "$ROOT/{id}/team"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)

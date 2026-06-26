@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
-import { UserIcon, Trash, UserX } from 'lucide-react';
+import { UserIcon, Trash, UserX, UserCheck } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
@@ -32,7 +32,7 @@ type Props = {
     openModal: (action: ModalAction | null, user: User) => void;
 };
 
-type ModalAction = 'deactivate' | 'delete';
+type ModalAction = 'deactivate' | 'delete' | 'activate';
 
 const UsersTable = ({ filter, openModal }: Props) => {
     const { t } = useI18n();
@@ -122,15 +122,20 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                                     aria-label='Mostrar na equipa'
                                                 />
                                             </div>
-                                            {row.isActive ?
-                                                <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2'>
+                                            {row.isActive ? (
+                                                <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2' title='Desativar Utilizador'>
                                                     <UserX size={16} />
-                                                </button> :
-                                                <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2'>
-                                                    <Trash size={16} />
                                                 </button>
-
-                                            }
+                                            ) : (
+                                                <div className='d-flex gap-2'>
+                                                    <button onClick={() => openModal('activate', row)} className='btn btn-success rounded-2' title='Ativar Utilizador'>
+                                                        <UserCheck size={16} />
+                                                    </button>
+                                                    <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2' title='Eliminar Definitivamente'>
+                                                        <Trash size={16} />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </>
                                     }
                                 </div>
@@ -146,7 +151,7 @@ const UsersTable = ({ filter, openModal }: Props) => {
 
 export function Users() {
     const { t } = useI18n();
-    const { remove, deactivate } = useUsers();
+    const { remove, deactivate, activate } = useUsers();
     const [open, setOpen] = useState<null | User>(null);
     const [modalAction, setModalAction] = useState<ModalAction | null>(null);
     const navigate = useNavigate();
@@ -171,6 +176,14 @@ export function Users() {
             action: remove,
             getRedirect: () => `/backoffice/users?tab=deactivated&refresh=${Date.now()}`,
             variant: 'danger',
+        },
+        activate: {
+            title: 'Ativar utilizador',
+            subtitle: 'Tem a certeza que deseja ativar este utilizador?',
+            alert: 'O utilizador terá acesso à plataforma novamente.',
+            confirmLabel: 'Ativar',
+            action: activate,
+            getRedirect: () => '/backoffice/users?tab=active',
         },
     };
 

@@ -311,7 +311,7 @@ class UserRepositoryTest {
     fun `deactivate returns false for non-existent user`() {
         val repo = createRepository()
 
-        val result = repo.deactivate(999, Clock.System.now())
+        val result = repo.changeStatus(999, Clock.System.now(), false)
 
         assertFalse(result)
     }
@@ -323,7 +323,7 @@ class UserRepositoryTest {
         val createdUser = repo.create(createNewUser(), now)
         assertTrue(createdUser.active)
 
-        val result = repo.deactivate(createdUser.id, now)
+        val result = repo.changeStatus(createdUser.id, now, false)
 
         assertTrue(result)
         val deactivatedUser = repo.getById(createdUser.id)
@@ -338,7 +338,7 @@ class UserRepositoryTest {
         val createdUser = repo.create(createNewUser(), now)
         val originalTimestamp = createdUser.updatedAt
 
-        repo.deactivate(createdUser.id, now)
+        repo.changeStatus(createdUser.id, now, true)
         val deactivatedUser = repo.getById(createdUser.id)
 
         assertNotNull(deactivatedUser)
@@ -527,7 +527,7 @@ class UserRepositoryTest {
         assertEquals("Updated", updated.bio)
 
         // Deactivate
-        repo.deactivate(user.id, now)
+        repo.changeStatus(user.id, now, false)
         val deactivated = repo.getById(user.id)
         assertNotNull(deactivated)
         assertFalse(deactivated.active)

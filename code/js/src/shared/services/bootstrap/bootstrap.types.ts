@@ -72,7 +72,7 @@ export type Endpoints = {
             create: Link;
             update: Link;
             delete: Link;
-            deactivate: Link;
+            status: Link;
             avatar: Link;
             setTeam: Link;
         }

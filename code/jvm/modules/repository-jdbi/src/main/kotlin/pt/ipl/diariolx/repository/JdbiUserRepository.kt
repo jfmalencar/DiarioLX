@@ -118,15 +118,17 @@ class JdbiUserRepository(
         return rowsAffected > 0
     }
 
-    override fun deactivate(
+    override fun changeStatus(
         id: Int,
         now: Instant,
+        isActive: Boolean,
     ): Boolean {
         val rowsAffected =
             handle
                 .createUpdate(
-                    "UPDATE users SET active_account = false, updated_at = :updated_at WHERE id = :id",
+                    "UPDATE users SET active_account = :active_account, updated_at = :updated_at WHERE id = :id",
                 ).bind("id", id)
+                .bind("active_account", isActive)
                 .bind("updated_at", now.epochSeconds)
                 .execute()
         return rowsAffected > 0

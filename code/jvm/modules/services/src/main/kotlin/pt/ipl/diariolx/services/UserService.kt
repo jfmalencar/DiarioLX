@@ -193,17 +193,17 @@ class UserService(
             }
         }
 
-    fun deactivate(
+    fun manageAccountStatus(
         author: User,
         id: Int,
+        isActive: Boolean,
     ): UserUpdateResult =
         transactionManager.run {
             if (!author.active) {
                 return@run failure(UserError.DeactivatedAccount)
             }
-            logger.info("Deactivating user by id: $id; author: ${author.username}")
             if (author.role == UserRole.ADMIN && author.id != id) {
-                val result = it.userRepository.deactivate(id, clock.now())
+                val result = it.userRepository.changeStatus(id, clock.now(), isActive)
                 if (result) {
                     return@run success(Unit)
                 } else {

@@ -155,21 +155,22 @@ class UserController(
         }
 
     @RequireRole(UserRole.ADMIN)
-    @PostMapping(Uris.Users.DEACTIVATE)
+    @PostMapping(Uris.Users.MANAGE_STATUS)
     @MayReturnNoContent
     @MayReturnUnauthorized
     @MayReturnForbidden
     @MayReturnNotFound
-    fun deactivateUser(
+    fun manageAccountStatus(
         @Parameter(hidden = true) author: AuthenticatedUser,
         @PathVariable id: Int,
+        @RequestParam isActive: Boolean = true,
     ): ResponseEntity<*> =
-        when (val response = userService.deactivate(author.user, id)) {
+        when (val response = userService.manageAccountStatus(author.user, id, isActive)) {
             is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Users.DEACTIVATE,
+                    Uris.Users.MANAGE_STATUS,
                 )
         }
 
