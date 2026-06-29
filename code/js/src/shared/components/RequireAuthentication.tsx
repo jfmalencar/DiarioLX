@@ -6,10 +6,9 @@ import { useAuthentication } from '@/shared/hooks/useAuthentication';
 type RequireAuthenticationProps = {
   children: ReactNode,
 }
+
 export function RequireAuthentication({ children }: RequireAuthenticationProps) {
   const { user, hydrated } = useAuthentication(); // from our own context
-  console.log(user)
-
   const location = useLocation(); // from React Router
   if (!hydrated) return null; // wait for session check
   if (user) return children;

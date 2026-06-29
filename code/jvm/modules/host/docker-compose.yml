@@ -6,16 +6,22 @@ services:
       - ../../.env.staging
     ports:
       - 5435:5432
+    volumes:
+      - diariolx-postgres-data:/var/lib/postgresql/data
 
   diariolx-seaweed-master:
     image: chrislusf/seaweedfs:latest
-    command: "master -ip=diariolx-seaweed-master -ip.bind=0.0.0.0"
+    command: 'master -ip=diariolx-seaweed-master -ip.bind=0.0.0.0 -mdir=/data'
+    volumes:
+      - diariolx-seaweed-master-data:/data
 
   diariolx-seaweed-volume:
     image: chrislusf/seaweedfs:latest
     command: 'volume -mserver="diariolx-seaweed-master:9333" -ip=diariolx-seaweed-volume -ip.bind=0.0.0.0 -dir=/data'
     depends_on:
       - diariolx-seaweed-master
+    volumes:
+      - diariolx-seaweed-volume-data:/data
 
   diariolx-seaweed-filer:
     image: chrislusf/seaweedfs:latest
@@ -23,6 +29,8 @@ services:
     depends_on:
       - diariolx-seaweed-master
       - diariolx-seaweed-volume
+    volumes:
+      - diariolx-seaweed-filer-data:/data
 
   diariolx-seaweed-s3:
     image: chrislusf/seaweedfs:latest
@@ -34,31 +42,35 @@ services:
     ports:
       - "8335:8333"
 
-  # diariolx-jvm-dynamic is used to illustrate scenarios with a dynamic number of servers
-  # without static and well know names.
-  # We will use docker compose scaling to create multiple instances of this service
+  diariolx-seaweed-admin:
+    image: chrislusf/seaweedfs:latest
+    command: 'admin -port=23646 -masters="diariolx-seaweed-master:9333"'
+    depends_on:
+      - diariolx-seaweed-master
+    ports:
+      - "23646:23646"
+
   diariolx-jvm-dynamic:
     image: diariolx-jvm
     hostname: diariolx-jvm-dynamic
     env_file:
       - ../../.env.staging
 
-  # The service running the load-balancer
   nginx:
     image: diariolx-nginx
     ports:
-      - "8180:8180"
+      - "80:8180"
     depends_on:
       - diariolx-seaweed-s3
       - diariolx-jvm-dynamic
 
-  # Just a machine running ubuntu, with 'dig' installed so that we can observe the docker compose environment.
   ubuntu:
     container_name: ubuntu
     image: diariolx-ubuntu
     tty: true
 
 volumes:
+  diariolx-postgres-data:
   diariolx-seaweed-master-data:
   diariolx-seaweed-volume-data:
   diariolx-seaweed-filer-data:

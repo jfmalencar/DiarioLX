@@ -2,7 +2,9 @@ import { slugify } from '@/shared/utils/format';
 import type { EditContentState, EditContentAction, Option } from './EditContent.types';
 import type { ContentBlock } from '@/shared/services/contents/contents.types';
 
-const generateId = () => parseInt(crypto.randomUUID().slice(0, 8), 16);
+// Local-only id for newly added editor blocks
+let nextBlockId = 0;
+const generateId = () => --nextBlockId;
 
 const emptyOption: Option = {
     id: 0,
