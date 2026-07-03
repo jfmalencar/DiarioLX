@@ -24,8 +24,6 @@ import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.TagSummary
 import java.time.LocalDate
 
-// Shared across all row models in this file — registering the Kotlin module is
-// not free, so we do it once instead of per-row.
 private val contentJson = ObjectMapper().registerKotlinModule()
 
 private inline fun <reified T> parseJson(json: String): T = contentJson.readValue(json)
@@ -106,8 +104,6 @@ class JdbiContentRepository(
         updateTags(contentId, content.tags)
         updateBlocks(contentId, content.blocks)
     }
-
-    override fun getById(id: Int): Content? = findContent("v_published_contents", "id", id)
 
     override fun getBySlug(slug: String): Content? = findContent("v_published_contents", "slug", slug)
 
@@ -216,27 +212,6 @@ class JdbiContentRepository(
             .map { it.content }
     }
 
-    override fun internalGetAll(
-        limit: Int,
-        offset: Int,
-        query: String?,
-        archived: Boolean,
-    ): List<ContentSummary> {
-        val conditions =
-            buildList {
-                add(if (archived) "archived_at IS NOT NULL" else "archived_at IS NULL")
-                if (query != null) add("(title ILIKE :query OR slug ILIKE :query)")
-            }
-        return handle
-            .createQuery(summaryQuery(conditions))
-            .bind("limit", limit)
-            .bind("offset", offset)
-            .bind("query", "%$query%")
-            .mapTo<ContentSummaryModel>()
-            .list()
-            .map { it.content }
-    }
-
     override fun historyById(id: Int): List<ContentHistory> =
         handle
             .createQuery(
@@ -251,14 +226,17 @@ class JdbiContentRepository(
             .list()
             .map { it.contentHistory }
 
-    private fun summaryQuery(conditions: List<String>): String =
+    private fun summaryQuery(
+        conditions: List<String>,
+        orderBy: String = "id",
+    ): String =
         buildString {
             append("select * from v_contents_summary")
             if (conditions.isNotEmpty()) {
                 append(" WHERE ")
                 append(conditions.joinToString(" AND "))
             }
-            append(" ORDER BY id desc LIMIT :limit OFFSET :offset")
+            append(" ORDER BY $orderBy desc LIMIT :limit OFFSET :offset")
         }
 
     override fun delete(id: Int): Boolean {
@@ -364,11 +342,10 @@ class JdbiContentRepository(
             .createUpdate(
                 """
             UPDATE contents
-            SET archived_at = :archived_at, updated_at = :updated_at
+            SET archived_at = null, updated_at = :updated_at
             WHERE id = :id
             """,
-            ).bind("archived_at", now.epochSeconds)
-            .bind("updated_at", now.epochSeconds)
+            ).bind("updated_at", now.epochSeconds)
             .bind("id", id)
             .execute() > 0
 

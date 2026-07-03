@@ -1,0 +1,68 @@
+%
+% Chapter — Conclusion
+%
+\chapter{Conclusion} \label{cap:conclusion}
+
+This report has presented the design and implementation of \textit{Diário LX}, a
+purpose-built digital journalism platform developed in collaboration with the Escola
+Superior de Comunicação Social (ESCS) and the LIACOM research unit. The project set out
+to support the complete editorial lifecycle --- from content authoring to publication
+--- through a role-based workflow, a structured multimedia content model, and a
+dedicated public website, within a decoupled client--server architecture. As discussed
+in Chapter~\ref{cap:background}, existing content management systems such as WordPress
+and Ghost were evaluated but did not fully accommodate these requirements, motivating
+the development of a tailored solution. This document describes the final version of
+that system, which has been implemented and deployed.
+
+\section{Summary of Work} \label{sec:conc_summary}
+
+The delivered platform realises the architecture and requirements described in the
+preceding chapters:
+
+\begin{itemize}
+      \item \textbf{Editorial workflow}: the full content lifecycle --- draft, pending
+            approval, published, and rejected --- is implemented and enforced according
+            to the actor's role. Contributors submit content for review; Editors and
+            Administrators approve it (publishing it) or reject it with a mandatory
+            comment, and every transition is recorded in the content's history.
+
+      \item \textbf{Content model and editor}: the backoffice content editor supports
+            block-based authoring across all content types --- articles, videos,
+            podcasts, episodes, and photo essays --- with inline formatting, single media,
+            captioned image galleries, external embeds, and full metadata configuration.
+            Media assets carry credits and accessible descriptions.
+
+      \item \textbf{Backoffice}: the editorial interface covers content management, user
+            administration, invitation-based onboarding, category and tag management, the
+            media library, and curation of the public homepage.
+
+      \item \textbf{Public website}: the reader-facing site presents a homepage driven by
+            the backoffice curation, article pages, category, tag, and section listings,
+            dedicated podcast, episode, and photo-essay pages, and team and author pages,
+            with a responsive layout.
+
+      \item \textbf{Security}: authentication uses short-lived JWT access tokens and
+            long-lived opaque refresh tokens, issued as \texttt{HttpOnly},
+            \texttt{SameSite=Strict}, and --- in production --- \texttt{Secure} cookies.
+            Role-based access control is enforced at the HTTP boundary.
+
+      \item \textbf{Deployment}: the system is fully containerised and its images are
+            published to a container registry through continuous integration, allowing
+            the production server to deploy by pulling rather than building, behind a
+            TLS-terminating reverse proxy (Chapter~\ref{cap:deployment}).
+
+      \item \textbf{Quality assurance}: automated backend and end-to-end frontend tests
+            run in a continuous integration pipeline, and the REST API is documented
+            through an interactive OpenAPI interface.
+\end{itemize}
+
+\section{Final Remarks} \label{sec:conc_remarks}
+
+\textit{Diário LX} demonstrates the feasibility of a purpose-built solution tailored to a
+specific editorial context, where a general-purpose content management system would have
+imposed structural and workflow compromises. The resulting platform delivers a complete,
+deployed system that covers the editorial process end to end, together with the public
+experience through which its content is read. Beyond the product itself, the project
+provided practical experience in full-stack development, layered software architecture,
+functional error handling, and containerised deployment, applied to the concrete
+requirements of a real editorial partner.

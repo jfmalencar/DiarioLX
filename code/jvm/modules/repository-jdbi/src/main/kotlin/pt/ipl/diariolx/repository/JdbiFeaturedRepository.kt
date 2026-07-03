@@ -17,6 +17,10 @@ import pt.ipl.diariolx.domain.featured.SectionType
 import pt.ipl.diariolx.domain.shared.value.Slug
 import pt.ipl.diariolx.domain.tag.TagSummary
 
+private val contentJson = ObjectMapper().registerKotlinModule()
+
+private inline fun <reified T> parseJson(json: String): T = contentJson.readValue(json)
+
 class JdbiFeaturedRepository(
     private val handle: Handle,
 ) : FeaturedRepository {
@@ -135,11 +139,6 @@ class JdbiFeaturedRepository(
         val embedUrl: String?,
         val authors: String?,
     ) {
-        private inline fun <reified T> parseJson(json: String): T {
-            val objectMapper = ObjectMapper().registerKotlinModule()
-            return objectMapper.readValue(json)
-        }
-
         fun toSummary(): ContentSummary =
             ContentSummary(
                 id = id!!,

@@ -73,8 +73,8 @@ export const ContentPreview = ({ content }: Props) => {
     const heroImageUrl = content.featuredImage?.path ? buildMediaUrl(content.featuredImage.path) : '';
     const category = content.category.name?.toUpperCase();
     const credits = content.featuredImage?.credits || [];
-    const date = formatNewsDate(content.createdAt);
-    const wasUpdatedAfterPublish = content.publishedAt != null && new Date(content.updatedAt) > new Date(content.publishedAt);
+    const date = formatNewsDate(content.publishedAt ?? content.createdAt);
+    const wasUpdatedAfterPublish = content.publishedAt != null && content.updatedAt.slice(0, 10) > content.publishedAt.slice(0, 10);
     const accent = contentAccent(content.type, content.category?.color);
     const episodeArtwork = content.parent?.image ?? null;
 

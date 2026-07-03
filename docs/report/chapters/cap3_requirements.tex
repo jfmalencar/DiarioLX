@@ -13,7 +13,7 @@ The system must provide a full content management lifecycle supporting the follo
 
 \begin{itemize}
       \item Title
-      \item Body text (supporting inline subtitles, highlights, and captioned images)
+      \item Body text (supporting inline subtitles, highlights, images, and captioned image galleries)
       \item Lead paragraph (\textit{entrada})
       \item Author(s) and photo author
       \item Creation and publication date
@@ -26,7 +26,7 @@ Content must progress through a defined workflow:
 
 \begin{enumerate}
       \item \textbf{Draft} — created and edited by a Contributor.
-      \item \textbf{Pending Approval} — submitted for editorial review.
+      \item \textbf{Pending Review} — submitted for editorial review.
       \item \textbf{Published} — approved and publicly visible.
       \item \textbf{Rejected} — returned to the author with revision comments.
 \end{enumerate}
@@ -94,9 +94,9 @@ The homepage must display:
 
 \subsubsection{Other Pages}
 \begin{itemize}
-      \item \textbf{Category page}: one featured article (defined in the backoffice) and remaining articles in reverse chronological order.
+      \item \textbf{Category page}: articles in reverse chronological order.
       \item \textbf{Tag page}: list of associated articles.
-      \item \textbf{Article page}: full article view, and 4 related articles.
+      \item \textbf{Article page}: full article view.
       \item \textbf{Team page}.
       \item \textbf{Podcast page}: dedicated layout distinct from other category pages.
 \end{itemize}
@@ -121,20 +121,4 @@ The homepage must display:
 
       \item \textbf{Compatibility}: The public website must be fully functional on mobile,
             tablet, and desktop viewports. The backoffice is optimised for desktop use.
-\end{itemize}
-
-\section{Optional Requirements} \label{sec:req_optional}
-
-The following features are considered optional and may be addressed in future iterations:
-
-\begin{itemize}
-      \item Scheduled publication of content via a backoffice date picker.
-            The underlying data model and backend already support future
-            \texttt{published\_at} timestamps; the remaining work is
-            limited to the backoffice interface.
-      \item Advanced search filters (by date, category, author, tag) in
-            both backoffice and public site.
-      \item Reader account registration and commenting.
-      \item Audiodescription support for visually impaired users.
-      \item Multilingual support (Portuguese and English).
 \end{itemize}

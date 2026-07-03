@@ -12,6 +12,7 @@ import type { BackofficeSettings } from '@/shared/services/settings/settings.typ
 const EMPTY: BackofficeSettings = {
     social: { facebook: '', twitter: '', instagram: '' },
     contact: { email: '', address: '' },
+    publication: { erc: '', periodicity: '', owner: '', nipc: '' },
     navigation: { featuredCategories: [], showPhotos: false, showPodcasts: false, showVideos: false },
 };
 
@@ -36,6 +37,9 @@ export const Settings = () => {
 
     const setContact = (key: keyof BackofficeSettings['contact'], value: string) =>
         setForm((f) => ({ ...f, contact: { ...f.contact, [key]: value } }));
+
+    const setPublication = (key: keyof BackofficeSettings['publication'], value: string) =>
+        setForm((f) => ({ ...f, publication: { ...f.publication, [key]: value } }));
 
     const setNav = (key: 'showPhotos' | 'showPodcasts' | 'showVideos', value: boolean) =>
         setForm((f) => ({ ...f, navigation: { ...f.navigation, [key]: value } }));
@@ -104,6 +108,43 @@ export const Settings = () => {
                     placeholder='Morada da redação'
                     disabled={loading}
                     onChange={(e) => setContact('address', e.currentTarget.value)}
+                />
+            </FieldSection>
+
+            <FieldSection title='Registo ERC' description='Ficha técnica apresentada no rodapé do site.'>
+                <UnderlineInput
+                    value={form.publication.erc}
+                    name='erc'
+                    placeholder='128219'
+                    disabled={loading}
+                    onChange={(e) => setPublication('erc', e.currentTarget.value)}
+                />
+            </FieldSection>
+            <FieldSection title='Periodicidade'>
+                <UnderlineInput
+                    value={form.publication.periodicity}
+                    name='periodicity'
+                    placeholder='Diário'
+                    disabled={loading}
+                    onChange={(e) => setPublication('periodicity', e.currentTarget.value)}
+                />
+            </FieldSection>
+            <FieldSection title='NIPC' description='Número de registo de pessoa coletiva.'>
+                <UnderlineInput
+                    value={form.publication.nipc}
+                    name='nipc'
+                    placeholder='508 519 713'
+                    disabled={loading}
+                    onChange={(e) => setPublication('nipc', e.currentTarget.value)}
+                />
+            </FieldSection>
+            <FieldSection title='Proprietário'>
+                <UnderlineInput
+                    value={form.publication.owner}
+                    name='owner'
+                    placeholder='Proprietário da publicação'
+                    disabled={loading}
+                    onChange={(e) => setPublication('owner', e.currentTarget.value)}
                 />
             </FieldSection>
 

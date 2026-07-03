@@ -214,7 +214,8 @@ Contributors submit content for approval, moving it to the \textit{pending revie
 state, while Editors and Administrators review pending items and either approve them
 --- publishing the content --- or reject them with a mandatory comment that is
 recorded in the content's history. The review page presents the rendered content
-alongside the approve and reject actions (Figure~\ref{fig:fe_review}).
+alongside the approve and reject actions (Figure~\ref{fig:fe_review}), together with
+the content's transition history (Figure~\ref{fig:fe_history}).
 
 \subsection{Homepage Management} \label{sec:fe_homepage_mgmt_sec}
 
@@ -222,7 +223,7 @@ The homepage management page allows Administrators to configure the sections and
 featured content displayed on the public website's homepage
 (Figure~\ref{fig:fe_homepage_mgmt}). Sections are ordered and typed (for example a
 highlight, a featured grid, or a category row), and each section is populated with a
-curated, ordered selection of content items.
+curated, ordered selection of content items (Figure~\ref{fig:fe_homepage_select_featured}).
 
 \section{Public Website} \label{sec:fe_public}
 
@@ -234,18 +235,20 @@ as the team, author, podcast, episode, and photo-essay pages, are implemented.
 
 \subsection{Homepage} \label{sec:fe_homepage}
 
-The homepage presents content from multiple editorial sections, including a hero
-article, a featured grid, latest news, and dedicated blocks for \textit{Lisboa,
-Cidade Aberta}, \textit{A Fundo}, \textit{Especiais}, Photography, Podcasts, and
-Videos, followed by a team section and the footer (Figures~\ref{fig:fe_homepage_1}
-and~\ref{fig:fe_homepage_2}). The sections and their content are driven by the
-homepage configuration curated in the backoffice.
+The homepage combines fixed and configurable sections. Three parts are always present:
+a block of four featured articles, the four most recent articles, and a closing row that
+groups a category highlight with the Videos and Podcasts sections. Between these fixed
+blocks, administrators add configurable sections from the backoffice, selecting the
+specific content each one displays --- for example dedicated blocks for \textit{Lisboa,
+Cidade Aberta}, \textit{A Fundo}, or \textit{Especiais} (Figure~\ref{fig:fe_homepage_1}).
+The sections and their curated content are driven by the homepage configuration managed
+in the backoffice.
 
 \begin{figure}[H]
       \begin{center}
             \includegraphics[width=\textwidth]{./figures/screenshots/home_1.png}
       \end{center}
-      \caption{Homepage --- header, hero, featured articles, latest news, \textit{Lisboa, Cidade Aberta}, and \textit{A Fundo} sections.}
+      \caption{Homepage --- header, hero, featured articles, latest news, featured sections.}
       \label{fig:fe_homepage_1}
 \end{figure}
 
@@ -256,7 +259,7 @@ URL (Figure~\ref{fig:fe_article_page}). The page displays the featured image or
 external embed, category, publication date, title, headline, author and media
 credits, and the full block-based body, including galleries. When an item has been
 edited after publication, an ``updated on'' date is also shown. Social sharing links
-and a set of related articles are presented alongside the content.
+are presented alongside the content.
 
 \subsection{Category, Tag and Section Pages} \label{sec:fe_listings}
 

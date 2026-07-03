@@ -21,6 +21,7 @@ export type NavCategory = {
 export type SiteSettings = {
     social: { facebook: string; twitter: string; instagram: string };
     contact: { email: string; address: string };
+    publication: { erc: string; periodicity: string; owner: string; nipc: string };
     navigation: {
         featured: NavCategory[];
         sections: NavCategory[];

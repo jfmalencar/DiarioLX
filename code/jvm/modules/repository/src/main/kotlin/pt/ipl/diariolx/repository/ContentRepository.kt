@@ -21,8 +21,6 @@ interface ContentRepository {
         now: Instant,
     )
 
-    fun getById(id: Int): Content?
-
     fun getBySlug(slug: String): Content?
 
     fun getAll(
@@ -46,13 +44,6 @@ interface ContentRepository {
     fun internalGetById(id: Int): Content?
 
     fun internalGetBySlug(slug: String): Content?
-
-    fun internalGetAll(
-        limit: Int,
-        offset: Int,
-        query: String?,
-        archived: Boolean,
-    ): List<ContentSummary>
 
     fun delete(id: Int): Boolean
 

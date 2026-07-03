@@ -306,7 +306,7 @@ The following indexes were defined to support the most frequent query patterns:
       \item \textbf{Timestamps as epoch integers}: All timestamps are stored as
             \texttt{BIGINT} Unix epoch values rather than \texttt{TIMESTAMP} columns.
             This avoids timezone conversion issues, as epoch values are inherently UTC,
-            and simplifies interoperability with the \texttt{kotlinx.datetime.Instant}
+            and simplifies interoperability with the \texttt{kotlinx.datetime}\texttt{.Instant}
             type used throughout the backend.
 
       \item \textbf{Serial primary keys}: All tables use \texttt{SERIAL}

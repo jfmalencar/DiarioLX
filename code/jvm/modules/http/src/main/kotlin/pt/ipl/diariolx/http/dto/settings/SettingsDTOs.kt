@@ -11,6 +11,13 @@ data class ContactDTO(
     val address: String,
 )
 
+data class PublicationDTO(
+    val erc: String,
+    val periodicity: String,
+    val owner: String,
+    val nipc: String,
+)
+
 data class NavConfigDTO(
     val featuredCategories: List<String>,
     val showPhotos: Boolean,
@@ -21,6 +28,7 @@ data class NavConfigDTO(
 data class SettingsResponseDTO(
     val social: SocialDTO,
     val contact: ContactDTO,
+    val publication: PublicationDTO,
     val navigation: NavConfigDTO,
 ) {
     companion object {
@@ -36,6 +44,13 @@ data class SettingsResponseDTO(
                     ContactDTO(
                         email = map["contact.email"].orEmpty(),
                         address = map["contact.address"].orEmpty(),
+                    ),
+                publication =
+                    PublicationDTO(
+                        erc = map["publication.erc"].orEmpty(),
+                        periodicity = map["publication.periodicity"].orEmpty(),
+                        owner = map["publication.owner"].orEmpty(),
+                        nipc = map["publication.nipc"].orEmpty(),
                     ),
                 navigation =
                     NavConfigDTO(
@@ -56,6 +71,7 @@ data class SettingsResponseDTO(
 data class SettingsRequestDTO(
     val social: SocialDTO,
     val contact: ContactDTO,
+    val publication: PublicationDTO,
     val navigation: NavConfigDTO,
 ) {
     fun toMap(): Map<String, String> =
@@ -65,6 +81,10 @@ data class SettingsRequestDTO(
             "social.instagram" to social.instagram,
             "contact.email" to contact.email,
             "contact.address" to contact.address,
+            "publication.erc" to publication.erc,
+            "publication.periodicity" to publication.periodicity,
+            "publication.owner" to publication.owner,
+            "publication.nipc" to publication.nipc,
             "nav.featuredCategories" to navigation.featuredCategories.joinToString(","),
             "nav.showPhotos" to navigation.showPhotos.toString(),
             "nav.showPodcasts" to navigation.showPodcasts.toString(),

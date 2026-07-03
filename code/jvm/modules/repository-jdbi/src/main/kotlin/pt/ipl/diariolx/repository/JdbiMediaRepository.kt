@@ -11,6 +11,10 @@ import pt.ipl.diariolx.domain.media.Media
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.media.NewUpload
 
+private val contentJson = ObjectMapper().registerKotlinModule()
+
+private inline fun <reified T> parseJson(json: String): T = contentJson.readValue(json)
+
 class JdbiMediaRepository(
     private val handle: Handle,
 ) : MediaRepository {
@@ -142,11 +146,6 @@ class JdbiMediaRepository(
         val uploadedAt: Long?,
         val credits: String,
     ) {
-        private inline fun <reified T> parseJson(json: String): T {
-            val objectMapper = ObjectMapper().registerKotlinModule()
-            return objectMapper.readValue(json)
-        }
-
         val media: Media
             get() =
                 Media(

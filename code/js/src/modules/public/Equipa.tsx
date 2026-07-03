@@ -15,35 +15,37 @@ export function Equipa() {
 
     return (
         <div className='container py-5'>
-            <h1 className='fw-bold border-bottom border-2 border-dark pb-2 mb-5'>Equipa</h1>
-            {team.map((m) => (
-                <div key={m.id} className='row g-4 mb-5 align-items-start'>
-                    <div className='col-12 col-md-3 text-center text-md-start'>
-                        <Link to={`/author/${m.slug}`}>
-                            <Avatar src={m.photoPath} alt={m.name} size={200} />
-                        </Link>
-                    </div>
-                    <div className='col-12 col-md-9'>
-                        <h2 className='fw-bold mb-1' style={{ fontSize: '2rem' }}>
-                            <Link to={`/author/${m.slug}`} className='text-dark text-decoration-none'>
-                                {m.name}
+            <div className='mx-auto' style={{ maxWidth: 820 }}>
+                <h1 className='fw-bold border-bottom border-2 border-dark pb-2 mb-5'>Equipa</h1>
+                {team.map((m) => (
+                    <div key={m.id} className='row g-4 mb-5 align-items-start'>
+                        <div className='col-12 col-md-3 text-center text-md-start'>
+                            <Link to={`/author/${m.slug}`}>
+                                <Avatar src={m.photoPath} alt={m.name} size={200} />
                             </Link>
-                        </h2>
-                        <p className='fw-bold mb-3'>{m.position}</p>
-                        <hr className='border-dark opacity-25' />
-                        <p
-                            className='mb-0'
-                            style={{
-                                fontFamily: '"Source Serif 4", Georgia, serif',
-                                fontSize: '1.1rem',
-                                lineHeight: 1.6,
-                            }}
-                        >
-                            {m.bio}
-                        </p>
+                        </div>
+                        <div className='col-12 col-md-9'>
+                            <h2 className='fw-bold mb-1' style={{ fontSize: '2rem' }}>
+                                <Link to={`/author/${m.slug}`} className='text-dark text-decoration-none'>
+                                    {m.name}
+                                </Link>
+                            </h2>
+                            <p className='fw-bold mb-3'>{m.position}</p>
+                            <hr className='border-dark opacity-25' />
+                            <p
+                                className='mb-0'
+                                style={{
+                                    fontFamily: '"Source Serif 4", Georgia, serif',
+                                    fontSize: '1.1rem',
+                                    lineHeight: 1.6,
+                                }}
+                            >
+                                {m.bio}
+                            </p>
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     );
 }

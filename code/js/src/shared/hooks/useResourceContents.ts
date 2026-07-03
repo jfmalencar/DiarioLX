@@ -5,7 +5,7 @@ import type { Query } from '@/shared/types/Query';
 
 import { useLoadMore } from './useLoadMore';
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 7;
 
 type ResourceFetcher<T> = (slug: string, params: Query) => Promise<ResourceContentsResponse<T>>;
 

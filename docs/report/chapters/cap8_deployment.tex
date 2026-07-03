@@ -16,20 +16,13 @@ several orchestrated together.
 The platform runs on a single virtual machine (VM). Almost every runtime component
 runs as a Docker container, orchestrated through Docker Compose; the only exception is
 the outermost reverse proxy, a system-level Nginx provisioned directly on the host to
-terminate HTTPS. Figure~\ref{fig:deployment} shows the complete topology.
-
-\begin{figure}[H]
-      \begin{center}
-            \resizebox{\textwidth}{!}{\includegraphics{./figures/deployment_diagram.png}}
-      \end{center}
-      \caption{Deployment topology of the \textit{Diário LX} platform.}
-      \label{fig:deployment}
-\end{figure}
+terminate HTTPS. The complete topology is shown in Figure~\ref{fig:deployment}
+(Appendix~\ref{app:deployment}).
 
 \section{Container Images} \label{sec:dep_images}
 
-The deployable images are built through a single Gradle aggregate task
-(\texttt{buildImageAll}), which produces four images:
+The system is packaged as three application images, complemented by the official
+SeaweedFS image used for the object-storage cluster:
 
 \begin{description}
       \item[\texttt{diariolx-jvm}] Built from \texttt{eclipse-temurin:21}. The Spring
@@ -49,7 +42,8 @@ The deployable images are built through a single Gradle aggregate task
             the frontend sources and the shared Nginx configuration.
 
       \item[\texttt{diariolx-postgres}] A PostgreSQL image pre-provisioned with the
-            database schema and seed data described in Chapter~\ref{cap:datamodel}.
+            database schema --- tables, indexes, and views --- described in
+            Chapter~\ref{cap:datamodel}.
 
       \item[SeaweedFS] The official \texttt{chrislusf/seaweedfs} image, used unchanged
             for the object-storage cluster.
@@ -62,7 +56,7 @@ Docker Compose orchestrates the following services on the VM:
 \begin{itemize}
       \item \textbf{PostgreSQL} --- the relational database; its data is kept on a named
             volume so it survives container recreation, and its configuration is read
-            from \texttt{.env.staging}.
+            from \texttt{.env}.
 
       \item \textbf{SeaweedFS cluster} --- the self-hosted, S3-compatible object storage
             for multimedia assets, split into cooperating roles: a \emph{master}
@@ -73,7 +67,7 @@ Docker Compose orchestrates the following services on the VM:
             volume, and filer each persist to their own named volume.
 
       \item \textbf{Spring Boot backend} (\texttt{diariolx-jvm-dynamic}) --- the
-            application server, with its environment supplied by \texttt{.env.staging}.
+            application server, with its environment supplied by \texttt{.env}.
 
       \item \textbf{Nginx} --- the combined frontend-and-proxy image, published to the
             host and declared to depend on the S3 gateway and the backend so that they
@@ -122,34 +116,25 @@ in turn, reads from and writes to PostgreSQL and issues object-storage operation
 against SeaweedFS. This single-entry-point design keeps the internal services
 unreachable from outside the VM: only the host Nginx is exposed to the public network.
 
-\section{Build and Run} \label{sec:dep_run}
+\section{Continuous Delivery} \label{sec:dep_cd}
 
-Two prerequisites must be present in the backend root before starting: the
-\texttt{.env.staging} environment file and the \texttt{seaweed-config.json} credentials
-file. The deployment workflow is driven by Gradle tasks: \texttt{buildImageAll} builds
-the application images described in Section~\ref{sec:dep_images}, and \texttt{allUp}
-brings the whole stack up through Docker Compose (\texttt{allDown} tears it back down).
-Because the images are self-contained and the data lives on named volumes, the stack
-can be recreated on the VM without loss of stored content.
+The application images are built and published to the GitHub Container Registry (GHCR)
+by a GitHub Actions workflow, so that the server never builds anything itself. On each
+release, the workflow builds the three application images (\texttt{diariolx-jvm},
+\texttt{diariolx-nginx}, and \texttt{diariolx-postgres}) and pushes them to GHCR. Docker
+layer caching keeps rebuilds fast by reusing unchanged layers across runs --- most
+notably the frontend dependency and build layers of the Nginx image.
 
-\section{Continuous Delivery and Production} \label{sec:dep_cd}
+\section{Running in Production} \label{sec:dep_run}
 
-To avoid rebuilding the application on the server, the images are published to a
-container registry and merely \emph{pulled} in production. A GitHub Actions workflow
-builds the three application images (\texttt{diariolx-jvm}, \texttt{diariolx-nginx},
-and \texttt{diariolx-postgres}) and pushes them to the GitHub Container Registry (GHCR)
-on each release tag. A dedicated production Compose file
-(\texttt{docker-compose.prod.yml}) references these published images by tag and reads
-its configuration from a \texttt{.env} file, so a deployment reduces to pulling the
-images and recreating the containers --- no build toolchain (JDK, Node, Gradle) is
-required on the VM.
-
-The production configuration differs from the staging one in three deliberate ways.
-First, the production PostgreSQL image applies only the schema --- tables, indexes, and
-views --- without the seed data used for development and testing. Second, only the
-entry-point Nginx is published to the host; the internal services (PostgreSQL, the
-SeaweedFS S3 gateway, and the admin service) are reachable exclusively over the Compose
-network, minimising the externally exposed surface. Third, the secrets --- the
-\texttt{.env} file and \texttt{seaweed-config.json} (which pre-declares the S3
-identities so no manual configuration step is required) --- are provisioned directly on
-the VM and are never baked into the published images.
+Deploying on the VM reduces to pulling the published images and starting the stack; no
+build toolchain (JDK, Node, or Gradle) is required on the server. The production Compose
+file references the images by tag and reads its configuration from a \texttt{.env} file.
+The secrets --- that \texttt{.env} file and the \texttt{seaweed-config.json} that
+pre-declares the S3 identities (so no manual object-storage configuration is needed) ---
+are provisioned directly on the VM and are never baked into the published images. The
+deployment is deliberately minimal in its exposed surface: only the entry-point Nginx is
+published to the host, so the internal services (PostgreSQL, the SeaweedFS S3 gateway,
+and the admin service) are reachable exclusively over the Compose network. Because the
+images are self-contained and all data lives on named volumes, the stack can be
+recreated without loss of stored content.

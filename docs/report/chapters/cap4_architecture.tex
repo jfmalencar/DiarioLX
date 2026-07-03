@@ -54,7 +54,7 @@ Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
             Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support                            \\
             Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
             Database       & PostgreSQL           & Relational model well-suited for editorial and structured data                          \\
-            Media Storage  & SeaweedFS            & Self-hosted Amazon S3-compatible distributed storage with low operational overhead       \\
+            Media Storage  & SeaweedFS            & Self-hosted Amazon S3-compatible distributed storage with low operational overhead      \\
             Data Access    & JDBI                 & Lightweight SQL library providing direct query control without ORM overhead             \\
             Authentication & JWT                  & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
             \bottomrule
@@ -72,7 +72,7 @@ and all error responses follow the Problem Details for HTTP APIs standard
 
 The API surface is divided into two groups: a public, unauthenticated read API that
 serves the reader-facing website, and an authenticated \emph{backoffice} API ---
-prefixed with \texttt{/api/backoffice/} --- that exposes the editorial management
+prefixed with\newline \texttt{/api/backoffice/} --- that exposes the editorial management
 operations. This separation makes the authentication boundary explicit in the URL
 structure itself and mirrors the \texttt{/backoffice} route of the frontend.
 Authentication is handled separately under \texttt{/api/auth} (signup, login, logout,

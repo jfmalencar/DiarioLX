@@ -138,6 +138,12 @@ export const Header = () => {
                                 <li>
                                     <Link className='dropdown-item' to='/team'>Equipa</Link>
                                 </li>
+                                <li>
+                                    <Link className='dropdown-item' to='/estatuto-editorial'>Estatuto Editorial</Link>
+                                </li>
+                                <li>
+                                    <Link className='dropdown-item' to='/codigo-deontologico'>Código Deontológico</Link>
+                                </li>
                             </ul>
                         </div>
                     </nav>

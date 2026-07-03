@@ -162,52 +162,11 @@ class ContentRepositoryMem(
         TODO("Not yet implemented")
     }
 
-    override fun internalGetAll(
-        limit: Int,
-        offset: Int,
-        query: String?,
-        archived: Boolean,
-    ): List<ContentSummary> =
-        contents
-            .filter { content ->
-                (if (archived) content.archivedAt != null else content.archivedAt == null) &&
-                    (
-                        if (query ==
-                            null
-                        ) {
-                            true
-                        } else {
-                            content.title.contains(query, ignoreCase = true) ||
-                                (content.slug?.contains(query, ignoreCase = true) ?: false)
-                        }
-                    )
-            }.drop(offset)
-            .take(limit)
-            .map {
-                ContentSummary(
-                    id = it.id,
-                    type = it.type,
-                    title = it.title,
-                    headline = it.headline,
-                    state = it.state,
-                    slug = it.slug,
-                    createdAt = it.createdAt,
-                    archivedAt = it.archivedAt,
-                    publishedAt = it.publishedAt,
-                    featuredImage = it.featuredImage?.path,
-                    authors = it.authors,
-                    category = null,
-                    tag = null,
-                )
-            }
-
     override fun delete(id: Int): Boolean {
         if (contents.none { it.id == id }) return false
         contents.removeIf { it.id == id }
         return true
     }
-
-    override fun getById(id: Int): Content? = contents.find { it.id == id && it.state == ContentState.PUBLISHED && it.slug != null }
 
     override fun getBySlug(slug: String): Content? = contents.find { it.slug == slug && it.state == ContentState.PUBLISHED }
 

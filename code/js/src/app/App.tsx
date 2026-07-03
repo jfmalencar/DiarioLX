@@ -12,6 +12,8 @@ import { Categories } from '@/modules/public/Categories';
 import { Tag } from '@/modules/public/Tag';
 import { TypeList } from '@/modules/public/TypeList';
 import { Equipa } from '@/modules/public/Equipa';
+import { EstatutoEditorial } from '@/modules/public/EstatutoEditorial';
+import { CodigoDeontologico } from '@/modules/public/CodigoDeontologico';
 import { Author } from '@/modules/public/Author';
 import { Content } from '@/modules/public/Content';
 import { NotFound } from '@/modules/public/NotFound';
@@ -77,6 +79,14 @@ const router = createBrowserRouter([
       {
         path: 'team',
         element: <Equipa />,
+      },
+      {
+        path: 'estatuto-editorial',
+        element: <EstatutoEditorial />,
+      },
+      {
+        path: 'codigo-deontologico',
+        element: <CodigoDeontologico />,
       },
       {
         path: 'author/:slug',

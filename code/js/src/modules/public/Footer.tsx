@@ -22,7 +22,7 @@ const chunk = <T,>(items: T[], size: number): T[][] => {
 
 export const Footer = () => {
     const { settings } = useBootstrap();
-    const { social, contact, navigation } = settings;
+    const { social, contact, publication, navigation } = settings;
 
     const categoryLinks: FooterLink[] = [...navigation.featured, ...navigation.sections].map((cat) => ({
         label: cat.name,
@@ -36,10 +36,9 @@ export const Footer = () => {
     ].filter(Boolean) as FooterLink[];
 
     const identityLinks: FooterLink[] = [
-        { label: 'Equipa', to: '/team' },
         { label: 'Quem Somos', to: '/team' },
-        { label: 'Estatuto Editorial', to: '/team' },
-        { label: 'Código Ético e Deontológico do Jornalista', to: '/team' },
+        { label: 'Estatuto Editorial', to: '/estatuto-editorial' },
+        { label: 'Código Deontológico', to: '/codigo-deontologico' },
     ];
 
     const pages: FooterLink[] = [
@@ -50,6 +49,10 @@ export const Footer = () => {
     ];
 
     const columns = chunk(pages, 5);
+
+    const redacao = [contact.address.replace(/\n/g, ' ').trim(), contact.email]
+        .filter(Boolean)
+        .join(' - ');
 
     return (
         <footer data-testid='site-footer' className='bg-dark text-white py-5'>
@@ -81,13 +84,37 @@ export const Footer = () => {
 
                 <hr className='border-light opacity-25 my-4' />
 
+                <div className='text-center mb-4' style={{ fontSize: '0.9rem', lineHeight: 1.9 }}>
+                    {publication.erc && (
+                        <span className='mx-2'>
+                            <strong>REGISTO ERC Nº</strong> {publication.erc}
+                        </span>
+                    )}
+                    {publication.periodicity && (
+                        <span className='mx-2'>
+                            <strong>PERIODICIDADE</strong> {publication.periodicity}
+                        </span>
+                    )}
+                    {publication.owner && (
+                        <span className='mx-2'>
+                            <strong>PROPRIETÁRIO</strong> {publication.owner}
+                        </span>
+                    )}
+                    {publication.nipc && (
+                        <span className='mx-2'>
+                            <strong>NÚMERO DE REGISTO DE PESSOA COLETIVA</strong> {publication.nipc}
+                        </span>
+                    )}
+                    {redacao && (
+                        <span className='mx-2'>
+                            <strong>REDACÇÃO</strong> {redacao}
+                        </span>
+                    )}
+                </div>
+
+                <hr className='border-light opacity-25 my-4' />
+
                 <div className='d-flex flex-wrap align-items-center justify-content-between gap-4'>
-                    <div style={{ fontSize: '0.85rem', whiteSpace: 'pre-line', lineHeight: 1.5 }}>
-                        <strong>{contact.email}</strong>
-                        {'\n'}
-                        {contact.address}
-                    </div>
-                    <div className='vr d-none d-md-block opacity-25' />
                     <img src={liacomLogo} alt='LIACOM' style={{ height: 22, ...whiteLogo }} />
                     <div style={{ fontSize: '0.85rem', lineHeight: 1.3, maxWidth: 170 }}>
                         Laboratório de Tendências em Jornalismo

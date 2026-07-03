@@ -15,6 +15,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{hyperref}
+\usepackage{bookmark}
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{float}
@@ -143,7 +144,7 @@ entre componentes é realizada através de uma API REST, com respostas de erro a
 o \textit{standard Problem Details for HTTP APIs} (RFC 9457).
 
 A plataforma foi projetada para suportar um fluxo editorial em que o conteúdo progride
-por estados definidos — rascunho, pendente de aprovação, publicado e rejeitado —
+por estados definidos — rascunho, pendente de revisão, publicado e rejeitado —
 suportado por um modelo de permissões baseado em três níveis de utilizador:
 Colaborador, Editor e Administrador. A autenticação dos utilizadores é assegurada
 através de \textit{JSON Web Tokens} (JWT).
@@ -177,7 +178,7 @@ through a RESTful API, with error responses following the Problem Details for HT
 APIs standard (RFC 9457).
 
 The platform is designed around an editorial workflow in which content progresses
-through defined states — draft, pending approval, published, and rejected — governed
+through defined states — draft, pending review, published, and rejected — governed
 by a role-based permission model with three user levels: Contributor, Editor, and
 Administrator. User authentication is handled using JSON Web Tokens (JWT).
 
@@ -244,8 +245,8 @@ All final architectural, implementation, and validation decisions were made by t
 % Chapter 8 — Deployment
 \include{chapters/cap8_deployment}
 
-% Chapter 9 — Current State and Future Work
-\include{chapters/cap8_currentstate}
+% Chapter 9 — Conclusion
+\include{chapters/cap9_conclusion}
 
 % =========================
 % REFERENCES
@@ -262,6 +263,8 @@ All final architectural, implementation, and validation decisions were made by t
 \appendix
 
 \include{appendices/apendice_db_model}
+
+\include{appendices/apendice_deployment}
 
 \include{appendices/apendice_screenshots}
 

@@ -217,7 +217,8 @@ SELECT * FROM v_contents
 WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
   AND slug IS NOT NULL
   AND category_id IS NOT NULL
-  AND category_archived IS NOT TRUE;
+  AND category_archived IS NOT TRUE
+  AND archived_at IS NULL;
 
 -- -----------------------------------------------------------------------
 -- Contents summary (full)
@@ -285,7 +286,8 @@ SELECT * FROM v_contents_summary
 WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
   AND slug IS NOT NULL
   AND category_id IS NOT NULL
-  AND category_archived IS NOT TRUE;
+  AND category_archived IS NOT TRUE
+  AND archived_at IS NULL;
 
 -- -----------------------------------------------------------------------
 -- Contents history
