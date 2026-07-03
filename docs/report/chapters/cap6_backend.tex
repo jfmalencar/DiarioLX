@@ -184,21 +184,26 @@ application is running.
 
 \section{Tests} \label{sec:be_tests}
 
-Testing is organized by module, with dedicated test suites for the repository,
-service, and HTTP layers, covering the core behaviours of each.
-
-The backend test suite is integrated into the project's continuous integration
-pipeline via GitHub Actions, running automatically on every push.
+The backend is tested at the level of each architectural layer --- service, repository,
+and HTTP --- using JUnit~5. The suites are integrated into the continuous integration
+pipeline via GitHub Actions~\cite{github_actions} and run automatically on every push
+through the \texttt{./gradlew check} task.
 
 \subsection{Unit Tests} \label{sec:tests_be_unit}
 
-Unit tests cover the repository and service layers in isolation. Repository tests
-validate SQL queries and result set mappings against a dedicated test database
-instance. Service tests validate business logic, including publication workflow
-state transitions and permission checks, independently of the HTTP and persistence
-layers.
+Service-layer tests validate the business logic in isolation from the database:
+publication-workflow state transitions, role-based permission checks, and input
+validation. Because the repository is defined as an interface, the services are
+exercised against lightweight in-memory implementations of that interface, which keeps
+the tests fast and deterministic and independent of SQL and of the HTTP layer.
 
 \subsection{Integration Tests} \label{sec:tests_be_integration}
 
-Integration tests validate the full request-response cycle of the API, exercising
-the HTTP, service, and repository layers together.
+Two kinds of integration test exercise the layers against real infrastructure.
+Repository tests run the JDBI implementations against a dedicated PostgreSQL instance
+--- provisioned as a Docker container that the build starts before the test task and
+tears down afterwards --- validating the SQL queries and the mapping of result sets onto
+the domain model. HTTP tests then exercise the full request--response cycle through
+Spring's \texttt{WebTestClient}, authenticating, calling the REST endpoints, and
+asserting the returned status codes, JSON payloads, and RFC~9457 error responses, so
+that the HTTP, service, and repository layers are verified together.

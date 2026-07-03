@@ -10,7 +10,7 @@ class Problem(
     val code: String,
     val status: HttpStatusCode,
 ) {
-    val type: String = "$URL/$code"
+    val type: String = "$URL/$code.md"
 
     companion object {
         const val MEDIA_TYPE = "application/problem+json"
