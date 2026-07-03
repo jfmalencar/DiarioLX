@@ -73,9 +73,10 @@ class ContentController(
         @RequestParam category: String? = null,
         @RequestParam state: ContentState? = null,
         @RequestParam type: ContentType? = null,
+        @RequestParam archived: Boolean? = null,
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
-        val response = contentService.getAll(page, size, query, state, type, category, me.user)
+        val response = contentService.getAll(page, size, query, state, type, category, archived, me.user)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },
@@ -116,9 +117,10 @@ class ContentController(
     @MayReturnUnauthorized
     @MayReturnBadRequest
     fun createEmptyContent(
+        authenticatedUser: AuthenticatedUser,
         @RequestBody body: CreateContentDTO,
     ): ResponseEntity<*> =
-        when (val response = contentService.createEmpty(body.type)) {
+        when (val response = contentService.createEmpty(body.type, authenticatedUser.user.id)) {
             is Success ->
                 ResponseEntity
                     .status(HttpStatus.CREATED)
@@ -132,11 +134,13 @@ class ContentController(
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @PutMapping(Uris.Content.MAIN)
-    @MayReturnContentOk
+    @MayReturnNoContent
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
     @MayReturnNotFound
     fun updateContent(
+        authenticatedUser: AuthenticatedUser,
         @RequestBody body: UpdateContentDTO,
     ): ResponseEntity<*> =
         when (
@@ -153,11 +157,12 @@ class ContentController(
                     body.authors,
                     body.tags,
                     body.blocks,
+                    authenticatedUser.user,
                 )
         ) {
             is Success ->
                 ResponseEntity
-                    .status(HttpStatus.OK)
+                    .status(HttpStatus.NO_CONTENT)
                     .build<Unit>()
             is Failure ->
                 Problem.response(
@@ -168,17 +173,19 @@ class ContentController(
 
     @RequireRole(UserRole.CONTRIBUTOR)
     @DeleteMapping(Uris.Content.CONTENT_BY_ID)
-    @MayReturnContentOk
+    @MayReturnNoContent
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
     @MayReturnNotFound
     fun deleteContent(
+        authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (val response = contentService.delete(id)) {
+        when (val response = contentService.delete(id, authenticatedUser.user)) {
             is Success ->
                 ResponseEntity
-                    .status(HttpStatus.OK)
+                    .status(HttpStatus.NO_CONTENT)
                     .build<Unit>()
             is Failure ->
                 Problem.response(
@@ -189,24 +196,42 @@ class ContentController(
 
     @RequireRole(UserRole.EDITOR)
     @PostMapping(Uris.Content.ARCHIVE)
-    @MayReturnContentOk
+    @MayReturnNoContent
     @MayReturnUnauthorized
     @MayReturnForbidden
     @MayReturnBadRequest
     @MayReturnNotFound
     fun archiveContent(
         @PathVariable id: Int,
-        @RequestParam archive: Boolean,
     ): ResponseEntity<*> =
-        when (val response = if (archive) contentService.archive(id) else contentService.unarchive(id)) {
-            is Success ->
-                ResponseEntity
-                    .status(HttpStatus.OK)
-                    .build<Unit>()
+        when (val response = contentService.archive(id)) {
+            is Success -> ResponseEntity.noContent().build<Unit>()
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
                     Uris.Content.ARCHIVE,
+                )
+        }
+
+    @RequireRole(UserRole.EDITOR)
+    @PostMapping(Uris.Content.UNARCHIVE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnForbidden
+    @MayReturnBadRequest
+    @MayReturnNotFound
+    fun unarchiveContent(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val response = contentService.unarchive(id)) {
+            is Success ->
+                ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Content.UNARCHIVE,
                 )
         }
 
@@ -238,12 +263,14 @@ class ContentController(
     @PostMapping(Uris.Content.SUBMIT)
     @MayReturnNoContent
     @MayReturnUnauthorized
+    @MayReturnForbidden
     @MayReturnBadRequest
     @MayReturnNotFound
     fun submitContent(
+        authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (val response = contentService.submit(id)) {
+        when (val response = contentService.submit(id, authenticatedUser.user)) {
             is Success ->
                 ResponseEntity
                     .status(HttpStatus.NO_CONTENT)
@@ -257,7 +284,7 @@ class ContentController(
 
     @RequireRole(UserRole.EDITOR)
     @PostMapping(Uris.Content.REJECT)
-    @MayReturnContentOk
+    @MayReturnNoContent
     @MayReturnUnauthorized
     @MayReturnForbidden
     @MayReturnBadRequest
@@ -277,12 +304,12 @@ class ContentController(
         ) {
             is Success ->
                 ResponseEntity
-                    .status(HttpStatus.OK)
+                    .status(HttpStatus.NO_CONTENT)
                     .build<Unit>()
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Content.PUBLISH,
+                    Uris.Content.REJECT,
                 )
         }
 }

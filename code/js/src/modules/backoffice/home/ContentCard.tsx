@@ -9,7 +9,7 @@ import { contentHref, contentAccent, contentThumbnail, isVideoThumbnail } from '
 
 type Props = {
     content: ContentSummary | null;
-    onEdit: () => void;
+    onEdit?: () => void;
     onRemove?: () => void;
     large?: boolean;
 };
@@ -34,15 +34,17 @@ export const ContentCard = ({ content, onEdit, onRemove, large = false }: Props)
                         <Trash2 size={16} />
                     </button>
                 )}
-                <button
-                    type='button'
-                    className='btn btn-dark btn-sm d-flex align-items-center justify-content-center rounded-3'
-                    style={{ width: 36, height: 36 }}
-                    onClick={onEdit}
-                    aria-label='Editar conteúdo'
-                >
-                    <Pencil size={16} />
-                </button>
+                {onEdit && (
+                    <button
+                        type='button'
+                        className='btn btn-dark btn-sm d-flex align-items-center justify-content-center rounded-3'
+                        style={{ width: 36, height: 36 }}
+                        onClick={onEdit}
+                        aria-label='Editar conteúdo'
+                    >
+                        <Pencil size={16} />
+                    </button>
+                )}
             </div>
             {content ? (
                 <>

@@ -43,6 +43,8 @@ fun ContentError.toProblem() =
         is ContentError.ParentRequired -> Problem.emptyField
         is ContentError.InvalidParent -> Problem.invalidParent
         is ContentError.InvalidEmbed -> Problem.invalidField
+        is ContentError.PublishedLocked -> Problem.publishedLocked
+        is ContentError.NotContentOwner -> Problem.notContentOwner
     }
 
 fun UserError.toProblem(): Problem =

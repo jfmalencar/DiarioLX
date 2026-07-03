@@ -4,12 +4,9 @@ import { Play, Pause, RotateCcw, RotateCw, AudioLines } from 'lucide-react';
 import { usePath } from '@/shared/hooks/usePath';
 
 type Props = {
-    /** Audio file path (relative to the media base) or absolute URL. */
     audioUrl: string;
-    /** Artwork path/URL (e.g. the podcast image) — blurred behind, sharp thumbnail in front. */
     artworkUrl?: string | null;
     title: string;
-    /** Secondary line, e.g. the podcast name. */
     subtitle?: string;
     accent?: string;
 };
@@ -21,10 +18,6 @@ const fmt = (seconds: number) => {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-// Audio player styled after the Spotify embed card: large artwork on the left,
-// title/subtitle on the right, and a full-width transport bar underneath with a
-// big play button. Built on a hidden <audio> element; the artwork doubles as a
-// blurred, tinted background.
 export const AudioPlayer = ({ audioUrl, artworkUrl, title, subtitle, accent = '#82EE64' }: Props) => {
     const { buildMediaUrl } = usePath();
     const audioRef = useRef<HTMLAudioElement>(null);

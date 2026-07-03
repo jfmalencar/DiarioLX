@@ -71,5 +71,7 @@ class Problem(
         val insufficientPhotos = Problem("insufficient-photos", HttpStatus.BAD_REQUEST)
         val categoryHasContents = Problem("category-has-contents", HttpStatus.CONFLICT)
         val tagHasContents = Problem("tag-has-contents", HttpStatus.CONFLICT)
+        val publishedLocked = Problem("published-locked", HttpStatus.FORBIDDEN)
+        val notContentOwner = Problem("not-content-owner", HttpStatus.FORBIDDEN)
     }
 }

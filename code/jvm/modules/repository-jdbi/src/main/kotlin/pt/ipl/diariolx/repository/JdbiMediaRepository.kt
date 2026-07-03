@@ -42,6 +42,7 @@ class JdbiMediaRepository(
         offset: Int,
         type: String?,
         purpose: String?,
+        query: String?,
     ): List<Media> {
         val sql =
             buildString {
@@ -51,6 +52,9 @@ class JdbiMediaRepository(
                 }
                 if (purpose != null) {
                     append(" AND purpose = :purpose::media_purpose")
+                }
+                if (query != null) {
+                    append(" AND (original_file_name ILIKE :query OR alt_text ILIKE :query)")
                 }
                 append(" ORDER BY id desc")
                 append(" LIMIT :limit OFFSET :offset")
@@ -63,6 +67,7 @@ class JdbiMediaRepository(
             .bind("type", "$type%")
             .bind("status", "ready")
             .bind("purpose", purpose)
+            .bind("query", query?.let { "%$it%" })
             .mapTo<MediaModel>()
             .list()
             .map { it.media }

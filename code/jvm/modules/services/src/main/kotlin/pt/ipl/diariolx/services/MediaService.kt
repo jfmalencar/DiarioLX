@@ -67,11 +67,13 @@ class MediaService(
         page: Int,
         size: Int,
         type: String?,
+        query: String? = null,
     ): PageResponse<Media> =
         transactionManager.run {
             paginate(page, size) { limit, offset ->
                 val type = type?.let { normalizeMimeTypeFilter(type) }
-                it.mediaRepository.getAll(limit, offset, type, "GALLERY")
+                val query = query?.takeIf { it.isNotBlank() }
+                it.mediaRepository.getAll(limit, offset, type, "GALLERY", query)
             }
         }
 

@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { Search } from 'lucide-react';
 
 import { useMedia, type Media } from '@/shared/hooks/useMedia';
+import { useLoadMore } from '@/shared/hooks/useLoadMore';
+import { useMediaService } from '@/shared/services/media';
+import type { MediasResponse } from '@/shared/services/media/media.types';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { useUsers } from '@/shared/hooks/useUsers';
 import { usePath } from '@/shared/hooks/usePath';
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
+import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
 import { FieldSection } from '../inputs/FieldSection';
 import { UnderlineInput } from '../inputs/UnderlineInput';
@@ -12,20 +17,39 @@ import { SearchField } from '../inputs/SearchField';
 import { Button } from '../Button';
 import { Pill } from '../Pill';
 
-import type { MediaGalleryProps } from './MediaGallery.types';
+import type { MediaGalleryProps, MediaType } from './MediaGallery.types';
 import { initialMediaGalleryState, mediaGalleryReducer } from './MediaGallery.reducer';
 
-export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = false, onSelectMany }: MediaGalleryProps) {
+const MAX_UPLOAD_BYTES: Record<MediaType, number> = {
+    IMAGE: 15 * 1024 * 1024, // 15 MB
+    AUDIO: 200 * 1024 * 1024, // 200 MB
+    VIDEO: 2 * 1024 * 1024 * 1024, // 2 GB
+};
+
+const formatSize = (bytes: number): string =>
+    bytes >= 1024 * 1024 * 1024
+        ? `${bytes / (1024 * 1024 * 1024)} GB`
+        : `${Math.round(bytes / (1024 * 1024))} MB`;
+
+export const MediaGallery = ({ mediaType, isOpen, onClose, onSelect, multiple = false, onSelectMany }: MediaGalleryProps) => {
     const [state, dispatch] = useReducer(
         mediaGalleryReducer,
         initialMediaGalleryState,
     );
 
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [prevOpen, setPrevOpen] = useState(isOpen);
 
-    useEffect(() => {
-        if (!isOpen) setSelectedIds([]);
-    }, [isOpen]);
+    if (prevOpen !== isOpen) {
+        setPrevOpen(isOpen);
+        if (!isOpen) {
+            setSelectedIds([]);
+            setSearch('');
+            setDebouncedSearch('');
+        }
+    }
 
     const toggleSelected = (id: number) =>
         setSelectedIds((prev) => (prev.includes(id) ? prev.filter((it) => it !== id) : [...prev, id]));
@@ -60,13 +84,28 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
     const { buildMediaUrl } = usePath()
     const { fetchAll: fetchUsers, users } = useUsers();
     const { buildQuery } = useFilters();
-    const { fetchAll, getSignedUrl, completeUpload, medias, loading } = useMedia();
+    const mediaService = useMediaService();
+    const { getSignedUrl, completeUpload, loading: uploadLoading } = useMedia();
     const { creditRoles } = useBootstrap();
+    const { showSnackbar } = useSnackbar();
 
-    const load = useCallback(async () => {
-        const params = buildQuery({ p: 'page', total: 'size' }, { type: mediaType });
-        await fetchAll(params);
-    }, [fetchAll, buildQuery, mediaType]);
+    const fetchPage = useMemo(
+        () =>
+            isOpen
+                ? (page: number) =>
+                      mediaService.fetchAll(buildQuery({}, { type: mediaType, page, query: debouncedSearch }))
+                : null,
+        [isOpen, mediaService, buildQuery, mediaType, debouncedSearch],
+    );
+
+    const {
+        items: medias,
+        hasMore,
+        loadMore,
+        reload,
+        loading,
+        loadingMore,
+    } = useLoadMore<Media, MediasResponse>(fetchPage);
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -78,9 +117,9 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
     }, [creditUser.name, fetchUsers]);
 
     useEffect(() => {
-        if (!isOpen) return;
-        load();
-    }, [isOpen, load]);
+        const timeout = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+        return () => clearTimeout(timeout);
+    }, [search]);
 
     const previewUrl = useMemo(() => {
         if (!selectedFile) return null;
@@ -99,6 +138,22 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] ?? null;
+        if (file) {
+            const expected = mediaType.toLowerCase();
+            const label = mediaType === 'IMAGE' ? 'imagem' : mediaType === 'VIDEO' ? 'vídeo' : 'áudio';
+            if (!file.type.startsWith(`${expected}/`)) {
+                showSnackbar(`Ficheiro inválido. Selecione um ficheiro de ${label}.`, 'error');
+                event.target.value = '';
+                dispatch({ type: 'set-selected-file', file: null });
+                return;
+            }
+            if (file.size > MAX_UPLOAD_BYTES[mediaType]) {
+                showSnackbar(`Ficheiro demasiado grande. O tamanho máximo para ${label} é ${formatSize(MAX_UPLOAD_BYTES[mediaType])}.`, 'error');
+                event.target.value = '';
+                dispatch({ type: 'set-selected-file', file: null });
+                return;
+            }
+        }
         dispatch({ type: 'set-selected-file', file });
     };
 
@@ -149,7 +204,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
 
             await completeUpload(id);
             dispatch({ type: 'reset-upload-form' });
-            load();
+            reload();
         } finally {
             dispatch({ type: 'set-uploading', value: false });
             dispatch({ type: 'set-upload-progress', value: 0 });
@@ -278,7 +333,21 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
 
                     <div className='modal-body'>
                         {!showUploadForm && (
-                            <div className='d-flex justify-content-end align-items-center mb-3'>
+                            <div className='d-flex justify-content-between align-items-center gap-2 mb-3'>
+                                <div className='position-relative' style={{ flex: 1, maxWidth: 280 }}>
+                                    <Search
+                                        size={16}
+                                        className='position-absolute top-50 translate-middle-y text-muted'
+                                        style={{ left: 10 }}
+                                    />
+                                    <input
+                                        type='text'
+                                        className='form-control ps-5'
+                                        placeholder='Pesquisar por nome ou descrição...'
+                                        value={search}
+                                        onChange={(event) => setSearch(event.currentTarget.value)}
+                                    />
+                                </div>
                                 <Button
                                     className='btn btn-primary'
                                     onClick={() =>
@@ -300,7 +369,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
                                         <div className='col-12'>
                                             <input
                                                 type='file'
-                                                accept={`${mediaType}/*`}
+                                                accept={`${mediaType.toLowerCase()}/*`}
                                                 className='form-control'
                                                 onChange={handleFileChange}
                                             />
@@ -339,7 +408,7 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
                                                             />
                                                         ) : (
                                                             <SearchField
-                                                                disabled={loading}
+                                                                disabled={uploadLoading}
                                                                 value={creditUser.name}
                                                                 name='creditUser'
                                                                 options={users.map((user) => ({
@@ -501,6 +570,18 @@ export function MediaGallery({ mediaType, isOpen, onClose, onSelect, multiple = 
                                         </button>
                                     </div>
                                 ))}
+                            </div>
+                        )}
+
+                        {hasMore && (
+                            <div className='text-center mt-3'>
+                                <Button
+                                    color='secondary'
+                                    onClick={loadMore}
+                                    disabled={loadingMore}
+                                >
+                                    {loadingMore ? 'A carregar...' : 'Carregar mais'}
+                                </Button>
                             </div>
                         )}
                     </div>

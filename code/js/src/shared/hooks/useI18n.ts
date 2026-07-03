@@ -9,7 +9,7 @@ export type I18nState = {
 export const I18nContext = createContext<I18nState>({
   currentLang: 'pt',
   setLang: () => { },
-  t: (key: string, _?: Record<string, string>) => key,
+  t: (key: string) => key,
 });
 
 export function useI18n(): { lang: string; setLang: (lang: 'en' | 'pt') => void; t: (key: string, params?: Record<string, string>) => string } {

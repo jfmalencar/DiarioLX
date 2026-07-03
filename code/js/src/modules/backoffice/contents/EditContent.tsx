@@ -18,6 +18,8 @@ import { embedSrc, detectProvider } from '@/shared/utils/embed';
 import { GalleryBlockEditor } from './GalleryBlockEditor';
 import { SearchField } from '@/shared/components/inputs/SearchField';
 import { Pill } from '@/shared/components/Pill';
+import { Alert } from '@/shared/components/Alert';
+import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useCategories } from '@/shared/hooks/useCategories';
@@ -71,8 +73,6 @@ const getVariant = (block: ContentBlock): Variant => {
     }
 };
 
-// Videos embed YouTube, episodes embed Spotify — nothing else is accepted as the
-// primary source.
 const requiredEmbedProvider = (type?: ContentType): 'youtube' | 'spotify' | null =>
     type === 'VIDEO' ? 'youtube' : type === 'EPISODE' ? 'spotify' : null;
 
@@ -108,6 +108,7 @@ export const EditContent = () => {
     const [state, dispatch] = useReducer(editContentReducer, initialState);
     const [activeEditor, setActiveEditor] = useState<Editor | null>(null);
     const [openConfirmaModal, setOpenConfirmModal] = useState<boolean>(false);
+    const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
     const canSelectMainAuthor = user?.features?.includes("select-main-author")
     const canManagePodcasts = user?.features?.includes("manage-podcasts")
@@ -254,17 +255,25 @@ export const EditContent = () => {
         }
     };
 
-    const handleDelete = async () => {
-        if (!state.contentId) return;
-        if (!window.confirm('Tem a certeza que deseja eliminar este conteúdo?')) return;
+    const deleteConfig: ModalConfig = {
+        title: 'Eliminar conteúdo',
+        subtitle: 'Tem a certeza que deseja eliminar este conteúdo?',
+        alert: 'Esta ação é permanente e não pode ser revertida.',
+        confirmLabel: 'Eliminar',
+        action: deleteContent,
+        getRedirect: () => '/backoffice/contents',
+        variant: 'danger',
+    };
 
-        try {
-            await deleteContent(state.contentId);
-            navigate('/backoffice/contents');
-        } catch (error) {
-            showSnackbar('Erro ao eliminar conteúdo: ' + error, 'error');
-            navigate('/backoffice/contents');
+    const handleConfirmDelete = async () => {
+        if (!state.contentId) return;
+        const res = await deleteContent(state.contentId);
+        if (!res.ok) {
+            showSnackbar(res.error, 'error');
+            return;
         }
+        setOpenDeleteModal(false);
+        navigate('/backoffice/contents');
     };
 
     return (
@@ -291,6 +300,13 @@ export const EditContent = () => {
             <main className='d-flex flex-grow-1 overflow-hidden ps-5' style={{ minHeight: 0 }}>
                 <div style={{ width: 320, flexShrink: 1, minWidth: 0 }} />
                 <div className='flex-grow-1 overflow-y-auto py-4 pe-4 ps-5' style={{ minWidth: 0, maxWidth: 'calc(100vw - 610px)' }}>
+                    {content.state === 'PUBLISHED' && (
+                        <div className='mb-4'>
+                            <Alert variant='warning' title='Atenção!'>
+                                Este conteúdo está publicado. Ao guardar alterações, voltará ao estado de Rascunho e deixará de estar visível ao público até ser novamente publicado.
+                            </Alert>
+                        </div>
+                    )}
                     <h1>
                         <textarea
                             className='font-noticia form-control border-0 bg-transparent shadow-none px-0 mb-3 resize-none overflow-hidden'
@@ -569,7 +585,7 @@ export const EditContent = () => {
                             <button
                                 type='button'
                                 className='btn w-40 flex-grow-1'
-                                onClick={handleDelete}
+                                onClick={() => setOpenDeleteModal(true)}
                                 disabled={!state.contentId || loading}
                                 style={{ backgroundColor: 'rgb(255, 0, 0)', height: 40, width: 10 }}
                             >
@@ -612,6 +628,13 @@ export const EditContent = () => {
                 }}
                 onPublish={() => handleSubmit('publish')}
                 onRequestReview={() => handleSubmit('review')}
+            />
+            <ConfirmModal
+                open={openDeleteModal}
+                onConfirm={handleConfirmDelete}
+                config={deleteConfig}
+                name='content'
+                closeModal={() => setOpenDeleteModal(false)}
             />
             <MediaGallery
                 mediaType={

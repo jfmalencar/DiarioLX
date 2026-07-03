@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 import { useFeatured } from '@/shared/hooks/useFeatured';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
+import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { SectionBlock } from './SectionBlock';
 import { ModalSelectContent } from './ModalSelectContent';
 import { SaveBar } from './SaveBar';
@@ -23,6 +24,9 @@ export const Homepage = () => {
     const { sections: config } = useBootstrap() as { sections: SectionTypeConfig[] };
     const { fetchHomepage, save, loading } = useFeatured();
     const { showSnackbar } = useSnackbar();
+    const { user } = useAuthentication();
+
+    const canEditFeatured = user?.features?.includes('manage-featured');
 
     const reducer = useMemo(() => makeHomepageReducer(config), [config]);
     const initial = useMemo(() => buildInitialState(config), [config]);
@@ -79,14 +83,15 @@ export const Homepage = () => {
                                     dispatch({ type: 'open-edit', sectionId: section.id, index })
                                 }
                                 onRemoveSection={
-                                    canRemove
+                                    canRemove && canEditFeatured
                                         ? () => dispatch({ type: 'remove-section', sectionId: section.id })
                                         : undefined
                                 }
+                                readOnly={!canEditFeatured}
                             />
                         ))}
 
-                        {isCategory && rules.canBeAdded && (
+                        {isCategory && rules.canBeAdded && canEditFeatured && (
                             <div className='mt-4'>
                                 <button
                                     type='button'
@@ -113,7 +118,7 @@ export const Homepage = () => {
             />
 
             <SaveBar
-                visible={isDirty}
+                visible={isDirty && !!canEditFeatured}
                 saving={loading}
                 onSave={handleSave}
                 onCancel={() => dispatch({ type: 'cancel' })}

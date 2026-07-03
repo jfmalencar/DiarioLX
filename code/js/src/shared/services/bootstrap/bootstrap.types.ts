@@ -107,6 +107,7 @@ export type Endpoints = {
             submit: Link;
             reject: Link;
             archive: Link;
+            unarchive: Link;
         };
         invites: {
             list: Link;

@@ -158,7 +158,8 @@ LEFT JOIN LATERAL (
         json_build_object(
             'id',   u.id,
             'name', u.first_name || ' ' || u.last_name,
-            'slug', u.username
+            'slug', u.username,
+            'role', ca.role
         ) ORDER BY (ca.role = 'primary') DESC
     ) AS items
     FROM content_authors ca

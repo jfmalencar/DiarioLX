@@ -89,6 +89,7 @@ object Uris {
 
         const val MAIN = ROOT
         const val ARCHIVE = "$ROOT/{id}/archive"
+        const val UNARCHIVE = "$ROOT/{id}/unarchive"
         const val PUBLISH = "$ROOT/{id}/publish"
         const val SUBMIT = "$ROOT/{id}/submit"
         const val REJECT = "$ROOT/{id}/reject"

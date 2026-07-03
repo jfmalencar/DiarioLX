@@ -13,7 +13,7 @@ enum class UserRole {
                 addAll(listOf("manage-podcasts", "review", "publish", "edit-published", "select-main-author"))
             }
             if (this@UserRole >= ADMIN) {
-                addAll(listOf("manage-invites", "manage-users", "manage-categories", "manage-tags", "manage-content"))
+                addAll(listOf("manage-invites", "manage-users", "manage-categories", "manage-tags", "manage-content", "manage-featured"))
             }
         }
 }

@@ -38,7 +38,7 @@ illustrates the module organization and the dependency relationships between the
             business logic.
 
       \item[Storage] Defines the storage interface for multimedia files. The concrete
-            implementation, \texttt{Storage S3}, integrates with SeaweedFS~\cite{seaweedfs}
+            implementation, \texttt{Storage S3}, integrates with SeaweedFS
             for binary file storage using the AWS S3 SDK~\cite{aws_s3_sdk}, as SeaweedFS
             exposes an S3-compatible API. An S3-compatible storage layer was chosen to
             avoid coupling the application to a specific storage provider while retaining a
@@ -67,9 +67,9 @@ section covers the implementation details.
 \subsection{JwtTokenGenerator} \label{sec:be_jwt}
 
 Token generation and validation are handled by the \texttt{JwtTokenGenerator} class,
-which encapsulates all JWT logic. Access tokens are signed with HMAC-SHA256 using a
-configurable secret key loaded at startup via \texttt{JwtConfig}. The signing key is
-initialised lazily and reused across requests. Refresh tokens are generated as
+which encapsulates all JWT logic. Access tokens carry an HMAC-SHA256 message
+authentication code (MAC), computed with a configurable secret key loaded at startup
+via \texttt{JwtConfig}. The MAC key is initialised lazily and reused across requests. Refresh tokens are generated as
 cryptographically random 32-byte strings encoded in Base64URL format using
 \texttt{java.security.SecureRandom}.
 
@@ -105,6 +105,25 @@ to access it. The three roles --- \textit{Contributor}, \textit{Editor}, and
 \textit{Administrator} --- form a strict permission hierarchy where each role inherits
 all permissions of the roles below it, as described in
 Section~\ref{sec:req_users}.
+
+The adoption of a dedicated authorization library, such as Casbin~\cite{casbin}, was
+considered as an alternative to enforcing the rules natively. General-purpose
+authorization frameworks provide policy engines capable of expressing rich and
+dynamic rule sets --- including attribute-based and relationship-based models --- and
+are particularly valuable when access-control requirements are numerous, subject to
+frequent change, or intended to be configurable at runtime without redeployment. In
+the case of \textit{Diário LX}, however, the authorization model is deliberately small and
+stable: it comprises three well-defined, hierarchically ordered roles whose
+permissions are known at design time and are not expected to change. Under these
+conditions, the expressive power of a policy engine offers limited practical benefit,
+while introducing an additional external dependency, a separate policy definition to
+maintain, and a layer of indirection between an endpoint and the rule that governs it.
+Enforcing the rules natively through the \texttt{@RequireRole} annotation instead
+keeps each endpoint's access requirement explicit and co-located with its declaration,
+which favours readability and auditability. Adopting a library such as Casbin remains
+a sensible evolution should the permission model grow in complexity --- for instance,
+with per-resource ownership rules or finer-grained, runtime-configurable permissions
+--- but for the current scope the additional complexity was not warranted.
 
 \section{Error Handling} \label{sec:be_errors}
 

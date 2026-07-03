@@ -5,7 +5,7 @@
 
 \section{Overview} \label{sec:arch_overview}
 
-The Diário LX platform follows a client-server architecture. The system is composed
+The \textit{Diário LX} platform follows a client-server architecture. The system is composed
 of a browser-executed client application and a server-side infrastructure responsible
 for business logic and data management. Figure~\ref{fig:architecture} illustrates the
 high-level architecture of the system.
@@ -33,8 +33,8 @@ The system comprises the following main components:
       \item \textbf{PostgreSQL}~\cite{postgresql_docs}: Relational database storing structured data
             (content, users, categories, tags, sessions).
 
-      \item \textbf{SeaweedFS}: Self-hosted distributed file system used for multimedia
-            asset storage (images, audio, video), accessed via an S3-compatible API. Receives
+      \item \textbf{SeaweedFS}~\cite{seaweedfs}: Self-hosted distributed file system used for multimedia
+            asset storage (images, audio, video), accessed via an API compatible with Amazon S3~\cite{amazon_s3}. Receives
             direct uploads from the frontend and is managed by the backend via media control
             operations.
 \end{itemize}
@@ -54,7 +54,7 @@ Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
             Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support                            \\
             Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
             Database       & PostgreSQL           & Relational model well-suited for editorial and structured data                          \\
-            Media Storage  & SeaweedFS            & Self-hosted S3-compatible distributed storage with low operational overhead             \\
+            Media Storage  & SeaweedFS            & Self-hosted Amazon S3-compatible distributed storage with low operational overhead       \\
             Data Access    & JDBI                 & Lightweight SQL library providing direct query control without ORM overhead             \\
             Authentication & JWT                  & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
             \bottomrule
@@ -70,26 +70,48 @@ The API follows standard HTTP conventions for resource naming and status codes,
 and all error responses follow the Problem Details for HTTP APIs standard
 (\texttt{application/problem+json}), as defined in RFC~9457~\cite{rfc9457}.
 
-The API is organized around the following resource groups:
+The API surface is divided into two groups: a public, unauthenticated read API that
+serves the reader-facing website, and an authenticated \emph{backoffice} API ---
+prefixed with \texttt{/api/backoffice/} --- that exposes the editorial management
+operations. This separation makes the authentication boundary explicit in the URL
+structure itself and mirrors the \texttt{/backoffice} route of the frontend.
+Authentication is handled separately under \texttt{/api/auth} (signup, login, logout,
+and token refresh), as it is the entry point through which a session is obtained.
+
+The public read API is organized around the following resources:
 
 \begin{itemize}
-      \item \texttt{/api/auth} --- Authentication (signup, login, logout, token refresh)
-      \item \texttt{/api/users} --- User management (update, deactivate, delete, list)
-      \item \texttt{/api/contents} --- Content management (create, edit, submit, approve, reject, publish, archive, delete)
-      \item \texttt{/api/categories} --- Category management (create, edit, delete, list, archive and unarchive)
-      \item \texttt{/api/tags} --- Tag management (create, edit, delete, list, archive and unarchive)
-      \item \texttt{/api/medias} --- Media asset management (generate signed url, list, delete)
-      \item \texttt{/api/invites} --- Invitation code generation and validation
+      \item \texttt{/api/homepage} and \texttt{/api/navigation} --- homepage composition and the section menu
+      \item \texttt{/api/contents} and \texttt{/api/contents/\{slug\}} --- listing and retrieval of published content
+      \item \texttt{/api/categories/\{slug\}} and \texttt{/api/tags/\{slug\}} --- content grouped by category or tag
+      \item \texttt{/api/team} and \texttt{/api/authors/\{slug\}} --- the editorial team and individual author pages
+\end{itemize}
+
+The backoffice API groups the management operations, each guarded by the minimum
+required role:
+
+\begin{itemize}
+      \item \texttt{/api/backoffice/contents} --- content management (create, edit, submit, approve, reject, publish, archive, delete, history)
+      \item \texttt{/api/backoffice/categories} and \texttt{/api/backoffice/tags} --- category and tag management (create, edit, delete, list, archive, unarchive)
+      \item \texttt{/api/backoffice/medias} --- media asset management (upload, list, generate signed URL)
+      \item \texttt{/api/backoffice/users} --- user management (list, update, account status, team assignment)
+      \item \texttt{/api/backoffice/invites} --- invitation code generation and validation
+      \item \texttt{/api/backoffice/featured} --- curation of the homepage featured content
+      \item \texttt{/api/backoffice/settings} --- site configuration
 \end{itemize}
 
 \section{Authentication and Authorization} \label{sec:arch_auth}
 
 Authentication is implemented using JSON Web Tokens (JWT)~\cite{jwt_spec}. Upon
 successful login, the server generates two tokens: a short-lived access token
-(10 minutes), signed with HMAC-SHA256, and a long-lived refresh token (7 days),
+(10 minutes), whose integrity and authenticity are protected by an HMAC-SHA256
+message authentication code (MAC), and a long-lived refresh token (7 days),
 represented as a cryptographically random opaque string. Both are issued as
-\texttt{HttpOnly} cookies, preventing client-side JavaScript from accessing them
-and mitigating XSS attacks. While access tokens are validated statelessly,
+\texttt{HttpOnly} and \texttt{SameSite=Strict} cookies --- and additionally with the
+\texttt{Secure} attribute when served over HTTPS in production --- preventing
+client-side JavaScript from accessing them (mitigating XSS), restricting their
+inclusion in cross-site requests (mitigating CSRF), and, in production, ensuring
+they are only transmitted over encrypted connections. While access tokens are validated statelessly,
 refresh tokens are persisted in the database to support session invalidation,
 logout, and propagation of user role changes.
 
@@ -105,35 +127,66 @@ Chapter~\ref{cap:backend}.
 
 \section{Editorial Workflow} \label{sec:arch_workflow}
 
-The editorial workflow is intended to govern the lifecycle of a content item from creation to
-publication. It is designed to enforce editorial accountability by requiring explicit
-approval before any content becomes publicly accessible, while allowing editors and
-administrators to intervene at any stage.
+The editorial workflow governs the lifecycle of a content item from creation to
+publication. It enforces editorial accountability by requiring explicit approval
+before any content becomes publicly accessible, while allowing Editors and
+Administrators to intervene at any stage. Each content item carries a state,
+represented in the domain by the \texttt{ContentState} enumeration, which takes one
+of four values: \textit{Draft}, \textit{Pending Review}, \textit{Published}, or
+\textit{Rejected}. Figure~\ref{fig:workflow} summarises the states and the
+transitions between them, each annotated with the role required to perform it.
 
-Content transitions between the following states:
+\begin{figure}[H]
+      \begin{center}
+            \includegraphics[width=0.85\textwidth]{./figures/workflow_diagram.png}
+      \end{center}
+      \caption{Editorial workflow: content states and the role-guarded transitions between them.}
+      \label{fig:workflow}
+\end{figure}
+
+The states are defined as follows:
 
 \begin{description}
-      \item[Draft] Initial state. The content is created and edited by its author.
-            It is only visible to the author and to administrators.
+      \item[Draft] Initial state. The content is created and edited by its author and
+            is not publicly visible. A Contributor works on a draft until all required
+            fields are complete and then submits it for review.
 
-      \item[Pending] The author submits the content for editorial review. It becomes
-            visible to Editors and Administrators, who are responsible for evaluating
-            it before publication.
+      \item[Pending Review] The author has submitted the content for editorial review.
+            It becomes visible to Editors and Administrators, who are responsible for
+            evaluating it before publication.
 
-      \item[Published] An Editor or Administrator approves the content. It becomes
-            publicly accessible on the site.
+      \item[Published] An Editor or Administrator has approved the content, which
+            becomes publicly accessible on the site.
 
-      \item[Rejected] An Editor or Administrator rejects the content, optionally
-            providing a reason. The author may revise and resubmit, returning the
-            content to the \textit{Draft} state.
+      \item[Rejected] An Editor or Administrator has rejected the content, providing a
+            mandatory reason. The reviewer and the rejection comment are retained in the
+            content's history, so that the author receives structured feedback and can
+            revise and resubmit.
 \end{description}
 
-Editors and Administrators may also publish content directly without going through
-the \textit{Pending} state, for cases where editorial review is not required.
+The transitions between these states are the following:
 
-The state transitions described above are enforced at the API level --- the backend
-validates that each transition is permitted for the requesting user's role before
-persisting the state change.
+\begin{itemize}
+      \item \textbf{Submit} --- a Contributor submits a draft, moving it from
+            \textit{Draft} to \textit{Pending Review}.
 
-The workflow described above defines the intended behaviour;
-the complete implementation is currently in progress.
+      \item \textbf{Publish} --- an Editor or Administrator approves a pending item,
+            moving it to \textit{Published}; the reviewer identity is recorded.
+
+      \item \textbf{Reject} --- an Editor or Administrator rejects a pending item,
+            moving it to \textit{Rejected} together with a mandatory review comment.
+
+      \item \textbf{Direct publish} --- because Editors and Administrators hold the
+            publishing permission, they may publish a draft directly, bypassing the
+            \textit{Pending Review} state when editorial review is not required.
+
+      \item \textbf{Edit} --- editing a \textit{Rejected} or \textit{Published} item
+            returns it to \textit{Draft}, ensuring that any modification to already
+            reviewed content is subject to review again before it becomes public.
+\end{itemize}
+
+These transitions are enforced at the API level. Each is exposed as a dedicated
+endpoint under \texttt{/api/backoffice/contents} and guarded by the
+\texttt{@RequireRole} annotation, so the backend validates that the requesting user's
+role permits the transition before persisting the state change. The permission model
+and the implementation of these checks are described in Chapter~\ref{cap:backend}.

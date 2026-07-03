@@ -40,8 +40,9 @@ class MediaController(
         @RequestParam page: Int = 1,
         @RequestParam size: Int = 10,
         @RequestParam type: String? = null,
+        @RequestParam query: String? = null,
     ): ResponseEntity<*> {
-        val response = mediaService.getAll(page, size, type)
+        val response = mediaService.getAll(page, size, type, query)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { MediaResponseDTO.from(it) },

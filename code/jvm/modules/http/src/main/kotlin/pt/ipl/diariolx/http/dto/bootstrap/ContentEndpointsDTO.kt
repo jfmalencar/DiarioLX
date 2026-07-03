@@ -8,6 +8,7 @@ data class ContentEndpointsDTO(
     val update: LinkDTO,
     val delete: LinkDTO,
     val archive: LinkDTO,
+    val unarchive: LinkDTO,
     val publish: LinkDTO,
     val submit: LinkDTO,
     val reject: LinkDTO,

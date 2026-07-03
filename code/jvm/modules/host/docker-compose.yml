@@ -59,7 +59,7 @@ services:
   nginx:
     image: diariolx-nginx
     ports:
-      - "80:8180"
+      - "8180:8180"
     depends_on:
       - diariolx-seaweed-s3
       - diariolx-jvm-dynamic

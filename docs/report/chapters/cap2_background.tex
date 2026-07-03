@@ -27,7 +27,7 @@ WordPress is the most widely adopted CMS in the world, powering over 40\% of all
 websites~\cite{wordpress_stats}. A WordPress-based proof of concept was the starting
 point for this project. Although WordPress provides a rich plugin ecosystem and a
 familiar editorial interface, it presents notable limitations in the context of
-Diário LX:
+\textit{Diário LX}:
 
 \begin{itemize}
       \item Limited control over the editorial approval workflow without heavy plugin
@@ -53,32 +53,32 @@ also makes full frontend decoupling impractical.
 \subsection{Summary} \label{sec:background_summary}
 
 The three platforms differ significantly in how they address the core requirements
-of Diário LX.
+of \textit{Diário LX}.
 
 Regarding \textbf{editorial workflow}, WordPress requires plugins to approximate any
 structured content lifecycle, while Ghost supports a basic submit-and-publish model
 where Contributors cannot publish directly but editors have no formal way to reject
 content --- they can only publish or leave it unpublished, with no feedback mechanism
-for contributors. Diário LX enforces a formal lifecycle with four explicit states ---
+for contributors. \textit{Diário LX} enforces a formal lifecycle with four explicit states ---
 \textit{Draft}, \textit{Pending}, \textit{Published}, and \textit{Rejected} ---
 requiring an editor to explicitly approve or reject each submission before publication.
 
 Regarding \textbf{role-based access control}, WordPress relies on plugins for any
 granular permission model. Ghost defines four built-in roles with well-defined publish
 restrictions, but the permissions are tied to the platform's own publishing model and
-cannot be extended. Diário LX defines three roles --- \textit{Contributor},
+cannot be extended. \textit{Diário LX} defines three roles --- \textit{Contributor},
 \textit{Editor}, and \textit{Administrator} --- enforced directly at the API level,
 meaning every endpoint independently validates the caller's role without depending on
 any plugin or external system.
 
 Regarding \textbf{multimedia support}, both WordPress and Ghost treat multimedia as
-a secondary concern, relying on basic media libraries or plugins. Diário LX includes
+a secondary concern, relying on basic media libraries or plugins. \textit{Diário LX} includes
 a native upload pipeline supporting images, video, and audio, with direct integration
 into the content authoring workflow.
 
 Regarding \textbf{frontend decoupling}, WordPress and Ghost both tie the presentation
-layer to their own theming systems, which constrains the design and technology choices
-available to the frontend. Diário LX exposes a dedicated REST API consumed by an
+layer to their own theme-based systems, which constrains the design and technology choices
+available to the frontend. \textit{Diário LX} exposes a dedicated REST API consumed by an
 independent React application, meaning the frontend can be developed, deployed, and
 replaced entirely without touching the backend.
 
@@ -86,11 +86,11 @@ Table~\ref{tab:cms_comparison} consolidates these differences.
 
 \begin{table}[H]
       \centering
-      \caption{Comparison of existing CMS solutions against Diário LX requirements.}
+      \caption{Comparison of existing CMS solutions against \textit{Diário LX} requirements.}
       \label{tab:cms_comparison}
       \begin{tabularx}{\textwidth}{lXXX}
             \toprule
-            \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost}        & \textbf{Diário LX}      \\
+            \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost}        & \textbf{\textit{Diário LX}}      \\
             \midrule
             Editorial workflow & Plugin-based       & Submit/publish only,  & Draft → Pending →       \\
                                &                    & no rejection state    & Published / Rejected    \\
@@ -111,5 +111,5 @@ Table~\ref{tab:cms_comparison} consolidates these differences.
 \end{table}
 
 None of the analysed off-the-shelf solutions fully satisfies the editorial workflow,
-access control, and multimedia management requirements of Diário LX, motivating the
+access control, and multimedia management requirements of \textit{Diário LX}, motivating the
 development of a purpose-built platform.

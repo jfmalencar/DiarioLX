@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import pt.ipl.diariolx.domain.auth.CookieConfig
 import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
@@ -32,7 +33,17 @@ class AuthController(
     private val userService: UserService,
     private val inviteService: InviteService,
     private val logger: Logger,
+    private val cookieConfig: CookieConfig,
 ) {
+    private fun sessionCookie(
+        name: String,
+        value: String,
+        maxAge: Long,
+    ): String {
+        val secure = if (cookieConfig.secure) "; Secure" else ""
+        return "$name=$value; HttpOnly; Path=/; Max-Age=$maxAge; SameSite=Strict$secure"
+    }
+
     @PostMapping(Uris.Auth.SIGNUP)
     @MayReturnCreated
     @MayReturnBadRequest
@@ -82,14 +93,8 @@ class AuthController(
     ): ResponseEntity<*> =
         when (val result = userService.login(body.username, body.password)) {
             is Success -> {
-                response.addHeader(
-                    HttpHeaders.SET_COOKIE,
-                    "accessToken=${result.value.accessToken}; HttpOnly; Path=/; Max-Age=600; SameSite=Strict",
-                )
-                response.addHeader(
-                    HttpHeaders.SET_COOKIE,
-                    "refreshToken=${result.value.refreshToken}; HttpOnly; Path=/; Max-Age=604800; SameSite=Strict",
-                )
+                response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie("accessToken", result.value.accessToken, 600))
+                response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie("refreshToken", result.value.refreshToken, 604800))
                 ResponseEntity.noContent().build<Unit>()
             }
             is Failure ->
@@ -110,8 +115,8 @@ class AuthController(
         if (refreshToken != null) {
             userService.logout(refreshToken)
         }
-        response.addHeader(HttpHeaders.SET_COOKIE, "accessToken=; Max-Age=0; Path=/; HttpOnly")
-        response.addHeader(HttpHeaders.SET_COOKIE, "refreshToken=; Max-Age=0; Path=/; HttpOnly")
+        response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie("accessToken", "", 0))
+        response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie("refreshToken", "", 0))
         return ResponseEntity.noContent().build<Unit>()
     }
 
@@ -124,10 +129,7 @@ class AuthController(
     ): ResponseEntity<*> =
         when (val result = userService.refresh(refreshToken)) {
             is Success -> {
-                response.addHeader(
-                    HttpHeaders.SET_COOKIE,
-                    "accessToken=${result.value.accessToken}; HttpOnly; Path=/; Max-Age=600; SameSite=Strict",
-                )
+                response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie("accessToken", result.value.accessToken, 600))
                 ResponseEntity.noContent().build<Unit>()
             }
             is Failure ->

@@ -62,6 +62,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                 isDirty: false,
                 contentData: {
                     type: content.type,
+                    state: content.state,
                     title: content.title,
                     slug: content.slug,
                     headline: content.headline,
@@ -188,7 +189,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                 const newBlock: ContentBlock = {
                     id: generateId(),
                     type: 'MEDIA',
-                    position: 0, // recalculado pelo reindex
+                    position: 0,
                     media: action.payload,
                     caption: null,
                 };
@@ -209,7 +210,6 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
         case 'select-media-many': {
             const newImages = action.payload.map((media) => ({ media, caption: null }));
 
-            // Append to an existing gallery block when "adicionar mais" was used.
             if (state.galleryTargetBlockId !== undefined) {
                 return {
                     ...state,
@@ -227,7 +227,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
             const newBlock: ContentBlock = {
                 id: generateId(),
                 type: 'GALLERY',
-                position: 0, // recalculado pelo reindex
+                position: 0,
                 images: newImages,
             };
 

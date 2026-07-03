@@ -6,8 +6,6 @@ type Props = {
     className?: string;
 };
 
-// Renders a YouTube (16:9) or Spotify player from a pasted link. Falls back to a
-// plain link if the URL can't be parsed into an embed.
 export const EmbedPlayer = ({ url, title = 'Conteúdo incorporado', className }: Props) => {
     const src = embedSrc(url);
     const provider = detectProvider(url);

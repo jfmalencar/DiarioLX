@@ -86,6 +86,7 @@ export type ContentSummary = {
     }[]
     createdAt: string
     publishedAt: string | null
+    archivedAt: string | null
 }
 
 type ContentBlockBase = {
@@ -246,4 +247,6 @@ export interface ContentsService {
     delete(id: number): Promise<void>;
 
     archive(id: number): Promise<void>;
+
+    unarchive(id: number): Promise<void>;
 }

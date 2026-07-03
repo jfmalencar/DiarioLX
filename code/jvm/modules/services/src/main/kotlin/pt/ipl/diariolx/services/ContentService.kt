@@ -3,6 +3,7 @@ package pt.ipl.diariolx.services
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import pt.ipl.diariolx.domain.PageResponse
+import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
@@ -32,7 +33,20 @@ class ContentService(
         const val MIN_PHOTO_ESSAY_IMAGES = 3
     }
 
-    fun createEmpty(type: String): ContentCreateResult {
+    private fun contributorGuard(
+        content: Content,
+        user: User,
+    ): ContentError? {
+        if (user.role >= UserRole.EDITOR) return null
+        if (content.state == ContentState.PUBLISHED) return ContentError.PublishedLocked
+        val primaryAuthorId = content.authors.firstOrNull { it.role.equals("primary", ignoreCase = true) }?.id
+        return if (primaryAuthorId != user.id) ContentError.NotContentOwner else null
+    }
+
+    fun createEmpty(
+        type: String,
+        authorId: Int,
+    ): ContentCreateResult {
         val type =
             try {
                 ContentType.valueOf(type.uppercase())
@@ -40,7 +54,7 @@ class ContentService(
                 return failure(ContentError.InvalidType)
             }
         return transactionManager.run { tx ->
-            val contentId = tx.contentRepository.createEmpty(type, clock.now())
+            val contentId = tx.contentRepository.createEmpty(type, authorId, clock.now())
             success(contentId)
         }
     }
@@ -57,12 +71,14 @@ class ContentService(
         authors: List<ContentAuthor>,
         tags: List<ContentTag>,
         blocks: List<NewContentBlock>,
+        user: User,
     ): ContentUpdateResult {
         slug?.let {
             if (it.isBlank()) return failure(ContentError.InvalidSlug)
         }
         return transactionManager.run { tx ->
             val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            contributorGuard(content, user)?.let { return@run failure(it) }
             categoryId?.let {
                 tx.categoryRepository.getById(it) ?: return@run failure(ContentError.CategoryNotFound)
             }
@@ -126,9 +142,14 @@ class ContentService(
         }
     }
 
-    fun delete(id: Int): ContentUpdateResult =
-        transactionManager.run {
-            val result = it.contentRepository.delete(id)
+    fun delete(
+        id: Int,
+        user: User,
+    ): ContentUpdateResult =
+        transactionManager.run { tx ->
+            val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            contributorGuard(content, user)?.let { return@run failure(it) }
+            val result = tx.contentRepository.delete(id)
             if (result) {
                 return@run success(Unit)
             } else {
@@ -142,16 +163,23 @@ class ContentService(
         reviewerId: Int,
     ): ContentUpdateResult = send(id, ContentState.PUBLISHED, comment, reviewerId)
 
-    fun submit(id: Int): ContentUpdateResult = send(id, ContentState.PENDING_REVIEW)
+    fun submit(
+        id: Int,
+        user: User,
+    ): ContentUpdateResult = send(id, ContentState.PENDING_REVIEW, user = user)
 
     fun send(
         id: Int,
         newState: ContentState,
         comment: String? = null,
         reviewerId: Int? = null,
+        user: User? = null,
     ): ContentUpdateResult {
         return transactionManager.run { tx ->
             val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            if (user != null) {
+                contributorGuard(content, user)?.let { return@run failure(it) }
+            }
             if (content.title.isBlank()) {
                 return@run failure(ContentError.EmptyField)
             }
@@ -232,6 +260,7 @@ class ContentService(
         state: ContentState?,
         type: ContentType?,
         category: String?,
+        archived: Boolean?,
         user: User,
     ): PageResponse<ContentSummary> {
         val authorId = if (user.role < UserRole.EDITOR && state != ContentState.PUBLISHED) user.id else null
@@ -245,6 +274,7 @@ class ContentService(
                     state = state,
                     type = type,
                     authorId = authorId,
+                    archived = archived,
                 )
             }
         }

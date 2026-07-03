@@ -50,5 +50,7 @@ export const useLoadMore = <T, R extends Paged<T>>(fetchPage: ((page: number) =>
         load(pageRef.current + 1);
     }, [hasMore, loading, loadingMore, load]);
 
-    return { response, items, hasMore, loadMore, loading, loadingMore, error };
+    const reload = useCallback(() => load(1), [load]);
+
+    return { response, items, hasMore, loadMore, reload, loading, loadingMore, error };
 }

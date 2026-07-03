@@ -12,6 +12,7 @@ import java.time.LocalDate
 interface ContentRepository {
     fun createEmpty(
         type: ContentType,
+        authorId: Int,
         now: Instant,
     ): Int
 
@@ -39,6 +40,7 @@ interface ContentRepository {
         author: String? = null,
         creditedTo: String? = null,
         excludeArchivedCategory: Boolean = false,
+        archived: Boolean? = null,
     ): List<ContentSummary>
 
     fun internalGetById(id: Int): Content?

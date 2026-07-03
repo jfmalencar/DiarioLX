@@ -31,6 +31,10 @@ sealed class ContentError(
     object InvalidParent : ContentError("Parent content not found or is not a podcast")
 
     object InvalidEmbed : ContentError("Embed URL is not valid for this content type")
+
+    object PublishedLocked : ContentError("Published content cannot be modified by contributors")
+
+    object NotContentOwner : ContentError("You can only modify your own content")
 }
 
 typealias ContentResult = Either<ContentError, Content>

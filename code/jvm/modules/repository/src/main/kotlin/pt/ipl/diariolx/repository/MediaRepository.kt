@@ -14,6 +14,7 @@ interface MediaRepository {
         offset: Int,
         type: String? = null,
         purpose: String?,
+        query: String? = null,
     ): List<Media>
 
     fun delete(id: Int): Boolean

@@ -11,9 +11,9 @@ import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.http.annotations.MayReturnAuthorOk
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
-import pt.ipl.diariolx.http.annotations.MayReturnContentOk
 import pt.ipl.diariolx.http.annotations.MayReturnNotFound
 import pt.ipl.diariolx.http.annotations.MayReturnPaginationOk
+import pt.ipl.diariolx.http.annotations.MayReturnPublicContentOk
 import pt.ipl.diariolx.http.annotations.MayReturnPublicHomepageOk
 import pt.ipl.diariolx.http.annotations.MayReturnResourceContentsOk
 import pt.ipl.diariolx.http.annotations.MayReturnTeamOk
@@ -117,7 +117,7 @@ class GuestController(
     }
 
     @GetMapping(Uris.Guest.GET_CONTENT)
-    @MayReturnContentOk
+    @MayReturnPublicContentOk
     @MayReturnNotFound
     fun getContent(
         @PathVariable slug: String,

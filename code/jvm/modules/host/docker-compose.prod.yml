@@ -1,0 +1,65 @@
+services:
+  diariolx-postgres:
+    container_name: diariolx-postgres
+    image: ghcr.io/jfmalencar/diariolx-postgres:latest
+    env_file:
+      - .env
+    volumes:
+      - diariolx-postgres-data:/var/lib/postgresql
+
+  diariolx-seaweed-master:
+    image: chrislusf/seaweedfs:latest
+    command: 'master -ip=diariolx-seaweed-master -ip.bind=0.0.0.0 -mdir=/data'
+    volumes:
+      - diariolx-seaweed-master-data:/data
+
+  diariolx-seaweed-volume:
+    image: chrislusf/seaweedfs:latest
+    command: 'volume -mserver="diariolx-seaweed-master:9333" -ip=diariolx-seaweed-volume -ip.bind=0.0.0.0 -dir=/data'
+    depends_on:
+      - diariolx-seaweed-master
+    volumes:
+      - diariolx-seaweed-volume-data:/data
+
+  diariolx-seaweed-filer:
+    image: chrislusf/seaweedfs:latest
+    command: 'filer -master="diariolx-seaweed-master:9333" -ip=diariolx-seaweed-filer -ip.bind=0.0.0.0'
+    depends_on:
+      - diariolx-seaweed-master
+      - diariolx-seaweed-volume
+    volumes:
+      - diariolx-seaweed-filer-data:/data
+
+  diariolx-seaweed-s3:
+    image: chrislusf/seaweedfs:latest
+    command: 's3 -filer="diariolx-seaweed-filer:8888" -ip.bind=0.0.0.0 -config=/etc/seaweedfs/seaweed-config.json'
+    depends_on:
+      - diariolx-seaweed-filer
+    volumes:
+      - ./seaweed-config.json:/etc/seaweedfs/seaweed-config.json:ro
+
+  diariolx-seaweed-admin:
+    image: chrislusf/seaweedfs:latest
+    command: 'admin -port=23646 -masters="diariolx-seaweed-master:9333"'
+    depends_on:
+      - diariolx-seaweed-master
+
+  diariolx-jvm-dynamic:
+    image: ghcr.io/jfmalencar/diariolx-jvm:latest
+    hostname: diariolx-jvm-dynamic
+    env_file:
+      - .env
+
+  nginx:
+    image: ghcr.io/jfmalencar/diariolx-nginx:latest
+    ports:
+      - "8180:8180"
+    depends_on:
+      - diariolx-seaweed-s3
+      - diariolx-jvm-dynamic
+
+volumes:
+  diariolx-postgres-data:
+  diariolx-seaweed-master-data:
+  diariolx-seaweed-volume-data:
+  diariolx-seaweed-filer-data:

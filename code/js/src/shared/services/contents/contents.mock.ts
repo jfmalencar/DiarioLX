@@ -2,8 +2,6 @@ import { useMemo } from 'react';
 
 import type { ContentsService, ContentSummary, Content, ContentType, ContentState } from './contents.types';
 
-// A larger summary feed so public listings can render cards and paginate
-// ("Ver mais") deterministically in mock mode.
 const PUBLIC_FEED_SIZE = 15;
 
 const fakeSummaries: ContentSummary[] = Array.from({ length: PUBLIC_FEED_SIZE }, (_, i) => {
@@ -239,6 +237,19 @@ export const useContentsMockService = (): ContentsService => {
       fakeContents[index] = {
         ...fakeContents[index],
         archivedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    },
+
+    async unarchive(id) {
+      const index = fakeContents.findIndex((art) => art.id === id);
+      if (index === -1) {
+        throw new Error('Content not found');
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      fakeContents[index] = {
+        ...fakeContents[index],
+        archivedAt: null,
         updatedAt: new Date().toISOString(),
       };
     },

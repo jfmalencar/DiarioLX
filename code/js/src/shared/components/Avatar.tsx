@@ -9,8 +9,6 @@ type Props = {
     className?: string;
 };
 
-// Circular user image with a lucide user-icon fallback (matching the backoffice
-// user list) when there's no photo.
 export const Avatar = ({ src, alt = '', size = 200, className = '' }: Props) => {
     const { buildMediaUrl } = usePath();
 

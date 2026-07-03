@@ -1,7 +1,6 @@
 package pt.ipl.diariolx
 
 import org.springframework.core.env.Environment
-import org.springframework.core.env.get
 import org.springframework.stereotype.Component
 
 @Component
@@ -31,6 +30,9 @@ class AppEnvironment(
     val jwtSecret: String get() = environment.getRequiredProperty("JWT_SECRET")
     val jwtAccessTokenExpirationMs: Long get() = environment.getProperty("JWT_ACCESS_EXPIRATION_MS", Long::class.java, 600000L)
     val jwtRefreshTokenExpirationMs: Long get() = environment.getProperty("JWT_REFRESH_EXPIRATION_MS", Long::class.java, 604800000L)
+
+    // Cookies
+    val cookieSecure: Boolean get() = environment.getProperty("COOKIE_SECURE", Boolean::class.java, false)
 
     // App
     val imageBaseUrl: String get() = s3PublicEndpoint

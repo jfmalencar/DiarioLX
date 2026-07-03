@@ -10,8 +10,6 @@ type Props = {
     onLoadMore?: () => void;
 };
 
-// Reusable titled grid of overlay content cards with an optional "Carregar mais"
-// control. Used for a podcast's episodes, suggested articles, etc.
 export const ContentGridSection = ({ title, contents, hasMore, loading, onLoadMore }: Props) => {
     if (contents.length === 0) return null;
 

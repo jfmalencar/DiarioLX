@@ -1,0 +1,237 @@
+// DiárioLX — database model (dbdiagram.io / DBML)
+// Kept in sync with code/jvm/modules/repository-jdbi/src/sql/create-schema.sql
+
+Enum user_role {
+  ADMIN
+  EDITOR
+  CONTRIBUTOR
+}
+
+Enum content_type {
+  ARTICLE
+  VIDEO
+  EPISODE
+  PODCAST
+  PHOTO_ESSAY
+}
+
+Enum content_state {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+}
+
+Enum content_history_action {
+  APPROVED
+  REJECTED
+}
+
+Enum media_purpose {
+  GALLERY
+  PROFILE
+}
+
+Enum block_type {
+  TEXT
+  QUOTE
+  MEDIA
+  H3
+  H4
+  GALLERY
+  EMBED
+}
+
+Enum credit_role {
+  PHOTOGRAPHER
+  VIDEOGRAPHER
+  AUDIO_ENGINEER
+  WRITER
+  DIRECTOR
+  PRODUCER
+  EDITOR
+  NARRATOR
+  ACTOR
+  MODEL
+  ILLUSTRATOR
+  DESIGNER
+  OTHER
+}
+
+Table users {
+  id serial [pk]
+  username varchar(30) [not null, unique]
+  email varchar(30) [not null, unique]
+  role user_role [not null]
+  password_hash varchar(255) [not null]
+  first_name varchar(30) [not null]
+  last_name varchar(30) [not null]
+  position text
+  bio text
+  on_team boolean
+  avatar_media_id integer [ref: > medias.id]
+  active_account boolean
+  created_at bigint [not null]
+  updated_at bigint [not null]
+}
+
+Table sessions {
+  id serial [pk]
+  user_id integer [not null, ref: > users.id]
+  refresh_token varchar(64) [not null, unique]
+  created_at bigint
+  expires_at bigint [not null]
+}
+
+Table invites {
+  id serial [pk]
+  invite_token varchar(64) [not null, unique]
+  role_assigned user_role [not null]
+  created_at bigint [not null]
+  expires_at bigint [not null]
+  used boolean
+}
+
+Table medias {
+  id serial [pk]
+  purpose media_purpose [not null]
+  original_file_name text [not null]
+  bucket text [not null]
+  object_key text [not null]
+  thumbnail_bucket text
+  thumbnail_object_key text
+  alt_text varchar(255)
+  mime_type varchar(100)
+  status varchar(20) [not null, note: "pending | ready"]
+  size_bytes bigint
+  created_at bigint
+  uploaded_at bigint
+}
+
+Table media_credits {
+  media_id integer [not null, ref: > medias.id]
+  user_id integer [not null, ref: > users.id]
+  role credit_role [not null]
+
+  indexes {
+    (media_id, user_id, role) [pk]
+  }
+}
+
+Table categories {
+  id serial [pk]
+  name varchar(150) [not null]
+  slug varchar(160) [not null, unique]
+  description text
+  color varchar(20) [not null, unique]
+  parent_id integer [ref: > categories.id]
+  created_at bigint
+  updated_at bigint
+  archived_at bigint
+}
+
+Table tags {
+  id serial [pk]
+  name varchar(150) [not null]
+  slug varchar(160) [not null, unique]
+  description text
+  created_at bigint
+  updated_at bigint
+  archived_at bigint
+}
+
+Table contents {
+  id serial [pk]
+  type content_type [not null]
+  title varchar(255) [not null]
+  headline text [not null]
+  featured_media_id integer [ref: > medias.id]
+  slug varchar(255) [unique]
+  category_id integer [ref: > categories.id]
+  parent_id integer [ref: > contents.id]
+  embed_url text
+  published_at bigint
+  archived_at bigint
+  created_at bigint
+  updated_at bigint
+  state content_state [not null]
+}
+
+Table content_history {
+  id serial [pk]
+  content_id integer [not null, ref: > contents.id]
+  performed_by integer [ref: > users.id]
+  action content_history_action [not null]
+  comment text
+  performed_at bigint
+}
+
+Table content_authors {
+  content_id integer [not null, ref: > contents.id]
+  author_id integer [not null, ref: > users.id]
+  role varchar(20) [not null]
+
+  indexes {
+    (content_id, author_id) [pk]
+  }
+}
+
+Table content_blocks {
+  id serial [pk]
+  content_id integer [not null, ref: > contents.id]
+  type block_type [not null]
+  content text
+  media_id integer [ref: > medias.id]
+  position integer [not null]
+  created_at bigint
+  updated_at bigint
+
+  indexes {
+    (content_id, position) [unique]
+  }
+}
+
+Table content_block_images {
+  block_id integer [not null, ref: > content_blocks.id]
+  media_id integer [not null, ref: > medias.id]
+  caption text
+  position integer [not null]
+
+  indexes {
+    (block_id, position) [pk]
+  }
+}
+
+Table content_tags {
+  content_id integer [not null, ref: > contents.id]
+  tag_id integer [not null, ref: > tags.id]
+  role varchar(20) [not null]
+
+  indexes {
+    (content_id, tag_id) [pk]
+  }
+}
+
+Table featured_sections {
+  id serial [pk]
+  type varchar(30) [not null]
+  category_id integer [ref: > categories.id]
+  position integer [not null, unique]
+}
+
+Table featured_contents {
+  id serial [pk]
+  section_id integer [not null, ref: > featured_sections.id]
+  content_id integer [not null, ref: > contents.id]
+  position integer [not null]
+
+  indexes {
+    (section_id, content_id) [unique]
+    (section_id, position) [unique]
+  }
+}
+
+Table settings {
+  key varchar(255) [pk]
+  value text [not null]
+}

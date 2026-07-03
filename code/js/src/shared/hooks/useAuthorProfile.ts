@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react';
 import { useTeamService } from '@/shared/services/team';
 import type { TeamMember } from '@/shared/services/team/team.types';
 
-// Public profile of any user by username — works for any author or credited
-// person, not only team members.
 export const useAuthorProfile = (slug?: string) => {
     const teamService = useTeamService();
     const [author, setAuthor] = useState<TeamMember | null>(null);

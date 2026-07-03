@@ -161,6 +161,13 @@ export const useContentsApiService = (): ContentsService => {
       if (!result.success) {
         throw new Error(result.error || 'Failed to archive content');
       }
+    },
+
+    async unarchive(id) {
+      const result = await post(endpoints.backoffice.contents.unarchive.href.replace('{id}', id.toString()), {});
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to unarchive content');
+      }
     }
   }), [get, post, put, remove, endpoints])
 };

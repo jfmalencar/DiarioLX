@@ -26,6 +26,7 @@ class ContentRepositoryMem(
 
     override fun createEmpty(
         type: ContentType,
+        authorId: Int,
         now: Instant,
     ): Int {
         val newId = ++currentId
@@ -44,7 +45,7 @@ class ContentRepositoryMem(
                 updatedAt = Clock.System.now(),
                 state = ContentState.DRAFT,
                 tags = emptyList(),
-                authors = emptyList(),
+                authors = listOf(Author(authorId, "Name", "primary", "author")),
                 blocks = emptyList(),
             )
         contents.add(newContent)
@@ -117,6 +118,7 @@ class ContentRepositoryMem(
         author: String?,
         creditedTo: String?,
         excludeArchivedCategory: Boolean,
+        archived: Boolean?,
     ): List<ContentSummary> =
         contents
             .filter { content ->

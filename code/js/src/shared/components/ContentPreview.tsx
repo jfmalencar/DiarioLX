@@ -31,8 +31,7 @@ export const ContentPreview = ({ content }: Props) => {
     const { showSnackbar } = useSnackbar();
 
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-    const openShare = (url: string) =>
-        window.open(url, '_blank', 'noopener,noreferrer,width=600,height=520');
+    const openShare = (url: string) => window.open(url, '_blank', 'noopener,noreferrer,width=600,height=520');
     const copyLink = async () => {
         try {
             await navigator.clipboard.writeText(shareUrl);
@@ -68,7 +67,6 @@ export const ContentPreview = ({ content }: Props) => {
     const isVideo = content.type === 'VIDEO';
     const isPodcast = content.type === 'PODCAST';
     const isEpisode = content.type === 'EPISODE';
-    // Photo essays are dark end-to-end (hero AND body); the others only darken the hero.
     const isPhotoEssay = content.type === 'PHOTO_ESSAY';
     const isDark = isVideo || isPodcast || isEpisode || isPhotoEssay;
 
@@ -76,6 +74,7 @@ export const ContentPreview = ({ content }: Props) => {
     const category = content.category.name?.toUpperCase();
     const credits = content.featuredImage?.credits || [];
     const date = formatNewsDate(content.createdAt);
+    const wasUpdatedAfterPublish = content.publishedAt != null && new Date(content.updatedAt) > new Date(content.publishedAt);
     const accent = contentAccent(content.type, content.category?.color);
     const episodeArtwork = content.parent?.image ?? null;
 
@@ -202,6 +201,11 @@ export const ContentPreview = ({ content }: Props) => {
                                         />
                                     ))}
                                 </div>
+                                {wasUpdatedAfterPublish && (
+                                    <p className='text-uppercase mb-4' style={{ fontSize: '0.78rem', opacity: 0.65, letterSpacing: '0.04em' }}>
+                                        Atualizado em {formatNewsDate(content.updatedAt)}
+                                    </p>
+                                )}
                                 <div className='d-flex gap-3'>
                                     {shareActions.map((action) => (
                                         <button

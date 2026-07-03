@@ -139,6 +139,12 @@ export const useContents = () => {
         [contentsService]
     )
 
+    const unarchive = useCallback(
+        (id: number): Promise<Result> =>
+            runAction(() => contentsService.unarchive(id), 'Failed to unarchive content', setLoading, setError),
+        [contentsService]
+    )
+
     const deleteContent = useCallback(
         (id: number): Promise<Result> =>
             runAction(() => contentsService.delete(id), 'Failed to delete content', setLoading, setError),
@@ -160,6 +166,7 @@ export const useContents = () => {
         submit,
         reject,
         archive,
+        unarchive,
         delete: deleteContent
     }
 }

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router';
-import { ExternalLink, Edit, ClipboardCheck, ClipboardList, FileText, Video, Mic, Radio } from 'lucide-react';
+import { ExternalLink, Edit, ClipboardCheck, ClipboardList, FileText, Video, Mic, Radio, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { TableBody, Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
@@ -13,6 +13,7 @@ import { useFilters, type FilterSection } from '@/shared/hooks/useFilters';
 import { MediaPreview } from '@/shared/components/MediaPreview';
 import { contentThumbnail, isVideoThumbnail } from '@/shared/utils/content';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
+import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
 const typeIcon = {
     ARTICLE: <FileText size={14} className='text-muted' />,
@@ -38,23 +39,52 @@ const sections: FilterSection[] = [
 
 type Props = {
     filter: {
-        state: ContentState
+        state?: ContentState
+        archived?: boolean
     };
 };
 
 const ContentsTable = ({ filter }: Props) => {
     const { t } = useI18n();
-    const { loading, contents, pagination, fetchAll } = useContents();
+    const { loading, contents, pagination, fetchAll, archive, unarchive, delete: deleteContent } = useContents();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
     const { user } = useAuthentication();
+    const { showSnackbar } = useSnackbar();
 
     const canEditPublished = user?.features?.includes('edit-published')
+    const isArchivedTab = !!filter.archived
+
+    const refetch = useCallback(() => {
+        const params = buildQuery({ p: 'page', total: 'size', search: 'query', type: 'type' }, { state: filter.state, archived: filter.archived });
+        fetchAll(params)
+    }, [fetchAll, buildQuery, filter.state, filter.archived]);
 
     useEffect(() => {
-        const params = buildQuery({ p: 'page', total: 'size', search: 'query', type: 'type' }, { state: filter.state });
-        fetchAll(params)
-    }, [fetchAll, searchParams, filter, buildQuery]);
+        refetch()
+    }, [refetch, searchParams]);
+
+    const handleArchive = async (id: number) => {
+        const res = await archive(id)
+        if (!res.ok) { showSnackbar(res.error, 'error'); return }
+        showSnackbar('Publicação arquivada.', 'success')
+        refetch()
+    }
+
+    const handleUnarchive = async (id: number) => {
+        const res = await unarchive(id)
+        if (!res.ok) { showSnackbar(res.error, 'error'); return }
+        showSnackbar('Publicação restaurada.', 'success')
+        refetch()
+    }
+
+    const handleDelete = async (id: number) => {
+        if (!window.confirm('Tem a certeza que deseja eliminar esta publicação?')) return
+        const res = await deleteContent(id)
+        if (!res.ok) { showSnackbar(res.error, 'error'); return }
+        showSnackbar('Publicação eliminada.', 'success')
+        refetch()
+    }
 
     return (
         <>
@@ -114,36 +144,81 @@ const ContentsTable = ({ filter }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
-                                    {row.state === 'PUBLISHED' &&
-                                        <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
-                                            <ExternalLink size={16} />
-                                        </Link>
-                                    }
-                                    {(row.state !== 'PUBLISHED' || canEditPublished) &&
-                                        <Link
-                                            to={`/backoffice/contents/${row.id}`}
-                                            className='btn btn-dark rounded-2'
-                                            data-testid={`manage-content-button-${index}`}
-                                        >
-                                            <Edit size={16} />
-                                        </Link>
-                                    }
-                                    {row.state === 'PENDING_REVIEW' &&
-                                        <Link
-                                            to={`/backoffice/contents/${row.id}/review`}
-                                            className='btn btn-outline-dark rounded-2'
-                                        >
-                                            <ClipboardCheck size={16} />
-                                        </Link>
-                                    }
-                                    {row.state === 'REJECTED' &&
-                                        <Link
-                                            to={`/backoffice/contents/${row.id}/review`}
-                                            className='btn btn-outline-dark rounded-2'
-                                        >
-                                            <ClipboardList size={16} />
-                                        </Link>
-                                    }
+                                    {isArchivedTab ? (
+                                        <>
+                                            {row.state === 'PUBLISHED' &&
+                                                <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
+                                                    <ExternalLink size={16} />
+                                                </Link>
+                                            }
+                                            {canEditPublished &&
+                                                <button
+                                                    type='button'
+                                                    onClick={() => handleUnarchive(row.id)}
+                                                    className='btn btn-outline-dark rounded-2'
+                                                    title='Desarquivar'
+                                                    disabled={loading}
+                                                >
+                                                    <ArchiveRestore size={16} />
+                                                </button>
+                                            }
+                                            {canEditPublished &&
+                                                <button
+                                                    type='button'
+                                                    onClick={() => handleDelete(row.id)}
+                                                    className='btn btn-outline-danger rounded-2'
+                                                    title='Eliminar'
+                                                    disabled={loading}
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            }
+                                        </>
+                                    ) : (
+                                        <>
+                                            {row.state === 'PUBLISHED' &&
+                                                <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
+                                                    <ExternalLink size={16} />
+                                                </Link>
+                                            }
+                                            {(row.state !== 'PUBLISHED' || canEditPublished) &&
+                                                <Link
+                                                    to={`/backoffice/contents/${row.id}`}
+                                                    className='btn btn-dark rounded-2'
+                                                    data-testid={`manage-content-button-${index}`}
+                                                >
+                                                    <Edit size={16} />
+                                                </Link>
+                                            }
+                                            {row.state === 'PENDING_REVIEW' &&
+                                                <Link
+                                                    to={`/backoffice/contents/${row.id}/review`}
+                                                    className='btn btn-outline-dark rounded-2'
+                                                >
+                                                    <ClipboardCheck size={16} />
+                                                </Link>
+                                            }
+                                            {row.state === 'REJECTED' &&
+                                                <Link
+                                                    to={`/backoffice/contents/${row.id}/review`}
+                                                    className='btn btn-outline-dark rounded-2'
+                                                >
+                                                    <ClipboardList size={16} />
+                                                </Link>
+                                            }
+                                            {canEditPublished && row.state === 'PUBLISHED' &&
+                                                <button
+                                                    type='button'
+                                                    onClick={() => handleArchive(row.id)}
+                                                    className='btn btn-outline-dark rounded-2'
+                                                    title='Arquivar'
+                                                    disabled={loading}
+                                                >
+                                                    <Archive size={16} />
+                                                </button>
+                                            }
+                                        </>
+                                    )}
                                 </div>
                             </TableColumn>
                         </TableRow>
@@ -169,16 +244,19 @@ export const Contents = () => {
                 }
             >
                 <Tab id='published' label={t('common.published')}>
-                    <ContentsTable filter={{ state: 'PUBLISHED' }} />
+                    <ContentsTable filter={{ state: 'PUBLISHED', archived: false }} />
                 </Tab>
                 <Tab id='pending' label={t('common.pending')}>
-                    <ContentsTable filter={{ state: 'PENDING_REVIEW' }} />
+                    <ContentsTable filter={{ state: 'PENDING_REVIEW', archived: false }} />
                 </Tab>
                 <Tab id='draft' label={t('common.draft')}>
-                    <ContentsTable filter={{ state: 'DRAFT' }} />
+                    <ContentsTable filter={{ state: 'DRAFT', archived: false }} />
                 </Tab>
                 <Tab id='rejected' label={t('common.rejected')}>
-                    <ContentsTable filter={{ state: 'REJECTED' }} />
+                    <ContentsTable filter={{ state: 'REJECTED', archived: false }} />
+                </Tab>
+                <Tab id='archived' label={t('common.archived')}>
+                    <ContentsTable filter={{ archived: true }} />
                 </Tab>
             </Tabs>
         </>

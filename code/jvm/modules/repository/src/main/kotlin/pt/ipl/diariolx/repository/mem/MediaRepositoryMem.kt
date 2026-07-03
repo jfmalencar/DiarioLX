@@ -37,7 +37,13 @@ class MediaRepositoryMem : MediaRepository {
         offset: Int,
         type: String?,
         purpose: String?,
-    ): List<Media> = medias.filter { it.status === "ready" }.drop(offset).take(limit)
+        query: String?,
+    ): List<Media> =
+        medias
+            .filter { it.status === "ready" }
+            .filter { query == null || it.altText.contains(query, ignoreCase = true) }
+            .drop(offset)
+            .take(limit)
 
     override fun delete(id: Int): Boolean = medias.removeIf { it.id == id }
 

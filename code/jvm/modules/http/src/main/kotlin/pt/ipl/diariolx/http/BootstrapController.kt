@@ -127,6 +127,7 @@ class BootstrapController(
                                         submit = LinkDTO(Uris.Content.SUBMIT, HttpMethod.POST),
                                         reject = LinkDTO(Uris.Content.REJECT, HttpMethod.POST),
                                         archive = LinkDTO(Uris.Content.ARCHIVE, HttpMethod.POST),
+                                        unarchive = LinkDTO(Uris.Content.UNARCHIVE, HttpMethod.POST),
                                     ),
                                 featured =
                                     FeaturedEndpointsDTO(

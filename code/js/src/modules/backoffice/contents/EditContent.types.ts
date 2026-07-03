@@ -1,5 +1,5 @@
 import type { Media } from '@/shared/services/media/media.types';
-import type { ContentBlock, Content, ContentType } from '@/shared/services/contents/contents.types';
+import type { ContentBlock, Content, ContentType, ContentState } from '@/shared/services/contents/contents.types';
 
 export type Option = {
     id: number;
@@ -14,11 +14,11 @@ export type ImageBlockProps = {
 
 export type ContentEditingInput = {
     type?: ContentType;
+    state?: ContentState;
     title: string;
     headline: string;
     category: Option;
     categorySearch: string;
-    // Episodes pick a parent Podcast instead of a category.
     parent: Option;
     parentSearch: string;
     slug: string;
@@ -31,7 +31,6 @@ export type ContentEditingInput = {
     secondaryAuthors: Option[];
     secondaryAuthorSearch: string;
     featuredMedia: Media | null;
-    // External embed (YouTube for video, Spotify for episode) instead of a file.
     embedUrl: string;
 };
 

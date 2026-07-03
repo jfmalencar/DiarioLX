@@ -2,7 +2,6 @@ import { useContentFeed } from '@/shared/hooks/useContentFeed';
 
 import { ContentGridSection } from './ContentGridSection';
 
-// Lists a podcast's episodes (its child contents) with "load more" paging.
 export const PodcastEpisodes = ({ podcastId }: { podcastId: number }) => {
     const { contents, loading, hasMore, loadMore } = useContentFeed(
         { parentId: podcastId, type: 'EPISODE' },

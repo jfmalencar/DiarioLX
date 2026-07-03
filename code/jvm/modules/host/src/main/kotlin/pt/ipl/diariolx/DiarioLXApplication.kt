@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import pt.ipl.diariolx.domain.auth.CookieConfig
 import pt.ipl.diariolx.domain.auth.JwtConfig
 import pt.ipl.diariolx.domain.featured.SectionPolicy
 import pt.ipl.diariolx.domain.featured.SectionRule
@@ -157,6 +158,12 @@ class DiarioLXApplication {
             appEnv.jwtSecret,
             appEnv.jwtAccessTokenExpirationMs,
             appEnv.jwtRefreshTokenExpirationMs,
+        )
+
+    @Bean
+    fun cookieConfig(appEnv: AppEnvironment): CookieConfig =
+        CookieConfig(
+            appEnv.cookieSecure,
         )
 }
 

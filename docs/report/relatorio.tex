@@ -26,6 +26,20 @@
 \renewcommand{\algorithmicrequire}{\textbf{Input: }}
 \renewcommand{\algorithmicensure}{\textbf{Output: }}
 
+% Placeholder box for screenshots still to be captured.
+\newcommand{\screenshotTODO}[1]{%
+   \fbox{\parbox[c][5cm][c]{0.97\textwidth}{%
+      \centering \ttfamily [SCREENSHOT TO ADD]\\[6pt]\normalfont\itshape #1%
+   }}%
+}
+
+% Placeholder box for diagrams still to be drawn.
+\newcommand{\diagramTODO}[1]{%
+   \fbox{\parbox[c][5cm][c]{0.97\textwidth}{%
+      \centering \ttfamily [DIAGRAM TO ADD]\\[6pt]\normalfont\itshape #1%
+   }}%
+}
+
 % Definições das dimensões das páginas
 \setlength{\textheight}{24.00cm}
 \setlength{\textwidth}{15.50cm}
@@ -57,9 +71,9 @@
                  & Filipe Freitas\\
                  & Fátima Cardoso (ESCS)\\
 \end{tabular}\\[10mm]
-Beta report submitted in partial fulfilment of the requirements for\\
+Final report submitted in partial fulfilment of the requirements for\\
 BSc in Computer Science and Computer Engineering\\[20mm]
-June 2026}
+July 2026}
 
 \begin{document}
 \pagenumbering{roman}
@@ -78,33 +92,33 @@ June 2026}
 
 \begin{center}
 
-  \textsc{\LARGE Instituto Superior de Engenharia de Lisboa}\\[50mm]
+   \textsc{\LARGE Instituto Superior de Engenharia de Lisboa}\\[50mm]
 
-  {\large \bf DiárioLX --- Digital Journalism Platform}\\[20mm]
+   {\large \bf DiárioLX --- Digital Journalism Platform}\\[20mm]
 
-  \begin{tabular}{rl}
-    51745 & Jessé Alencar      \\[10mm]
-          & \rule{75mm}{0.5pt} \\[5mm]
+   \begin{tabular}{rl}
+      51745 & Jessé Alencar      \\[10mm]
+            & \rule{75mm}{0.5pt} \\[5mm]
 
-    51191 & Julianne Lobato    \\[10mm]
-          & \rule{75mm}{0.5pt} \\
-  \end{tabular}\\[10mm]
+      51191 & Julianne Lobato    \\[10mm]
+            & \rule{75mm}{0.5pt} \\
+   \end{tabular}\\[10mm]
 
-  \begin{tabular}{rl}
-    Supervisors: & Artur Ferreira        \\[10mm]
-                 & \rule{75mm}{0.5pt}    \\[5mm]
+   \begin{tabular}{rl}
+      Supervisors: & Artur Ferreira        \\[10mm]
+                   & \rule{75mm}{0.5pt}    \\[5mm]
 
-                 & Filipe Freitas        \\[10mm]
-                 & \rule{75mm}{0.5pt}    \\[5mm]
+                   & Filipe Freitas        \\[10mm]
+                   & \rule{75mm}{0.5pt}    \\[5mm]
 
-                 & Fátima Cardoso (ESCS) \\[10mm]
-                 & \rule{75mm}{0.5pt}    \\
-  \end{tabular}\\[10mm]
+                   & Fátima Cardoso (ESCS) \\[10mm]
+                   & \rule{75mm}{0.5pt}    \\
+   \end{tabular}\\[10mm]
 
-  Beta report submitted in partial fulfilment of the requirements for\\
-  BSc in Computer Science and Computer Engineering\\[20mm]
+   Final report submitted in partial fulfilment of the requirements for\\
+   BSc in Computer Science and Computer Engineering\\[20mm]
 
-  June 2026\\
+   July 2026\\
 
 \end{center}
 
@@ -124,22 +138,19 @@ e uma arquitectura de aplicação desacoplada.
 A solução proposta segue uma arquitectura cliente-servidor composta por um \textit{frontend}
 em React e um \textit{backend} em Spring Boot implementado em Kotlin. O PostgreSQL foi adoptado
 para a persistência de dados estruturados, enquanto os \textit{assets} multimédia são
-armazenados num serviço compatível com S3 auto-hospedado (SeaweedFS). A comunicação
+armazenados num serviço auto-hospedado compatível com o Amazon S3 (SeaweedFS). A comunicação
 entre componentes é realizada através de uma API REST, com respostas de erro a seguir
 o \textit{standard Problem Details for HTTP APIs} (RFC 9457).
 
 A plataforma foi projetada para suportar um fluxo editorial em que o conteúdo progride
 por estados definidos — rascunho, pendente de aprovação, publicado e rejeitado —
 suportado por um modelo de permissões baseado em três níveis de utilizador:
-Colaborador, Editor e Administrador. Na versão beta, o fluxo editorial encontra-se
-em desenvolvimento activo. A autenticação é implementada através de \textit{JSON
-  Web Tokens} (JWT), com \textit{tokens} de acesso de curta duração e \textit{tokens} de atualização
-de longa duração armazenados em \textit{cookies} \texttt{HttpOnly}, permitindo a validação
-stateless dos pedidos e a mitigação de ataques XSS.
+Colaborador, Editor e Administrador. A autenticação dos utilizadores é assegurada
+através de \textit{JSON Web Tokens} (JWT).
 
-Este relatório descreve a versão beta do sistema, cobrindo as decisões de
+Este relatório descreve a versão final do sistema, cobrindo as decisões de
 arquitectura, modelo de dados, implementação do \textit{backend} e \textit{frontend}, e os testes
-realizados até à data. A plataforma desenvolvida demonstra a viabilidade de uma
+realizados. A plataforma desenvolvida demonstra a viabilidade de uma
 solução dedicada, adaptada aos fluxos editoriais e requisitos técnicos do Diário LX.
 
 \vspace{5mm}
@@ -149,7 +160,7 @@ Desenvolvimento Web; API REST; React; Spring Boot; Fluxo Editorial.
 \cleardoublepage
 \chapter*{Abstract}
 
-Diário LX is a digital journalism platform developed in collaboration with the
+\textit{Diário LX} is a digital journalism platform developed in collaboration with the
 Escola Superior de Comunicação Social (ESCS) and the LIACOM research unit, aimed
 at supporting the creation, management, and publication of editorial content.
 Existing content management systems such as WordPress and Ghost were evaluated as
@@ -161,22 +172,19 @@ application architecture.
 The proposed solution follows a client-server architecture composed of a React-based
 frontend and a Spring Boot backend implemented in Kotlin. PostgreSQL was adopted for
 structured data persistence, while multimedia assets are stored through a self-hosted
-S3-compatible service (SeaweedFS). Communication between components is performed
+service compatible with Amazon S3 (SeaweedFS). Communication between components is performed
 through a RESTful API, with error responses following the Problem Details for HTTP
 APIs standard (RFC 9457).
 
 The platform is designed around an editorial workflow in which content progresses
 through defined states — draft, pending approval, published, and rejected — governed
 by a role-based permission model with three user levels: Contributor, Editor, and
-Administrator. In the beta version, the editorial workflow is under active development.
-Authentication is implemented using JSON Web Tokens (JWT), with
-short-lived access tokens and long-lived refresh tokens stored as \texttt{HttpOnly}
-cookies, enabling stateless request validation while mitigating XSS attacks.
+Administrator. User authentication is handled using JSON Web Tokens (JWT).
 
-This report describes the beta version of the system, covering the architectural
+This report describes the final version of the system, covering the architectural
 decisions, data model, backend and frontend implementation, and the testing carried
-out to date. The resulting platform demonstrates the feasibility of a purpose-built
-solution tailored to the editorial workflows and technical requirements of Diário LX.
+out. The resulting platform demonstrates the feasibility of a purpose-built
+solution tailored to the editorial workflows and technical requirements of \textit{Diário LX}.
 
 \vspace{5mm}
 \textbf{Keywords:} Digital Journalism; Content Management Systems; Web Development;
@@ -233,7 +241,10 @@ All final architectural, implementation, and validation decisions were made by t
 % Chapter 7 — Frontend
 \include{chapters/cap7_frontend}
 
-% Chapter 8 — Current State and Future Work
+% Chapter 8 — Deployment
+\include{chapters/cap8_deployment}
+
+% Chapter 9 — Current State and Future Work
 \include{chapters/cap8_currentstate}
 
 % =========================
@@ -251,5 +262,7 @@ All final architectural, implementation, and validation decisions were made by t
 \appendix
 
 \include{appendices/apendice_db_model}
+
+\include{appendices/apendice_screenshots}
 
 \end{document}

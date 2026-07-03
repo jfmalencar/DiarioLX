@@ -10,6 +10,7 @@ type Props = {
     onCategoryChange: (category: CategorySummary) => void;
     onEditArticle: (index: number) => void;
     onRemoveSection?: () => void;
+    readOnly?: boolean;
 };
 
 const SECTION_LABELS: Record<string, string> = {
@@ -22,7 +23,7 @@ const SECTION_LABELS: Record<string, string> = {
     VIDEOS: 'Vídeos',
 };
 
-export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, onRemoveSection }: Props) => {
+export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, onRemoveSection, readOnly = false }: Props) => {
     const { categories, fetchAll } = useCategories();
 
     useEffect(() => {
@@ -42,6 +43,7 @@ export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, 
                     {rules?.hasCategory && (
                         <select
                             className='form-select w-auto'
+                            disabled={readOnly}
                             value={section.category?.id ?? ''}
                             onChange={(e) => {
                                 const id = Number(e.target.value);
@@ -74,13 +76,13 @@ export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, 
                 <ContentCard
                     content={section.articles[0]}
                     large
-                    onEdit={() => onEditArticle(0)}
+                    onEdit={readOnly ? undefined : () => onEditArticle(0)}
                 />
             ) : (
                 <div className='row g-4'>
                     {section.articles.map((content, i) => (
                         <div className={colClass} key={i}>
-                            <ContentCard content={content} onEdit={() => onEditArticle(i)} />
+                            <ContentCard content={content} onEdit={readOnly ? undefined : () => onEditArticle(i)} />
                         </div>
                     ))}
                 </div>

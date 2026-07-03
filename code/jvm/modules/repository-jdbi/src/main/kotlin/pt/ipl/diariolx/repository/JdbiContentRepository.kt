@@ -49,21 +49,32 @@ class JdbiContentRepository(
 ) : ContentRepository {
     override fun createEmpty(
         type: ContentType,
+        authorId: Int,
         now: Instant,
-    ): Int =
+    ): Int {
+        val id =
+            handle
+                .createUpdate(
+                    """
+                    INSERT INTO contents (type, created_at, updated_at)
+                    VALUES (:type::content_type, :created_at, :updated_at)
+                    RETURNING id
+                    """,
+                ).bind("type", type.name)
+                .bind("created_at", now.epochSeconds)
+                .bind("updated_at", now.epochSeconds)
+                .executeAndReturnGeneratedKeys()
+                .mapTo(Int::class.java)
+                .one()
+        // The creating user becomes the primary author; only Editors may later reassign it.
         handle
             .createUpdate(
-                """
-                INSERT INTO contents (type, created_at, updated_at)
-                VALUES (:type::content_type, :created_at, :updated_at)
-                RETURNING id
-                """,
-            ).bind("type", type.name)
-            .bind("created_at", now.epochSeconds)
-            .bind("updated_at", now.epochSeconds)
-            .executeAndReturnGeneratedKeys()
-            .mapTo(Int::class.java)
-            .one()
+                "INSERT INTO content_authors (content_id, author_id, role) VALUES (:content_id, :author_id, 'primary')",
+            ).bind("content_id", id)
+            .bind("author_id", authorId)
+            .execute()
+        return id
+    }
 
     override fun updateContent(
         content: UpdateContent,
@@ -76,7 +87,7 @@ class JdbiContentRepository(
                 UPDATE contents
                 SET title = :title, headline = :headline, featured_media_id = :featured_media_id,
                 slug = :slug, category_id = :category_id, parent_id = :parent_id, embed_url = :embed_url,
-                updated_at = :updated_at, published_at = NULL, state = :new_state::content_state
+                updated_at = :updated_at, state = :new_state::content_state
                 WHERE id = :id
                 """,
             ).bind("title", content.title)
@@ -131,10 +142,13 @@ class JdbiContentRepository(
         author: String?,
         creditedTo: String?,
         excludeArchivedCategory: Boolean,
+        archived: Boolean?,
     ): List<ContentSummary> {
         val conditions =
             buildList {
                 if (excludeArchivedCategory) add("category_archived IS NOT TRUE")
+                if (archived == true) add("archived_at IS NOT NULL")
+                if (archived == false) add("archived_at IS NULL")
                 if (query != null) add("(title ILIKE :query OR slug ILIKE :query)")
                 if (type != null) add("type = :type")
                 if (tag != null) {
@@ -268,7 +282,7 @@ class JdbiContentRepository(
                 .createUpdate(
                     """
                    UPDATE contents
-                     SET published_at = :published_at, updated_at = :updated_at, state = :newState::content_state
+                     SET published_at = COALESCE(published_at, :published_at), updated_at = :updated_at, state = :newState::content_state
                      WHERE id = :id
                 """,
                 ).bind("published_at", if (newState == ContentState.PUBLISHED) now.epochSeconds else null)
