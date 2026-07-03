@@ -294,11 +294,30 @@ to mobile, tablet, and desktop viewports through standard Bootstrap breakpoints.
 
 \section{Tests} \label{sec:fe_tests}
 
-Frontend end-to-end testing is implemented using Playwright~\cite{playwright}, a
-browser automation framework that supports testing across Chromium, Firefox, and
-WebKit. Playwright tests simulate real user interactions against the running
-application, covering the main workflows of both the public website and the
-backoffice. The public-site tests run against the mock implementation of the service
-layer, making them deterministic and independent of a running backend. The suite is
-integrated into the continuous integration pipeline via GitHub
-Actions~\cite{github_actions}, running automatically on every push.
+The frontend is tested end to end with Playwright~\cite{playwright}, a browser-automation
+framework (supporting Chromium, Firefox, and WebKit) that drives a real browser and
+simulates genuine user interactions --- navigation, clicks, and form submissions ---
+against the running application; the suite runs on Chromium.
+
+The public-website tests run against the \emph{mock} implementation of the service layer
+(Section~\ref{sec:fe_organization}) rather than a live backend. Because every hook
+communicates through the \texttt{Services} interface, substituting the mock makes the
+tests deterministic, fast, and independent of network state or database contents. They
+cover the reader-facing flows --- homepage rendering, navigation between editorial
+sections and categories, content listings with the ``load more'' pagination, and the
+not-found page. A separate suite covers authenticated backoffice flows, such as category
+and tag management.
+
+Tests locate elements through stable \texttt{data-testid} attributes rather than text or
+layout, so they stay robust to copy and styling changes, and rely on Playwright's
+automatic waiting to reduce timing flakiness. The suite is integrated into the continuous
+integration pipeline via GitHub Actions~\cite{github_actions} and runs automatically on
+every push. Figure~\ref{fig:fe_test_report} shows an example run of the end-to-end suite.
+
+\begin{figure}[H]
+      \begin{center}
+            \screenshotTODO{Playwright test report --- results of the end-to-end suite (public and backoffice specs).}
+      \end{center}
+      \caption{Playwright end-to-end test report.}
+      \label{fig:fe_test_report}
+\end{figure}

@@ -7,7 +7,7 @@ services:
     ports:
       - 5435:5432
     volumes:
-      - diariolx-postgres-data:/var/lib/postgresql/data
+      - diariolx-postgres-data:/var/lib/postgresql
 
   diariolx-seaweed-master:
     image: chrislusf/seaweedfs:latest
