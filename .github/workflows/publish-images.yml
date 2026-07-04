@@ -68,17 +68,17 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER }}/diariolx-jvm:${{ steps.meta.outputs.tag }}
             ${{ env.REGISTRY }}/${{ env.OWNER }}/diariolx-jvm:latest
 
-      - name: Build and push Nginx image
+      - name: Build and push Web image
         uses: docker/build-push-action@v6
         with:
           context: code
-          file: code/Dockerfile-nginx
+          file: code/Dockerfile-web
           push: true
-          cache-from: type=gha,scope=nginx
-          cache-to: type=gha,mode=max,scope=nginx
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
           tags: |
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/diariolx-nginx:${{ steps.meta.outputs.tag }}
-            ${{ env.REGISTRY }}/${{ env.OWNER }}/diariolx-nginx:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/diariolx-web:${{ steps.meta.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.OWNER }}/diariolx-web:latest
 
       - name: Build and push Postgres image
         uses: docker/build-push-action@v6

@@ -4,7 +4,7 @@
 ## Build images
 
 * `./gradlew buildImageJvm` - builds the JVM image.
-* `./gradlew buildImageNginx` - builds the Nginx image.
+* `./gradlew buildImageWeb` - builds the web (Nginx & Assets) image.
 * `./gradlew buildImagePostgresTest` - builds the PostgreSQL image for testing.
 * `./gradlew buildImageUbuntu` - builds an image with Ubuntu and the DIG DNS tool.
 * `./gradlew buildImageAll` - builds all images.
@@ -17,7 +17,7 @@
 
 ## Nginx
 
-* `docker exec -ti diariolx-nginx bash` - open shell on contained running Nginx.
+* `docker exec -ti diariolx-web bash` - open shell on contained running Nginx.
 * `nginx -s reload` - reloads Nginx configuration.
 
 ## Ubuntu

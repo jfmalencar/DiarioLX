@@ -9,6 +9,7 @@ data class NavCategoryDTO(
     val name: String,
     val slug: String,
     val color: String,
+    val children: List<NavCategoryDTO> = emptyList(),
 )
 
 data class NavigationDTO(
@@ -51,7 +52,15 @@ data class SettingsBootstrapDTO(
             navigation =
                 NavigationDTO(
                     featured = navigation.featured.map { NavCategoryDTO(it.name, it.slug.value, it.color.value) },
-                    sections = navigation.sections.map { NavCategoryDTO(it.name, it.slug.value, it.color.value) },
+                    sections =
+                        navigation.sections.map { s ->
+                            NavCategoryDTO(
+                                s.category.name,
+                                s.category.slug.value,
+                                s.category.color.value,
+                                s.children.map { NavCategoryDTO(it.name, it.slug.value, it.color.value) },
+                            )
+                        },
                     showPhotos = navigation.showPhotos,
                     showPodcasts = navigation.showPodcasts,
                     showVideos = navigation.showVideos,

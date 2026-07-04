@@ -24,7 +24,10 @@ export const Footer = () => {
     const { settings } = useBootstrap();
     const { social, contact, publication, navigation } = settings;
 
-    const categoryLinks: FooterLink[] = [...navigation.featured, ...navigation.sections].map((cat) => ({
+    const categoryLinks: FooterLink[] = [
+        ...navigation.featured,
+        ...navigation.sections.flatMap((section) => [section, ...(section.children ?? [])]),
+    ].map((cat) => ({
         label: cat.name,
         to: `/category/${cat.slug}`,
     }));

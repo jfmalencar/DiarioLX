@@ -212,7 +212,7 @@ uploaded directly from the modal (Figure~\ref{fig:fe_media_upload}).
 
 Contributors submit content for approval, moving it to the \textit{pending review}
 state, while Editors and Administrators review pending items and either approve them
---- publishing the content --- or reject them with a mandatory comment that is
+--- publishing the content --- or reject them with a comment that is
 recorded in the content's history. The review page presents the rendered content
 alongside the approve and reject actions (Figure~\ref{fig:fe_review}), together with
 the content's transition history (Figure~\ref{fig:fe_history}).
@@ -240,7 +240,7 @@ a block of four featured articles, the four most recent articles, and a closing 
 groups a category highlight with the Videos and Podcasts sections. Between these fixed
 blocks, administrators add configurable sections from the backoffice, selecting the
 specific content each one displays --- for example dedicated blocks for \textit{Lisboa,
-Cidade Aberta}, \textit{A Fundo}, or \textit{Especiais} (Figure~\ref{fig:fe_homepage_1}).
+      Cidade Aberta}, \textit{A Fundo}, or \textit{Especiais} (Figure~\ref{fig:fe_homepage_1}).
 The sections and their curated content are driven by the homepage configuration managed
 in the backoffice.
 
@@ -312,7 +312,23 @@ Tests locate elements through stable \texttt{data-testid} attributes rather than
 layout, so they stay robust to copy and styling changes, and rely on Playwright's
 automatic waiting to reduce timing flakiness. The suite is integrated into the continuous
 integration pipeline via GitHub Actions~\cite{github_actions} and runs automatically on
-every push. Figure~\ref{fig:fe_test_report} shows an example run of the end-to-end suite.
+every push. Listing~\ref{lst:test_e2e} shows a representative end-to-end test, and
+Figure~\ref{fig:fe_test_report} an example run of the suite.
+
+\begin{lstlisting}[language=JavaScript, caption={Playwright end-to-end test: the \textit{``Ver mais''} control appends more content.}, label={lst:test_e2e}]
+test('"Ver mais" appends more content', async ({ page }) => {
+    await page.goto('/podcasts');
+    const cards = page.getByTestId('content-card');
+    await expect(cards.first()).toBeVisible();
+
+    const before = await cards.count();
+    await page.getByTestId('load-more').click();
+
+    await expect(async () => {
+        expect(await cards.count()).toBeGreaterThan(before);
+    }).toPass();
+});
+\end{lstlisting}
 
 \begin{figure}[H]
       \begin{center}

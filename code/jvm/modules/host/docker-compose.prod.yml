@@ -50,8 +50,8 @@ services:
     env_file:
       - .env
 
-  nginx:
-    image: ghcr.io/jfmalencar/diariolx-nginx:latest
+  web:
+    image: ghcr.io/jfmalencar/diariolx-web:latest
     ports:
       - "8180:8180"
     depends_on:

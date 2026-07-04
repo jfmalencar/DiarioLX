@@ -92,10 +92,10 @@ export function useApi() {
   const refreshUri = endpoints.auth.refresh.href;
 
   const onUnauthorized = useCallback((url?: string) => {
-    if (window.location.pathname !== '/backoffice/login' && url !== endpoints.auth.me.href) {
+    if (window.location.pathname !== '/backoffice/login' && url?.startsWith('/api/backoffice')) {
       window.location.href = '/backoffice/login';
     }
-  }, [endpoints]);
+  }, []);
 
   const get = useCallback(
     <T>(url: string, options: RequestInit = {}) =>

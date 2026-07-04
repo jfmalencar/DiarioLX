@@ -14,8 +14,8 @@ Chapter~\ref{cap:architecture} is, at deployment time, one container image among
 several orchestrated together.
 
 The platform runs on a single virtual machine (VM). Almost every runtime component
-runs as a Docker container, orchestrated through Docker Compose; the only exception is
-the outermost reverse proxy, a system-level Nginx provisioned directly on the host to
+runs as a Docker~\cite{docker} container, orchestrated through Docker Compose; the only exception is
+the outermost reverse proxy, a system-level Nginx~\cite{nginx} provisioned directly on the host to
 terminate HTTPS. The complete topology is shown in Figure~\ref{fig:deployment}
 (Appendix~\ref{app:deployment}).
 
@@ -32,7 +32,7 @@ SeaweedFS image used for the object-storage cluster:
             the application layer is rebuilt on most changes. The entry point launches
             \texttt{pt.ipl.diariolx.DiarioLXApplicationKt}.
 
-      \item[\texttt{diariolx-nginx}] A multi-stage image that bundles \emph{both} the
+      \item[\texttt{diariolx-web}] A multi-stage image that bundles \emph{both} the
             frontend and the reverse proxy. The first stage (\texttt{node:22-alpine})
             installs the frontend dependencies with \texttt{npm ci} and produces the
             React production build (\texttt{npm run build}) in \texttt{/app/dist}. The
@@ -83,7 +83,7 @@ from the lifecycle of the containers.
 Requests pass through two Nginx layers, each with a distinct responsibility.
 
 The \textbf{host Nginx} is a system service provisioned directly on the VM and managed
-by Certbot. It listens on port 443 using a Let's Encrypt certificate issued for
+by Certbot. It listens on port 443 using a Let's Encrypt~\cite{letsencrypt} certificate issued for
 \texttt{diariolx.duckdns.org}, redirects all plaintext traffic on port 80 to HTTPS,
 and forwards the decrypted requests to the containerised Nginx on
 \texttt{localhost:8180}, preserving the original host and client information through the
@@ -105,6 +105,17 @@ the Compose network and performs path-based routing:
             host and client headers required for object access.
 \end{itemize}
 
+Beyond routing, this Nginx layer applies a tiered caching policy that offloads both the
+backend and the object store. Responses from the public API are held in a short
+cache of a few minutes, which absorbs load on hot endpoints such as the homepage while
+keeping content fresh enough for a publication that updates only a few times a day. Media objects, whose paths are
+content-addressed and never change, are cached for thirty days and marked
+\texttt{immutable}, as are the static frontend assets, which carry content-hashed file
+names. The backoffice, authentication, and documentation endpoints are explicitly marked
+\texttt{no-store}, so that no authenticated or administrative response is ever cached.
+Each response exposes an \texttt{X-Cache-Status} header indicating whether it was served
+from cache.
+
 \section{Request Lifecycle} \label{sec:dep_lifecycle}
 
 A typical request therefore flows as follows. The browser resolves
@@ -118,10 +129,10 @@ unreachable from outside the VM: only the host Nginx is exposed to the public ne
 
 \section{Continuous Delivery} \label{sec:dep_cd}
 
-The application images are built and published to the GitHub Container Registry (GHCR)
-by a GitHub Actions workflow, so that the server never builds anything itself. On each
+The application images are built and published to the GitHub Container Registry (GHCR)~\cite{ghcr}
+by a GitHub Actions~\cite{github_actions} workflow, so that the server never builds anything itself. On each
 release, the workflow builds the three application images (\texttt{diariolx-jvm},
-\texttt{diariolx-nginx}, and \texttt{diariolx-postgres}) and pushes them to GHCR. Docker
+\texttt{diariolx-web}, and \texttt{diariolx-postgres}) and pushes them to GHCR. Docker
 layer caching keeps rebuilds fast by reusing unchanged layers across runs --- most
 notably the frontend dependency and build layers of the Nginx image.
 

@@ -1,6 +1,7 @@
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 
 import { ContentCard } from './ContentCard';
+import { LoadMoreButton } from './LoadMoreButton';
 
 type Props = {
     title: string;
@@ -29,17 +30,7 @@ export const ContentGridSection = ({ title, contents, hasMore, loading, onLoadMo
                 ))}
             </div>
             {onLoadMore && hasMore && (
-                <div className='border-top border-bottom mt-4 py-3 text-center'>
-                    <button
-                        type='button'
-                        className='btn btn-link text-dark text-decoration-underline text-uppercase fw-semibold'
-                        style={{ letterSpacing: '0.08em', fontSize: '0.85rem' }}
-                        onClick={onLoadMore}
-                        disabled={loading}
-                    >
-                        {loading ? 'A carregar…' : 'Carregar mais'}
-                    </button>
-                </div>
+                <LoadMoreButton onClick={onLoadMore} loading={loading} className='mt-4' />
             )}
         </section>
     );

@@ -139,6 +139,7 @@ class JdbiContentRepository(
         creditedTo: String?,
         excludeArchivedCategory: Boolean,
         archived: Boolean?,
+        orderBy: String,
     ): List<ContentSummary> {
         val conditions =
             buildList {
@@ -193,7 +194,7 @@ class JdbiContentRepository(
                 }
             }
         return handle
-            .createQuery(summaryQuery(conditions))
+            .createQuery(summaryQuery(conditions, orderBy))
             .bind("limit", limit)
             .bind("offset", offset)
             .bind("query", "%$query%")

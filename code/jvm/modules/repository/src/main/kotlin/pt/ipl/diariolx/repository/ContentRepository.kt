@@ -39,6 +39,7 @@ interface ContentRepository {
         creditedTo: String? = null,
         excludeArchivedCategory: Boolean = false,
         archived: Boolean? = null,
+        orderBy: String = "id",
     ): List<ContentSummary>
 
     fun internalGetById(id: Int): Content?

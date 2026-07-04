@@ -119,6 +119,7 @@ class ContentRepositoryMem(
         creditedTo: String?,
         excludeArchivedCategory: Boolean,
         archived: Boolean?,
+        orderBy: String,
     ): List<ContentSummary> =
         contents
             .filter { content ->

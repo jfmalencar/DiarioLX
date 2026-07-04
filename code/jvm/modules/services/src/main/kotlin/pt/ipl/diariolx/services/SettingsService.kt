@@ -3,6 +3,7 @@ package pt.ipl.diariolx.services
 import jakarta.inject.Named
 import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.domain.category.CategorySummary
+import pt.ipl.diariolx.domain.settings.NavSection
 import pt.ipl.diariolx.domain.settings.NavigationView
 import pt.ipl.diariolx.repository.TransactionManager
 
@@ -27,17 +28,23 @@ class SettingsService(
                     .map { it.trim() }
                     .filter { it.isNotEmpty() }
 
-            val categories =
-                tx.categoryRepository
-                    .getAll(limit = 1000, offset = 0, query = null, archived = false)
-                    .filter { it.quantity > 0 }
-            val featured = featuredSlugs.mapNotNull { slug -> categories.find { it.slug.value == slug } }
+            val allCategories =
+                tx.categoryRepository.getAll(limit = 1000, offset = 0, query = null, archived = false)
+            val featured = featuredSlugs.mapNotNull { slug -> allCategories.find { it.slug.value == slug } }
             val featuredIds = featured.map { it.id }.toSet()
-            val sections = categories.filter { it.id !in featuredIds }
+            val sections =
+                allCategories
+                    .filter { it.parentId == 0 && it.id !in featuredIds }
+                    .map { parent ->
+                        NavSection(
+                            parent.toSummary(),
+                            allCategories.filter { it.parentId == parent.id }.map { it.toSummary() },
+                        )
+                    }
 
             NavigationView(
                 featured = featured.map { it.toSummary() },
-                sections = sections.map { it.toSummary() },
+                sections = sections,
                 showPhotos = settings["nav.showPhotos"].parseBool(),
                 showPodcasts = settings["nav.showPodcasts"].parseBool(),
                 showVideos = settings["nav.showVideos"].parseBool(),

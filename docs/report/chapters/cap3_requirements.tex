@@ -9,7 +9,7 @@ This chapter presents the functional and non-functional requirements of the \tex
 
 \subsection{Content Management} \label{sec:req_content}
 
-The system must provide a full content management lifecycle supporting the following content types: \textbf{articles}, \textbf{podcasts}, \textbf{videos}, and \textbf{photo essays}. Each content item must include the following attributes:
+The system must provide a full content management lifecycle supporting the following content types: \textbf{articles}, \textbf{podcasts}, \textbf{podcast episodes}, \textbf{videos}, and \textbf{photo essays}. Each content item must include the following attributes:
 
 \begin{itemize}
       \item Title
@@ -67,7 +67,7 @@ The three roles form a strict permission hierarchy:
 \textbf{Contributor} $\subset$ \textbf{Editor} $\subset$ \textbf{Administrator},
 where each role inherits all permissions of the roles below it.
 
-Each user profile includes: name, email, profile photograph, active/inactive status, professional function (journalist or photographer), and role.
+Each user profile includes: name, email, profile photograph, active/inactive status, a position, a biography, and role.
 
 \subsection{Backoffice} \label{sec:req_backoffice}
 

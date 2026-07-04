@@ -214,7 +214,7 @@ LEFT JOIN LATERAL (
 -- Contents (published)
 CREATE OR REPLACE VIEW v_published_contents AS
 SELECT * FROM v_contents
-WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
+WHERE content_state = 'PUBLISHED'::content_state
   AND slug IS NOT NULL
   AND category_id IS NOT NULL
   AND category_archived IS NOT TRUE
@@ -283,7 +283,7 @@ FROM contents a
 -- Contents summary (published)
 CREATE OR REPLACE VIEW v_published_contents_summary AS
 SELECT * FROM v_contents_summary
-WHERE content_state IN ('PUBLISHED'::content_state, 'PENDING_REVIEW'::content_state)
+WHERE content_state = 'PUBLISHED'::content_state
   AND slug IS NOT NULL
   AND category_id IS NOT NULL
   AND category_archived IS NOT TRUE

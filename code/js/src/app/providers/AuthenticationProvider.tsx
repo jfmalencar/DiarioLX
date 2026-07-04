@@ -29,6 +29,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
     try {
       const currentUser = await usersService.getCurrentUser()
       setUser(currentUser)
+      await reload()
       return currentUser
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch current user'
@@ -39,7 +40,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
       setLoading(false)
       setHydrated(true)
     }
-  }, [usersService])
+  }, [usersService, reload])
 
   const login = useCallback(
     async (username: string, password: string): Promise<AuthUser> => {
@@ -54,7 +55,6 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
           return undefined
         }
         const result = await refreshUser()
-        await reload()
         return result
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Login failed'
@@ -65,7 +65,7 @@ export function AuthenticationProvider({ children }: AuthProviderProps) {
         setLoading(false)
       }
     },
-    [authService, refreshUser, reload]
+    [authService, refreshUser]
   )
 
   const logout = useCallback(async (): Promise<void> => {

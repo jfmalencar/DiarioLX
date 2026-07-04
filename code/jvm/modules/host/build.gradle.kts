@@ -78,7 +78,7 @@ tasks.register<Copy>("extractUberJar") {
 }
 
 val dockerImageTagJvm = "diariolx-jvm"
-val dockerImageTagNginx = "diariolx-nginx"
+val dockerImageTagWeb = "diariolx-web"
 val dockerImageTagPostgresTest = "diariolx-postgres-test"
 val dockerImageTagUbuntu = "diariolx-ubuntu"
 val dockerCmd = "docker"
@@ -89,9 +89,9 @@ tasks.register<Exec>("buildImageJvm") {
     commandLine(dockerCmd, "build", "-t", dockerImageTagJvm, "-f", "tests/Dockerfile-jvm", ".")
 }
 
-tasks.register<Exec>("buildImageNginx") {
+tasks.register<Exec>("buildImageWeb") {
     workingDir = file("../../../")
-    commandLine(dockerCmd, "build", "-t", dockerImageTagNginx, "-f", "Dockerfile-nginx", ".")
+    commandLine(dockerCmd, "build", "-t", dockerImageTagWeb, "-f", "Dockerfile-web", ".")
 }
 
 tasks.register<Exec>("buildImagePostgresTest") {
@@ -112,7 +112,7 @@ tasks.register<Exec>("buildImageUbuntu") {
 
 tasks.register("buildImageAll") {
     dependsOn("buildImageJvm")
-    dependsOn("buildImageNginx")
+    dependsOn("buildImageWeb")
     dependsOn("buildImagePostgresTest")
     dependsOn("buildImageUbuntu")
 }

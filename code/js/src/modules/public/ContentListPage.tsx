@@ -5,6 +5,7 @@ import { usePageTheme } from '@/shared/hooks/usePageTheme';
 
 import { HeroArticle } from '@/shared/components/HeroArticle';
 import { ContentCard } from '@/shared/components/ContentCard';
+import { LoadMoreButton } from '@/shared/components/LoadMoreButton';
 import { ContentListSkeleton } from './ContentListSkeleton';
 
 type Props = {
@@ -71,18 +72,7 @@ export const ContentListPage = ({ title, color = '#000', icon, dark = false, ful
                     ))}
                 </div>
                 {onLoadMore && hasMore && (
-                    <div className='text-center mt-5'>
-                        <button
-                            type='button'
-                            data-testid='load-more'
-                            className={`btn btn-outline-${fullDark ? 'light' : 'dark'} rounded-0 px-4 py-2 text-uppercase`}
-                            style={{ letterSpacing: '0.08em', fontSize: '0.85rem' }}
-                            onClick={onLoadMore}
-                            disabled={loadingMore}
-                        >
-                            {loadingMore ? 'A carregar…' : 'Ver mais'}
-                        </button>
-                    </div>
+                    <LoadMoreButton onClick={onLoadMore} loading={loadingMore} dark={fullDark} className='mt-5' />
                 )}
             </div>
         </div>

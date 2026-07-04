@@ -27,17 +27,57 @@
 \renewcommand{\algorithmicrequire}{\textbf{Input: }}
 \renewcommand{\algorithmicensure}{\textbf{Output: }}
 
+% JavaScript / TypeScript language for listings (not built into the package).
+\lstdefinelanguage{JavaScript}{
+   keywords={await, async, break, case, catch, class, const, continue, default, delete, do, else, export, extends, false, finally, for, from, function, if, import, in, instanceof, let, new, null, of, return, super, switch, this, throw, true, try, typeof, var, void, while, yield},
+   sensitive=true,
+   comment=[l]{//},
+   morecomment=[s]{/*}{*/},
+   morestring=[b]',
+   morestring=[b]",
+   morestring=[b]`,
+}
+
+% Kotlin language for listings (also not built into the package).
+\lstdefinelanguage{Kotlin}{
+   keywords={abstract, actual, annotation, as, break, by, catch, class, companion, const, constructor, continue, crossinline, data, do, else, enum, expect, external, false, final, finally, for, fun, get, if, import, in, infix, init, inline, inner, interface, internal, is, lateinit, noinline, null, object, open, operator, out, override, package, private, protected, public, reified, return, sealed, set, super, suspend, this, throw, true, try, typealias, val, var, vararg, when, where, while},
+   sensitive=true,
+   comment=[l]{//},
+   morecomment=[s]{/*}{*/},
+   morestring=[b]",
+   morestring=[b]`,
+}
+
+% Global visual style applied to every code listing.
+\definecolor{codekw}{HTML}{2B6CB0}
+\definecolor{codecomment}{HTML}{6A737D}
+\definecolor{codestring}{HTML}{9A5B2C}
+\definecolor{codebg}{HTML}{F7F8FA}
+\lstset{
+   basicstyle=\ttfamily\footnotesize,
+   keywordstyle=\color{codekw}\bfseries,
+   commentstyle=\color{codecomment}\itshape,
+   stringstyle=\color{codestring},
+   showstringspaces=false,
+   breaklines=true,
+   breakatwhitespace=true,
+   tabsize=2,
+   backgroundcolor=\color{codebg},
+   frame=single,
+   framerule=0.4pt,
+   rulecolor=\color{gray!35},
+   framesep=6pt,
+   xleftmargin=6pt,
+   xrightmargin=6pt,
+   aboveskip=1em,
+   belowskip=1em,
+   captionpos=b,
+}
+
 % Placeholder box for screenshots still to be captured.
 \newcommand{\screenshotTODO}[1]{%
    \fbox{\parbox[c][5cm][c]{0.97\textwidth}{%
       \centering \ttfamily [SCREENSHOT TO ADD]\\[6pt]\normalfont\itshape #1%
-   }}%
-}
-
-% Placeholder box for diagrams still to be drawn.
-\newcommand{\diagramTODO}[1]{%
-   \fbox{\parbox[c][5cm][c]{0.97\textwidth}{%
-      \centering \ttfamily [DIAGRAM TO ADD]\\[6pt]\normalfont\itshape #1%
    }}%
 }
 
@@ -57,7 +97,7 @@
       \hspace{-20mm}\resizebox{75mm}{!}{\includegraphics{./figures/logoISELnew2.png}}\\
    \end{minipage}\\[20mm]
 
-   {\bf DiárioLX --- Digital Journalism Platform}
+   {\bf Diário LX --- Digital Journalism Platform}
 }
 
 \author{
@@ -95,7 +135,7 @@ July 2026}
 
    \textsc{\LARGE Instituto Superior de Engenharia de Lisboa}\\[50mm]
 
-   {\large \bf DiárioLX --- Digital Journalism Platform}\\[20mm]
+   {\large \bf Diário LX --- Digital Journalism Platform}\\[20mm]
 
    \begin{tabular}{rl}
       51745 & Jessé Alencar      \\[10mm]

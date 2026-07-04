@@ -16,6 +16,7 @@ export type NavCategory = {
     name: string;
     slug: string;
     color: string;
+    children?: NavCategory[];
 }
 
 export type SiteSettings = {

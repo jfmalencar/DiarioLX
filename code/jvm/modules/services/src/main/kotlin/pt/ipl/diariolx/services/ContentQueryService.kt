@@ -59,6 +59,7 @@ class ContentQueryService(
                     creditedTo = creditedTo,
                     excludeArchivedCategory = true,
                     archived = false,
+                    orderBy = "published_at",
                 )
             }
         }

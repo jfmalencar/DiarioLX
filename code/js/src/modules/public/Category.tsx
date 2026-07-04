@@ -18,7 +18,6 @@ export function Category() {
     const { resource, contents, loading, error, hasMore, loadingMore, loadMore } = useResourceContents<CategoryResource>(
         fetchCategory,
         slug,
-        { type: 'ARTICLE' },
     );
 
     return (

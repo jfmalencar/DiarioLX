@@ -122,7 +122,7 @@ Records the moderation trail of a content item. Each entry in the
 performed the action (\texttt{performed\_by}, set to \texttt{NULL} if that user is
 later removed), the \texttt{action} taken (\textit{APPROVED} or \textit{REJECTED}), an
 optional review \texttt{comment}, and the \texttt{performed\_at} timestamp. This
-provides an auditable log of the approval workflow and supplies the mandatory comment
+provides an auditable log of the approval workflow and supplies the review comment
 attached to rejections.
 
 \subsection{Category} \label{sec:dm_category}
@@ -147,14 +147,14 @@ ensures that each content item has at most one primary tag.
 \subsection{Media} \label{sec:dm_media}
 
 Stores metadata for uploaded media files (images, videos, and audio). Binary files
-are not stored in the database --- only their \texttt{purpose}
-(\textit{GALLERY} or \textit{PROFILE}), \texttt{original\_file\_name}, storage location
-(\texttt{bucket} and \texttt{object\_key}, with optional \texttt{thumbnail\_bucket} and
-\texttt{thumbnail\_object\_key}), \texttt{alt\_text}, \texttt{mime\_type},
-\texttt{size\_bytes}, and a \texttt{status} field (\textit{pending} or \textit{ready})
-are persisted. The \textit{pending} state indicates that the frontend has initiated the
-upload but not yet confirmed it; the backend transitions the status to \textit{ready}
-upon confirmation and records the \texttt{uploaded\_at} timestamp.
+are stored externally rather than in the database. The table stores only the media
+\texttt{purpose} (\textit{GALLERY} or \textit{PROFILE}), the original filename, storage
+location (\texttt{bucket} and \texttt{object\_key}, with optional
+\texttt{thumbnail\_bucket} and \texttt{thumbnail\_object\_key}), alternative text,
+MIME type, file size, and upload status. Newly created records are initially marked
+as \textit{pending}. Once the frontend confirms that the upload has completed, the
+backend updates the status to \textit{ready} and records the
+\texttt{uploaded\_at} timestamp.
 
 Media items may have associated credits via the \texttt{media\_credits} table,
 which records the contributing user and their \texttt{credit\_role} (e.g.\
@@ -196,9 +196,9 @@ pre-joined representations of the data for use by the repository layer:
             authors ordered by role, tags, and content blocks with their associated media
             and gallery images. Used for single content item retrieval.
 
-      \item[\texttt{v\_published\_contents}] Restricts \texttt{v\_contents} to publicly
-            visible content (states \textit{PUBLISHED} and \textit{PENDING\_REVIEW}),
-            backing the public article pages.
+      \item[\texttt{v\_published\_contents}] Restricts \texttt{v\_contents} to
+            \textit{PUBLISHED} content that has a slug and an active category, backing the
+            public article pages.
 
       \item[\texttt{v\_contents\_summary}] Lightweight content listing view, including
             only the fields required for listing pages: title, slug, type, state,
@@ -306,7 +306,7 @@ The following indexes were defined to support the most frequent query patterns:
       \item \textbf{Timestamps as epoch integers}: All timestamps are stored as
             \texttt{BIGINT} Unix epoch values rather than \texttt{TIMESTAMP} columns.
             This avoids timezone conversion issues, as epoch values are inherently UTC,
-            and simplifies interoperability with the \texttt{kotlinx.datetime}\texttt{.Instant}
+            and simplifies interoperability with the \texttt{kotlinx.datetime.\allowbreak Instant}
             type used throughout the backend.
 
       \item \textbf{Serial primary keys}: All tables use \texttt{SERIAL}

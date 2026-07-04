@@ -22,13 +22,11 @@ export const useResourceContents = <T,>(
     const baseQuery = search.toString();
 
     const fetchPage = useCallback(
-        (page: number) =>
-            fetcher(slug as string, { ...Object.fromEntries(new URLSearchParams(baseQuery)), page }),
+        (page: number) => fetcher(slug as string, { ...Object.fromEntries(new URLSearchParams(baseQuery)), page }),
         [fetcher, slug, baseQuery],
     );
 
-    const { response, items: contents, hasMore, loadMore, loading, loadingMore, error } =
-        useLoadMore<ContentSummary, ResourceContentsResponse<T>>(slug ? fetchPage : null);
+    const { response, items: contents, hasMore, loadMore, loading, loadingMore, error } = useLoadMore<ContentSummary, ResourceContentsResponse<T>>(slug ? fetchPage : null);
 
     return { resource: response?.resource ?? null, contents, hasMore, loadMore, loading, loadingMore, error };
 };

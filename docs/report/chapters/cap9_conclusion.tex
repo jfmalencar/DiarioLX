@@ -21,9 +21,9 @@ preceding chapters:
 
 \begin{itemize}
       \item \textbf{Editorial workflow}: the full content lifecycle --- draft, pending
-            approval, published, and rejected --- is implemented and enforced according
+            review, published, and rejected --- is implemented and enforced according
             to the actor's role. Contributors submit content for review; Editors and
-            Administrators approve it (publishing it) or reject it with a mandatory
+            Administrators approve it (publishing it) or reject it with a
             comment, and every transition is recorded in the content's history.
 
       \item \textbf{Content model and editor}: the backoffice content editor supports
@@ -55,6 +55,40 @@ preceding chapters:
             run in a continuous integration pipeline, and the REST API is documented
             through an interactive OpenAPI interface.
 \end{itemize}
+
+\section{Future Work} \label{sec:conc_future}
+
+\textit{Diário LX} was conceived with a twofold purpose: to deliver a functional product
+that the ESCS editorial team can adopt and use in practice, and to provide a foundation
+that other developers can maintain and extend once this project concludes. This second
+goal deliberately shaped the engineering approach --- the strict separation into
+independent modules and layers, the explicit and readable data-access code, the
+documented REST API, the automated test suite, and the fully containerised,
+registry-based deployment. Together, these lower the barrier for a new contributor to
+understand the system, run it locally, and build on it with confidence, so that the work
+delivered here can be continued rather than restarted.
+
+On this basis, several enhancements are envisaged as natural continuations of the work:
+
+\begin{itemize}
+      \item \textbf{Scheduled publishing}: allowing editors to set a future date and time
+            at which approved content is automatically published.
+
+      \item \textbf{Internationalisation}: full multi-language support for the public
+            website, extending the centralised translation layer already present in the
+            frontend.
+
+      \item \textbf{Accessibility}: further accessibility improvements, such as audio
+            description for multimedia content, broadening the platform's reach.
+
+      \item \textbf{Content recommendations}: surfacing related articles on the article
+            page to improve navigation and reader retention.
+\end{itemize}
+
+Because the platform is delivered as a working, deployed system built on a modular and
+well-documented codebase, each of these extensions can be approached incrementally,
+without a structural rewrite --- which was, from the outset, an explicit objective of the
+project.
 
 \section{Final Remarks} \label{sec:conc_remarks}
 

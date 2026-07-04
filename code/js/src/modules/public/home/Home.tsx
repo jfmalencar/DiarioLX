@@ -75,7 +75,7 @@ export const Home = () => {
                 <React.Fragment key={`${section.type}-${i}`}>
                     {renderSection(section)}
                     {i === 1 && data.latestArticles.length > 0 && (
-                        <Latest contents={data.latestArticles} />
+                        <Latest contents={data.latestArticles} verTodasHref='/latest' />
                     )}
                 </React.Fragment>
             ))}

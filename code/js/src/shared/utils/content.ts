@@ -10,6 +10,7 @@ const TYPE_ACCENT: Partial<Record<ContentType, string>> = {
     VIDEO: '#D4E600',
     PODCAST: '#82EE64',
     EPISODE: '#82EE64',
+    PHOTO_ESSAY: '#555555',
 };
 
 export const contentAccent = (type: ContentType, categoryColor?: string | null, fallback = '#000'): string =>

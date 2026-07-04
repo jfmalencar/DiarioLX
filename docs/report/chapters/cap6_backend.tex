@@ -3,7 +3,7 @@
 \section{Organization} \label{sec:be_organization}
 
 The backend is a Spring Boot application written in Kotlin, structured as a set of
-loosely coupled Gradle modules. Each module has a well-defined responsibility and
+loosely coupled Gradle~\cite{gradle} modules. Each module has a well-defined responsibility and
 depends only on modules below it in the hierarchy, ensuring that business logic
 remains isolated from infrastructure concerns, following principles commonly associated
 with Clean Architecture~\cite{martin2017clean}. Figure~\ref{fig:backend_layers}
@@ -18,10 +18,10 @@ illustrates the module organization and the dependency relationships between the
 \end{figure}
 
 \begin{description}
-      \item[HTTP] Defines the REST controllers that expose the API endpoints, each
-            responsible for a bounded domain area (e.g., \texttt{ContentController},
-            \texttt{UserController}, \texttt{CategoryController}). Also contains the
-            authentication interceptor, argument resolvers, and Problem+JSON error handling.
+      \item[HTTP] \textbf{HTTP} Defines the REST controllers that expose the API endpoints, with each
+            controller responsible for a bounded domain (e.g., content, user, and category
+            controllers). It also contains the authentication interceptor, argument resolvers,
+            and Problem+JSON error handling.
 
       \item[Services] Contains the business logic, orchestrating operations across
             repositories and enforcing domain rules such as publication workflow transitions
@@ -145,6 +145,31 @@ URI, a \texttt{title}, a \texttt{detail}, and an HTTP status code. Controllers i
 \texttt{Problem.response()} to produce the appropriate \texttt{ResponseEntity} directly,
 without relying on a centralised exception handler.
 
+To keep these \texttt{type} URIs actionable rather than opaque, each problem code
+resolves to a human-readable Markdown page in the project documentation that describes
+the error, the conditions under which it is raised, and how to resolve it.
+Listing~\ref{lst:problem_doc} shows the page for the \texttt{insufficient-photos}
+problem, one of the domain-specific validations enforced by the content workflow.
+
+\begin{lstlisting}[caption={Documentation page for the \texttt{insufficient-photos} problem type.},label={lst:problem_doc}]
+# Insufficient photos
+
+> HTTP `400` | `application/problem+json`
+
+**Code:** `insufficient-photos`
+
+A photo essay does not contain the minimum number of images required.
+
+## When it occurs
+
+Raised when a photo essay is submitted or published without the minimum
+number of images that the content type requires.
+
+## How to resolve
+
+Add enough images to the photo essay before submitting or publishing it.
+\end{lstlisting}
+
 \section{Database Access} \label{sec:be_database}
 
 Data access is handled through JDBI~\cite{jdbi}, a lightweight SQL convenience library
@@ -158,7 +183,7 @@ transaction, instantiates all repositories sharing the same database handle, and
 ensures atomicity across multi-step operations. Rollback is handled automatically
 by JDBI when an exception propagates.
 
-\begin{lstlisting}[language=Java, caption={JdbiTransactionManager implementation.}]
+\begin{lstlisting}[language=Kotlin, caption={JdbiTransactionManager implementation.}]
 @Named
 class JdbiTransactionManager(
     private val jdbi: Jdbi,
@@ -174,8 +199,8 @@ class JdbiTransactionManager(
 
 \section{API Documentation} \label{sec:be_apidocs}
 
-The API is documented using the OpenAPI standard~\cite{openapi}, generated
-automatically by \texttt{springdoc-openapi}~\cite{springdoc} and served via
+The API is documented using the OpenAPI standard~\cite{openapi}.
+It is generated automatically using \texttt{springdoc-openapi}~\cite{springdoc} and served via
 Scalar~\cite{scalar}, a modern API reference UI. Custom annotations
 (\texttt{@MayReturnNotFound}, \texttt{@MayReturnBadRequest}, etc.) were defined
 to reduce boilerplate in controller declarations while maintaining accurate schema
@@ -196,6 +221,22 @@ publication-workflow state transitions, role-based permission checks, and input
 validation. Because the repository is defined as an interface, the services are
 exercised against lightweight in-memory implementations of that interface, which keeps
 the tests fast and deterministic and independent of SQL and of the HTTP layer.
+Listing~\ref{lst:test_service} shows a representative example.
+
+\begin{lstlisting}[language=Kotlin, caption={Service-layer unit test running against in-memory repositories.}, label={lst:test_service}]
+@Test
+fun `create fails when name is empty`() {
+    val service = createService()   // wired with in-memory repositories
+
+    val result = service.create(
+        name = "", slug = "politica",
+        description = "desc", color = "#ffffff", parentId = null,
+    )
+
+    val failure = assertIs<Failure<CategoryError>>(result)
+    assertEquals(CategoryError.EmptyName, failure.value)
+}
+\end{lstlisting}
 
 \subsection{Integration Tests} \label{sec:tests_be_integration}
 
@@ -206,4 +247,33 @@ tears down afterwards --- validating the SQL queries and the mapping of result s
 the domain model. HTTP tests then exercise the full request--response cycle through
 Spring's \texttt{WebTestClient}, authenticating, calling the REST endpoints, and
 asserting the returned status codes, JSON payloads, and RFC~9457 error responses, so
-that the HTTP, service, and repository layers are verified together.
+that the HTTP, service, and repository layers are verified together. Listing~\ref{lst:test_http}
+illustrates the HTTP level.
+
+\begin{lstlisting}[language=Kotlin, caption={HTTP integration test exercising the full request cycle with \texttt{WebTestClient}.}, label={lst:test_http}]
+@Test
+fun `can create and edit category`() {
+    val accessToken = loginAsAdmin()   // authenticate via WebTestClient
+
+    client.post()
+        .uri(Uris.Categories.CREATE)
+        .cookie("accessToken", accessToken)
+        .bodyValue(CreateUpdateCategoryRequestDTO(
+            name = "Test Category", description = "Test Description",
+            slug = "test", color = "#ec6b43",
+        ))
+        .exchange()
+        .expectStatus().isCreated
+}
+\end{lstlisting}
+
+\subsection{Continuous Integration} \label{sec:tests_be_ci}
+
+The backend test suite runs automatically on GitHub Actions~\cite{github_actions}. On
+every push, a workflow runs \texttt{./gradlew check}, which starts the PostgreSQL test
+container, executes the unit and integration suites, and tears the container down. The
+frontend end-to-end suite runs in a separate workflow, described in
+Chapter~\ref{cap:frontend}. A further workflow, triggered on release tags, builds the
+container images and publishes them to the registry (Chapter~\ref{cap:deployment}),
+keeping the packaging of deployable artefacts separate from the test pipelines that run
+on every push.

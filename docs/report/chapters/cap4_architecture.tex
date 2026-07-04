@@ -24,7 +24,8 @@ The system comprises the following main components:
       \item \textbf{Frontend} (React + TypeScript): A single-page application (SPA)
             running in the browser, responsible for rendering the public website and the
             backoffice interface. Communicates with the backend via HTTP requests and
-            interacts directly with SeaweedFS for media uploads and reads.
+            uploads media directly to SeaweedFS using pre-signed URLs, bypassing the
+            application server.
 
       \item \textbf{Web Service} (Spring Boot + Kotlin): The backend application
             responsible for business logic, authentication, and data access. Controls media
@@ -49,14 +50,14 @@ Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
       \label{tab:tech_stack}
       \begin{tabularx}{\textwidth}{llX}
             \toprule
-            \textbf{Layer} & \textbf{Technology}  & \textbf{Rationale}                                                                      \\
+            \textbf{Layer} & \textbf{Technology}                                       & \textbf{Rationale}                                                                      \\
             \midrule
-            Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support                            \\
-            Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
-            Database       & PostgreSQL           & Relational model well-suited for editorial and structured data                          \\
-            Media Storage  & SeaweedFS            & Self-hosted Amazon S3-compatible distributed storage with low operational overhead      \\
-            Data Access    & JDBI                 & Lightweight SQL library providing direct query control without ORM overhead             \\
-            Authentication & JWT                  & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
+            Frontend       & React~\cite{react_docs} (TypeScript~\cite{typescript})    & Component-based UI architecture and strong ecosystem support                            \\
+            Backend        & Spring Boot~\cite{springboot_docs} (Kotlin~\cite{kotlin}) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
+            Database       & PostgreSQL                                                & Relational model well-suited for editorial and structured data                          \\
+            Media Storage  & SeaweedFS                                                 & Self-hosted Amazon S3-compatible distributed storage with low operational overhead      \\
+            Data Access    & JDBI                                                      & Lightweight SQL library providing direct query control without ORM overhead             \\
+            Authentication & JWT                                                       & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
             \bottomrule
       \end{tabularx}
 \end{table}
@@ -65,18 +66,21 @@ Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
 
 Communication between the frontend and backend is handled through a
 RESTful HTTP API, following the architectural principles described by
-Fielding~\cite{fielding2000rest}. All endpoints are prefixed with \texttt{/api/}.
+Fielding~\cite{fielding2000rest} and the practical conventions of
+Richardson and Amundsen~\cite{richardson2013restful}. All endpoints are prefixed with \texttt{/api/}.
 The API follows standard HTTP conventions for resource naming and status codes,
 and all error responses follow the Problem Details for HTTP APIs standard
 (\texttt{application/problem+json}), as defined in RFC~9457~\cite{rfc9457}.
 
-The API surface is divided into two groups: a public, unauthenticated read API that
-serves the reader-facing website, and an authenticated \emph{backoffice} API ---
-prefixed with\newline \texttt{/api/backoffice/} --- that exposes the editorial management
+The API is divided into two groups: a public, unauthenticated read API that
+serves the reader-facing website, and an authenticated \textit{backoffice} API,
+prefixed with \texttt{/api/backoffice/}, that provides editorial management
 operations. This separation makes the authentication boundary explicit in the URL
-structure itself and mirrors the \texttt{/backoffice} route of the frontend.
-Authentication is handled separately under \texttt{/api/auth} (signup, login, logout,
-and token refresh), as it is the entry point through which a session is obtained.
+structure and mirrors the frontend's \texttt{/backoffice} route.
+
+Authentication is handled separately under \texttt{/api/auth}, which provides the
+signup, login, logout, and token refresh endpoints used to establish and maintain
+user sessions.
 
 The public read API is organized around the following resources:
 
@@ -144,6 +148,12 @@ transitions between them, each annotated with the role required to perform it.
       \label{fig:workflow}
 \end{figure}
 
+\begin{center}
+      \fbox{\parbox{0.9\textwidth}{\centering\itshape\small
+                  [TO UPDATE] This diagram is provisional and will be replaced with a more
+                  detailed illustration of the editorial workflow.}}
+\end{center}
+
 The states are defined as follows:
 
 \begin{description}
@@ -152,14 +162,14 @@ The states are defined as follows:
             fields are complete and then submits it for review.
 
       \item[Pending Review] The author has submitted the content for editorial review.
-            It becomes visible to Editors and Administrators, who are responsible for
-            evaluating it before publication.
+            It now awaits evaluation by an Editor or Administrator, who either approve it
+            for publication or reject it with feedback.
 
       \item[Published] An Editor or Administrator has approved the content, which
             becomes publicly accessible on the site.
 
       \item[Rejected] An Editor or Administrator has rejected the content, providing a
-            mandatory reason. The reviewer and the rejection comment are retained in the
+            reason. The reviewer and the rejection comment are retained in the
             content's history, so that the author receives structured feedback and can
             revise and resubmit.
 \end{description}
@@ -174,15 +184,16 @@ The transitions between these states are the following:
             moving it to \textit{Published}; the reviewer identity is recorded.
 
       \item \textbf{Reject} --- an Editor or Administrator rejects a pending item,
-            moving it to \textit{Rejected} together with a mandatory review comment.
+            moving it to \textit{Rejected} together with a review comment.
 
       \item \textbf{Direct publish} --- because Editors and Administrators hold the
             publishing permission, they may publish a draft directly, bypassing the
             \textit{Pending Review} state when editorial review is not required.
 
       \item \textbf{Edit} --- editing a \textit{Rejected} or \textit{Published} item
-            returns it to \textit{Draft}, ensuring that any modification to already
-            reviewed content is subject to review again before it becomes public.
+            returns it to \textit{Draft}. A rejected item is revised by its author and
+            resubmitted; a published item can only be edited by an Editor or
+            Administrator who.
 \end{itemize}
 
 These transitions are enforced at the API level. Each is exposed as a dedicated

@@ -11,6 +11,7 @@ import { Category } from '@/modules/public/Category';
 import { Categories } from '@/modules/public/Categories';
 import { Tag } from '@/modules/public/Tag';
 import { TypeList } from '@/modules/public/TypeList';
+import { Latest } from '@/modules/public/Latest';
 import { Equipa } from '@/modules/public/Equipa';
 import { EstatutoEditorial } from '@/modules/public/EstatutoEditorial';
 import { CodigoDeontologico } from '@/modules/public/CodigoDeontologico';
@@ -29,6 +30,7 @@ import { Contents } from '@/modules/backoffice/contents/Contents';
 import { EditContent } from '@/modules/backoffice/contents/EditContent';
 import { ReviewContent } from '@/modules/backoffice/contents/ReviewContent';
 import { SignUp } from '@/modules/backoffice/SignUp';
+import { PageNotFound } from '@/modules/backoffice/PageNotFound';
 import { Invites } from '@/modules/backoffice/invites/Invites';
 import { MyProfile } from '@/modules/backoffice/profile/MyProfile';
 import { Homepage } from '@/modules/backoffice/home/Homepage';
@@ -55,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: 'categories',
         element: <Categories />,
+      },
+      {
+        path: 'latest',
+        element: <Latest />,
       },
       {
         path: 'category/:slug',
@@ -111,7 +117,7 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <RequireAuthentication>
-            <Homepage />,
+            <Homepage />
           </RequireAuthentication>
         ),
         handle: {
@@ -273,7 +279,7 @@ const router = createBrowserRouter([
         path: '*',
         element: (
           <RequireAuthentication>
-            <div>Page Not Found</div>
+            <PageNotFound />
           </RequireAuthentication>
         ),
         handle: {
