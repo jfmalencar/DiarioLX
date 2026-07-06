@@ -3,19 +3,15 @@ package pt.ipl.diariolx.repository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import org.slf4j.Logger
 import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.domain.invites.internal.NewInvite
 import pt.ipl.diariolx.domain.users.UserRole
 
 class JdbiInviteRepository(
     private val handle: Handle,
-    private val logger: Logger,
 ) : InviteRepository {
-    override fun get(invite: String): Invite? {
-        logger.info("Looking for invite: $invite")
-
-        return handle
+    override fun get(invite: String): Invite? =
+        handle
             .createQuery(
                 """
                         SELECT id, invite_token, role_assigned, created_at, expires_at, used
@@ -27,9 +23,7 @@ class JdbiInviteRepository(
             ).bind("invite_token", invite)
             .mapTo<InviteDBModel>()
             .singleOrNull()
-            ?.also { logger.info("Found invite: $it") }
             ?.toInviteDomain()
-    }
 
     override fun getAll(
         limit: Int,

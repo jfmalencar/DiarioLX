@@ -41,16 +41,6 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
-
-    val envFile = rootProject.file(".env")
-    envFile
-        .readLines()
-        .filter { it.isNotBlank() && !it.trim().startsWith("#") }
-        .forEach {
-            val (key, value) = it.split("=", limit = 2)
-            environment(key.trim(), value.trim())
-        }
-
     dependsOn(":repository-jdbi:dbTestsWait")
     finalizedBy(":repository-jdbi:dbTestsDown")
 }

@@ -6,8 +6,3 @@ data class NewContentBlock(
     val mediaId: Int?,
     val images: List<NewGalleryImage> = emptyList(),
 )
-
-data class NewGalleryImage(
-    val mediaId: Int,
-    val caption: String?,
-)

@@ -72,7 +72,6 @@ class DiarioLXApplication {
     fun transactionManager(jdbi: Jdbi) =
         JdbiTransactionManager(
             jdbi = jdbi,
-            logger(),
         )
 
     // === UNCOMMENT BELOW TO USE IN-MEMORY REPOSITORIES INSTEAD ===

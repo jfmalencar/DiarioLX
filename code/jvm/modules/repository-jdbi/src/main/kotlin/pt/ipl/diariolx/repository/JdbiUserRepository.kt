@@ -3,7 +3,6 @@ package pt.ipl.diariolx.repository
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import org.slf4j.Logger
 import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.media.Avatar
@@ -18,13 +17,11 @@ import pt.ipl.diariolx.domain.users.value.Username
 
 class JdbiUserRepository(
     private val handle: Handle,
-    private val logger: Logger,
 ) : UserRepository {
     override fun create(
         newUser: NewUser,
         now: Instant,
     ): User {
-        logger.info("New User: $newUser")
         handle
             .createUpdate(
                 """
@@ -48,7 +45,6 @@ class JdbiUserRepository(
             .mapTo<UserDBModel>()
             .single()
             .toUserDomain()
-            .also { logger.info("Created User: $it") }
     }
 
     override fun update(

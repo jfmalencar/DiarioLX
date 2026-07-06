@@ -16,10 +16,8 @@ data class Content(
     val featuredImage: MediaSummary?,
     val slug: String? = null,
     val category: CategorySummary? = null,
-    // Episodes reference their Podcast; null for every other content type.
     val parentId: Int? = null,
     val parent: ContentParent? = null,
-    // External embed (YouTube for VIDEO, Spotify for EPISODE) in place of an uploaded file.
     val embedUrl: String? = null,
     val publishedAt: Instant? = null,
     val archivedAt: Instant? = null,

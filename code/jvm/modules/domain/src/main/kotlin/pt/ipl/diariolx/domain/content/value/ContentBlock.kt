@@ -9,8 +9,3 @@ data class ContentBlock(
     val media: MediaSummary?,
     val images: List<GalleryImage> = emptyList(),
 )
-
-data class GalleryImage(
-    val media: MediaSummary,
-    val caption: String?,
-)
