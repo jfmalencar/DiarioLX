@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Search } from 'lucide-react';
 import Lottie, { type LottieRefCurrentProps } from 'lottie-react';
 
 import logo from '@/assets/logo.json';
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 import { usePageThemeState } from '@/shared/hooks/usePageTheme';
+
+import { SearchOverlay } from '@/shared/components/SearchOverlay';
 
 type OpenMenu = 'sections' | 'identidade' | null;
 
@@ -23,6 +25,7 @@ export const Header = () => {
     const [activeSlug, setActiveSlug] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [mobileAccordion, setMobileAccordion] = useState<string | null>(null);
+    const [searchOpen, setSearchOpen] = useState(false);
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const { settings } = useBootstrap();
     const nav = settings.navigation;
@@ -122,7 +125,7 @@ export const Header = () => {
                             <Link
                                 key={cat.slug}
                                 className={navLinkClass}
-                                to={`/category/${cat.slug}`}
+                                to={`/c/${cat.slug}`}
                                 onMouseEnter={closeMenu}
                             >
                                 {cat.name}
@@ -167,6 +170,16 @@ export const Header = () => {
                 </div>
                 <button
                     type='button'
+                    aria-label='Pesquisar'
+                    data-testid='search-trigger'
+                    onClick={() => setSearchOpen(true)}
+                    className={`btn border-0 p-0 position-absolute top-50 translate-middle-y ${textClass}`}
+                    style={{ background: 'transparent', right: 15 }}
+                >
+                    <Search size={24} />
+                </button>
+                <button
+                    type='button'
                     aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
                     aria-expanded={mobileOpen}
                     onClick={() => setMobileOpen((o) => !o)}
@@ -187,7 +200,7 @@ export const Header = () => {
                                     return (
                                         <Link
                                             key={s.slug}
-                                            to={`/category/${s.slug}`}
+                                            to={`/c/${s.slug}`}
                                             onMouseEnter={() => setActiveSlug(s.slug)}
                                             onClick={closeMenu}
                                             className={`text-decoration-none d-flex align-items-center justify-content-between py-1 ${textClass}`}
@@ -212,7 +225,7 @@ export const Header = () => {
                                         {activeChildren.map((c) => (
                                             <Link
                                                 key={c.slug}
-                                                to={`/category/${c.slug}`}
+                                                to={`/c/${c.slug}`}
                                                 onClick={closeMenu}
                                                 className={`text-decoration-none py-1 ${textClass}`}
                                                 style={{ fontSize: '1.25rem', opacity: 0.85 }}
@@ -261,7 +274,7 @@ export const Header = () => {
                         {nav.featured.map((cat) => (
                             <Link
                                 key={cat.slug}
-                                to={`/category/${cat.slug}`}
+                                to={`/c/${cat.slug}`}
                                 onClick={closeMobile}
                                 className={`text-decoration-none d-block py-3 border-bottom ${textClass}`}
                                 style={{ borderColor: dividerColor, fontSize: '1.1rem' }}
@@ -291,7 +304,7 @@ export const Header = () => {
                                         {nav.sections.map((s) => (
                                             <div key={s.slug} className='ps-3'>
                                                 <Link
-                                                    to={`/category/${s.slug}`}
+                                                    to={`/c/${s.slug}`}
                                                     onClick={closeMobile}
                                                     className={`text-decoration-none d-block py-2 fw-medium ${textClass}`}
                                                 >
@@ -300,7 +313,7 @@ export const Header = () => {
                                                 {s.children?.map((c) => (
                                                     <Link
                                                         key={c.slug}
-                                                        to={`/category/${c.slug}`}
+                                                        to={`/c/${c.slug}`}
                                                         onClick={closeMobile}
                                                         className={`text-decoration-none d-block py-2 ps-3 ${textClass}`}
                                                         style={{ opacity: 0.8 }}
@@ -363,6 +376,9 @@ export const Header = () => {
                         </div>
                     </div>
                 </div>
+            )}
+            {searchOpen && (
+                <SearchOverlay onClose={() => setSearchOpen(false)} headerHeight={isShrunk ? 75 : 130} />
             )}
         </header>
     );

@@ -7,8 +7,8 @@ test.describe('Content listing', () => {
         await expect(page.getByTestId('content-card').first()).toBeVisible();
     });
 
-    test('"Ver mais" appends more content', async ({ page }) => {
-        await page.goto('/podcasts');
+    test('load more button appends more content', async ({ page }) => {
+        await page.goto('/latest');
         const cards = page.getByTestId('content-card');
         await expect(cards.first()).toBeVisible();
 

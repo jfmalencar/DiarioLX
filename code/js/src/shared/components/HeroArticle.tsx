@@ -46,7 +46,7 @@ export const HeroArticle = ({ content }: Props) => {
                             {content.tag?.name}
                         </span>
                         <div className='text-white'>
-                            <h1
+                            <h2
                                 className='text-white fw-bold lh-sm mb-2 mt-3'
                                 style={{
                                     fontSize: 'clamp(1.4rem, 4vw, 2.6rem)',
@@ -54,7 +54,7 @@ export const HeroArticle = ({ content }: Props) => {
                                 }}
                             >
                                 {content.title}
-                            </h1>
+                            </h2>
                             <p>
                                 {content.headline}
                             </p>

@@ -74,9 +74,27 @@ On this basis, several enhancements are envisaged as natural continuations of th
       \item \textbf{Scheduled publishing}: allowing editors to set a future date and time
             at which approved content is automatically published.
 
-      \item \textbf{Internationalisation}: full multi-language support for the public
-            website, extending the centralised translation layer already present in the
-            frontend.
+      \item \textbf{Internationalisation and content translation}: the frontend already
+            centralises the translation of the interface's static text; the natural next
+            step is to extend multi-language support to the editorial content itself,
+            allowing a publication to be authored in more than one language and served to
+            each reader in their preferred one.
+
+      \item \textbf{Cache invalidation}: complementing the current time-based caching ---
+            where public responses are held only briefly to bound how long content can
+            appear stale --- with explicit invalidation, so that approving or editing a
+            publication purges the affected entries and the change is reflected immediately,
+            without having to keep the cache window short.
+
+      \item \textbf{Search engine optimisation}: enriching public pages with structured
+            data, social preview (Open Graph) metadata, and a generated sitemap, improving
+            how content is indexed by search engines and previewed when shared.
+
+      \item \textbf{Asynchronous media processing}: offloading heavy media handling to
+            background tasks so that uploads return promptly instead of blocking on large
+            files --- generating server-side resized, responsive variants of images and
+            extracting thumbnail frames for videos, rather than serving a single original of
+            each asset.
 
       \item \textbf{Accessibility}: further accessibility improvements, such as audio
             description for multimedia content, broadening the platform's reach.

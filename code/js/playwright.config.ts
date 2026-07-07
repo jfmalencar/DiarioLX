@@ -39,15 +39,45 @@ export default defineConfig({
             name: 'setup',
             testMatch: '**/setup.spec.ts',
         },
+
+        // ===== Backoffice: desktop only, authenticated, multiple browsers =====
         {
-            name: 'chromium',
-            testIgnore: '**/public/**',
+            name: 'backoffice-chromium',
+            testMatch: '**/backoffice/**',
+            testIgnore: '**/setup.spec.ts',
             use: {
                 ...devices['Desktop Chrome'],
                 storageState: 'test-storageState.json',
             },
             dependencies: ['setup'],
         },
+        {
+            name: 'backoffice-firefox',
+            testMatch: '**/backoffice/**',
+            testIgnore: '**/setup.spec.ts',
+            use: {
+                ...devices['Desktop Firefox'],
+                storageState: 'test-storageState.json',
+            },
+            dependencies: ['setup'],
+        },
+
+        // ===== Public site: anonymous, desktop + mobile, multiple browsers =====
+        {
+            name: 'public-chromium',
+            testMatch: '**/public/**',
+            use: { ...devices['Desktop Chrome'] },
+        },
+        {
+            name: 'public-firefox',
+            testMatch: '**/public/**',
+            use: { ...devices['Desktop Firefox'] },
+        },
+        {
+            name: 'public-mobile-chrome',
+            testMatch: '**/public/**',
+            use: { ...devices['Pixel 5'] },
+        }
         //{
         //    name: 'Microsoft Edge',
         //    use: { ...devices['Desktop Edge'], channel: 'msedge' },

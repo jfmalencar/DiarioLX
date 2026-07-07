@@ -7,8 +7,11 @@ test.describe('Public navigation', () => {
         await expect(page.getByTestId('site-footer')).toBeVisible();
     });
 
-    test('navigates to the podcasts listing from the header', async ({ page }) => {
+    test('navigates to the podcasts listing from the header', async ({ page, isMobile }) => {
         await page.goto('/');
+        if (isMobile) {
+            await page.getByTestId('site-header').getByRole('button', { name: /menu/i }).click();
+        }
         await page.getByTestId('site-header').getByRole('link', { name: 'Podcasts' }).click();
         await expect(page).toHaveURL(/\/podcasts$/);
         await expect(page.getByRole('heading', { name: 'Podcasts' })).toBeVisible();

@@ -29,7 +29,7 @@ export const Footer = () => {
         ...navigation.sections.flatMap((section) => [section, ...(section.children ?? [])]),
     ].map((cat) => ({
         label: cat.name,
-        to: `/category/${cat.slug}`,
+        to: `/c/${cat.slug}`,
     }));
 
     const mediaLinks: FooterLink[] = [

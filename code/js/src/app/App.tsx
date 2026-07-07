@@ -8,10 +8,10 @@ import { SnackbarProvider } from '@/app/providers/SnackbarProvider'
 // Public
 import { Home } from '@/modules/public/home/Home';
 import { Category } from '@/modules/public/Category';
-import { Categories } from '@/modules/public/Categories';
 import { Tag } from '@/modules/public/Tag';
 import { TypeList } from '@/modules/public/TypeList';
 import { Latest } from '@/modules/public/Latest';
+import { Search } from '@/modules/public/Search';
 import { Equipa } from '@/modules/public/Equipa';
 import { EstatutoEditorial } from '@/modules/public/EstatutoEditorial';
 import { CodigoDeontologico } from '@/modules/public/CodigoDeontologico';
@@ -55,19 +55,19 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: 'categories',
-        element: <Categories />,
-      },
-      {
         path: 'latest',
         element: <Latest />,
       },
       {
-        path: 'category/:slug',
+        path: 's',
+        element: <Search />,
+      },
+      {
+        path: 'c/:slug',
         element: <Category />,
       },
       {
-        path: 'tag/:slug',
+        path: 't/:slug',
         element: <Tag />,
       },
       {
@@ -95,7 +95,7 @@ const router = createBrowserRouter([
         element: <CodigoDeontologico />,
       },
       {
-        path: 'author/:slug',
+        path: 'a/:slug',
         element: <Author />,
       },
       {

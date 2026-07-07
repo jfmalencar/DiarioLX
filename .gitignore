@@ -15,6 +15,7 @@ node_modules/
 seaweed-config.json
 
 code/jvm/data*
+code/js/dist*
 
 playwright-report
 

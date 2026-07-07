@@ -26,7 +26,7 @@ interface ContentRepository {
     fun getAll(
         limit: Int,
         offset: Int,
-        type: ContentType? = null,
+        types: List<ContentType>? = null,
         query: String?,
         state: ContentState? = null,
         tag: String? = null,

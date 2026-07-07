@@ -47,7 +47,7 @@ class ContentQueryService(
                 it.contentRepository.getAll(
                     limit = limit,
                     offset = offset,
-                    type = type,
+                    types = type?.let { listOf(it) },
                     query = query,
                     tag = tag,
                     category = category,

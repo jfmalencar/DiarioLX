@@ -1,35 +1,9 @@
 import { useMemo } from 'react';
 
 import type { CategoriesService, Category } from './categories.types';
+import { mockCategories } from './categories.fixtures';
 
-const fakeCategories: Category[] = [
-  {
-    id: 1,
-    name: 'Category 1',
-    description: 'Description 1',
-    slug: 'category-1',
-    parentId: null,
-    parentName: null,
-    quantity: 10,
-    color: '#ec6b43',
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    archivedAt: null,
-  },
-  {
-    id: 2,
-    name: 'Category 2',
-    description: 'Description 2',
-    slug: 'category-2',
-    parentId: null,
-    parentName: null,
-    quantity: 5,
-    color: '#43a1ec',
-    createdAt: '2024-01-02T00:00:00Z',
-    updatedAt: '2024-01-02T00:00:00Z',
-    archivedAt: null,
-  },
-]
+const fakeCategories: Category[] = mockCategories.map((c) => ({ ...c }))
 
 export const useCategoriesMockService = (): CategoriesService => {
   return useMemo<CategoriesService>(() => ({

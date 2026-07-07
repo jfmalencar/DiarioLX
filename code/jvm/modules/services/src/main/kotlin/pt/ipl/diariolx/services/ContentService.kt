@@ -258,7 +258,7 @@ class ContentService(
         size: Int,
         query: String?,
         state: ContentState?,
-        type: ContentType?,
+        types: List<ContentType>?,
         category: String?,
         archived: Boolean?,
         user: User,
@@ -272,7 +272,7 @@ class ContentService(
                     query = query,
                     category = category,
                     state = state,
-                    type = type,
+                    types = types,
                     authorId = authorId,
                     archived = archived,
                 )

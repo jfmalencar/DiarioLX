@@ -33,7 +33,7 @@ export const Home = () => {
 
     const renderCategorySection = (section: HomepageSection) => {
         const title = section.category?.name ?? '';
-        const href = section.category ? `/category/${section.category.slug}` : '#';
+        const href = section.category ? `/c/${section.category.slug}` : '#';
         switch (categorySections.indexOf(section)) {
             case 0:
                 return <PrimarySection title={title} contents={section.contents} verTodasHref={href} />;

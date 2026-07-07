@@ -69,9 +69,9 @@ Docker Compose orchestrates the following services on the VM:
       \item \textbf{Spring Boot backend} (\texttt{diariolx-jvm-dynamic}) --- the
             application server, with its environment supplied by \texttt{.env}.
 
-      \item \textbf{Nginx} --- the combined frontend-and-proxy image, published to the
-            host and declared to depend on the S3 gateway and the backend so that they
-            start first.
+      \item \textbf{Web} (\texttt{diariolx-web}) --- the combined frontend-and-proxy
+            image, published to the host and declared to depend on the S3 gateway and the
+            backend so that they start first.
 \end{itemize}
 
 Persistence is achieved entirely through named Docker volumes (one for PostgreSQL and
@@ -92,8 +92,9 @@ and forwards the decrypted requests to the containerised Nginx on
 the Compose file, since TLS termination and certificate renewal are host-level
 concerns.
 
-The \textbf{containerised Nginx} (listening on port 8180) is the single entry point into
-the Compose network and performs path-based routing:
+The \textbf{containerised Nginx} --- the \texttt{diariolx-web} image, listening on port
+8180 --- is the single entry point into the Compose network and performs path-based
+routing:
 
 \begin{itemize}
       \item \texttt{/} --- serves the React static build, falling back to
@@ -107,8 +108,9 @@ the Compose network and performs path-based routing:
 
 Beyond routing, this Nginx layer applies a tiered caching policy that offloads both the
 backend and the object store. Responses from the public API are held in a short
-cache of a few minutes, which absorbs load on hot endpoints such as the homepage while
-keeping content fresh enough for a publication that updates only a few times a day. Media objects, whose paths are
+cache of roughly thirty seconds, which still absorbs load on hot endpoints such as the
+homepage while keeping the window in which content can appear stale small enough to be
+imperceptible to readers. Media objects, whose paths are
 content-addressed and never change, are cached for thirty days and marked
 \texttt{immutable}, as are the static frontend assets, which carry content-hashed file
 names. The backoffice, authentication, and documentation endpoints are explicitly marked
@@ -134,7 +136,7 @@ by a GitHub Actions~\cite{github_actions} workflow, so that the server never bui
 release, the workflow builds the three application images (\texttt{diariolx-jvm},
 \texttt{diariolx-web}, and \texttt{diariolx-postgres}) and pushes them to GHCR. Docker
 layer caching keeps rebuilds fast by reusing unchanged layers across runs --- most
-notably the frontend dependency and build layers of the Nginx image.
+notably the frontend dependency and build layers of the \texttt{diariolx-web} image.
 
 \section{Running in Production} \label{sec:dep_run}
 
@@ -144,8 +146,9 @@ file references the images by tag and reads its configuration from a \texttt{.en
 The secrets --- that \texttt{.env} file and the \texttt{seaweed-config.json} that
 pre-declares the S3 identities (so no manual object-storage configuration is needed) ---
 are provisioned directly on the VM and are never baked into the published images. The
-deployment is deliberately minimal in its exposed surface: only the entry-point Nginx is
-published to the host, so the internal services (PostgreSQL, the SeaweedFS S3 gateway,
+deployment is deliberately minimal in its exposed surface: only the entry-point
+\texttt{diariolx-web} container is published to the host, so the internal services
+(PostgreSQL, the SeaweedFS S3 gateway,
 and the admin service) are reachable exclusively over the Compose network. Because the
 images are self-contained and all data lives on named volumes, the stack can be
 recreated without loss of stored content.

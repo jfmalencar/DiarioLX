@@ -64,7 +64,6 @@ class JdbiContentRepository(
                 .executeAndReturnGeneratedKeys()
                 .mapTo(Int::class.java)
                 .one()
-        // The creating user becomes the primary author; only Editors may later reassign it.
         handle
             .createUpdate(
                 "INSERT INTO content_authors (content_id, author_id, role) VALUES (:content_id, :author_id, 'primary')",
@@ -126,7 +125,7 @@ class JdbiContentRepository(
     override fun getAll(
         limit: Int,
         offset: Int,
-        type: ContentType?,
+        types: List<ContentType>?,
         query: String?,
         state: ContentState?,
         tag: String?,
@@ -147,7 +146,7 @@ class JdbiContentRepository(
                 if (archived == true) add("archived_at IS NOT NULL")
                 if (archived == false) add("archived_at IS NULL")
                 if (query != null) add("(title ILIKE :query OR slug ILIKE :query)")
-                if (type != null) add("type = :type")
+                if (types != null) add("type::text IN (<types>)")
                 if (tag != null) {
                     add(
                         """
@@ -199,7 +198,6 @@ class JdbiContentRepository(
             .bind("offset", offset)
             .bind("query", "%$query%")
             .bind("state", state)
-            .bind("type", type)
             .bind("category", category)
             .bind("tag", tag)
             .bind("from", from?.toEpochDay())
@@ -208,7 +206,13 @@ class JdbiContentRepository(
             .bind("parentId", parentId)
             .bind("author", author)
             .bind("creditedTo", creditedTo)
-            .mapTo<ContentSummaryModel>()
+            .let { q ->
+                if (!types.isNullOrEmpty()) {
+                    q.bindList("types", types.map { it.name })
+                } else {
+                    q
+                }
+            }.mapTo<ContentSummaryModel>()
             .list()
             .map { it.content }
     }

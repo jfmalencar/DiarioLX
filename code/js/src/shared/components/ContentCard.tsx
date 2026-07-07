@@ -9,7 +9,7 @@ import { PlayOverlay } from './PlayOverlay';
 
 type Props = {
     content: ContentSummary;
-    variant?: 'vertical' | 'horizontal' | 'mini' | 'overlay';
+    variant?: 'vertical' | 'horizontal' | 'list' | 'mini' | 'overlay';
     dark?: boolean;
 }
 
@@ -52,6 +52,41 @@ export const ContentCard = ({ content, variant = 'vertical', dark = false }: Pro
                     >
                         {content.title}
                     </p>
+                </div>
+            </Link>
+        );
+    }
+    if (variant === 'list') {
+        return (
+            <Link to={href} className='d-flex gap-3 text-decoration-none text-dark align-items-start'>
+                <div className='position-relative flex-shrink-0'>
+                    <MediaPreview
+                        src={thumb}
+                        isVideo={isVideoThumbnail(content)}
+                        alt={content.title}
+                        className='rounded-1 object-fit-cover'
+                        style={{ width: 130, height: 110, objectFit: 'cover', display: 'block' }}
+                    />
+                    {indicator && <PlayOverlay placement='corner' size={30} icon={indicator} />}
+                </div>
+                <div className='flex-grow-1'>
+                    <div className='d-flex justify-content-between align-items-baseline gap-2 mb-1'>
+                        <span
+                            className='text-uppercase fw-bold text-truncate'
+                            style={{ color: accent, fontSize: '0.62rem', letterSpacing: '0.1em' }}
+                        >
+                            {content.tag?.name}
+                        </span>
+                        <span
+                            className='fw-bold flex-shrink-0'
+                            style={{ color: accent, fontSize: '0.62rem', letterSpacing: '0.04em' }}
+                        >
+                            {contentDate(content)}
+                        </span>
+                    </div>
+                    <h3 className='mb-0 lh-sm fw-semibold' style={{ fontSize: '1.05rem' }}>
+                        {content.title}
+                    </h3>
                 </div>
             </Link>
         );

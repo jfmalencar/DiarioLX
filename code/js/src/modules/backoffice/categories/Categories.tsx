@@ -88,7 +88,7 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
                                     <Link
-                                        to={`/category/${row.slug}`}
+                                        to={`/c/${row.slug}`}
                                         className='btn btn-outline-dark rounded-2'
                                         data-testid={`visit-category-button-${index}`}
                                     >

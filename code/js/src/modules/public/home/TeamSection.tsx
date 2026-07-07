@@ -16,7 +16,7 @@ export const TeamSection = () => {
             <div className='row g-3 justify-content-center'>
                 {team.slice(0, 4).map((m) => (
                     <div key={m.id} className='col-6 col-sm-4 col-md-3 text-center'>
-                        <Link to={`/author/${m.slug}`} className='text-decoration-none text-dark d-flex flex-column align-items-center'>
+                        <Link to={`/a/${m.slug}`} className='text-decoration-none text-dark d-flex flex-column align-items-center'>
                             <Avatar src={m.photoPath} alt={m.name} size={150} className='mb-2' />
                             <p
                                 className='mb-0 fw-semibold'

@@ -219,7 +219,6 @@ CREATE TABLE featured_contents (
     section_id  INTEGER  NOT NULL REFERENCES featured_sections(id) ON DELETE CASCADE,
     content_id  INTEGER  NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
     position    INTEGER  NOT NULL,
-    CONSTRAINT uq_section_content  UNIQUE (section_id, content_id),
     CONSTRAINT uq_section_position_content UNIQUE (section_id, position)
 );
 

@@ -72,7 +72,7 @@ class ContentController(
         @RequestParam query: String? = null,
         @RequestParam category: String? = null,
         @RequestParam state: ContentState? = null,
-        @RequestParam type: ContentType? = null,
+        @RequestParam type: List<ContentType>? = null,
         @RequestParam archived: Boolean? = null,
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {

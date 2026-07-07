@@ -183,9 +183,10 @@ cd code/jvm
 docker compose up -d
 \end{lstlisting}
 
-  \item[\textit{Staging}] Todos os serviços — \textit{backend}, \textit{frontend},
-        base de dados, \textit{SeaweedFS} e \textit{Nginx} — são executados em \textit{containers}
-        \textit{Docker}. As variáveis de ambiente são carregadas a partir do
+  \item[\textit{Staging}] Todos os serviços — \textit{backend}, base de dados,
+        \textit{SeaweedFS} e a imagem \textit{web} (\textit{frontend} servido por
+        \textit{Nginx}, que actua também como \textit{reverse proxy}) — são executados em
+        \textit{containers} \textit{Docker}. As variáveis de ambiente são carregadas a partir do
         ficheiro \texttt{.env.staging}. Este é o modo descrito nas
         secções seguintes, usando as \textit{tasks} Gradle \texttt{buildImageAll}
         e \texttt{allUp}.

@@ -19,7 +19,7 @@ export const PeopleLine = ({ label, people, className, style }: Props) => {
                 <span key={`${person.slug ?? person.name}-${index}`}>
                     {index > 0 && ', '}
                     {person.slug ? (
-                        <Link to={`/author/${person.slug}`} className='text-reset text-decoration-none fw-semibold'>
+                        <Link to={`/a/${person.slug}`} className='text-reset text-decoration-none fw-semibold'>
                             {person.name}
                         </Link>
                     ) : (

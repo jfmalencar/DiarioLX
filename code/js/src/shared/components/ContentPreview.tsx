@@ -162,7 +162,7 @@ export const ContentPreview = ({ content }: Props) => {
                                         </Link>
                                     ) : (
                                         <Link
-                                            to={`/category/${content.category.slug}`}
+                                            to={`/c/${content.category.slug}`}
                                             className='fw-semibold text-decoration-none'
                                             style={{ color: accent, fontSize: '0.95rem', letterSpacing: '0.02em' }}
                                         >
@@ -305,7 +305,7 @@ export const ContentPreview = ({ content }: Props) => {
                                 <div className='text-center my-4'>
                                     <span className='fw-bold me-2'>TAGS</span>
                                     {content.tags.map((tag) => (
-                                        <Link key={tag.slug} to={`/tag/${tag.slug}`} className={`${isPhotoEssay ? 'text-white' : 'text-dark'} text-decoration-underline mx-2`}>
+                                        <Link key={tag.slug} to={`/t/${tag.slug}`} className={`${isPhotoEssay ? 'text-white' : 'text-dark'} text-decoration-underline mx-2`}>
                                             {tag.name}
                                         </Link>
                                     ))}

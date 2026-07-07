@@ -81,7 +81,7 @@ const TagsTable = ({ filter, openModal }: Props) => {
                             <TableColumn className='col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
                                     <Link
-                                        to={`/tag/${row.slug}`}
+                                        to={`/t/${row.slug}`}
                                         className='btn btn-outline-dark rounded-2'
                                         data-testid={`visit-tag-button-${index}`}
                                     >

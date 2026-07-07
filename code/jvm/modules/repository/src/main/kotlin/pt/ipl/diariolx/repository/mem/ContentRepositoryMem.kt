@@ -106,7 +106,7 @@ class ContentRepositoryMem(
     override fun getAll(
         limit: Int,
         offset: Int,
-        type: ContentType?,
+        types: List<ContentType>?,
         query: String?,
         state: ContentState?,
         tag: String?,

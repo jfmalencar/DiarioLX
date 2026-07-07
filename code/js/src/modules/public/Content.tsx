@@ -11,7 +11,11 @@ export function Content() {
 
     useEffect(() => {
         const loadContent = async () => {
-            if (slug) setContent(await fetchBySlug(slug));
+            if (slug) {
+                const result = await fetchBySlug(slug);
+                console.log('result', result);
+                setContent(result);
+            }
         };
         loadContent();
     }, [fetchBySlug, slug]);

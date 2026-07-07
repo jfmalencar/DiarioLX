@@ -1,29 +1,9 @@
 import { useMemo } from 'react';
 
 import type { TagsService, Tag } from './tags.types';
+import { mockTags } from './tags.fixtures';
 
-const fakeTags: Tag[] = [
-  {
-    id: 1,
-    name: 'Tag 1',
-    description: 'Description 1',
-    slug: 'tag-1',
-    quantity: 10,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z',
-    archivedAt: null,
-  },
-  {
-    id: 2,
-    name: 'Tag 2',
-    description: 'Description 2',
-    slug: 'tag-2',
-    quantity: 5,
-    createdAt: '2024-01-02T00:00:00Z',
-    updatedAt: '2024-01-02T00:00:00Z',
-    archivedAt: null,
-  },
-]
+const fakeTags: Tag[] = mockTags.map((t) => ({ ...t }))
 
 export const useTagsMockService = (): TagsService => {
   return useMemo<TagsService>(() => ({

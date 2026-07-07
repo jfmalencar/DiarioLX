@@ -20,13 +20,13 @@ export function Equipa() {
                 {team.map((m) => (
                     <div key={m.id} className='row g-4 mb-5 align-items-start'>
                         <div className='col-12 col-md-3 text-center text-md-start'>
-                            <Link to={`/author/${m.slug}`}>
+                            <Link to={`/a/${m.slug}`}>
                                 <Avatar src={m.photoPath} alt={m.name} size={200} />
                             </Link>
                         </div>
                         <div className='col-12 col-md-9'>
                             <h2 className='fw-bold mb-1' style={{ fontSize: '2rem' }}>
-                                <Link to={`/author/${m.slug}`} className='text-dark text-decoration-none'>
+                                <Link to={`/a/${m.slug}`} className='text-dark text-decoration-none'>
                                     {m.name}
                                 </Link>
                             </h2>
