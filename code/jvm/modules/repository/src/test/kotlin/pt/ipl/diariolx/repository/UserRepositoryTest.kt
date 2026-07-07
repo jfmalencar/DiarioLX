@@ -19,14 +19,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-/**
- * Test suite for UserRepository implementations.
- * Verifies all CRUD operations, filtering, and session management.
- */
 class UserRepositoryTest {
     private fun createRepository(): UserRepository = UserRepositoryMem()
-
-    // ======================== Helper Functions ========================
 
     private fun createNewUser(
         username: String = "testuser",

@@ -136,14 +136,14 @@ class CategoryServiceTest {
             val service = CategoryService(tm)
 
             val id =
-                assertIs<Success<Int>>(
+                (
                     service.create(
                         name = "Cultura",
                         slug = "svc-cultura",
                         description = "desc",
                         color = "#ffffff",
                         parentId = null,
-                    ),
+                    ) as Success
                 ).value
 
             val result = service.get(id)
@@ -184,14 +184,14 @@ class CategoryServiceTest {
             val service = CategoryService(tm)
 
             val id =
-                assertIs<Success<Int>>(
+                (
                     service.create(
                         name = "Cultura",
                         slug = "svc-del",
                         description = null,
                         color = "#ffffff",
                         parentId = null,
-                    ),
+                    ) as Success
                 ).value
 
             val result = service.delete(id)
@@ -265,14 +265,14 @@ class CategoryServiceTest {
                 ).value
 
             val id2 =
-                assertIs<Success<Int>>(
+                (
                     service.create(
                         name = "Sociedade",
                         slug = "svc-sociedade",
                         description = null,
                         color = "#000000",
                         parentId = null,
-                    ),
+                    ) as Success
                 ).value
 
             val result =
@@ -290,6 +290,6 @@ class CategoryServiceTest {
 
             val unchanged = assertIs<Success<Category>>(service.get(id2)).value
             assertEquals("svc-sociedade", unchanged.slug.value)
-            assertEquals(id1, assertIs<Success<Category>>(service.get(id1)).value.id)
+            assertEquals(id1, (service.get(id1) as Success<Category>).value.id)
         }
 }
