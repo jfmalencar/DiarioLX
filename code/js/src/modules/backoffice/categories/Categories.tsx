@@ -52,7 +52,7 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                         {t('common.actions')}
                     </TableColumn>
                 </TableHeader>
-                <TableBody cols={5} loading={loading} isEmpty={categories.length === 0} emptyMessage='Nenhuma categoria encontrada.'>
+                <TableBody cols={5} loading={loading} isEmpty={categories.length === 0} emptyMessage={t('categories.empty_message')}>
                     {categories.map((row, index) => (
                         <TableRow key={row.id}>
                             <TableColumn className='col-lg-5'>
@@ -79,7 +79,7 @@ const CategoriesTable = ({ filter, openModal }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('categories.hierarchy')}</div>
-                                <div className='text-secondary'>{row.parentName || 'Principal'}</div>
+                                <div className='text-secondary'>{row.parentName || t('categories.principal')}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-1'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('common.count')}</div>
@@ -140,26 +140,26 @@ export const Categories = () => {
 
     const modalConfig: Record<ModalAction, ModalConfig> = {
         archive: {
-            title: 'Arquivar categoria',
-            subtitle: 'Tem a certeza que deseja arquivar esta categoria?',
-            alert: 'Os conteúdos associados deixarão de estar visíveis enquanto a categoria estiver arquivada.',
-            confirmLabel: 'Arquivar',
+            title: t('categories.archive_title'),
+            subtitle: t('categories.archive_confirmation'),
+            alert: t('categories.archive_alert'),
+            confirmLabel: t('common.archive'),
             action: archive,
             getRedirect: () => '/backoffice/categories?tab=archived',
         },
         unarchive: {
-            title: 'Desaquivar categoria',
-            subtitle: 'Tem a certeza que deseja desarquivar esta categoria?',
-            alert: 'Os conteúdos associados voltarão a estar visíveis assim que a categoria for desarquivada.',
-            confirmLabel: 'Desarquivar',
+            title: t('categories.unarchive_title'),
+            subtitle: t('categories.unarchive_confirmation'),
+            alert: t('categories.unarchive_alert'),
+            confirmLabel: t('common.unarchive'),
             action: unarchive,
             getRedirect: () => '/backoffice/categories?tab=all',
         },
         delete: {
-            title: 'Elimiar categoria',
-            subtitle: 'Tem a certeza que deseja eliminar esta categoria?',
-            alert: 'Esta ação é permanente e não pode ser revertida. Se a categoria tiver subcategorias, estas passarão a categorias principais.',
-            confirmLabel: 'Eliminar',
+            title: t('categories.delete_title'),
+            subtitle: t('categories.delete_confirmation'),
+            alert: t('categories.delete_alert'),
+            confirmLabel: t('common.delete'),
             action: remove,
             getRedirect: () => `/backoffice/categories?tab=archived&refresh=${Date.now()}`,
             variant: 'danger',

@@ -8,6 +8,7 @@ import { SearchField } from '@/shared/components/inputs/SearchField';
 import { Pill } from '@/shared/components/Pill';
 import { Button } from '@/shared/components/Button';
 import { slugify } from '@/shared/utils/format';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 import { type Category, type CategoryFormValues, useCategories } from '@/shared/hooks/useCategories';
 
@@ -97,6 +98,7 @@ const reduce = (state: State, action: Action): State => {
 }
 
 export const EditCategory = () => {
+    const { t } = useI18n();
     const { fetchOne, fetchAll, categories, create, update, error } = useCategories();
     const [isColorOpen, setIsColorOpen] = useState(false);
     const navigate = useNavigate();
@@ -155,12 +157,12 @@ export const EditCategory = () => {
         if (state.tag !== 'editing') return;
 
         if (state.inputs.slug.trim().length === 0) {
-            dispatch({ type: 'error', message: 'A slug é obrigatória.' });
+            dispatch({ type: 'error', message: t('categories.slug_required') });
             return;
         }
 
         if (state.inputs.name.trim().length === 0) {
-            dispatch({ type: 'error', message: 'O nome da categoria é obrigatório.' });
+            dispatch({ type: 'error', message: t('categories.name_required') });
             return;
         }
 
@@ -195,7 +197,7 @@ export const EditCategory = () => {
                             <img src={icon} alt='Ícone do DiárioLX' style={{ width: 28, height: 28 }} className='me-3' />
                         </Link>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {params.id === 'new' ? 'Criação' : 'Edição'} de categoria
+                            {params.id === 'new' ? t('categories.create_title') : t('categories.edit_title')}
                         </div>
                         <div></div>
                     </div>
@@ -206,34 +208,34 @@ export const EditCategory = () => {
                     <div className='col-12 col-xl-8'>
                         <form onSubmit={handleSubmit} className='bg-transparent'>
                             <FieldSection
-                                title='Nome'
-                                description='O nome é como aparece no teu site.'
+                                title={t('common.name')}
+                                description={t('common.name_description')}
                             >
                                 <UnderlineInput
                                     value={inputs.name}
                                     name='name'
-                                    placeholder='Nome da categoria'
+                                    placeholder={t('categories.name_placeholder')}
                                     disabled={state.tag === 'submitting'}
                                     onChange={handleChange}
                                     dataTestId='category-input'
                                 />
                             </FieldSection>
                             <FieldSection
-                                title='Slug'
-                                description='A “slug” é a versão legível do URL do nome. É em letras minúsculas e contém apenas letras, números e hífenes.'
+                                title={t('common.slug')}
+                                description={t('common.slug_description')}
                             >
                                 <UnderlineInput
                                     value={inputs.slug}
                                     name='slug'
-                                    placeholder='slug-da-categoria'
+                                    placeholder={t('categories.slug_placeholder')}
                                     disabled={state.tag === 'submitting'}
                                     onChange={handleChange}
                                 />
                             </FieldSection>
                             <FieldSection
-                                title='Categoria superior'
+                                title={t('categories.parent_title')}
                                 optional={true}
-                                description='As categorias, ao contrário das etiquetas, podem ter uma hierarquia. Totalmente opcional.'
+                                description={t('categories.parent_description')}
                             >
                                 {inputs.parentId ? (
                                     <Pill
@@ -246,7 +248,7 @@ export const EditCategory = () => {
                                         value={inputs.parentSearch}
                                         name='parentSearch'
                                         options={categories.map((category) => ({ id: category.id, name: category.name }))}
-                                        placeholder='Pesquisar categoria superior'
+                                        placeholder={t('categories.parent_placeholder')}
                                         onSearch={handleChange}
                                         onSelect={(option) =>
                                             dispatch({ type: 'select-parent', parentId: option.id, parentName: option.name })
@@ -254,19 +256,19 @@ export const EditCategory = () => {
                                     />}
                             </FieldSection>
                             <FieldSection
-                                title='Descrição'
+                                title={t('common.description')}
                                 optional={true}
-                                description='Por omissão, a descrição não é proeminente, mas alguns temas poderão apresentá-la.'
+                                description={t('common.description_hint')}
                             >
                                 <UnderlineTextArea
                                     value={inputs.description}
                                     name='description'
                                     onChange={handleChange}
-                                    placeholder='Adiciona uma descrição'
+                                    placeholder={t('common.description_placeholder')}
                                     disabled={state.tag === 'submitting'}
                                 />
                             </FieldSection>
-                            <FieldSection title='Cor'>
+                            <FieldSection title={t('categories.color')}>
                                 <div className='d-flex align-items-center gap-3 mb-3'>
                                     <button
                                         type='button'
@@ -278,7 +280,7 @@ export const EditCategory = () => {
                                             backgroundColor: inputs.color,
                                             borderColor: '#000',
                                         }}
-                                        aria-label='Escolher cor'
+                                        aria-label={t('categories.pick_color')}
                                     />
                                     <input
                                         disabled={state.tag === 'submitting'}
@@ -305,11 +307,11 @@ export const EditCategory = () => {
                             <div className='d-flex justify-content-end gap-3 pt-4'>
                                 {state.tag !== 'submitting' &&
                                     <Link to='/backoffice/categories' className='btn btn-outline-dark px-4 rounded-3'>
-                                        Cancelar
+                                        {t('common.cancel')}
                                     </Link>
                                 }
                                 <Button dataTestId='save-category-button' type='submit' disabled={state.tag === 'submitting'}>
-                                    {state.tag === 'submitting' ? 'A guardar...' : 'Guardar categoria'}
+                                    {state.tag === 'submitting' ? t('common.saving') : t('categories.save_button')}
                                 </Button>
                             </div>
                         </form>

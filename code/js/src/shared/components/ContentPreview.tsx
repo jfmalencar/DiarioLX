@@ -5,6 +5,7 @@ import { usePath } from '@/shared/hooks/usePath';
 import { contentAccent } from '@/shared/utils/content';
 import { groupCredits } from '@/shared/utils/credits';
 import { useCreditLabel } from '@/shared/hooks/useCreditLabel';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { PeopleLine } from '@/shared/components/PeopleLine';
 import { GalleryViewer } from '@/shared/components/GalleryViewer';
@@ -29,37 +30,38 @@ export const ContentPreview = ({ content }: Props) => {
     const { buildMediaUrl } = usePath();
     const creditLabel = useCreditLabel();
     const { showSnackbar } = useSnackbar();
+    const { t } = useI18n();
 
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     const openShare = (url: string) => window.open(url, '_blank', 'noopener,noreferrer,width=600,height=520');
     const copyLink = async () => {
         try {
             await navigator.clipboard.writeText(shareUrl);
-            showSnackbar('Link copiado!', 'success');
+            showSnackbar(t('content.link_copied'), 'success');
         } catch {
-            showSnackbar('Não foi possível copiar o link', 'error');
+            showSnackbar(t('content.link_copy_error'), 'error');
         }
     };
     const shareActions = [
         {
             icon: '𝕏',
-            label: 'Partilhar no X',
+            label: t('content.share_x'),
             onClick: () =>
                 openShare(`https://twitter.com/intent/tweet?text=${encodeURIComponent(content.title)}&url=${encodeURIComponent(shareUrl)}`),
         },
         {
             icon: 'f',
-            label: 'Partilhar no Facebook',
+            label: t('content.share_facebook'),
             onClick: () => openShare(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`),
         },
         {
             icon: '◎',
-            label: 'Partilhar no WhatsApp',
+            label: t('content.share_whatsapp'),
             onClick: () => openShare(`https://wa.me/?text=${encodeURIComponent(`${content.title} ${shareUrl}`)}`),
         },
         {
             icon: '↻',
-            label: 'Copiar link',
+            label: t('content.copy_link'),
             onClick: copyLink,
         },
     ];
@@ -191,7 +193,7 @@ export const ContentPreview = ({ content }: Props) => {
                         <aside className='col-12 col-lg-3 mb-4 mb-lg-0'>
                             <div className='border-start ps-3'>
                                 <div className='mb-4' style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>
-                                    <PeopleLine label='POR' people={content.authors} className='text-uppercase mb-2' />
+                                    <PeopleLine label={t('content.by')} people={content.authors} className='text-uppercase mb-2' />
                                     {groupCredits(credits, creditLabel).map((group) => (
                                         <PeopleLine
                                             key={group.role}
@@ -203,7 +205,7 @@ export const ContentPreview = ({ content }: Props) => {
                                 </div>
                                 {wasUpdatedAfterPublish && (
                                     <p className='text-uppercase mb-4' style={{ fontSize: '0.78rem', opacity: 0.65, letterSpacing: '0.04em' }}>
-                                        Atualizado em {formatNewsDate(content.updatedAt)}
+                                        {t('content.updated_at', { date: formatNewsDate(content.updatedAt) })}
                                     </p>
                                 )}
                                 <div className='d-flex gap-3'>
@@ -303,7 +305,7 @@ export const ContentPreview = ({ content }: Props) => {
                             <div>
                                 <hr />
                                 <div className='text-center my-4'>
-                                    <span className='fw-bold me-2'>TAGS</span>
+                                    <span className='fw-bold me-2'>{t('content.tags')}</span>
                                     {content.tags.map((tag) => (
                                         <Link key={tag.slug} to={`/t/${tag.slug}`} className={`${isPhotoEssay ? 'text-white' : 'text-dark'} text-decoration-underline mx-2`}>
                                             {tag.name}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Modal } from '@/shared/components/modals/Modal';
 import { useContents } from '@/shared/hooks/useContents';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { MediaPreview } from '@/shared/components/MediaPreview';
 import { contentThumbnail, isVideoThumbnail } from '@/shared/utils/content';
 
@@ -32,6 +33,7 @@ export const ModalSelectContent = ({
     const [draft, setDraft] = useState<ContentSummary | null>(selected);
 
     const { contents, loading, fetchAll } = useContents();
+    const { t } = useI18n();
 
     useEffect(() => {
         if (!query.trim()) return;
@@ -55,7 +57,7 @@ export const ModalSelectContent = ({
             buttons={[
                 {
                     key: 'save',
-                    label: 'Guardar',
+                    label: t('common.save'),
                     variant: 'primary',
                     onClick: () => onSave(draft),
                 },
@@ -64,7 +66,7 @@ export const ModalSelectContent = ({
             <input
                 type='text'
                 className='form-control form-control-lg mb-4'
-                placeholder='Pesquisar conteúdo'
+                placeholder={t('homepage.search_content')}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
             />
@@ -72,9 +74,9 @@ export const ModalSelectContent = ({
             {query.trim() && (
                 <div className='mb-4'>
                     {loading ? (
-                        <p className='text-secondary mb-0'>A pesquisar…</p>
+                        <p className='text-secondary mb-0'>{t('homepage.searching')}</p>
                     ) : contents.length === 0 ? (
-                        <p className='text-secondary mb-0'>Nenhum conteúdo encontrado.</p>
+                        <p className='text-secondary mb-0'>{t('homepage.no_content_found')}</p>
                     ) : (
                         <div
                             className='d-flex flex-column gap-2'
@@ -101,7 +103,7 @@ export const ModalSelectContent = ({
                     )}
                 </div>
             )}
-            <h6 className='fw-bold border-bottom border-2 border-dark pb-2 mb-3'>Conteúdo selecionado</h6>
+            <h6 className='fw-bold border-bottom border-2 border-dark pb-2 mb-3'>{t('homepage.selected_content')}</h6>
             {draft ? (
                 <div className='d-flex gap-3'>
                     <MediaPreview
@@ -121,7 +123,7 @@ export const ModalSelectContent = ({
                     </div>
                 </div>
             ) : (
-                <p className='text-secondary mb-0'>Nenhum conteúdo selecionado.</p>
+                <p className='text-secondary mb-0'>{t('homepage.no_content_selected')}</p>
             )}
         </Modal>
     );

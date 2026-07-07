@@ -2,6 +2,7 @@ import { type Dispatch } from 'react';
 import { Trash2, Plus } from 'lucide-react';
 
 import { usePath } from '@/shared/hooks/usePath';
+import { useI18n } from '@/shared/hooks/useI18n';
 import type { ContentGalleryBlock } from '@/shared/services/contents/contents.types';
 
 import type { EditContentAction } from './EditContent.types';
@@ -14,12 +15,13 @@ type Props = {
 
 export const GalleryBlockEditor = ({ block, dispatch, loading }: Props) => {
     const { buildMediaUrl } = usePath();
+    const { t } = useI18n();
 
     return (
         <div className='border rounded p-3'>
             <div className='d-flex align-items-center justify-content-between mb-3'>
                 <span className='fw-semibold text-uppercase' style={{ fontSize: '0.85rem', letterSpacing: '0.06em' }}>
-                    Galeria · {block.images.length} foto{block.images.length === 1 ? '' : 's'}
+                    {t('posts.gallery')} · {block.images.length} {block.images.length === 1 ? t('posts.photo') : t('posts.photos')}
                 </span>
                 <button
                     type='button'
@@ -27,12 +29,12 @@ export const GalleryBlockEditor = ({ block, dispatch, loading }: Props) => {
                     className='btn btn-sm btn-outline-dark d-flex align-items-center gap-1'
                     onClick={() => dispatch({ type: 'open-gallery-add-more', blockId: block.id })}
                 >
-                    <Plus size={14} /> Adicionar mais
+                    <Plus size={14} /> {t('posts.add_more')}
                 </button>
             </div>
 
             {block.images.length === 0 ? (
-                <div className='text-muted text-center py-4'>Ainda sem fotografias nesta galeria.</div>
+                <div className='text-muted text-center py-4'>{t('posts.gallery_empty')}</div>
             ) : (
                 <div className='row g-3'>
                     {block.images.map((image, index) => (
@@ -47,7 +49,7 @@ export const GalleryBlockEditor = ({ block, dispatch, loading }: Props) => {
                                 <button
                                     type='button'
                                     disabled={loading}
-                                    aria-label='Remover fotografia'
+                                    aria-label={t('posts.remove_photo')}
                                     className='btn btn-dark position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center'
                                     onClick={() => dispatch({ type: 'remove-gallery-image', payload: { blockId: block.id, imageIndex: index } })}
                                 >
@@ -57,7 +59,7 @@ export const GalleryBlockEditor = ({ block, dispatch, loading }: Props) => {
                             <input
                                 type='text'
                                 className='form-control form-control-sm mt-1 rounded-0 border-0 border-bottom'
-                                placeholder='Legenda'
+                                placeholder={t('posts.caption')}
                                 value={image.caption ?? ''}
                                 disabled={loading}
                                 onChange={(e) =>

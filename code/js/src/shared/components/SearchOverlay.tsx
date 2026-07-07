@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 import { useContentsService } from '@/shared/services/contents';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 import { contentHref, contentThumbnail, isVideoThumbnail } from '../utils/content';
 import { MediaPreview } from './MediaPreview';
@@ -24,6 +25,7 @@ export const SearchOverlay = ({ onClose, headerHeight }: Props) => {
     const inputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const contentsService = useContentsService();
+    const { t } = useI18n();
 
     useEffect(() => {
         inputRef.current?.focus();
@@ -87,14 +89,14 @@ export const SearchOverlay = ({ onClose, headerHeight }: Props) => {
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') submit();
                         }}
-                        placeholder='Pesquisar'
-                        aria-label='Pesquisar'
+                        placeholder={t('search.placeholder')}
+                        aria-label={t('search.placeholder')}
                         className='form-control border-0 shadow-none fs-4 px-0'
                         style={{ outline: 'none' }}
                     />
                     <button
                         type='button'
-                        aria-label='Fechar pesquisa'
+                        aria-label={t('search.close')}
                         onClick={onClose}
                         className='btn border-0 p-0 text-dark flex-shrink-0'
                         style={{ background: 'transparent' }}
@@ -105,7 +107,7 @@ export const SearchOverlay = ({ onClose, headerHeight }: Props) => {
                 <div className='py-3' style={{ margin: '0 auto' }}>
                     {showEmpty && (
                         <p className='text-muted py-4 mb-0'>
-                            Não foram encontrados resultados para “{query}”.
+                            {t('search.no_results', { query })}
                         </p>
                     )}
                     {current?.items.map((content) => (

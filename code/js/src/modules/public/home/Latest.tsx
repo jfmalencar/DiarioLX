@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 
+import { useI18n } from '@/shared/hooks/useI18n';
+
 import { contentHref, contentDate } from '@/shared/utils/content';
 
 type Props = {
@@ -9,7 +11,9 @@ type Props = {
     verTodasHref?: string;
 }
 
-export const Latest = ({ contents, verTodasHref = "#" }: Props) => (
+export const Latest = ({ contents, verTodasHref = "#" }: Props) => {
+    const { t } = useI18n();
+    return (
     <div className='container-diariolx'>
         <div
             style={{
@@ -28,13 +32,13 @@ export const Latest = ({ contents, verTodasHref = "#" }: Props) => (
                     margin: 0,
                 }}
             >
-                Últimas
+                {t('home.latest_title')}
             </h2>
             <Link
                 to={verTodasHref}
                 style={{ fontSize: "0.78rem", color: "#111", textDecoration: "none" }}
             >
-                Ver todas →
+                {t('common.see_all')} →
             </Link>
         </div>
         <div className="dlx-ultimas-grid">
@@ -92,4 +96,5 @@ export const Latest = ({ contents, verTodasHref = "#" }: Props) => (
             ))}
         </div>
     </div>
-);
+    );
+};

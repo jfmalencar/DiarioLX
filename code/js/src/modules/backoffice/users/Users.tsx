@@ -15,18 +15,6 @@ import { usePath } from '@/shared/hooks/usePath';
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
-const sections: FilterSection[] = [
-    {
-        key: 'role',
-        title: 'TIPO',
-        options: [
-            { value: 'ADMIN', label: 'Administrador' },
-            { value: 'CONTRIBUTOR', label: 'Colaborador' },
-            { value: 'EDITOR', label: 'Editor' },
-        ],
-    }
-];
-
 type Props = {
     filter: { deactivated: boolean };
     openModal: (action: ModalAction | null, user: User) => void;
@@ -72,7 +60,7 @@ const UsersTable = ({ filter, openModal }: Props) => {
                         {t('common.actions')}
                     </TableColumn>
                 </TableHeader>
-                <TableBody cols={4} loading={loading} isEmpty={users.length === 0} emptyMessage='Nenhum usuário encontrado.'>
+                <TableBody cols={4} loading={loading} isEmpty={users.length === 0} emptyMessage={t('users.empty_message')}>
                     {users.map((row) => (
                         <TableRow key={row.userId}>
                             <TableColumn className='col-lg-5'>
@@ -112,26 +100,26 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                 <div className='d-flex d-lg-flex justify-content-center align-items-center gap-3'>
                                     {canManageUsers &&
                                         <>
-                                            <div className='form-check form-switch m-0' title='Mostrar na equipa'>
+                                            <div className='form-check form-switch m-0' title={t('users.show_on_team')}>
                                                 <input
                                                     className='form-check-input'
                                                     type='checkbox'
                                                     role='switch'
                                                     checked={row.onTeam}
                                                     onChange={() => handleToggleTeam(row)}
-                                                    aria-label='Mostrar na equipa'
+                                                    aria-label={t('users.show_on_team')}
                                                 />
                                             </div>
                                             {row.isActive ? (
-                                                <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2' title='Desativar Utilizador'>
+                                                <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2' title={t('users.deactivate_tooltip')}>
                                                     <UserX size={16} />
                                                 </button>
                                             ) : (
                                                 <div className='d-flex gap-2'>
-                                                    <button onClick={() => openModal('activate', row)} className='btn btn-success rounded-2' title='Ativar Utilizador'>
+                                                    <button onClick={() => openModal('activate', row)} className='btn btn-success rounded-2' title={t('users.activate_tooltip')}>
                                                         <UserCheck size={16} />
                                                     </button>
-                                                    <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2' title='Eliminar Definitivamente'>
+                                                    <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2' title={t('users.delete_tooltip')}>
                                                         <Trash size={16} />
                                                     </button>
                                                 </div>
@@ -152,6 +140,19 @@ const UsersTable = ({ filter, openModal }: Props) => {
 export function Users() {
     const { t } = useI18n();
     const { remove, deactivate, activate } = useUsers();
+
+    const sections: FilterSection[] = [
+        {
+            key: 'role',
+            title: t('users.type_filter'),
+            options: [
+                { value: 'ADMIN', label: t('users.admin') },
+                { value: 'CONTRIBUTOR', label: t('users.contributor') },
+                { value: 'EDITOR', label: t('users.editor') },
+            ],
+        }
+    ];
+
     const [open, setOpen] = useState<null | User>(null);
     const [modalAction, setModalAction] = useState<ModalAction | null>(null);
     const navigate = useNavigate();
@@ -161,27 +162,27 @@ export function Users() {
 
     const modalConfig: Record<ModalAction, ModalConfig> = {
         deactivate: {
-            title: 'Desativar utilizador',
-            subtitle: 'Tem a certeza que deseja desativar este utilizador?',
-            alert: 'O utilizador perderá o acesso à plataforma, mas os seus conteúdos publicados permanecerão visíveis.',
-            confirmLabel: 'Desativar',
+            title: t('users.deactivate_title'),
+            subtitle: t('users.deactivate_confirmation'),
+            alert: t('users.deactivate_alert'),
+            confirmLabel: t('common.deactivate'),
             action: deactivate,
             getRedirect: () => '/backoffice/users?tab=deactivated',
         },
         delete: {
-            title: 'Eliminar utilizador',
-            subtitle: 'Tem a certeza que deseja eliminar este utilizador?',
-            alert: 'Só é possível eliminar utilizadores sem conteúdos publicados. Esta ação é permanente e não pode ser revertida.',
-            confirmLabel: 'Eliminar',
+            title: t('users.delete_title'),
+            subtitle: t('users.delete_confirmation'),
+            alert: t('users.delete_alert'),
+            confirmLabel: t('common.delete'),
             action: remove,
             getRedirect: () => `/backoffice/users?tab=deactivated&refresh=${Date.now()}`,
             variant: 'danger',
         },
         activate: {
-            title: 'Ativar utilizador',
-            subtitle: 'Tem a certeza que deseja ativar este utilizador?',
-            alert: 'O utilizador terá acesso à plataforma novamente.',
-            confirmLabel: 'Ativar',
+            title: t('users.activate_title'),
+            subtitle: t('users.activate_confirmation'),
+            alert: t('users.activate_alert'),
+            confirmLabel: t('common.activate'),
             action: activate,
             getRedirect: () => '/backoffice/users?tab=active',
         },

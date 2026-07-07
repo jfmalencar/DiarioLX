@@ -6,6 +6,7 @@ import iplLogo from '@/assets/ipl_logo.png';
 import liacomLogo from '@/assets/liacom_logo.png';
 import logo from '@/assets/logo.svg';
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 type FooterLink = { label: string; to: string };
 
@@ -22,6 +23,7 @@ const chunk = <T,>(items: T[], size: number): T[][] => {
 
 export const Footer = () => {
     const { settings } = useBootstrap();
+    const { t } = useI18n();
     const { social, contact, publication, navigation } = settings;
 
     const categoryLinks: FooterLink[] = [
@@ -33,19 +35,19 @@ export const Footer = () => {
     }));
 
     const mediaLinks: FooterLink[] = [
-        navigation.showPhotos && { label: 'Fotografia', to: '/photo-essays' },
-        navigation.showPodcasts && { label: 'Podcasts', to: '/podcasts' },
-        navigation.showVideos && { label: 'Vídeos', to: '/videos' },
+        navigation.showPhotos && { label: t('type.photos'), to: '/photo-essays' },
+        navigation.showPodcasts && { label: t('type.podcasts'), to: '/podcasts' },
+        navigation.showVideos && { label: t('type.videos'), to: '/videos' },
     ].filter(Boolean) as FooterLink[];
 
     const identityLinks: FooterLink[] = [
-        { label: 'Quem Somos', to: '/team' },
-        { label: 'Estatuto Editorial', to: '/estatuto-editorial' },
-        { label: 'Código Deontológico', to: '/codigo-deontologico' },
+        { label: t('identity.about'), to: '/team' },
+        { label: t('identity.editorial_statute'), to: '/estatuto-editorial' },
+        { label: t('identity.ethics_code'), to: '/codigo-deontologico' },
     ];
 
     const pages: FooterLink[] = [
-        { label: 'Página Inicial', to: '/' },
+        { label: t('footer.home'), to: '/' },
         ...categoryLinks,
         ...mediaLinks,
         ...identityLinks,
@@ -66,7 +68,7 @@ export const Footer = () => {
 
                 <div className='mb-4'>
                     <h6 className='fw-bold mb-4' style={{ letterSpacing: '0.08em' }}>
-                        PÁGINAS
+                        {t('footer.pages')}
                     </h6>
                     <div className='row gy-3'>
                         {columns.map((column, index) => (
@@ -90,27 +92,27 @@ export const Footer = () => {
                 <div className='text-center mb-4' style={{ fontSize: '0.9rem', lineHeight: 1.9 }}>
                     {publication.erc && (
                         <span className='mx-2'>
-                            <strong>REGISTO ERC Nº</strong> {publication.erc}
+                            <strong>{t('footer.erc')}</strong> {publication.erc}
                         </span>
                     )}
                     {publication.periodicity && (
                         <span className='mx-2'>
-                            <strong>PERIODICIDADE</strong> {publication.periodicity}
+                            <strong>{t('footer.periodicity')}</strong> {publication.periodicity}
                         </span>
                     )}
                     {publication.owner && (
                         <span className='mx-2'>
-                            <strong>PROPRIETÁRIO</strong> {publication.owner}
+                            <strong>{t('footer.owner')}</strong> {publication.owner}
                         </span>
                     )}
                     {publication.nipc && (
                         <span className='mx-2'>
-                            <strong>NÚMERO DE REGISTO DE PESSOA COLETIVA</strong> {publication.nipc}
+                            <strong>{t('footer.nipc')}</strong> {publication.nipc}
                         </span>
                     )}
                     {redacao && (
                         <span className='mx-2'>
-                            <strong>REDACÇÃO</strong> {redacao}
+                            <strong>{t('footer.newsroom')}</strong> {redacao}
                         </span>
                     )}
                 </div>
@@ -120,7 +122,7 @@ export const Footer = () => {
                 <div className='d-flex flex-wrap align-items-center justify-content-between gap-4'>
                     <img src={liacomLogo} alt='LIACOM' style={{ height: 22, ...whiteLogo }} />
                     <div style={{ fontSize: '0.85rem', lineHeight: 1.3, maxWidth: 170 }}>
-                        Laboratório de Tendências em Jornalismo
+                        {t('footer.lab_tagline')}
                     </div>
                     <img src={escsLogo} alt='Escola Superior de Comunicação Social' style={{ height: 34, ...whiteLogo }} />
                     <img src={iplLogo} alt='Politécnico de Lisboa' style={{ height: 38, ...whiteLogo }} />
@@ -152,9 +154,9 @@ export const Footer = () => {
                     <span>© Copyright {new Date().getFullYear()} · DiárioLX</span>
                     <div className='vr d-none d-md-block opacity-25' />
                     <span>
-                        Website desenvolvido por <span className='text-decoration-underline'>Alexandra Centeno</span>{' '}
-                        (Web design), <span className='text-decoration-underline'>Jessé Alencar</span> e{' '}
-                        <span className='text-decoration-underline'>Julianne Lobato</span> (Desenvolvimento web)
+                        {t('footer.developed_by')} <span className='text-decoration-underline'>Alexandra Centeno</span>{' '}
+                        ({t('footer.web_design')}), <span className='text-decoration-underline'>Jessé Alencar</span> {t('footer.and')}{' '}
+                        <span className='text-decoration-underline'>Julianne Lobato</span> ({t('footer.web_development')})
                     </span>
                 </div>
             </div>

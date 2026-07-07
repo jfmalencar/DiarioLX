@@ -13,6 +13,8 @@ import {
     Music,
 } from 'lucide-react';
 
+import { useI18n } from '@/shared/hooks/useI18n';
+
 import type { EditContentAction } from './EditContent.types';
 
 type Props = {
@@ -22,7 +24,10 @@ type Props = {
     inline?: boolean;
 }
 
-export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) => (
+export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) => {
+    const { t } = useI18n();
+
+    return (
     <div className={`add-menu dropdown ${inline ? '' : 'add-menu--always-visible d-flex justify-content-center my-2'}`} >
         <button
             type='button'
@@ -30,7 +35,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
             style={inline ? { width: 22, height: 22 } : { width: 28, height: 28 }}
             data-bs-toggle='dropdown'
             aria-expanded='false'
-            aria-label='Adicionar bloco'
+            aria-label={t('posts.add_block')}
             disabled={loading}
         >
             <Plus size={inline ? 15 : 16} />
@@ -42,7 +47,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                     className='dropdown-item d-flex align-items-center gap-2'
                     onClick={() => dispatch({ type: 'add-text-block', afterId })}
                 >
-                    <Type size={16} /> Texto
+                    <Type size={16} /> {t('posts.block.text')}
                 </button>
             </li>
             <li>
@@ -51,7 +56,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                     className='dropdown-item d-flex align-items-center gap-2'
                     onClick={() => dispatch({ type: 'add-quote-block', afterId })}
                 >
-                    <Quote size={16} /> Citação
+                    <Quote size={16} /> {t('posts.block.quote')}
                 </button>
             </li>
             <li>
@@ -62,7 +67,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                         dispatch({ type: 'add-heading-block', level: 3, afterId })
                     }
                 >
-                    <Heading3 size={16} /> Título H3
+                    <Heading3 size={16} /> {t('posts.block.h3')}
                 </button>
             </li>
             <li>
@@ -73,7 +78,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                         dispatch({ type: 'add-heading-block', level: 4, afterId })
                     }
                 >
-                    <Heading4 size={16} /> Título H4
+                    <Heading4 size={16} /> {t('posts.block.h4')}
                 </button>
             </li>
             <li>
@@ -87,7 +92,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                         dispatch({ type: 'open-gallery', payload: 'block', afterId })
                     }
                 >
-                    <ImageIcon size={16} /> Imagem
+                    <ImageIcon size={16} /> {t('posts.block.image')}
                 </button>
             </li>
             <li>
@@ -98,7 +103,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                         dispatch({ type: 'open-gallery', payload: 'gallery', afterId })
                     }
                 >
-                    <ImagesIcon size={16} /> Galeria
+                    <ImagesIcon size={16} /> {t('posts.block.gallery')}
                 </button>
             </li>
             <li>
@@ -109,7 +114,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                         dispatch({ type: 'open-gallery', payload: 'video-block', afterId })
                     }
                 >
-                    <Film size={16} /> Vídeo
+                    <Film size={16} /> {t('posts.video')}
                 </button>
             </li>
             <li>
@@ -120,7 +125,7 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                         dispatch({ type: 'open-gallery', payload: 'audio-block', afterId })
                     }
                 >
-                    <Music size={16} /> Áudio
+                    <Music size={16} /> {t('posts.block.audio')}
                 </button>
             </li>
             <li>
@@ -129,9 +134,10 @@ export const AddMenu = ({ afterId, dispatch, loading, inline = false }: Props) =
                     className='dropdown-item d-flex align-items-center gap-2'
                     onClick={() => dispatch({ type: 'add-embed-block', afterId })}
                 >
-                    <MonitorPlay size={16} /> Embed
+                    <MonitorPlay size={16} /> {t('posts.block.embed')}
                 </button>
             </li>
         </ul>
     </div>
-);
+    );
+};

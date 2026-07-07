@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Pencil, Trash2 } from 'lucide-react';
 
 import { MediaPreview } from '@/shared/components/MediaPreview';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 import { contentHref, contentAccent, contentThumbnail, isVideoThumbnail } from '@/shared/utils/content';
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export const ContentCard = ({ content, onEdit, onRemove, large = false }: Props) => {
+    const { t } = useI18n();
     const height = large ? 420 : 240;
 
     return (
@@ -29,7 +31,7 @@ export const ContentCard = ({ content, onEdit, onRemove, large = false }: Props)
                         className='btn btn-dark btn-sm d-flex align-items-center justify-content-center rounded-3'
                         style={{ width: 36, height: 36 }}
                         onClick={onRemove}
-                        aria-label='Remover conteúdo'
+                        aria-label={t('homepage.remove_content')}
                     >
                         <Trash2 size={16} />
                     </button>
@@ -40,7 +42,7 @@ export const ContentCard = ({ content, onEdit, onRemove, large = false }: Props)
                         className='btn btn-dark btn-sm d-flex align-items-center justify-content-center rounded-3'
                         style={{ width: 36, height: 36 }}
                         onClick={onEdit}
-                        aria-label='Editar conteúdo'
+                        aria-label={t('homepage.edit_content')}
                     >
                         <Pencil size={16} />
                     </button>
@@ -81,7 +83,7 @@ export const ContentCard = ({ content, onEdit, onRemove, large = false }: Props)
                 </>
             ) : (
                 <div className='d-flex align-items-center justify-content-center h-100 text-secondary'>
-                    Sem conteúdo definido
+                    {t('homepage.no_content_set')}
                 </div>
             )}
         </div>

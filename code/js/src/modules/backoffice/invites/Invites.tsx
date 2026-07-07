@@ -28,6 +28,7 @@ const COLORS = {
 }
 
 const RoleCard = ({ role, title, description, icon, onGenerate }: { role: UserRole, title: string, description: string, icon: React.ReactNode, onGenerate: () => void }) => {
+    const { t } = useI18n();
     return (
         <div className='card border-0 shadow-sm h-100 rounded-4'>
             <div className='card-body d-flex flex-column'>
@@ -50,7 +51,7 @@ const RoleCard = ({ role, title, description, icon, onGenerate }: { role: UserRo
                     </div>
                 </div>
                 <div className='mt-auto d-flex justify-content-end'>
-                    <Button onClick={onGenerate} className='w-100'>Gerar Convite</Button>
+                    <Button onClick={onGenerate} className='w-100'>{t('invites.generate')}</Button>
                 </div>
             </div>
         </div>
@@ -73,22 +74,22 @@ const InvitesTable = ({ filter, remove }: Props) => {
             <Table dataTestId='invites-table'>
                 <TableHeader>
                     <TableColumn className='col-lg-2' isHeader={true}>
-                        Código
+                        {t('invites.code')}
                     </TableColumn>
                     <TableColumn className='col-lg-2' isHeader={true}>
-                        Função
+                        {t('users.role')}
                     </TableColumn>
                     <TableColumn className='col-lg-3' isHeader={true}>
-                        Criado em
+                        {t('invites.created_at')}
                     </TableColumn>
                     <TableColumn className='col-lg-3' isHeader={true}>
-                        Expira em
+                        {t('invites.expires_at')}
                     </TableColumn>
                     <TableColumn className='col-lg-2 text-center' isHeader={true}>
                         {t('common.actions')}
                     </TableColumn>
                 </TableHeader>
-                <TableBody cols={5} loading={loading} isEmpty={invites.length === 0} emptyMessage='Nenhum convite encontrado.'>
+                <TableBody cols={5} loading={loading} isEmpty={invites.length === 0} emptyMessage={t('invites.empty_message')}>
                     {invites.map((row) => (
                         <TableRow key={row.invite}>
                             <TableColumn className='col-6 col-lg-2'>
@@ -135,6 +136,7 @@ const InvitesTable = ({ filter, remove }: Props) => {
 }
 
 const GenerateInvite = () => {
+    const { t } = useI18n();
     const { create } = useInvites();
     const { showSnackbar } = useSnackbar();
     const [, setSearchParams] = useSearchParams();
@@ -157,8 +159,8 @@ const GenerateInvite = () => {
             <div className='col-12 col-lg-4'>
                 <RoleCard
                     role='CONTRIBUTOR'
-                    title='Colaborador'
-                    description='Pode criar e gerir as próprias publicações.'
+                    title={t('users.contributor')}
+                    description={t('invites.contributor_description')}
                     icon={<UserPen className='text-blue' />}
                     onGenerate={() => handleGenerate('CONTRIBUTOR')}
                 />
@@ -166,8 +168,8 @@ const GenerateInvite = () => {
             <div className='col-12 col-lg-4'>
                 <RoleCard
                     role='EDITOR'
-                    title='Editor'
-                    description='Pode editar, publicar e gerir conteúdos.'
+                    title={t('users.editor')}
+                    description={t('invites.editor_description')}
                     icon={<UserRoundCheck className='text-green' />}
                     onGenerate={() => handleGenerate('EDITOR')}
                 />
@@ -175,8 +177,8 @@ const GenerateInvite = () => {
             <div className='col-12 col-lg-4'>
                 <RoleCard
                     role='ADMIN'
-                    title='Administrador'
-                    description='Acesso total à plataforma e gestão de utilizadores.'
+                    title={t('users.admin')}
+                    description={t('invites.admin_description')}
                     icon={<ShieldUser className='text-purple' />}
                     onGenerate={() => handleGenerate('ADMIN')}
                 />
@@ -195,10 +197,10 @@ export function Invites() {
     const expiredTrue = useMemo(() => ({ expired: true }), []);
 
     const config: ModalConfig = {
-        title: 'Eliminar convite',
-        subtitle: 'Tem a certeza que deseja eliminar este convite?',
-        alert: 'Ao eliminar este convite, ninguém poderá utilizá-lo para criar uma conta.',
-        confirmLabel: 'Eliminar',
+        title: t('invites.delete_title'),
+        subtitle: t('invites.delete_confirmation'),
+        alert: t('invites.delete_alert'),
+        confirmLabel: t('common.delete'),
         action: remove,
         getRedirect: () => `/backoffice/invites?tab=archived&refresh=${Date.now()}`,
         variant: 'danger',

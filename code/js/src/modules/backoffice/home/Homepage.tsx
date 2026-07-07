@@ -4,6 +4,7 @@ import { useBootstrap } from '@/shared/hooks/useBootstrap';
 import { useFeatured } from '@/shared/hooks/useFeatured';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { SectionBlock } from './SectionBlock';
 import { ModalSelectContent } from './ModalSelectContent';
 import { SaveBar } from './SaveBar';
@@ -25,6 +26,7 @@ export const Homepage = () => {
     const { fetchHomepage, save, loading } = useFeatured();
     const { showSnackbar } = useSnackbar();
     const { user } = useAuthentication();
+    const { t } = useI18n();
 
     const canEditFeatured = user?.features?.includes('manage-featured');
 
@@ -98,7 +100,7 @@ export const Homepage = () => {
                                     className='btn btn-dark d-flex align-items-center gap-2'
                                     onClick={() => dispatch({ type: 'add-section' })}
                                 >
-                                    <Plus size={18} /> Adicionar secção
+                                    <Plus size={18} /> {t('homepage.add_section')}
                                 </button>
                             </div>
                         )}
@@ -109,7 +111,7 @@ export const Homepage = () => {
             <ModalSelectContent
                 key={editTargetKey(state)}
                 isOpen={state.editTarget !== null}
-                title='Alterar conteúdo'
+                title={t('homepage.change_content')}
                 selected={selectCurrentContent(state)}
                 filterType={contentTypeFor(editingSection?.type)}
                 filterCategory={editingSection?.category?.slug}

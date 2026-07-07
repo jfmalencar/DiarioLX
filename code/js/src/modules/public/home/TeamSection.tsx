@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom';
 
 import { useTeam } from '@/shared/hooks/useTeam';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { Avatar } from '@/shared/components/Avatar';
 
 import { SectionHeader } from './SectionHeader'
 
 export const TeamSection = () => {
+    const { t } = useI18n();
     const { team } = useTeam();
 
     if (team.length === 0) return null;
 
     return (
         <div className='container-diariolx'>
-            <SectionHeader title='Equipa' href='/team' />
+            <SectionHeader title={t('home.team_title')} href='/team' />
             <div className='row g-3 justify-content-center'>
                 {team.slice(0, 4).map((m) => (
                     <div key={m.id} className='col-6 col-sm-4 col-md-3 text-center'>

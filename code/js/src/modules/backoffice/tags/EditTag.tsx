@@ -5,6 +5,7 @@ import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { UnderlineTextArea } from '@/shared/components/inputs/UnderlineTextArea';
 import { Button } from '@/shared/components/Button';
 import { slugify } from '@/shared/utils/format';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 import { type Tag, type TagFormValues, useTags } from '@/shared/hooks/useTags';
 
@@ -74,6 +75,7 @@ const reduce = (state: State, action: Action): State => {
 }
 
 export const EditTag = () => {
+    const { t } = useI18n();
     const { fetchOne, create, update } = useTags();
     const navigate = useNavigate();
     const location = useLocation();
@@ -119,7 +121,7 @@ export const EditTag = () => {
         if (state.tag !== 'editing') return;
 
         if (state.inputs.name.trim().length === 0) {
-            dispatch({ type: 'error', message: 'O nome da etiqueta é obrigatório.' });
+            dispatch({ type: 'error', message: t('tags.name_required') });
             return;
         }
 
@@ -151,7 +153,7 @@ export const EditTag = () => {
                             <img src={icon} alt='Ícone do DiárioLX' style={{ width: 28, height: 28 }} className='me-3' />
                         </Link>
                         <div className='fw-semibold' style={{ fontSize: '1.15rem' }}>
-                            {params.id === 'new' ? 'Criação' : 'Edição'} de etiqueta
+                            {params.id === 'new' ? t('tags.create_title') : t('tags.edit_title')}
                         </div>
                         <div></div>
                     </div>
@@ -162,40 +164,40 @@ export const EditTag = () => {
                     <div className='col-12 col-xl-8'>
                         <form onSubmit={handleSubmit} className='bg-transparent'>
                             <FieldSection
-                                title='Nome'
-                                description='O nome é como aparece no teu site.'
+                                title={t('common.name')}
+                                description={t('common.name_description')}
                             >
                                 <UnderlineInput
                                     value={inputs.name}
                                     name='name'
-                                    placeholder='Nome da etiqueta'
+                                    placeholder={t('tags.name_placeholder')}
                                     disabled={state.tag === 'submitting'}
                                     onChange={handleChange}
                                     dataTestId='tag-input'
                                 />
                             </FieldSection>
                             <FieldSection
-                                title='Slug'
-                                description='A “slug” é a versão legível do URL do nome. É em letras minúsculas e contém apenas letras, números e hífenes.'
+                                title={t('common.slug')}
+                                description={t('common.slug_description')}
                             >
                                 <UnderlineInput
                                     value={inputs.slug}
                                     name='slug'
-                                    placeholder='slug-da-etiqueta'
+                                    placeholder={t('tags.slug_placeholder')}
                                     disabled={state.tag === 'submitting'}
                                     onChange={handleChange}
                                 />
                             </FieldSection>
                             <FieldSection
-                                title='Descrição'
+                                title={t('common.description')}
                                 optional={true}
-                                description='Por omissão, a descrição não é proeminente, mas alguns temas poderão apresentá-la.'
+                                description={t('common.description_hint')}
                             >
                                 <UnderlineTextArea
                                     value={inputs.description}
                                     name='description'
                                     onChange={handleChange}
-                                    placeholder='Adiciona uma descrição'
+                                    placeholder={t('common.description_placeholder')}
                                     disabled={state.tag === 'submitting'}
                                 />
                             </FieldSection>
@@ -205,11 +207,11 @@ export const EditTag = () => {
                             <div className='d-flex justify-content-end gap-3 pt-4'>
                                 {state.tag !== 'submitting' &&
                                     <Link to='/backoffice/tags' className='btn btn-outline-dark px-4 rounded-3'>
-                                        Cancelar
+                                        {t('common.cancel')}
                                     </Link>
                                 }
                                 <Button dataTestId='save-tag-button' type='submit' disabled={state.tag === 'submitting'}>
-                                    {state.tag === 'submitting' ? 'A guardar...' : 'Guardar etiqueta'}
+                                    {state.tag === 'submitting' ? t('common.saving') : t('tags.save_button')}
                                 </Button>
                             </div>
                         </form>

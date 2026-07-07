@@ -13,7 +13,6 @@ export function Content() {
         const loadContent = async () => {
             if (slug) {
                 const result = await fetchBySlug(slug);
-                console.log('result', result);
                 setContent(result);
             }
         };

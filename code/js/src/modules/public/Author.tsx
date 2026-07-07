@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 
 import { useAuthorProfile } from '@/shared/hooks/useAuthorProfile';
 import { useContentList } from '@/shared/hooks/useContentList';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { ContentCard } from '@/shared/components/ContentCard';
 import { Avatar } from '@/shared/components/Avatar';
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
@@ -24,16 +25,17 @@ const SectionTitle = ({ children }: { children: string }) => (
 
 export function Author() {
     const { slug } = useParams();
+    const { t } = useI18n();
     const { author: member, loading: authorLoading, error: authorError } = useAuthorProfile(slug);
     const { contents: written, loading: writtenLoading } = useContentList({ author: slug });
     const { contents: credited, loading: creditedLoading } = useContentList({ creditedTo: slug });
 
     if (authorLoading) {
-        return <div className='container py-5 text-center text-muted'>A carregar…</div>;
+        return <div className='container py-5 text-center text-muted'>{t('author.loading')}</div>;
     }
 
     if (authorError || !member) {
-        return <div className='container py-5 text-center text-muted'>Autor não encontrado.</div>;
+        return <div className='container py-5 text-center text-muted'>{t('author.not_found')}</div>;
     }
 
     const loadingContent = writtenLoading || creditedLoading;
@@ -64,24 +66,24 @@ export function Author() {
                 </div>
             </div>
 
-            {loadingContent && <div className='py-4 text-center text-muted'>A carregar…</div>}
+            {loadingContent && <div className='py-4 text-center text-muted'>{t('author.loading')}</div>}
 
             {written.length > 0 && (
                 <>
-                    <SectionTitle>Publicações</SectionTitle>
+                    <SectionTitle>{t('author.publications')}</SectionTitle>
                     <Grid items={written} />
                 </>
             )}
 
             {credited.length > 0 && (
                 <>
-                    <SectionTitle>Créditos</SectionTitle>
+                    <SectionTitle>{t('author.credits')}</SectionTitle>
                     <Grid items={credited} />
                 </>
             )}
 
             {isEmpty && (
-                <div className='py-4 text-center text-muted'>Este autor ainda não tem publicações.</div>
+                <div className='py-4 text-center text-muted'>{t('author.empty')}</div>
             )}
         </div>
     );

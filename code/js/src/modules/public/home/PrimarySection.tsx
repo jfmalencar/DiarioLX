@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 
+import { useI18n } from '@/shared/hooks/useI18n';
+
 import { contentHref, contentDate, contentAccent, contentThumbnail, isVideoThumbnail } from '@/shared/utils/content';
 
 import { MediaPreview } from '@/shared/components/MediaPreview';
@@ -13,6 +15,7 @@ type Props = {
 }
 
 export const PrimarySection = ({ title, contents, verTodasHref = '#' }: Props) => {
+    const { t } = useI18n();
     const [lead] = contents;
     return (
         <div className='container-diariolx'>
@@ -67,7 +70,7 @@ export const PrimarySection = ({ title, contents, verTodasHref = '#' }: Props) =
                                 marginBottom: '0.1rem',
                             }}
                         >
-                            Ver todas →
+                            {t('common.see_all')} →
                         </Link>
                     </div>
                 </div>

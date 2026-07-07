@@ -7,6 +7,7 @@ import { Button } from '@/shared/components/Button';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useCategories } from '@/shared/hooks/useCategories';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
+import { useI18n } from '@/shared/hooks/useI18n';
 import type { BackofficeSettings } from '@/shared/services/settings/settings.types';
 
 const EMPTY: BackofficeSettings = {
@@ -20,6 +21,7 @@ export const Settings = () => {
     const { fetch, save, loading } = useSettings();
     const { categories, fetchAll } = useCategories();
     const { showSnackbar } = useSnackbar();
+    const { t } = useI18n();
     const [form, setForm] = useState<BackofficeSettings>(EMPTY);
 
     useEffect(() => {
@@ -57,7 +59,7 @@ export const Settings = () => {
 
     const handleSave = async () => {
         const res = await save(form);
-        showSnackbar(res.ok ? 'Definições guardadas.' : res.error, res.ok ? 'success' : 'error');
+        showSnackbar(res.ok ? t('settings.saved') : res.error, res.ok ? 'success' : 'error');
     };
 
     return (
@@ -82,7 +84,7 @@ export const Settings = () => {
             </FieldSection>
             <FieldSection
                 title='Facebook'
-                description='Links das redes sociais apresentados no rodapé do site.'
+                description={t('settings.social_description')}
             >
                 <UnderlineInput
                     value={form.social.facebook}
@@ -92,7 +94,7 @@ export const Settings = () => {
                     onChange={(e) => setSocial('facebook', e.currentTarget.value)}
                 />
             </FieldSection>
-            <FieldSection title='Email'>
+            <FieldSection title={t('common.email')}>
                 <UnderlineInput
                     value={form.contact.email}
                     name='email'
@@ -101,17 +103,17 @@ export const Settings = () => {
                     onChange={(e) => setContact('email', e.currentTarget.value)}
                 />
             </FieldSection>
-            <FieldSection title='Morada' description='Contactos apresentados no rodapé do site.'>
+            <FieldSection title={t('settings.address_title')} description={t('settings.contact_description')}>
                 <UnderlineTextArea
                     value={form.contact.address}
                     name='address'
-                    placeholder='Morada da redação'
+                    placeholder={t('settings.address_placeholder')}
                     disabled={loading}
                     onChange={(e) => setContact('address', e.currentTarget.value)}
                 />
             </FieldSection>
 
-            <FieldSection title='Registo ERC' description='Ficha técnica apresentada no rodapé do site.'>
+            <FieldSection title={t('settings.erc_title')} description={t('settings.erc_description')}>
                 <UnderlineInput
                     value={form.publication.erc}
                     name='erc'
@@ -120,16 +122,16 @@ export const Settings = () => {
                     onChange={(e) => setPublication('erc', e.currentTarget.value)}
                 />
             </FieldSection>
-            <FieldSection title='Periodicidade'>
+            <FieldSection title={t('settings.periodicity_title')}>
                 <UnderlineInput
                     value={form.publication.periodicity}
                     name='periodicity'
-                    placeholder='Diário'
+                    placeholder={t('settings.periodicity_placeholder')}
                     disabled={loading}
                     onChange={(e) => setPublication('periodicity', e.currentTarget.value)}
                 />
             </FieldSection>
-            <FieldSection title='NIPC' description='Número de registo de pessoa coletiva.'>
+            <FieldSection title='NIPC' description={t('settings.nipc_description')}>
                 <UnderlineInput
                     value={form.publication.nipc}
                     name='nipc'
@@ -138,19 +140,19 @@ export const Settings = () => {
                     onChange={(e) => setPublication('nipc', e.currentTarget.value)}
                 />
             </FieldSection>
-            <FieldSection title='Proprietário'>
+            <FieldSection title={t('settings.owner_title')}>
                 <UnderlineInput
                     value={form.publication.owner}
                     name='owner'
-                    placeholder='Proprietário da publicação'
+                    placeholder={t('settings.owner_placeholder')}
                     disabled={loading}
                     onChange={(e) => setPublication('owner', e.currentTarget.value)}
                 />
             </FieldSection>
 
             <FieldSection
-                title='Categorias em destaque'
-                description='As categorias selecionadas aparecem diretamente no menu; as restantes ficam sob “Secções”.'
+                title={t('settings.featured_categories_title')}
+                description={t('settings.featured_categories_description')}
             >
                 <div className='row g-2'>
                     {categories.map((cat) => (
@@ -172,14 +174,14 @@ export const Settings = () => {
                 </div>
             </FieldSection>
             <FieldSection
-                title='Secções por tipo'
-                description='Mostra ou esconde estas secções no menu de navegação.'
+                title={t('settings.sections_by_type_title')}
+                description={t('settings.sections_by_type_description')}
             >
                 {([
-                    ['showPhotos', 'Fotografia'],
-                    ['showPodcasts', 'Podcasts'],
-                    ['showVideos', 'Vídeos'],
-                ] as const).map(([key, label]) => (
+                    ['showPhotos', 'settings.section_photos'],
+                    ['showPodcasts', 'settings.section_podcasts'],
+                    ['showVideos', 'settings.section_videos'],
+                ] as const).map(([key, labelKey]) => (
                     <div className='form-check form-switch' key={key}>
                         <input
                             className='form-check-input'
@@ -190,7 +192,7 @@ export const Settings = () => {
                             onChange={(e) => setNav(key, e.target.checked)}
                         />
                         <label className='form-check-label' htmlFor={key}>
-                            {label}
+                            {t(labelKey)}
                         </label>
                     </div>
                 ))}
@@ -202,7 +204,7 @@ export const Settings = () => {
                     disabled={loading}
                     onClick={handleSave}
                 >
-                    {loading ? 'A guardar...' : 'Guardar definições'}
+                    {loading ? t('settings.saving') : t('settings.save')}
                 </Button>
             </div>
         </div>

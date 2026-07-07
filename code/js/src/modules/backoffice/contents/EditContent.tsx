@@ -182,7 +182,7 @@ export const EditContent = () => {
         if (!id) {
             const createRes = await create({ type });
             if (!createRes.ok || createRes.data == null) {
-                showSnackbar(createRes.ok ? 'Erro ao criar conteúdo' : createRes.error, 'error');
+                showSnackbar(createRes.ok ? t('posts.create_error') : createRes.error, 'error');
                 return null;
             }
             id = createRes.data;
@@ -214,12 +214,12 @@ export const EditContent = () => {
         }
 
         return id;
-    }, [state, content, type, create, update, showSnackbar]);
+    }, [state, content, type, create, update, showSnackbar, t]);
 
     const handleUpdate = async () => {
         const id = await ensureSaved();
         if (id) {
-            showSnackbar('Alterações salvas com sucesso!', 'success');
+            showSnackbar(t('posts.save_success'), 'success');
             dispatch({ type: 'set-dirty', payload: false });
         }
     };
@@ -227,7 +227,7 @@ export const EditContent = () => {
     const handleSubmit = async (mode: 'publish' | 'review') => {
         if (!canPublish(content, type)) {
             setOpenConfirmModal(false)
-            showSnackbar(`Preencha os campos obrigatórios: Título, Slug, ${type === 'EPISODE' ? 'Podcast' : 'Categoria'}, Tag e Autor`, 'error');
+            showSnackbar(t('posts.required_fields', { field: type === 'EPISODE' ? t('posts.field.podcast') : t('posts.field.category') }), 'error');
             return;
         }
 
@@ -241,7 +241,7 @@ export const EditContent = () => {
                 showSnackbar(res.error, 'error');
                 return;
             }
-            showSnackbar('Conteúdo publicado com sucesso!', 'success');
+            showSnackbar(t('contents.publish_success'), 'success');
             navigate(`/p/${content.slug}`);
         } else {
             const res = await submit(id);
@@ -250,16 +250,16 @@ export const EditContent = () => {
                 showSnackbar(res.error, 'error');
                 return;
             }
-            showSnackbar('Revisão solicitada com sucesso!', 'success');
+            showSnackbar(t('posts.review_requested_success'), 'success');
             navigate('/backoffice/contents?tab=pending');
         }
     };
 
     const deleteConfig: ModalConfig = {
-        title: 'Eliminar conteúdo',
-        subtitle: 'Tem a certeza que deseja eliminar este conteúdo?',
-        alert: 'Esta ação é permanente e não pode ser revertida.',
-        confirmLabel: 'Eliminar',
+        title: t('posts.delete_title'),
+        subtitle: t('posts.delete_subtitle'),
+        alert: t('posts.delete_alert'),
+        confirmLabel: t('common.delete'),
         action: deleteContent,
         getRedirect: () => '/backoffice/contents',
         variant: 'danger',
@@ -292,7 +292,7 @@ export const EditContent = () => {
                         </div>
                         <div className='d-flex align-items-center gap-4' style={{ width: 320 }}>
                             <div className='border-start border-white opacity-75' style={{ height: 30 }} />
-                            <div>Definições</div>
+                            <div>{t('posts.settings')}</div>
                         </div>
                     </div>
                 </div>
@@ -302,8 +302,8 @@ export const EditContent = () => {
                 <div className='flex-grow-1 overflow-y-auto py-4 pe-4 ps-5' style={{ minWidth: 0, maxWidth: 'calc(100vw - 610px)' }}>
                     {content.state === 'PUBLISHED' && (
                         <div className='mb-4'>
-                            <Alert variant='warning' title='Atenção!'>
-                                Este conteúdo está publicado. Ao guardar alterações, voltará ao estado de Rascunho e deixará de estar visível ao público até ser novamente publicado.
+                            <Alert variant='warning' title={t('posts.published_warning_title')}>
+                                {t('posts.published_warning_body')}
                             </Alert>
                         </div>
                     )}
@@ -313,7 +313,7 @@ export const EditContent = () => {
                             style={{ minHeight: 0, fontSize: '1.75rem', resize: 'none', fontWeight: 500 }}
                             disabled={loading}
                             value={content.title}
-                            placeholder='Adiciona um título'
+                            placeholder={t('posts.title_placeholder')}
                             onChange={(e) => dispatch({ type: 'edit', field: 'title', value: e.target.value })}
                             onInput={(e) => {
                                 const el = e.currentTarget;
@@ -328,7 +328,7 @@ export const EditContent = () => {
                             className='font-noticia form-control border-0 bg-transparent shadow-none px-0 mb-3 resize-none overflow-hidden'
                             disabled={loading}
                             style={{ minHeight: 0, fontSize: '1.25rem', resize: 'none' }}
-                            placeholder='Adiciona uma entrada'
+                            placeholder={t('posts.headline_placeholder')}
                             value={content.headline}
                             onChange={(e) => dispatch({ type: 'edit', field: 'headline', value: e.target.value })}
                             onInput={(e) => {
@@ -377,11 +377,11 @@ export const EditContent = () => {
                                 onClick={() => dispatch({ type: 'open-gallery', payload: 'featured' })}
                             >
                                 {type === 'VIDEO' ? (
-                                    <span className='fs-5'>Vídeo</span>
+                                    <span className='fs-5'>{t('posts.video')}</span>
                                 ) : type === 'EPISODE' ? (
-                                    <span className='fs-5'>Áudio do Episódio</span>
+                                    <span className='fs-5'>{t('posts.episode_audio')}</span>
                                 ) :
-                                    <span className='fs-5'>Imagem em destaque</span>
+                                    <span className='fs-5'>{t('posts.featured_image')}</span>
                                 }
                                 <Upload size={28} />
                             </button>
@@ -389,7 +389,7 @@ export const EditContent = () => {
                                 <input
                                     type='text'
                                     className='form-control'
-                                    placeholder={type === 'VIDEO' ? 'ou colar link do YouTube' : 'ou colar link do Spotify'}
+                                    placeholder={type === 'VIDEO' ? t('posts.paste_youtube') : t('posts.paste_spotify')}
                                     value={content.embedUrl}
                                     disabled={loading}
                                     onChange={(e) => dispatch({ type: 'edit', field: 'embedUrl', value: e.currentTarget.value })}
@@ -397,7 +397,7 @@ export const EditContent = () => {
                             )}
                             {(type === 'VIDEO' || type === 'EPISODE') && content.embedUrl.trim() !== '' && !hasValidEmbed(content.embedUrl, type) && (
                                 <div className='form-text text-danger'>
-                                    {type === 'VIDEO' ? 'Para vídeos, cole um link do YouTube.' : 'Para episódios, cole um link do Spotify.'}
+                                    {type === 'VIDEO' ? t('posts.youtube_hint') : t('posts.spotify_hint')}
                                 </div>
                             )}
                         </div>
@@ -412,7 +412,7 @@ export const EditContent = () => {
                                     type='button'
                                     disabled={loading}
                                     className='ej-block__delete btn btn-sm p-0 d-flex align-items-center justify-content-center'
-                                    aria-label='Remover bloco'
+                                    aria-label={t('posts.remove_block')}
                                     onClick={() => dispatch({ type: 'remove-block', payload: { blockId: block.id } })}
                                 >
                                     <Trash2 size={15} />
@@ -434,7 +434,7 @@ export const EditContent = () => {
                                         <input
                                             type='text'
                                             className='form-control mb-2'
-                                            placeholder='Colar link do YouTube ou Spotify'
+                                            placeholder={t('posts.paste_embed')}
                                             value={block.content}
                                             disabled={loading}
                                             onChange={(e) => dispatch({ type: 'update-content-block', payload: { blockId: block.id, content: e.currentTarget.value } })}
@@ -449,7 +449,7 @@ export const EditContent = () => {
                                         onChange={(html) => dispatch({ type: 'update-content-block', payload: { blockId: block.id, content: html } })}
                                         onFocusEditor={(editor) => setActiveEditor(editor)}
                                         onBlurEditor={(event) => handleBlurEditor(event)}
-                                        placeholder='Começa a escrever'
+                                        placeholder={t('posts.start_writing')}
                                     />
                                 )}
                             </div>
@@ -464,7 +464,7 @@ export const EditContent = () => {
                                 style={{ height: 56 }}
                                 onClick={() => dispatch({ type: 'open-gallery', payload: 'gallery' })}
                             >
-                                <Upload size={22} /> Adicionar fotografias
+                                <Upload size={22} /> {t('posts.add_photos')}
                             </button>
                         )
                     ) : (
@@ -474,18 +474,18 @@ export const EditContent = () => {
                 <div className='pt-4 border-start border-dark' style={{ width: 366, flexShrink: 0, overflowY: 'auto' }}>
                     <form onSubmit={handleUpdate} className='bg-transparent'>
                         <div className='px-4'>
-                            <FieldSection title='Slug'>
+                            <FieldSection title={t('common.slug')}>
                                 <UnderlineInput
                                     value={content.slug}
                                     name='slug'
                                     disabled={loading}
-                                    placeholder={`slug-do-${type?.toLocaleLowerCase()}`}
+                                    placeholder={t('posts.slug_placeholder', { type: type?.toLocaleLowerCase() ?? '' })}
                                     onChange={(e) => dispatch({ type: 'edit', field: 'slug', value: slugify(e.currentTarget.value) })}
                                     dataTestId='content-slug-input'
                                 />
                             </FieldSection>
                             {type === 'EPISODE' ? (
-                                <FieldSection title='Podcast'>
+                                <FieldSection title={t('posts.field.podcast')}>
                                     {content.parent.id ? (
                                         <Pill label={content.parent.name} onRemove={() => dispatch({ type: 'clear-single', field: 'parent', searchField: 'parentSearch' })} />
                                     ) : (
@@ -493,14 +493,14 @@ export const EditContent = () => {
                                             value={content.parentSearch}
                                             name='parentSearch'
                                             options={podcastOptions}
-                                            placeholder='Pesquisar podcast'
+                                            placeholder={t('posts.search_podcast')}
                                             onSearch={(e) => dispatch({ type: 'edit', field: 'parentSearch', value: e.currentTarget.value })}
                                             onSelect={(option) => dispatch({ type: 'select-single', field: 'parent', searchField: 'parentSearch', option })}
                                         />
                                     )}
                                 </FieldSection>
                             ) : (
-                                <FieldSection title='Categoria'>
+                                <FieldSection title={t('posts.field.category')}>
                                     {content.category.id ? (
                                         <Pill label={content.category.name} onRemove={() => dispatch({ type: 'clear-single', field: 'category', searchField: 'categorySearch' })} />
                                     ) : (
@@ -508,14 +508,14 @@ export const EditContent = () => {
                                             value={content.categorySearch}
                                             name='categorySearch'
                                             options={categories}
-                                            placeholder='Pesquisar categoria'
+                                            placeholder={t('posts.search_category')}
                                             onSearch={(e) => dispatch({ type: 'edit', field: 'categorySearch', value: e.currentTarget.value })}
                                             onSelect={(option) => dispatch({ type: 'select-single', field: 'category', searchField: 'categorySearch', option })}
                                         />
                                     )}
                                 </FieldSection>
                             )}
-                            <FieldSection title='Tag principal'>
+                            <FieldSection title={t('posts.main_tag')}>
                                 {content.mainTag.id ? (
                                     <Pill label={content.mainTag.name} onRemove={() => dispatch({ type: 'clear-single', field: 'mainTag', searchField: 'mainTagSearch' })} />
                                 ) : (
@@ -524,13 +524,13 @@ export const EditContent = () => {
                                         value={content.mainTagSearch}
                                         name='mainTagSearch'
                                         options={filteredTags}
-                                        placeholder='Pesquisar tag principal'
+                                        placeholder={t('posts.search_main_tag')}
                                         onSearch={(e) => dispatch({ type: 'edit', field: 'mainTagSearch', value: e.currentTarget.value })}
                                         onSelect={(option) => dispatch({ type: 'select-single', field: 'mainTag', searchField: 'mainTagSearch', option })}
                                     />
                                 )}
                             </FieldSection>
-                            <FieldSection title='Tags secundárias' optional={true}>
+                            <FieldSection title={t('posts.secondary_tags')} optional={true}>
                                 <div className='d-flex flex-wrap gap-2 mb-2'>
                                     {content.secondaryTags.map((tag) => (
                                         <Pill key={tag.id} label={tag.name} onRemove={() => dispatch({ type: 'remove-secondary', field: 'secondaryTags', id: tag.id })} />
@@ -541,12 +541,12 @@ export const EditContent = () => {
                                     value={content.secondaryTagSearch}
                                     name='secondaryTagSearch'
                                     options={filteredTags}
-                                    placeholder='Pesquisar tag secundária'
+                                    placeholder={t('posts.search_secondary_tag')}
                                     onSearch={(e) => dispatch({ type: 'edit', field: 'secondaryTagSearch', value: e.currentTarget.value })}
                                     onSelect={(option) => dispatch({ type: 'add-secondary', field: 'secondaryTags', searchField: 'secondaryTagSearch', option })}
                                 />
                             </FieldSection>
-                            <FieldSection title='Autor responsável'>
+                            <FieldSection title={t('posts.main_author')}>
                                 {content.mainAuthor.id ? (
                                     <Pill label={content.mainAuthor.name} onRemove={canSelectMainAuthor ? () => dispatch({ type: 'clear-single', field: 'mainAuthor', searchField: 'mainAuthorSearch' }) : undefined} />
                                 ) : (
@@ -555,13 +555,13 @@ export const EditContent = () => {
                                         value={content.mainAuthorSearch}
                                         name='mainAuthorSearch'
                                         options={filteredAuthors}
-                                        placeholder='Pesquisar autor responsável'
+                                        placeholder={t('posts.search_main_author')}
                                         onSearch={(e) => dispatch({ type: 'edit', field: 'mainAuthorSearch', value: e.currentTarget.value })}
                                         onSelect={(option) => dispatch({ type: 'select-single', field: 'mainAuthor', searchField: 'mainAuthorSearch', option })}
                                     />
                                 )}
                             </FieldSection>
-                            <FieldSection title='Restantes autores' optional={true}>
+                            <FieldSection title={t('posts.secondary_authors')} optional={true}>
                                 <div className='d-flex flex-wrap gap-2 mb-2'>
                                     {content.secondaryAuthors.map((author) => (
                                         <Pill key={author.id} label={author.name} onRemove={() => dispatch({ type: 'remove-secondary', field: 'secondaryAuthors', id: author.id })} />
@@ -572,7 +572,7 @@ export const EditContent = () => {
                                     value={content.secondaryAuthorSearch}
                                     name='secondaryAuthorSearch'
                                     options={filteredAuthors}
-                                    placeholder='Pesquisar autor secundário'
+                                    placeholder={t('posts.search_secondary_author')}
                                     onSearch={(e) => dispatch({ type: 'edit', field: 'secondaryAuthorSearch', value: e.currentTarget.value })}
                                     onSelect={(option) => dispatch({ type: 'add-secondary', field: 'secondaryAuthors', searchField: 'secondaryAuthorSearch', option })}
                                 />
@@ -602,7 +602,7 @@ export const EditContent = () => {
                                 onClick={handleUpdate}
                                 style={{ height: 40, border: '1px black solid' }}
                             >
-                                Guardar
+                                {t('common.save')}
                             </button>
                             <button
                                 type='button'
@@ -611,7 +611,7 @@ export const EditContent = () => {
                                 onClick={() => setOpenConfirmModal(true)}
                                 style={{ height: 40 }}
                             >
-                                Publicar
+                                {t('common.publish')}
                             </button>
                         </div>
                     </form>

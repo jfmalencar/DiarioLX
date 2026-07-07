@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 
 import { usePageTheme } from '@/shared/hooks/usePageTheme';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 export function NotFound() {
     usePageTheme('light');
+    const { t } = useI18n();
 
     return (
         <div
@@ -18,13 +20,13 @@ export function NotFound() {
                 404
             </div>
             <h1 className='fw-semibold mt-3 mb-2' style={{ fontSize: 'clamp(1.3rem, 3vw, 2rem)' }}>
-                Página não encontrada
+                {t('not_found.title')}
             </h1>
             <p className='text-secondary mb-4' style={{ maxWidth: 440 }}>
-                A página que procura não existe, foi removida ou o endereço está incorreto.
+                {t('not_found.description')}
             </p>
             <Link to='/' data-testid='home-link' className='btn btn-dark px-4 py-2 rounded'>
-                Voltar à página inicial
+                {t('not_found.home_link')}
             </Link>
         </div>
     );

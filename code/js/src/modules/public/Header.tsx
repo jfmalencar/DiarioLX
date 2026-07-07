@@ -8,15 +8,16 @@ import Lottie, { type LottieRefCurrentProps } from 'lottie-react';
 import logo from '@/assets/logo.json';
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 import { usePageThemeState } from '@/shared/hooks/usePageTheme';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 import { SearchOverlay } from '@/shared/components/SearchOverlay';
 
 type OpenMenu = 'sections' | 'identidade' | null;
 
 const IDENTITY_LINKS = [
-    { label: 'Quem Somos', to: '/team' },
-    { label: 'Estatuto Editorial', to: '/estatuto-editorial' },
-    { label: 'Código Deontológico', to: '/codigo-deontologico' },
+    { key: 'identity.about', to: '/team' },
+    { key: 'identity.editorial_statute', to: '/estatuto-editorial' },
+    { key: 'identity.ethics_code', to: '/codigo-deontologico' },
 ];
 
 export const Header = () => {
@@ -28,6 +29,7 @@ export const Header = () => {
     const [searchOpen, setSearchOpen] = useState(false);
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const { settings } = useBootstrap();
+    const { t } = useI18n();
     const nav = settings.navigation;
     const { theme } = usePageThemeState();
     const dark = theme === 'dark';
@@ -138,23 +140,23 @@ export const Header = () => {
                                 onMouseEnter={openSections}
                                 style={triggerStyle(openMenu === 'sections')}
                             >
-                                Secções
+                                {t('header.sections')}
                                 <span aria-hidden='true' style={{ fontSize: '0.7em' }}>▾</span>
                             </div>
                         )}
                         {nav.showPhotos && (
                             <Link className={navLinkClass} to='/photo-essays' onMouseEnter={closeMenu}>
-                                Fotografia
+                                {t('type.photos')}
                             </Link>
                         )}
                         {nav.showPodcasts && (
                             <Link className={navLinkClass} to='/podcasts' onMouseEnter={closeMenu}>
-                                Podcasts
+                                {t('type.podcasts')}
                             </Link>
                         )}
                         {nav.showVideos && (
                             <Link className={navLinkClass} to='/videos' onMouseEnter={closeMenu}>
-                                Vídeos
+                                {t('type.videos')}
                             </Link>
                         )}
                         <div
@@ -163,14 +165,14 @@ export const Header = () => {
                             onMouseEnter={openIdentidade}
                             style={triggerStyle(openMenu === 'identidade')}
                         >
-                            Identidade
+                            {t('header.identity')}
                             <span aria-hidden='true' style={{ fontSize: '0.7em' }}>▾</span>
                         </div>
                     </nav>
                 </div>
                 <button
                     type='button'
-                    aria-label='Pesquisar'
+                    aria-label={t('header.search')}
                     data-testid='search-trigger'
                     onClick={() => setSearchOpen(true)}
                     className={`btn border-0 p-0 position-absolute top-50 translate-middle-y ${textClass}`}
@@ -180,7 +182,7 @@ export const Header = () => {
                 </button>
                 <button
                     type='button'
-                    aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
+                    aria-label={mobileOpen ? t('header.close_menu') : t('header.open_menu')}
                     aria-expanded={mobileOpen}
                     onClick={() => setMobileOpen((o) => !o)}
                     className={`d-lg-none btn border-0 p-0 position-absolute top-50 translate-middle-y ${textClass}`}
@@ -252,7 +254,7 @@ export const Header = () => {
                                     className={`text-decoration-none py-1 ${textClass}`}
                                     style={{ fontSize: '1.5rem', fontWeight: 500, opacity: 0.85, textUnderlineOffset: 6 }}
                                 >
-                                    {l.label}
+                                    {t(l.key)}
                                 </Link>
                             ))}
                         </div>
@@ -290,7 +292,7 @@ export const Header = () => {
                                     className={`btn border-0 w-100 d-flex align-items-center justify-content-between py-3 px-0 ${textClass}`}
                                     style={{ background: 'transparent', fontSize: '1.1rem', fontWeight: 500 }}
                                 >
-                                    Secções
+                                    {t('header.sections')}
                                     <ChevronDown
                                         size={20}
                                         style={{
@@ -329,17 +331,17 @@ export const Header = () => {
                         )}
                         {nav.showPhotos && (
                             <Link to='/photo-essays' onClick={closeMobile} className={`text-decoration-none d-block py-3 border-bottom ${textClass}`} style={{ borderColor: dividerColor, fontSize: '1.1rem' }}>
-                                Fotografia
+                                {t('type.photos')}
                             </Link>
                         )}
                         {nav.showPodcasts && (
                             <Link to='/podcasts' onClick={closeMobile} className={`text-decoration-none d-block py-3 border-bottom ${textClass}`} style={{ borderColor: dividerColor, fontSize: '1.1rem' }}>
-                                Podcasts
+                                {t('type.podcasts')}
                             </Link>
                         )}
                         {nav.showVideos && (
                             <Link to='/videos' onClick={closeMobile} className={`text-decoration-none d-block py-3 border-bottom ${textClass}`} style={{ borderColor: dividerColor, fontSize: '1.1rem' }}>
-                                Vídeos
+                                {t('type.videos')}
                             </Link>
                         )}
                         <div>
@@ -349,7 +351,7 @@ export const Header = () => {
                                 className={`btn border-0 w-100 d-flex align-items-center justify-content-between py-3 px-0 ${textClass}`}
                                 style={{ background: 'transparent', fontSize: '1.1rem', fontWeight: 500 }}
                             >
-                                Identidade
+                                {t('header.identity')}
                                 <ChevronDown
                                     size={20}
                                     style={{
@@ -368,7 +370,7 @@ export const Header = () => {
                                             className={`text-decoration-none d-block py-2 ${textClass}`}
                                             style={{ opacity: 0.85 }}
                                         >
-                                            {l.label}
+                                            {t(l.key)}
                                         </Link>
                                     ))}
                                 </div>

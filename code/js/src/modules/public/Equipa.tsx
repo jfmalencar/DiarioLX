@@ -1,22 +1,24 @@
 import { Link } from 'react-router-dom';
 
 import { useTeam } from '@/shared/hooks/useTeam';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { Avatar } from '@/shared/components/Avatar';
 
 export function Equipa() {
     const { team, loading, error } = useTeam();
+    const { t } = useI18n();
 
     if (loading) {
-        return <div className='container py-5 text-center text-muted'>A carregar…</div>;
+        return <div className='container py-5 text-center text-muted'>{t('team.loading')}</div>;
     }
     if (error || team.length === 0) {
-        return <div className='container py-5 text-center text-muted'>Não há membros da equipa para mostrar.</div>;
+        return <div className='container py-5 text-center text-muted'>{t('team.empty')}</div>;
     }
 
     return (
         <div className='container py-5'>
             <div className='mx-auto' style={{ maxWidth: 820 }}>
-                <h1 className='fw-bold border-bottom border-2 border-dark pb-2 mb-5'>Equipa</h1>
+                <h1 className='fw-bold border-bottom border-2 border-dark pb-2 mb-5'>{t('team.title')}</h1>
                 {team.map((m) => (
                     <div key={m.id} className='row g-4 mb-5 align-items-start'>
                         <div className='col-12 col-md-3 text-center text-md-start'>

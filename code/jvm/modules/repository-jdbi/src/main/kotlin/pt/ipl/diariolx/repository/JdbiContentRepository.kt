@@ -160,6 +160,9 @@ class JdbiContentRepository(
                 }
                 if (category != null) add("category_slug = :category")
                 if (parentId != null) add("parent_id = :parentId")
+                if (authorId != null) {
+                    add("authors::jsonb @> jsonb_build_array(jsonb_build_object('id', :authorId))")
+                }
                 if (author != null) {
                     add("authors::jsonb @> jsonb_build_array(jsonb_build_object('slug', :author))")
                 }
@@ -188,9 +191,6 @@ class JdbiContentRepository(
                 if (state != null) add("content_state = :state::content_state")
                 if (from != null) add("published_at >= :from")
                 if (to != null) add("published_at <= :to")
-                if (authorId != null) {
-                    add("authors::jsonb @> jsonb_build_array(jsonb_build_object('id', :authorId))")
-                }
             }
         return handle
             .createQuery(summaryQuery(conditions, orderBy))

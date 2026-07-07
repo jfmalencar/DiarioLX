@@ -23,20 +23,6 @@ const typeIcon = {
     PHOTO_ESSAY: <ExternalLink size={14} className='text-muted' />,
 };
 
-const sections: FilterSection[] = [
-    {
-        key: 'type',
-        title: 'TIPO',
-        options: [
-            { value: 'VIDEO', label: 'Vídeo' },
-            { value: 'ARTICLE', label: 'Artigo' },
-            { value: 'EPISODE', label: 'Episódio' },
-            { value: 'PODCAST', label: 'Podcast' },
-            { value: 'PHOTO_ESSAY', label: 'Fotografia' },
-        ],
-    }
-];
-
 type Props = {
     filter: {
         state?: ContentState
@@ -67,22 +53,22 @@ const ContentsTable = ({ filter }: Props) => {
     const handleArchive = async (id: number) => {
         const res = await archive(id)
         if (!res.ok) { showSnackbar(res.error, 'error'); return }
-        showSnackbar('Publicação arquivada.', 'success')
+        showSnackbar(t('contents.archived_success'), 'success')
         refetch()
     }
 
     const handleUnarchive = async (id: number) => {
         const res = await unarchive(id)
         if (!res.ok) { showSnackbar(res.error, 'error'); return }
-        showSnackbar('Publicação restaurada.', 'success')
+        showSnackbar(t('contents.unarchived_success'), 'success')
         refetch()
     }
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Tem a certeza que deseja eliminar esta publicação?')) return
+        if (!window.confirm(t('contents.delete_confirm'))) return
         const res = await deleteContent(id)
         if (!res.ok) { showSnackbar(res.error, 'error'); return }
-        showSnackbar('Publicação eliminada.', 'success')
+        showSnackbar(t('contents.deleted_success'), 'success')
         refetch()
     }
 
@@ -91,19 +77,19 @@ const ContentsTable = ({ filter }: Props) => {
             <Table dataTestId='contents-table' >
                 <TableHeader>
                     <TableColumn className='col-lg-5' isHeader={true}>
-                        PUBLICAÇÃO
+                        {t('contents.column.publication')}
                     </TableColumn>
                     <TableColumn className='col-lg-2' isHeader={true}>
-                        CRIAÇÃO
+                        {t('contents.column.created')}
                     </TableColumn>
                     <TableColumn className='col-lg-3' isHeader={true}>
-                        AUTORES
+                        {t('contents.column.authors')}
                     </TableColumn>
                     <TableColumn className='col-lg-2 text-center' isHeader={true}>
                         {t('common.actions')}
                     </TableColumn>
                 </TableHeader>
-                <TableBody cols={4} loading={loading} isEmpty={contents.length === 0} emptyMessage='Nenhuma publicação encontrada.'>
+                <TableBody cols={4} loading={loading} isEmpty={contents.length === 0} emptyMessage={t('contents.empty_message')}>
                     {contents.map((row, index) => (
                         <TableRow key={row.id}>
                             <TableColumn className='col-lg-5'>
@@ -135,11 +121,11 @@ const ContentsTable = ({ filter }: Props) => {
                                 </div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2'>
-                                <div className='text-muted d-lg-none small text-uppercase mb-1'>CRIAÇÃO</div>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('contents.column.created')}</div>
                                 <div className='text-secondary'>{new Date(row.createdAt).toLocaleDateString()}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-3'>
-                                <div className='text-muted d-lg-none small text-uppercase mb-1'>AUTORES</div>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('contents.column.authors')}</div>
                                 <div className='text-secondary'>{row.authors.map(author => author.name).join(', ')}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
@@ -156,7 +142,7 @@ const ContentsTable = ({ filter }: Props) => {
                                                     type='button'
                                                     onClick={() => handleUnarchive(row.id)}
                                                     className='btn btn-outline-dark rounded-2'
-                                                    title='Desarquivar'
+                                                    title={t('common.unarchive')}
                                                     disabled={loading}
                                                 >
                                                     <ArchiveRestore size={16} />
@@ -167,7 +153,7 @@ const ContentsTable = ({ filter }: Props) => {
                                                     type='button'
                                                     onClick={() => handleDelete(row.id)}
                                                     className='btn btn-outline-danger rounded-2'
-                                                    title='Eliminar'
+                                                    title={t('common.delete')}
                                                     disabled={loading}
                                                 >
                                                     <Trash2 size={16} />
@@ -211,7 +197,7 @@ const ContentsTable = ({ filter }: Props) => {
                                                     type='button'
                                                     onClick={() => handleArchive(row.id)}
                                                     className='btn btn-outline-dark rounded-2'
-                                                    title='Arquivar'
+                                                    title={t('common.archive')}
                                                     disabled={loading}
                                                 >
                                                     <Archive size={16} />
@@ -233,12 +219,26 @@ const ContentsTable = ({ filter }: Props) => {
 export const Contents = () => {
     const { t } = useI18n();
 
+    const sections: FilterSection[] = [
+        {
+            key: 'type',
+            title: t('contents.filter.type'),
+            options: [
+                { value: 'VIDEO', label: t('contents.type.video') },
+                { value: 'ARTICLE', label: t('contents.type.article') },
+                { value: 'EPISODE', label: t('contents.type.episode') },
+                { value: 'PODCAST', label: t('contents.type.podcast') },
+                { value: 'PHOTO_ESSAY', label: t('type.photos') },
+            ],
+        }
+    ];
+
     return (
         <>
             <Tabs
                 toolbar={
                     <>
-                        <TableSearch placeholder='Pesquisar publicação' />
+                        <TableSearch placeholder={t('contents.search_placeholder')} />
                         <TableFilters sections={sections} />
                     </>
                 }

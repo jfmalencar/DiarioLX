@@ -1,3 +1,5 @@
+import { useI18n } from '@/shared/hooks/useI18n';
+
 type Props = {
     visible: boolean;
     saving: boolean;
@@ -6,6 +8,7 @@ type Props = {
 };
 
 export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
+    const { t } = useI18n();
     return (
         <div
             className='position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-lg'
@@ -19,7 +22,7 @@ export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
                 className='d-flex align-items-center justify-content-between py-3 px-4 mx-auto'
                 style={{ maxWidth: 1100 }}
             >
-                <span className='text-secondary'>Tens alterações por guardar.</span>
+                <span className='text-secondary'>{t('homepage.unsaved_changes')}</span>
                 <div className='d-flex gap-2'>
                     <button
                         type='button'
@@ -27,7 +30,7 @@ export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
                         onClick={onCancel}
                         disabled={saving}
                     >
-                        Cancelar
+                        {t('common.cancel')}
                     </button>
                     <button
                         type='button'
@@ -35,7 +38,7 @@ export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
                         onClick={onSave}
                         disabled={saving}
                     >
-                        {saving ? 'A guardar…' : 'Guardar'}
+                        {saving ? t('homepage.saving') : t('common.save')}
                     </button>
                 </div>
             </div>

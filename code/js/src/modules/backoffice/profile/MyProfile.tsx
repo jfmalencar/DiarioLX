@@ -127,7 +127,7 @@ export function MyProfile() {
                 showSnackbar(result.error, 'error');
                 return;
             }
-            showSnackbar('Perfil atualizado com sucesso!', 'success');
+            showSnackbar(t('myprofile.update_success'), 'success');
             await refreshUser();
             setEditModalOpen(false);
         } catch (err) {
@@ -368,11 +368,11 @@ export function MyProfile() {
                         />
                     </div>
                     <div>
-                        <label className='form-label'>Cargo</label>
+                        <label className='form-label'>{t('myprofile.position')}</label>
                         <input
                             type='text'
                             className='form-control'
-                            placeholder='Ex.: Editora de Infografia'
+                            placeholder={t('myprofile.position_placeholder')}
                             value={editFormData.position}
                             onChange={(e) => setEditFormData(prev => ({ ...prev, position: e.target.value }))}
                         />

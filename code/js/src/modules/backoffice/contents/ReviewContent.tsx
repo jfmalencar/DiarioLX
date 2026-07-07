@@ -14,9 +14,9 @@ import { ReviewModal } from './ReviewModal';
 import type { HistoryEntry, HistoryEntryType } from '@/shared/services/contents/contents.types';
 import { useI18n } from '@/shared/hooks/useI18n';
 
-const historyConfig: Record<HistoryEntryType, { label: string; sublabel: string; sublabelColor: string; icon: typeof CheckCircle; iconColor: string }> = {
-    'approved': { label: 'PUBLICAÇÃO', sublabel: 'APROVADA', sublabelColor: '#2d6a4f', icon: CheckCircle, iconColor: '#2d6a4f' },
-    'rejected': { label: 'PUBLICAÇÃO', sublabel: 'REJEITADA', sublabelColor: '#9b2335', icon: XCircle, iconColor: '#9b2335' },
+const historyConfig: Record<HistoryEntryType, { sublabelKey: string; sublabelColor: string; icon: typeof CheckCircle; iconColor: string }> = {
+    'approved': { sublabelKey: 'contents.history.approved', sublabelColor: '#2d6a4f', icon: CheckCircle, iconColor: '#2d6a4f' },
+    'rejected': { sublabelKey: 'contents.history.rejected', sublabelColor: '#9b2335', icon: XCircle, iconColor: '#9b2335' },
 };
 
 const HistoryEntryCard = ({ entry }: { entry: HistoryEntry }) => {
@@ -29,8 +29,8 @@ const HistoryEntryCard = ({ entry }: { entry: HistoryEntry }) => {
                 <div className='d-flex align-items-center gap-2'>
                     <Icon size={16} color={config.iconColor} />
                     <span style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>
-                        {config.label}{' '}
-                        <strong style={{ color: config.sublabelColor }}>{config.sublabel}</strong>
+                        {t('contents.history.publication')}{' '}
+                        <strong style={{ color: config.sublabelColor }}>{t(config.sublabelKey)}</strong>
                     </span>
                 </div>
                 <span className='text-muted' style={{ fontSize: '0.75rem' }}>{new Date(entry.date).toLocaleDateString()}</span>
@@ -94,15 +94,15 @@ export const ReviewContent = () => {
         if (modalAction === 'approve') {
             const result = await publish(Number(params.id), comment);
             if (result) {
-                showSnackbar('Conteúdo publicado com sucesso!', 'success');
+                showSnackbar(t('contents.publish_success'), 'success');
                 navigate('/p/' + content?.slug);
             } else {
-                showSnackbar('Algo deu errado. Tente novamente');
+                showSnackbar(t('contents.generic_error'));
             }
         } else {
             const result = await reject(Number(params.id), comment);
             if (result) {
-                showSnackbar('Conteúdo rejeitado com sucesso!', 'success');
+                showSnackbar(t('contents.reject_success'), 'success');
                 navigate('/backoffice/contents');
             }
         }

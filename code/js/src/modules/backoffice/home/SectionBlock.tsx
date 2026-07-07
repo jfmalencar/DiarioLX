@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { ContentCard } from './ContentCard';
 import { useCategories } from '@/shared/hooks/useCategories';
+import { useI18n } from '@/shared/hooks/useI18n';
 import type { CategorySummary, SectionState, SectionTypeConfig } from './Homepage.types';
 import { useEffect } from 'react';
 
@@ -13,18 +14,19 @@ type Props = {
     readOnly?: boolean;
 };
 
-const SECTION_LABELS: Record<string, string> = {
-    HIGHLIGHT: 'Notícia Principal',
-    FEATURED: 'Notícias em destaque',
-    CATEGORY: 'Secção',
-    CATEGORY_ROW: 'Linha de categorias',
-    PHOTOS: 'Fotografia',
-    PODCASTS: 'Podcasts',
-    VIDEOS: 'Vídeos',
+const SECTION_LABEL_KEYS: Record<string, string> = {
+    HIGHLIGHT: 'homepage.section_highlight',
+    FEATURED: 'homepage.section_featured',
+    CATEGORY: 'homepage.section_category',
+    CATEGORY_ROW: 'homepage.section_category_row',
+    PHOTOS: 'homepage.section_photos',
+    PODCASTS: 'homepage.section_podcasts',
+    VIDEOS: 'homepage.section_videos',
 };
 
 export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, onRemoveSection, readOnly = false }: Props) => {
     const { categories, fetchAll } = useCategories();
+    const { t } = useI18n();
 
     useEffect(() => {
         if (rules?.hasCategory) {
@@ -39,7 +41,7 @@ export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, 
         <div>
             <div className='d-flex align-items-center justify-content-between border-bottom border-2 border-dark pb-2 mb-4 mt-4'>
                 <div className='d-flex align-items-center gap-3'>
-                    <div className='fw-bold m-0'>{SECTION_LABELS[section.type] ?? 'Secção'}</div>
+                    <div className='fw-bold m-0'>{t(SECTION_LABEL_KEYS[section.type] ?? 'homepage.section_category')}</div>
                     {rules?.hasCategory && (
                         <select
                             className='form-select w-auto'
@@ -52,7 +54,7 @@ export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, 
                             }}
                         >
                             <option value='' disabled>
-                                Escolher categoria...
+                                {t('homepage.choose_category')}
                             </option>
                             {categories.map((cat) => (
                                 <option key={cat.id} value={cat.id}>
@@ -68,7 +70,7 @@ export const SectionBlock = ({ section, rules, onCategoryChange, onEditArticle, 
                         className='btn btn-outline-danger btn-sm d-flex align-items-center gap-2'
                         onClick={onRemoveSection}
                     >
-                        <Trash2 size={16} /> Remover secção
+                        <Trash2 size={16} /> {t('homepage.remove_section')}
                     </button>
                 )}
             </div>

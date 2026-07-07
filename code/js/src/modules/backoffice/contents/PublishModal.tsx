@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { Modal } from '@/shared/components/modals/Modal';
 import { usePath } from '@/shared/hooks/usePath';
+import { useI18n } from '@/shared/hooks/useI18n';
 import type { Media } from '@/shared/hooks/useMedia';
 
 type Props = {
@@ -20,6 +21,7 @@ type Props = {
 export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, content }: Props) => {
     const { buildMediaUrl } = usePath();
     const { user } = useAuthentication();
+    const { t } = useI18n();
 
     const canPublish = user?.features?.includes('publish');
     const canRequestReview = user?.features?.includes('request-review');
@@ -34,12 +36,12 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
     return (
         <Modal
             isOpen={isOpen}
-            title='Confirma os detalhes da publicação'
+            title={t('posts.publish_modal_title')}
             onClose={onClose}
             buttons={[
                 {
                     key: 'confirm',
-                    label: mode === 'publish' ? 'Publicar' : 'Pedir revisão',
+                    label: mode === 'publish' ? t('common.publish') : t('posts.request_review'),
                     variant: 'primary',
                     onClick: handleConfirm,
                 },
@@ -72,7 +74,7 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
 
             <div className='mb-3'>
                 <div className='text-uppercase fw-semibold mb-1' style={{ fontSize: '0.75rem', color: '#666' }}>
-                    Autores
+                    {t('posts.authors')}
                 </div>
                 <div style={{ fontSize: '0.9rem' }}>
                     {content.authors.join(', ').toUpperCase()}
@@ -81,7 +83,7 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
 
             <div>
                 <div className='text-uppercase fw-semibold mb-2' style={{ fontSize: '0.75rem', color: '#666' }}>
-                    Data de Publicação
+                    {t('posts.publish_date')}
                 </div>
                 <div className='border rounded p-3' style={{ backgroundColor: '#fff' }}>
                     {canPublish && (
@@ -94,9 +96,9 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
                                 onChange={() => setMode('publish')}
                             />
                             <label className='form-check-label' htmlFor='mode-publish'>
-                                <div className='fw-medium'>Publicar agora</div>
+                                <div className='fw-medium'>{t('posts.publish_now')}</div>
                                 <div className='text-muted' style={{ fontSize: '0.85rem' }}>
-                                    O artigo ficará disponível publicamente de imediato
+                                    {t('posts.publish_now_desc')}
                                 </div>
                             </label>
                         </div>
@@ -111,9 +113,9 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
                                 onChange={() => setMode('review')}
                             />
                             <label className='form-check-label' htmlFor='mode-review'>
-                                <div className='fw-medium'>Aguarda aprovação</div>
+                                <div className='fw-medium'>{t('posts.await_approval')}</div>
                                 <div className='text-muted' style={{ fontSize: '0.85rem' }}>
-                                    O artigo será publicado após revisão editorial
+                                    {t('posts.await_approval_desc')}
                                 </div>
                             </label>
                         </div>

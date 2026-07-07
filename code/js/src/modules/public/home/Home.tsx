@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useHomepage } from '@/shared/hooks/useHomepage';
+import { useI18n } from '@/shared/hooks/useI18n';
 import type { HomepageSection } from '@/shared/services/homepage/homepage.types';
 import { HeroArticle } from '@/shared/components/HeroArticle';
 
@@ -16,6 +17,7 @@ import { HomeSkeleton } from './HomeSkeleton';
 import './Home.css'
 
 export const Home = () => {
+    const { t } = useI18n();
     const { data, loading } = useHomepage();
 
     if (loading && !data) {
@@ -24,7 +26,7 @@ export const Home = () => {
     if (!data) {
         return (
             <div className='container-xl py-5 text-center text-muted'>
-                Não foi possível carregar a página inicial.
+                {t('home.load_error')}
             </div>
         );
     }
@@ -59,11 +61,11 @@ export const Home = () => {
             case 'CATEGORY_ROW':
                 return <CategoryRow contents={section.contents} />;
             case 'PHOTOS':
-                return <ThreeColSection title='Fotografia' contents={section.contents} href='/photo-essays' />;
+                return <ThreeColSection title={t('type.photos')} contents={section.contents} href='/photo-essays' />;
             case 'PODCASTS':
-                return <ThreeColSection title='Podcasts' contents={section.contents} href='/podcasts' />;
+                return <ThreeColSection title={t('type.podcasts')} contents={section.contents} href='/podcasts' />;
             case 'VIDEOS':
-                return <ThreeColSection title='Vídeos' contents={section.contents} href='/videos' />;
+                return <ThreeColSection title={t('type.videos')} contents={section.contents} href='/videos' />;
             default:
                 return null;
         }

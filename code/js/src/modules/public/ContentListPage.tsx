@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 import { usePageTheme } from '@/shared/hooks/usePageTheme';
+import { useI18n } from '@/shared/hooks/useI18n';
 
 import { HeroArticle } from '@/shared/components/HeroArticle';
 import { ContentCard } from '@/shared/components/ContentCard';
@@ -23,8 +24,10 @@ type Props = {
     onLoadMore?: () => void;
 }
 
-export const ContentListPage = ({ title, color = '#000', icon, dark = false, fullDark = false, contents, loading, error, emptyMessage = 'Não há conteúdos para mostrar.', hasMore = false, loadingMore = false, onLoadMore }: Props) => {
+export const ContentListPage = ({ title, color = '#000', icon, dark = false, fullDark = false, contents, loading, error, emptyMessage, hasMore = false, loadingMore = false, onLoadMore }: Props) => {
     usePageTheme(dark || fullDark ? 'dark' : 'light');
+    const { t } = useI18n();
+    const resolvedEmptyMessage = emptyMessage ?? t('listing.empty');
 
     const pageClass = fullDark ? 'bg-black text-white' : '';
     const headerClass = !fullDark && dark ? 'bg-black text-white' : '';
@@ -45,7 +48,7 @@ export const ContentListPage = ({ title, color = '#000', icon, dark = false, ful
                     </div>
                 </div>
                 <div className={emptyClass}>
-                    {emptyMessage}
+                    {resolvedEmptyMessage}
                 </div>
             </div>
         )

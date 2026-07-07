@@ -44,19 +44,19 @@ export const BackofficeLayout = () => {
   }
 
   const options = [
-    { key: 'new-content', label: 'Artigo', action: () => navigate('/backoffice/contents/new?type=ARTICLE') },
-    { key: 'new-video', label: 'Vídeo', action: () => navigate('/backoffice/contents/new?type=VIDEO') },
-    { key: 'new-episode', label: 'Episódio', action: () => navigate('/backoffice/contents/new?type=EPISODE') },
-    { key: 'new-photo-essay', label: 'Reportagem fotográfica', action: () => navigate('/backoffice/contents/new?type=PHOTO_ESSAY') },
+    { key: 'new-content', label: t('backoffice_layout.new_article'), action: () => navigate('/backoffice/contents/new?type=ARTICLE') },
+    { key: 'new-video', label: t('backoffice_layout.new_video'), action: () => navigate('/backoffice/contents/new?type=VIDEO') },
+    { key: 'new-episode', label: t('backoffice_layout.new_episode'), action: () => navigate('/backoffice/contents/new?type=EPISODE') },
+    { key: 'new-photo-essay', label: t('backoffice_layout.new_photo_essay'), action: () => navigate('/backoffice/contents/new?type=PHOTO_ESSAY') },
   ]
   if (user?.features?.includes('manage-podcasts')) {
-    options.push({ key: 'new-podcast', label: 'Podcast', action: () => navigate('/backoffice/contents/new?type=PODCAST') })
+    options.push({ key: 'new-podcast', label: t('backoffice_layout.new_podcast'), action: () => navigate('/backoffice/contents/new?type=PODCAST') })
   }
   if (user?.features?.includes('manage-tags')) {
-    options.push({ key: 'new-tag', label: 'Etiqueta', action: () => navigate('/backoffice/tags/new') })
+    options.push({ key: 'new-tag', label: t('backoffice_layout.new_tag'), action: () => navigate('/backoffice/tags/new') })
   }
   if (user?.features?.includes('manage-categories')) {
-    options.push({ key: 'new-category', label: 'Categoria', action: () => navigate('/backoffice/categories/new') })
+    options.push({ key: 'new-category', label: t('backoffice_layout.new_category'), action: () => navigate('/backoffice/categories/new') })
   }
 
   return (

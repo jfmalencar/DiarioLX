@@ -7,15 +7,11 @@ import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/Confi
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableBody, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
-import { TableFilters } from '@/shared/components/table/TableFilters';
-import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
 import { type Tag, useTags } from '@/shared/hooks/useTags';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
-
-const sections: FilterSection[] = [];
 
 type Props = {
     filter: { archived: boolean };
@@ -55,7 +51,7 @@ const TagsTable = ({ filter, openModal }: Props) => {
                         {t('common.actions')}
                     </TableColumn>
                 </TableHeader>
-                <TableBody cols={4} loading={loading} isEmpty={tags.length === 0} emptyMessage='Nenhuma tag encontrada.'>
+                <TableBody cols={4} loading={loading} isEmpty={tags.length === 0} emptyMessage={t('tags.empty_message')}>
                     {tags.map((row, index) => (
                         <TableRow key={row.id}>
                             <TableColumn className='col-lg-5'>
@@ -131,26 +127,26 @@ export const Tags = () => {
 
     const modalConfig: Record<ModalAction, ModalConfig> = {
         archive: {
-            title: 'Arquivar etiqueta',
-            subtitle: 'Tem a certeza que deseja arquivar esta etiqueta?',
-            alert: 'Os conteúdos que têm esta etiqueta como etiqueta principal deixarão de estar visíveis enquanto ela estiver arquivada.',
-            confirmLabel: 'Arquivar',
+            title: t('tags.archive_title'),
+            subtitle: t('tags.archive_confirmation'),
+            alert: t('tags.archive_alert'),
+            confirmLabel: t('common.archive'),
             action: archive,
             getRedirect: () => '/backoffice/tags?tab=archived',
         },
         unarchive: {
-            title: 'Desaquivar etiqueta',
-            subtitle: 'Tem a certeza que deseja desarquivar esta etiqueta?',
-            alert: 'Os conteúdos que têm esta etiqueta como etiqueta principal voltarão a estar visíveis assim que ela for desarquivada.',
-            confirmLabel: 'Desarquivar',
+            title: t('tags.unarchive_title'),
+            subtitle: t('tags.unarchive_confirmation'),
+            alert: t('tags.unarchive_alert'),
+            confirmLabel: t('common.unarchive'),
             action: unarchive,
             getRedirect: () => '/backoffice/tags?tab=all',
         },
         delete: {
-            title: 'Eliminar etiqueta',
-            subtitle: 'Tem a certeza que deseja eliminar esta etiqueta?',
-            alert: 'Esta ação é permanente e não pode ser revertida.',
-            confirmLabel: 'Eliminar',
+            title: t('tags.delete_title'),
+            subtitle: t('tags.delete_confirmation'),
+            alert: t('tags.delete_alert'),
+            confirmLabel: t('common.delete'),
             action: remove,
             getRedirect: () => `/backoffice/tags?tab=archived&refresh=${Date.now()}`,
             variant: 'danger',
@@ -181,12 +177,7 @@ export const Tags = () => {
         <>
             <Tabs
                 toolbar={
-                    <>
-                        <TableSearch placeholder={t('tags.search_placeholder')} />
-                        {sections.length > 0 &&
-                            <TableFilters sections={sections} />
-                        }
-                    </>
+                    <TableSearch placeholder={t('tags.search_placeholder')} />
                 }
             >
                 <Tab id='active' label={t('common.active-f')}>

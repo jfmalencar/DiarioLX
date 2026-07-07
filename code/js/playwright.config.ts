@@ -77,7 +77,12 @@ export default defineConfig({
             name: 'public-mobile-chrome',
             testMatch: '**/public/**',
             use: { ...devices['Pixel 5'] },
-        }
+        },
+        ...(process.env.CI ? [{
+            name: 'public-mobile-safari',
+            testMatch: '**/public/**',
+            use: { ...devices['iPhone 12'] },
+        }] : []),
         //{
         //    name: 'Microsoft Edge',
         //    use: { ...devices['Desktop Edge'], channel: 'msedge' },

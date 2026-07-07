@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
+import { useI18n } from '@/shared/hooks/useI18n';
 import { ContentCard } from "@/shared/components/ContentCard";
 
 type Props = {
@@ -37,6 +38,7 @@ const SPAN_COL: Record<number, string> = {
 };
 
 export const CategoryRow = ({ contents }: Props) => {
+    const { t } = useI18n();
     const items = contents.slice(0, 4);
     if (items.length === 0) return null;
     const groups = buildGroups(items);
@@ -55,7 +57,7 @@ export const CategoryRow = ({ contents }: Props) => {
                                 className='text-muted text-decoration-none'
                                 style={{ fontSize: '0.65rem' }}
                             >
-                                Ver todas →
+                                {t('common.see_all')} →
                             </Link>
                         </div>
                         {/* Desktop: vertical cards laid out in the magazine grid. */}

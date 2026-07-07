@@ -72,15 +72,15 @@ const router = createBrowserRouter([
       },
       {
         path: 'photo-essays',
-        element: <TypeList type='PHOTO_ESSAY' title='Fotografia' />,
+        element: <TypeList type='PHOTO_ESSAY' />,
       },
       {
         path: 'podcasts',
-        element: <TypeList type='PODCAST' title='Podcasts' />,
+        element: <TypeList type='PODCAST' />,
       },
       {
         path: 'videos',
-        element: <TypeList type='VIDEO' title='Vídeos' />,
+        element: <TypeList type='VIDEO' />,
       },
       {
         path: 'team',
