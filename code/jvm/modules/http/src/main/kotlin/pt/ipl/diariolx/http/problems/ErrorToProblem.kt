@@ -55,6 +55,7 @@ fun UserError.toProblem(): Problem =
         is UserError.InvalidPassword -> Problem.invalidPassword
         is UserError.InvalidName -> Problem.invalidName
         is UserError.InvalidBio -> Problem.invalidBio
+        is UserError.InvalidRole -> Problem.invalidRole
         is UserError.Unauthorized -> Problem.unauthorized
         is UserError.UserNotFound -> Problem.userNotFound
         is UserError.NoUserFound -> Problem.noUserFound
@@ -63,6 +64,10 @@ fun UserError.toProblem(): Problem =
         is UserError.InvalidInvite -> Problem.invalidInvite
         is UserError.DeactivatedAccount -> Problem.deactivatedAccount
         is UserError.UserHasContents -> Problem.userHasContents
+        is UserError.FailedApproval -> Problem.failedApproval
+        is UserError.InvalidResetRequestStatus -> Problem.invalidResetRequestStatus
+        is UserError.InvalidResetToken -> Problem.invalidResetToken
+        is UserError.ResetRequestNotFound -> Problem.resetRequestNotFound
     }
 
 fun AuthError.toProblem(): Problem =

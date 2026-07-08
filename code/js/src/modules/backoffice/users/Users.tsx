@@ -1,14 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
-
-import { UserIcon, Trash, UserX, UserCheck, ExternalLink } from 'lucide-react';
+import { UserIcon, Trash, UserX, UserCheck, MoreHorizontal, ExternalLink } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { TableFilters } from '@/shared/components/table/TableFilters';
-import { type FilterSection } from '@/shared/components/table/FiltersDrawer';
 import { useUsers, type User } from '@/shared/hooks/useUsers';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
@@ -17,6 +15,8 @@ import { usePath } from '@/shared/hooks/usePath';
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { RoleBadge } from '@/shared/components/RoleBadge';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
+import { UserPreviewModal } from './UserPreviewModal';
+import type { FilterSection } from '@/shared/components/table/FiltersDrawer';
 
 type Props = {
     filter: { deactivated: boolean };
@@ -27,7 +27,7 @@ type ModalAction = 'deactivate' | 'delete' | 'activate';
 
 const UsersTable = ({ filter, openModal }: Props) => {
     const { t } = useI18n();
-    const { loading, users, pagination, fetchAll, setOnTeam } = useUsers();
+    const { loading, users, pagination, fetchAll } = useUsers();
     const { buildQuery } = useFilters();
     const [searchParams] = useSearchParams();
     const { buildMediaUrl } = usePath();
@@ -36,15 +36,9 @@ const UsersTable = ({ filter, openModal }: Props) => {
     const canManageUsers = user?.features?.includes('manage-users');
 
     useEffect(() => {
-        const params = buildQuery({ p: 'page', total: 'size', search: 'query', role: 'role' }, { deactivated: filter.deactivated });
-        fetchAll(params)
-    }, [fetchAll, searchParams, filter, buildQuery]);
-
-    const handleToggleTeam = async (row: User) => {
-        await setOnTeam(row.userId, !row.onTeam);
-        const params = buildQuery({ p: 'page', total: 'size', search: 'query', role: 'role' }, { deactivated: filter.deactivated });
+        const params = buildQuery({ p: 'page', total: 'size', search: 'query', role: 'role', refresh: 'refresh' }, { deactivated: filter.deactivated });
         fetchAll(params);
-    };
+    }, [fetchAll, searchParams, filter, buildQuery]);
 
     return (
         <>
@@ -59,7 +53,7 @@ const UsersTable = ({ filter, openModal }: Props) => {
                     <TableColumn className='col-lg-2' isHeader={true}>
                         {t('users.email')}
                     </TableColumn>
-                    <TableColumn className='col-lg-3' isHeader={true}>
+                    <TableColumn className='col-lg-2' isHeader={true}>
                         {t('users.role')}
                     </TableColumn>
                     <TableColumn className='col-lg-2 text-center' isHeader={true}>
@@ -81,7 +75,12 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                                 className='rounded-circle'
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             /> :
-                                            <UserIcon size={32} />
+                                            <img
+                                                src={'https://placehold.co/213x213/black/white?text=' + (row.firstName?.charAt(0).toUpperCase() || 'U')}
+                                                alt={`${row.firstName} ${row.lastName}`}
+                                                className='rounded-circle'
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
                                         }
                                     </div>
                                     <div>
@@ -98,44 +97,42 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.username')}</div>
                                 <div className='text-secondary'>{row.username}</div>
                             </TableColumn>
-                            <TableColumn className='col-6 col-lg-3'>
+                            <TableColumn className='col-6 col-lg-2'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
                                 <div className='text-secondary'>{row.email}</div>
                             </TableColumn>
-                            <TableColumn className='col-6 col-lg-3'>
+                            <TableColumn className='col-6 col-lg-2'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.role')}</div>
                                 <RoleBadge role={row.role} />
                             </TableColumn>
-                            <TableColumn className='col-6 col-lg-3 text-lg-end'>
-                                <div className='d-flex d-lg-flex justify-content-center align-items-center gap-3'>
-                                    {canManageUsers ?
+                            <TableColumn className='col-6 col-lg-2 text-lg-end'>
+                                <div className='d-flex justify-content-center align-items-center gap-2'>
+                                    {canManageUsers ? (
                                         <>
-                                            <div className='form-check form-switch m-0' title={t('users.show_on_team')}>
-                                                <input
-                                                    className='form-check-input'
-                                                    type='checkbox'
-                                                    role='switch'
-                                                    checked={row.onTeam}
-                                                    onChange={() => handleToggleTeam(row)}
-                                                    aria-label={t('users.show_on_team')}
-                                                />
-                                            </div>
+                                            <button
+                                                onClick={() => openModal(null, row)}
+                                                className='btn btn-outline-secondary rounded-2'
+                                                title={t('users.preview_tooltip')}
+                                            >
+                                                <MoreHorizontal size={16} />
+                                            </button>
+
                                             {row.isActive ? (
                                                 <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2' title={t('users.deactivate_tooltip')}>
                                                     <UserX size={16} />
                                                 </button>
                                             ) : (
-                                                <div className='d-flex gap-2'>
+                                                <>
                                                     <button onClick={() => openModal('activate', row)} className='btn btn-success rounded-2' title={t('users.activate_tooltip')}>
                                                         <UserCheck size={16} />
                                                     </button>
                                                     <button onClick={() => openModal('delete', row)} className='btn btn-dark rounded-2' title={t('users.delete_tooltip')}>
                                                         <Trash size={16} />
                                                     </button>
-                                                </div>
+                                                </>
                                             )}
                                         </>
-                                        :
+                                    ) : (
                                         <Link
                                             to={`/a/${row.username}`}
                                             className='btn btn-outline-dark rounded-2'
@@ -143,7 +140,7 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                         >
                                             <ExternalLink size={16} />
                                         </Link>
-                                    }
+                                    )}
                                 </div>
                             </TableColumn>
                         </TableRow>
@@ -153,11 +150,21 @@ const UsersTable = ({ filter, openModal }: Props) => {
             {pagination && <TablePagination hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} />}
         </>
     );
-}
+};
 
 export function Users() {
     const { t } = useI18n();
     const { remove, deactivate, activate } = useUsers();
+    const [open, setOpen] = useState<null | User>(null);
+    const [modalAction, setModalAction] = useState<ModalAction | null>(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const { user } = useAuthentication();
+
+    const deactivatedTrue = useMemo(() => ({ deactivated: true }), []);
+    const deactivatedFalse = useMemo(() => ({ deactivated: false }), []);
+    const canManageUsers = user?.features?.includes('manage-users');
 
     const sections: FilterSection[] = [
         {
@@ -170,13 +177,6 @@ export function Users() {
             ],
         }
     ];
-
-    const [open, setOpen] = useState<null | User>(null);
-    const [modalAction, setModalAction] = useState<ModalAction | null>(null);
-    const navigate = useNavigate();
-
-    const deactivatedTrue = useMemo(() => ({ deactivated: true }), []);
-    const deactivatedFalse = useMemo(() => ({ deactivated: false }), []);
 
     const modalConfig: Record<ModalAction, ModalConfig> = {
         deactivate: {
@@ -224,31 +224,60 @@ export function Users() {
         navigate(config.getRedirect());
     };
 
+    const handleOpenModal = (action: ModalAction | null, user: User) => {
+        setOpen(user);
+        if (action) {
+            setModalAction(action);
+            setIsPreviewOpen(false);
+        } else {
+            setModalAction(null);
+            setIsPreviewOpen(true);
+        }
+    };
+
+    const handleRefreshData = () => {
+        const currentParams = new URLSearchParams(searchParams);
+        currentParams.set('refresh', Date.now().toString());
+        navigate(`${window.location.pathname}?${currentParams.toString()}`, { replace: true });
+    };
+
     const config = modalAction ? modalConfig[modalAction] : undefined;
 
     return (
         <>
-            <Tabs
-                toolbar={
-                    <>
-                        <TableSearch placeholder={t('categories.search_placeholder')} />
-                        <TableFilters sections={sections} />
-                    </>
-                }
-            >
+            {canManageUsers && (
+                <div className='d-flex justify-content-end mb-3'>
+                    <button 
+                        onClick={() => navigate('/backoffice/users/reset-requests')}
+                        className='btn btn-dark rounded-0 px-4'
+                    >
+                        {t('users.view_reset_requests')}
+                    </button>
+                </div>
+            )}
+
+            <Tabs toolbar={<><TableSearch placeholder={t('categories.search_placeholder')} /><TableFilters sections={sections} /></>}>
                 <Tab id='active' label={t('common.active-m')}>
-                    <UsersTable filter={deactivatedFalse} openModal={(action, user) => { setModalAction(action); setOpen(user); }} />
+                    <UsersTable filter={deactivatedFalse} openModal={handleOpenModal} />
                 </Tab>
                 <Tab id='deactivated' label={t('common.deactivated')}>
-                    <UsersTable filter={deactivatedTrue} openModal={(action, user) => { setModalAction(action); setOpen(user); }} />
+                    <UsersTable filter={deactivatedTrue} openModal={handleOpenModal} />
                 </Tab>
             </Tabs>
+
             <ConfirmModal
-                open={!!open}
+                open={!!open && !!modalAction}
                 onConfirm={() => handleConfirm()}
                 config={config}
                 name='invite'
-                closeModal={() => setOpen(null)}
+                closeModal={closeModal}
+            />
+
+            <UserPreviewModal
+                user={open}
+                isOpen={isPreviewOpen}
+                onClose={() => { setIsPreviewOpen(false); setOpen(null); }}
+                onSuccess={handleRefreshData}
             />
         </>
     );

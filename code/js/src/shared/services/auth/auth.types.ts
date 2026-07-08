@@ -12,4 +12,8 @@ export interface AuthService {
     inviteCode: string
   ): Promise<boolean>;
 
+  requestPasswordReset: (username: string) => Promise<boolean>;
+
+  completePasswordReset(resetToken: string, newPassword: string): Promise<boolean>;
+  
 }

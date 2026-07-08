@@ -1,12 +1,15 @@
 package pt.ipl.diariolx.http
 
 import org.springframework.web.util.UriTemplate
+import pt.ipl.diariolx.http.Uris.Users.PasswordReset.RESET_ROOT
 import java.net.URI
 
 object Uris {
     const val PREFIX = "/api"
     const val HOME = PREFIX
     const val BACKOFFICE = "$PREFIX/backoffice"
+
+    fun home(): URI = URI(HOME)
 
     object Users {
         const val ROOT = "$BACKOFFICE/users"
@@ -17,6 +20,16 @@ object Uris {
         const val DELETE = "$ROOT/{id}"
         const val MANAGE_STATUS = "$ROOT/{id}/account-status"
         const val SET_TEAM = "$ROOT/{id}/team"
+        const val CHANGE_ROLE = "$ROOT/{id}/role"
+
+        object PasswordReset {
+            const val RESET_ROOT = "$ROOT/password-reset"
+
+            const val GET_ALL = RESET_ROOT
+            const val GET_BY_ID = "$RESET_ROOT/{id}"
+            const val APPROVE = "$RESET_ROOT/{id}/approve"
+            const val REJECT = "$RESET_ROOT/{id}/reject"
+        }
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
     }
@@ -38,6 +51,9 @@ object Uris {
         const val REFRESH = "$ROOT/refresh"
         const val USER = "$ROOT/me"
         const val USER_AVATAR = "${Users.ROOT}/me/avatar"
+
+        const val REQUEST_RESET = RESET_ROOT
+        const val COMPLETE = "$RESET_ROOT/complete"
     }
 
     object Categories {

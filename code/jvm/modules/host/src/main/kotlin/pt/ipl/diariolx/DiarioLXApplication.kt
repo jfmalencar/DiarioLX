@@ -32,6 +32,7 @@ import pt.ipl.diariolx.repository.JdbiTransactionManager
 import pt.ipl.diariolx.repository.configureWithAppRequirements
 import pt.ipl.diariolx.storage.FileStorage
 import pt.ipl.diariolx.storage.FileStorageFactory
+import java.security.SecureRandom
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
@@ -88,6 +89,9 @@ class DiarioLXApplication {
 
     @Bean
     fun passwordEncoder() = BCryptPasswordEncoder()
+
+    @Bean
+    fun secureRandom() = SecureRandom()
 
     @Bean
     fun clock() = Clock.System

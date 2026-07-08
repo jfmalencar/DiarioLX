@@ -6,7 +6,7 @@ import type { Result } from '@/shared/types/Result';
 export type ModalConfig = {
     title: string;
     subtitle: string;
-    alert: string;
+    alert: string | null;
     confirmLabel: string;
     action: (id: number) => Promise<Result>;
     getRedirect: () => string;
@@ -46,9 +46,11 @@ export const ConfirmModal = ({ name, config, open, closeModal, onConfirm }: Prop
             ]}
         >
             <h6 className='mb-3'>{config?.subtitle}</h6>
-            <Alert variant={config?.variant ?? 'warning'} title={t('common.warning')}>
-                {config?.alert}
-            </Alert>
+            {config?.alert && (
+                <Alert variant={config?.variant ?? 'warning'} title={t('common.warning')}>
+                    {config?.alert}
+                </Alert>
+            )}
         </Modal>
     )
 }

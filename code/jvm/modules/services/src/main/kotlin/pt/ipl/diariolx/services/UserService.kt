@@ -127,6 +127,27 @@ class UserService(
         }
     }
 
+    fun updateRole(
+        id: Int,
+        role: String,
+    ): UserUpdateResult {
+        val newRole: UserRole
+        try {
+            newRole = UserRole.valueOf(role.uppercase())
+        } catch (e: IllegalArgumentException) {
+            return failure(UserError.InvalidRole)
+        }
+        return transactionManager.run { tx ->
+            val user = tx.userRepository.getById(id)
+            if (user == null) {
+                return@run failure(UserError.UserNotFound)
+            }
+
+            tx.userRepository.updateRole(id, newRole, clock.now())
+            success(Unit)
+        }
+    }
+
     fun getTeam(): List<User> = transactionManager.run { it.userRepository.getTeam() }
 
     fun getByUsername(username: String): User? =

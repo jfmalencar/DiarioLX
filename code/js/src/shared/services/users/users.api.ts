@@ -1,6 +1,6 @@
 import { useBootstrap } from '@/shared/hooks/useBootstrap';
 
-import type { UsersService, UsersResponse, UserApiResponse } from './users.types';
+import type { UsersService, UsersResponse, UserApiResponse, ResetRequestStatus, ResetRequestsResponse, ResetRequestApiReponse } from './users.types';
 import { useApi } from '../http/client';
 import { useMemo } from 'react';
 
@@ -43,6 +43,13 @@ export const useUsersApiService = (): UsersService => {
       return true;
     },
 
+    async updateRole(id, role) {
+      const result = await patch(`${endpoints.backoffice.users.changeRole.href.replace('{id}', id.toString())}?role=${role}`, null);
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to change role');
+      }
+    },
+
     async setOnTeam(id, onTeam) {
       const result = await patch(endpoints.backoffice.users.setTeam.href.replace('{id}', id.toString()), { onTeam });
       if (!result.success) {
@@ -78,5 +85,34 @@ export const useUsersApiService = (): UsersService => {
       }
     },
 
+    async getAllResetRequests(params) {
+      const result = await get<ResetRequestsResponse>(`${endpoints.backoffice.users.resetPassword.getAll.href}?` + new URLSearchParams(params as Record<string, string>).toString());
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch reset requests');
+      }
+      return result.data;
+    },
+
+    async getResetRequestById(id: number) {
+      const result = await get<ResetRequestApiReponse>(endpoints.backoffice.users.resetPassword.getById.href.replace('{id}', id.toString()));
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch reset request');
+      }
+      return result.data;
+    },
+
+    async approveResetRequest(id: number) {
+      const result = await post(endpoints.backoffice.users.resetPassword.approve.href.replace('{id}', id.toString()), {});
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to approve reset request');
+      }
+    },
+
+    async rejectResetRequest(id: number) {
+      const result = await post(endpoints.backoffice.users.resetPassword.reject.href.replace('{id}', id.toString()), {});
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to reject reset request');
+      }
+    },
   }), [endpoints, get, patch, remove, post]);
 }

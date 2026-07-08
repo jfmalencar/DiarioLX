@@ -69,6 +69,18 @@ CREATE TABLE users (
     updated_at BIGINT NOT NULL
 );
 
+CREATE TYPE reset_request_status AS ENUM ('PENDING', 'APPROVED', 'COMPLETED', 'REJECTED');
+
+CREATE TABLE password_reset_requests (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status reset_request_status NOT NULL DEFAULT 'PENDING',
+    admin_id INTEGER NULL REFERENCES users(id) ON DELETE SET NULL,
+    reset_token VARCHAR (64) UNIQUE NULL,
+    created_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
+    updated_at BIGINT DEFAULT EXTRACT(EPOCH FROM NOW())
+);
+
 CREATE TABLE IF NOT EXISTS  categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,

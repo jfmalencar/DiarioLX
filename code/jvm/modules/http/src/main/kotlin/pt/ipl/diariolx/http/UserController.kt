@@ -29,8 +29,10 @@ import pt.ipl.diariolx.http.dto.user.SetTeamMembershipRequestDTO
 import pt.ipl.diariolx.http.dto.user.UpdateAvatarDTO
 import pt.ipl.diariolx.http.dto.user.UpdateUserRequestDTO
 import pt.ipl.diariolx.http.dto.user.UserResponseDTO
+import pt.ipl.diariolx.http.dto.user.passwordReset.ResetRequestResponseDTO
 import pt.ipl.diariolx.http.problems.Problem
 import pt.ipl.diariolx.http.problems.toProblem
+import pt.ipl.diariolx.services.PasswordResetService
 import pt.ipl.diariolx.services.UserService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -39,6 +41,7 @@ import pt.ipl.diariolx.utils.Success
 @Tag(name = "Users", description = "APIs for managing users")
 class UserController(
     private val userService: UserService,
+    private val passwordResetService: PasswordResetService,
     private val logger: Logger,
 ) {
     @RequireRole(UserRole.CONTRIBUTOR)
@@ -69,6 +72,24 @@ class UserController(
                 Problem.response(
                     response.value.toProblem(),
                     Uris.Auth.USER,
+                )
+        }
+
+    @RequireRole(UserRole.ADMIN)
+    @PatchMapping(Uris.Users.CHANGE_ROLE)
+    @MayReturnNoContent
+    @MayReturnUnauthorized
+    @MayReturnBadRequest
+    fun updateRole(
+        @PathVariable id: Int,
+        @RequestParam role: String,
+    ): ResponseEntity<*> =
+        when (val response = userService.updateRole(id, role)) {
+            is Success -> ResponseEntity.noContent().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Users.CHANGE_ROLE,
                 )
         }
 
@@ -130,7 +151,7 @@ class UserController(
                 response.items.map {
                     UserResponseDTO.from(it)
                 },
-                Pagination.of(response),
+                Pagination(response.page, response.pageSize, response.hasPrevious, response.hasNext),
             ),
         )
     }
@@ -188,4 +209,86 @@ class UserController(
         }
         return ResponseEntity.badRequest().build<Unit>()
     }
+
+    @RequireRole(UserRole.ADMIN)
+    @GetMapping(Uris.Users.PasswordReset.GET_BY_ID)
+    @MayReturnOk
+    @MayReturnBadRequest
+    fun getResetById(
+        @RequestParam id: Int,
+    ): ResponseEntity<*> =
+        when (val response = passwordResetService.get(id)) {
+            is Success -> ResponseEntity.ok().body(ResetRequestResponseDTO.from(response.value))
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Users.PasswordReset.GET_BY_ID,
+                )
+        }
+
+    @RequireRole(UserRole.ADMIN)
+    @GetMapping(Uris.Users.PasswordReset.GET_ALL)
+    @MayReturnPaginationOk
+    @MayReturnBadRequest
+    fun getAllResetRequests(
+        @RequestParam page: Int = 1,
+        @RequestParam size: Int = 30,
+        @RequestParam status: String? = null,
+    ): ResponseEntity<*> =
+        when (val response = passwordResetService.getAll(page, size, status)) {
+            is Success ->
+                ResponseEntity.ok().body(
+                    PaginatedResponseDTO(
+                        response.value.items.map {
+                            ResetRequestResponseDTO.from(it)
+                        },
+                        Pagination(
+                            response.value.page,
+                            response.value.pageSize,
+                            response.value.hasPrevious,
+                            response.value.hasNext,
+                        ),
+                    ),
+                )
+
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Users.PasswordReset.GET_ALL,
+                )
+        }
+
+    @RequireRole(UserRole.ADMIN)
+    @PostMapping(Uris.Users.PasswordReset.APPROVE)
+    @MayReturnOk
+    @MayReturnBadRequest
+    fun approvePasswordReset(
+        @Parameter(hidden = true) me: AuthenticatedUser,
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val response = passwordResetService.approve(id, me.user.id)) {
+            is Success -> ResponseEntity.ok().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Users.PasswordReset.APPROVE,
+                )
+        }
+
+    @RequireRole(UserRole.ADMIN)
+    @PostMapping(Uris.Users.PasswordReset.REJECT)
+    @MayReturnOk
+    @MayReturnBadRequest
+    fun rejectPasswordReset(
+        @Parameter(hidden = true) me: AuthenticatedUser,
+        @PathVariable id: Int,
+    ): ResponseEntity<*> =
+        when (val response = passwordResetService.reject(id, me.user.id)) {
+            is Success -> ResponseEntity.ok().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Users.PasswordReset.REJECT,
+                )
+        }
 }

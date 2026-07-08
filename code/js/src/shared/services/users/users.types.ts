@@ -8,7 +8,7 @@ export type UsersResponse = {
     pagination: Pagination;
 };
 
-export type UserApiResponse = User
+export type UserApiResponse = User;
 
 export type User = {
     userId: number;
@@ -27,6 +27,30 @@ export type User = {
     features: string[]
 };
 
+export type ResetRequestStatus = 'PENDING' | 'APPROVED' | 'COMPLETED' | 'REJECTED';
+
+export type ResetRequest = {
+    id: number;
+    requesterId: number;
+    status: ResetRequestStatus;
+    requesterUsername: string;
+    requesterEmail: string;
+    requesterName: string;
+    adminId: number | null;
+    adminUsername: string | null;
+    adminName: string | null;
+    resetToken: string | null;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type ResetRequestsResponse = {
+    items: ResetRequest[];
+    pagination: Pagination;
+};
+
+export type ResetRequestApiReponse = ResetRequest;
+
 export interface UsersService {
     fetchAll(params: Query): Promise<UsersResponse>;
 
@@ -43,6 +67,8 @@ export interface UsersService {
         onTeam?: boolean
     ): Promise<boolean | undefined>;
 
+    updateRole(id: number, role: UserRole): Promise<void>;
+
     setOnTeam: (id: number, onTeam: boolean) => Promise<void>;
 
     completeAvatarUpload: (id: number) => Promise<void>;
@@ -52,4 +78,12 @@ export interface UsersService {
     activate: (id: number) => Promise<void>;
 
     remove: (id: number) => Promise<void>;
+
+    getAllResetRequests(params: Query): Promise<ResetRequestsResponse>;
+
+    getResetRequestById(id: number): Promise<ResetRequestApiReponse>;
+
+    approveResetRequest(id: number): Promise<void>;
+
+    rejectResetRequest(id: number): Promise<void>;
 }

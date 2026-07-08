@@ -341,3 +341,24 @@ FROM featured_sections fs
              AND cs.published_at IS NOT NULL
              AND cs.published_at <= extract(epoch FROM now())
 ORDER BY fs.position, fc.position;
+
+-- -----------------------------------------------------------------------
+-- Password reset
+-- -----------------------------------------------------------------------
+CREATE OR REPLACE VIEW v_password_reset_requests AS
+SELECT
+    pr.id,
+    pr.user_id,
+    pr.status,
+    u.username AS r_username,
+    u.email AS r_email,
+    u.first_name || ' ' || u.last_name AS r_name,
+    pr.admin_id,
+    adm.username AS admin_username,
+    adm.first_name || ' ' || adm.last_name AS admin_Name,
+    pr.reset_token,
+    pr.created_at,
+    pr.updated_at
+FROM password_reset_requests pr
+         JOIN users u ON u.id = pr.user_id
+         LEFT JOIN users adm ON adm.id = pr.admin_id;

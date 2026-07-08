@@ -3,6 +3,7 @@ package pt.ipl.diariolx.repository.mem
 import pt.ipl.diariolx.repository.CategoryRepository
 import pt.ipl.diariolx.repository.FeaturedRepository
 import pt.ipl.diariolx.repository.InviteRepository
+import pt.ipl.diariolx.repository.PasswordResetRepository
 import pt.ipl.diariolx.repository.SettingsRepository
 import pt.ipl.diariolx.repository.TagRepository
 import pt.ipl.diariolx.repository.Transaction
@@ -17,6 +18,7 @@ class TransactionMem(
     override val mediaRepository: MediaRepositoryMem,
     override val featuredRepository: FeaturedRepository,
     override val settingsRepository: SettingsRepository,
+    override val passwordResetRepository: PasswordResetRepository,
 ) : Transaction {
     override fun rollback() {
         TODO("Not yet implemented")

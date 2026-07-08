@@ -3,6 +3,7 @@ package pt.ipl.diariolx.repository.mem
 import pt.ipl.diariolx.repository.CategoryRepository
 import pt.ipl.diariolx.repository.FeaturedRepository
 import pt.ipl.diariolx.repository.InviteRepository
+import pt.ipl.diariolx.repository.PasswordResetRepository
 import pt.ipl.diariolx.repository.SettingsRepository
 import pt.ipl.diariolx.repository.TagRepository
 import pt.ipl.diariolx.repository.Transaction
@@ -18,6 +19,7 @@ class TransactionManagerMem(
     mediaRepository: MediaRepositoryMem,
     featuredRepository: FeaturedRepository,
     settingsRepository: SettingsRepository = SettingsRepositoryMem(),
+    passwordResetRepository: PasswordResetRepository = PasswordResetRepositoryMem(),
 ) : TransactionManager {
     private val transaction =
         TransactionMem(
@@ -29,6 +31,7 @@ class TransactionManagerMem(
             mediaRepository,
             featuredRepository,
             settingsRepository,
+            passwordResetRepository,
         )
 
     override fun <R> run(block: Transaction.() -> R): R = block(transaction)

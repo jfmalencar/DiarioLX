@@ -16,6 +16,7 @@ type Props = {
     children: ReactNode;
     onClose: () => void;
     buttons?: ModalAction[];
+    size?: 'md' | 'lg';
 };
 
 export const Modal = ({
@@ -24,6 +25,7 @@ export const Modal = ({
     children,
     onClose,
     buttons = [],
+    size = 'md',
 }: Props) => {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
 
@@ -75,15 +77,17 @@ export const Modal = ({
                 return 'btn btn-outline-dark';
         }
     };
+    
+    const maxWidth = size === 'lg' ? '800px' : '560px';
 
     return (
         <dialog
             ref={dialogRef}
             className='border-0 rounded-4 p-0 shadow-lg w-100'
-            style={{ maxWidth: '560px' }}
+            style={{ maxWidth }}
         >
             <div className='bg-black text-white d-flex align-items-center justify-content-between px-4 py-3'>
-                <div className='m-0'>{title}</div>
+                <div className='m-0 h5 mb-0'>{title}</div>
                 <button
                     type='button'
                     className='btn btn-link text-white p-0 border-0 d-flex align-items-center justify-content-center text-decoration-none'

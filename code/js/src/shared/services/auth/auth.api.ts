@@ -7,7 +7,7 @@ import { useApi } from '../http/client';
 
 export const useAuthApiService = (): AuthService => {
   const { endpoints } = useBootstrap()
-  const { post } = useApi()
+  const { post, patch } = useApi()
 
   return useMemo<AuthService>(() => ({
     async authenticate(username, password) {
@@ -44,5 +44,23 @@ export const useAuthApiService = (): AuthService => {
       }
       return true;
     },
-  }), [endpoints, post]);
+
+    async requestPasswordReset(username: string) {
+        const result = await post(endpoints.auth.requestReset.href, { username });
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to request password reset');
+        }
+        console.log(result.data);
+        return true;
+      },
+
+    async completePasswordReset(resetToken: string, newPassword: string) {  
+      const result = await patch(endpoints.auth.completeReset.href, { resetToken, newPassword });
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to complete password reset');
+      }
+      console.log(result.data);
+      return true;
+    }
+  }), [endpoints, post, patch]);
 }

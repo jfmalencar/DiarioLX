@@ -58,6 +58,8 @@ export type Endpoints = {
         logout: Link;
         refresh: Link;
         me: Link;
+        requestReset: Link;
+        completeReset: Link;
     }
     guest: {
         homepage: Link;
@@ -75,8 +77,15 @@ export type Endpoints = {
             update: Link;
             delete: Link;
             status: Link;
+            changeRole: Link;
             avatar: Link;
             setTeam: Link;
+            resetPassword: {
+                getById: Link;
+                getAll: Link;
+                approve: Link;
+                reject: Link;
+            }
         }
         tags: {
             list: Link;

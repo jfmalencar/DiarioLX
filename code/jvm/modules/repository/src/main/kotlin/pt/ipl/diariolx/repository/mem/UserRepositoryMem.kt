@@ -60,6 +60,14 @@ class UserRepositoryMem : UserRepository {
         }
     }
 
+    override fun updateRole(
+        id: Int,
+        role: UserRole,
+        now: Instant,
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun delete(id: Int): Boolean {
         if (users.none { it.id == id }) return false
         users.removeIf { it.id == id }

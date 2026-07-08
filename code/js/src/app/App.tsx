@@ -44,6 +44,9 @@ import { RequireRole } from '@/shared/components/RequireRole';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { BackofficeLayout } from '@/layouts/BackofficeLayout';
 import { ErrorPage } from '@/layouts/ErrorPage';
+import { ResetRequests } from '@/modules/backoffice/users/ResetRequests';
+import { ForgotPassword } from '@/modules/backoffice/ForgotPassword';
+import { ResetPassword } from '@/modules/backoffice/ResetPassword';
 
 const router = createBrowserRouter([
   {
@@ -141,6 +144,21 @@ const router = createBrowserRouter([
         }
       },
       {
+        path: 'forgot-password',
+        element: <ForgotPassword />,
+        handle: {
+          layout: 'none'
+        }
+      },
+      {
+        path: 'reset-password',
+        element: <ResetPassword />,
+        handle: {
+          layout: 'none'
+        }
+      },
+
+      {
         path: 'categories',
         element: (
           <RequireAuthentication>
@@ -198,6 +216,19 @@ const router = createBrowserRouter([
         handle: {
           title: 'backoffice_layout.users',
           subtitle: 'backoffice_layout.users_subtitle',
+          layout: 'dashboard'
+        }
+      },
+      {
+        path: 'users/reset-requests',
+        element: (
+          <RequireAuthentication>
+             <ResetRequests />
+          </RequireAuthentication>
+        ),
+        handle: {
+          title: 'users.reset_requests_menu',
+          subtitle: 'users.reset_requests_sub',
           layout: 'dashboard'
         }
       },

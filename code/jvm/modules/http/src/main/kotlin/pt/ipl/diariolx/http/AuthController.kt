@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -16,13 +17,17 @@ import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnCreated
 import pt.ipl.diariolx.http.annotations.MayReturnForbidden
 import pt.ipl.diariolx.http.annotations.MayReturnNoContent
+import pt.ipl.diariolx.http.annotations.MayReturnOk
 import pt.ipl.diariolx.http.annotations.MayReturnTokenOk
 import pt.ipl.diariolx.http.annotations.MayReturnUnauthorized
 import pt.ipl.diariolx.http.dto.auth.LoginUserDTO
 import pt.ipl.diariolx.http.dto.user.CreateUserRequestDTO
+import pt.ipl.diariolx.http.dto.user.passwordReset.CompleteResetDTO
+import pt.ipl.diariolx.http.dto.user.passwordReset.ResetRequestDTO
 import pt.ipl.diariolx.http.problems.Problem
 import pt.ipl.diariolx.http.problems.toProblem
 import pt.ipl.diariolx.services.InviteService
+import pt.ipl.diariolx.services.PasswordResetService
 import pt.ipl.diariolx.services.UserService
 import pt.ipl.diariolx.utils.Failure
 import pt.ipl.diariolx.utils.Success
@@ -32,6 +37,7 @@ import pt.ipl.diariolx.utils.Success
 class AuthController(
     private val userService: UserService,
     private val inviteService: InviteService,
+    private val passwordResetService: PasswordResetService,
     private val logger: Logger,
     private val cookieConfig: CookieConfig,
 ) {
@@ -136,6 +142,43 @@ class AuthController(
                 Problem.response(
                     result.value.toProblem(),
                     Uris.Auth.REFRESH,
+                )
+        }
+
+    @PostMapping(Uris.Auth.REQUEST_RESET)
+    @MayReturnOk
+    @MayReturnBadRequest
+    fun requestPasswordReset(
+        @RequestBody body: ResetRequestDTO,
+    ): ResponseEntity<*> =
+        when (val response = passwordResetService.create(body.username)) {
+            is Success -> ResponseEntity.ok().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Auth.REQUEST_RESET,
+                )
+        }
+
+    @PatchMapping(Uris.Auth.COMPLETE)
+    @MayReturnOk
+    @MayReturnBadRequest
+    @MayReturnUnauthorized
+    fun completePasswordReset(
+        @RequestBody body: CompleteResetDTO,
+    ): ResponseEntity<*> =
+        when (
+            val response =
+                passwordResetService.complete(
+                    body.resetToken,
+                    body.newPassword,
+                )
+        ) {
+            is Success -> ResponseEntity.ok().build<Unit>()
+            is Failure ->
+                Problem.response(
+                    response.value.toProblem(),
+                    Uris.Auth.COMPLETE,
                 )
         }
 }

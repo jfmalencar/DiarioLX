@@ -80,6 +80,27 @@ class JdbiUserRepository(
             .execute()
     }
 
+    override fun updateRole(
+        id: Int,
+        role: UserRole,
+        now: Instant,
+    ): Boolean {
+        val rowsAffected =
+            handle
+                .createUpdate(
+                    """
+                UPDATE users
+                SET role = :role::user_role,
+                    updated_at = :updated_at
+                WHERE id = :id
+                """,
+                ).bind("id", id)
+                .bind("role", role.name)
+                .bind("updated_at", now.epochSeconds)
+                .execute()
+        return rowsAffected > 0
+    }
+
     override fun getTeam(): List<User> =
         handle
             .createQuery(

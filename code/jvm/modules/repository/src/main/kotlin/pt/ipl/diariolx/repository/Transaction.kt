@@ -9,6 +9,7 @@ interface Transaction {
     val mediaRepository: MediaRepository
     val featuredRepository: FeaturedRepository
     val settingsRepository: SettingsRepository
+    val passwordResetRepository: PasswordResetRepository
 
     // other repository types
     fun rollback()

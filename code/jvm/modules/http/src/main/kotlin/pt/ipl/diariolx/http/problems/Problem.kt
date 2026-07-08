@@ -74,5 +74,9 @@ class Problem(
         val userHasContents = Problem("user-has-contents", HttpStatus.CONFLICT)
         val publishedLocked = Problem("published-locked", HttpStatus.FORBIDDEN)
         val notContentOwner = Problem("not-content-owner", HttpStatus.FORBIDDEN)
+        val failedApproval = Problem("failed-approval", HttpStatus.BAD_REQUEST)
+        val invalidResetRequestStatus = Problem("invalid-reset-request-status", HttpStatus.BAD_REQUEST)
+        val invalidResetToken = Problem("invalid-reset-token", HttpStatus.BAD_REQUEST)
+        val resetRequestNotFound = Problem("reset-request-not-found", HttpStatus.NOT_FOUND)
     }
 }

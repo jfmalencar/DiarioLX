@@ -5,8 +5,10 @@ data class UserEndpointsDTO(
     val get: LinkDTO,
     val create: LinkDTO,
     val update: LinkDTO,
+    val changeRole: LinkDTO,
     val delete: LinkDTO,
     val status: LinkDTO,
     val avatar: LinkDTO,
     val setTeam: LinkDTO,
+    val resetPassword: PasswordResetEndpointsDTO,
 )

@@ -22,6 +22,12 @@ interface UserRepository {
         now: Instant,
     )
 
+    fun updateRole(
+        id: Int,
+        role: UserRole,
+        now: Instant,
+    ): Boolean
+
     fun updateAvatar(
         userId: Int,
         mediaId: Int,

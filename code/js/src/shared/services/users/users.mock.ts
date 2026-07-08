@@ -60,6 +60,10 @@ export const useUsersMockService = (): UsersService => {
       return;
     },
 
+    async updateRole() {
+      return;
+    },
+
     async completeAvatarUpload() {
       return;
     },
@@ -68,7 +72,49 @@ export const useUsersMockService = (): UsersService => {
       return;
     },
 
+    async activate() {
+      return;
+    },
+
     async remove() {
+      return;
+    },
+
+    
+    async getAllResetRequests() {
+      return {
+        items: [],
+        pagination: {
+          page: 1,
+          size: 1,
+          hasPrevious: false,
+          hasNext: false,
+        }
+      };
+    },
+
+    async getResetRequestById(id: number) {
+      return {
+        id: 1,
+        requesterId: 1,
+        status: 'PENDING',
+        requesterUsername: 'johndoe',
+        requesterEmail: 'johndoe@test.pt',
+        requesterName: 'John Doe',
+        adminId: null,
+        adminUsername: null,
+        adminName: null,
+        resetToken: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+    },
+
+    async approveResetRequest(id: number) {
+      return;
+    },
+
+    async rejectResetRequest(id: number) {
       return;
     },
   }), []);

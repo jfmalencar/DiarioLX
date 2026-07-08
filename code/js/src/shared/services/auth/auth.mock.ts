@@ -56,5 +56,13 @@ export const useAuthMockService = (): AuthService => {
       setFakeUser(fakeUser);
       return true
     },
+
+    async requestPasswordReset(username: string) {
+      return;
+    },
+
+    async completePasswordReset(resetToken: string, newPassword: string) {  
+      return;
+    }
   }), []);
 }

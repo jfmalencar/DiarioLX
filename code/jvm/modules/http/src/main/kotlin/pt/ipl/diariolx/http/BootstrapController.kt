@@ -23,11 +23,13 @@ import pt.ipl.diariolx.http.dto.bootstrap.GuestEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.InviteEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.LinkDTO
 import pt.ipl.diariolx.http.dto.bootstrap.MediaEndpointsDTO
+import pt.ipl.diariolx.http.dto.bootstrap.PasswordResetEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.SectionTypeConfigDTO
 import pt.ipl.diariolx.http.dto.bootstrap.SettingsBootstrapDTO
 import pt.ipl.diariolx.http.dto.bootstrap.SettingsEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.TagEndpointsDTO
 import pt.ipl.diariolx.http.dto.bootstrap.UserEndpointsDTO
+import pt.ipl.diariolx.services.PasswordResetService
 import pt.ipl.diariolx.services.SettingsService
 
 @RestController
@@ -39,6 +41,7 @@ class BootstrapController(
     private val mediaBaseUrl: MediaBaseUrl,
     private val settingsService: SettingsService,
     private val sectionPolicy: SectionPolicy,
+    private val passwordResetService: PasswordResetService,
 ) {
     @GetMapping(Uris.HOME)
     @MayReturnBootstrapOk
@@ -58,6 +61,8 @@ class BootstrapController(
                             LinkDTO(Uris.Auth.LOGOUT, HttpMethod.POST),
                             LinkDTO(Uris.Auth.REFRESH, HttpMethod.POST),
                             LinkDTO(Uris.Auth.USER, HttpMethod.GET),
+                            LinkDTO(Uris.Auth.REQUEST_RESET, HttpMethod.POST),
+                            LinkDTO(Uris.Auth.COMPLETE, HttpMethod.PATCH),
                         ),
                     guest =
                         GuestEndpointsDTO(
@@ -78,10 +83,18 @@ class BootstrapController(
                                         get = LinkDTO(Uris.Users.GET_BY_ID, HttpMethod.GET),
                                         create = LinkDTO(Uris.Users.CREATE, HttpMethod.POST),
                                         update = LinkDTO(Uris.Auth.USER, HttpMethod.PUT),
+                                        changeRole = LinkDTO(Uris.Users.CHANGE_ROLE, HttpMethod.POST),
                                         delete = LinkDTO(Uris.Users.DELETE, HttpMethod.DELETE),
                                         status = LinkDTO(Uris.Users.MANAGE_STATUS, HttpMethod.POST),
                                         avatar = LinkDTO(Uris.Auth.USER_AVATAR, HttpMethod.PATCH),
                                         setTeam = LinkDTO(Uris.Users.SET_TEAM, HttpMethod.PATCH),
+                                        resetPassword =
+                                            PasswordResetEndpointsDTO(
+                                                getById = LinkDTO(Uris.Users.PasswordReset.GET_BY_ID, HttpMethod.GET),
+                                                getAll = LinkDTO(Uris.Users.PasswordReset.GET_ALL, HttpMethod.GET),
+                                                approve = LinkDTO(Uris.Users.PasswordReset.APPROVE, HttpMethod.POST),
+                                                reject = LinkDTO(Uris.Users.PasswordReset.REJECT, HttpMethod.POST),
+                                            ),
                                     ),
                                 tags =
                                     TagEndpointsDTO(
