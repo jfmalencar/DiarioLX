@@ -8,6 +8,7 @@ import type { Query } from '@/shared/types/Query';
 import type { TagResource } from '@/shared/services/contents/contents.types';
 
 import { ContentListPage } from './ContentListPage';
+import { NotFound } from './NotFound';
 
 export function Tag() {
     const { slug } = useParams<{ slug: string }>();
@@ -18,6 +19,10 @@ export function Tag() {
         [contentsService],
     );
     const { resource, contents, loading, error, hasMore, loadingMore, loadMore } = useResourceContents<TagResource>(fetchTag, slug);
+
+    if (!loading && !resource) {
+        return <NotFound />;
+    }
 
     const title = `#${resource?.name ?? slug ?? ''}`;
 

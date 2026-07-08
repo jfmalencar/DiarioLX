@@ -30,6 +30,7 @@ import pt.ipl.diariolx.http.dto.content.ContentSummaryResponseDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentResponseDTO
 import pt.ipl.diariolx.http.dto.content.FullHistoryResponseDTO
+import pt.ipl.diariolx.http.dto.content.PublishContentDTO
 import pt.ipl.diariolx.http.dto.content.ReviewContentDTO
 import pt.ipl.diariolx.http.dto.content.UpdateContentDTO
 import pt.ipl.diariolx.http.dto.pagination.PaginatedResponseDTO
@@ -72,20 +73,16 @@ class ContentController(
         @RequestParam query: String? = null,
         @RequestParam category: String? = null,
         @RequestParam state: ContentState? = null,
-        @RequestParam type: List<ContentType>? = null,
+        @RequestParam types: List<ContentType>? = null,
         @RequestParam archived: Boolean? = null,
+        @RequestParam published: Boolean? = null,
         @Parameter(hidden = true) me: AuthenticatedUser,
     ): ResponseEntity<PaginatedResponseDTO<ContentSummaryResponseDTO>> {
-        val response = contentService.getAll(page, size, query, state, type, category, archived, me.user)
+        val response = contentService.getAll(page, size, query, state, types, category, archived, published, me.user)
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },
-                Pagination(
-                    response.page,
-                    response.pageSize,
-                    response.hasPrevious,
-                    response.hasNext,
-                ),
+                Pagination.of(response),
             ),
         )
     }
@@ -245,9 +242,9 @@ class ContentController(
     fun publishContent(
         @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
-        @RequestBody body: ReviewContentDTO?,
+        @RequestBody body: PublishContentDTO?,
     ): ResponseEntity<*> =
-        when (val response = contentService.publish(id, body?.comment, authenticatedUser.user.id)) {
+        when (val response = contentService.publish(id, body?.comment, authenticatedUser.user.id, body?.publishedAt)) {
             is Success ->
                 ResponseEntity
                     .status(HttpStatus.NO_CONTENT)

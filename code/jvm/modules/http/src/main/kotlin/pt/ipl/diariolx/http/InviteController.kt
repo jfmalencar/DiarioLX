@@ -65,12 +65,7 @@ class InviteController(
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { InviteResponseDTO.from(it) },
-                Pagination(
-                    response.page,
-                    response.pageSize,
-                    response.hasPrevious,
-                    response.hasNext,
-                ),
+                Pagination.of(response),
             ),
         )
     }

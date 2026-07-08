@@ -67,12 +67,7 @@ class CategoryController(
         return ResponseEntity.ok().body(
             PaginatedResponseDTO(
                 response.items.map { CategoryResponseDTO.from(it) },
-                Pagination(
-                    response.page,
-                    response.pageSize,
-                    response.hasPrevious,
-                    response.hasNext,
-                ),
+                Pagination.of(response),
             ),
         )
     }

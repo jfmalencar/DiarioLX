@@ -224,7 +224,7 @@ export const EditContent = () => {
         }
     };
 
-    const handleSubmit = async (mode: 'publish' | 'review') => {
+    const handleSubmit = async (mode: 'publish' | 'review', publishedAt?: number) => {
         if (!canPublish(content, type)) {
             setOpenConfirmModal(false)
             showSnackbar(t('posts.required_fields', { field: type === 'EPISODE' ? t('posts.field.podcast') : t('posts.field.category') }), 'error');
@@ -234,8 +234,8 @@ export const EditContent = () => {
         const id = await ensureSaved();
         if (!id) return;
 
-        if (mode === 'publish') {
-            const res = await publish(id);
+        if (mode === 'publish' && publishedAt && publishedAt < Math.floor(Date.now() / 1000)) {
+            const res = await publish(id, undefined, publishedAt);
             if (!res.ok) {
                 setOpenConfirmModal(false)
                 showSnackbar(res.error, 'error');
@@ -300,7 +300,7 @@ export const EditContent = () => {
             <main className='d-flex flex-grow-1 overflow-hidden ps-5' style={{ minHeight: 0 }}>
                 <div style={{ width: 320, flexShrink: 1, minWidth: 0 }} />
                 <div className='flex-grow-1 overflow-y-auto py-4 pe-4 ps-5' style={{ minWidth: 0, maxWidth: 'calc(100vw - 610px)' }}>
-                    {content.state === 'PUBLISHED' && (
+                    {content.state === 'APPROVED' && (
                         <div className='mb-4'>
                             <Alert variant='warning' title={t('posts.published_warning_title')}>
                                 {t('posts.published_warning_body')}
@@ -625,8 +625,9 @@ export const EditContent = () => {
                     category: content.category.name,
                     featured: content.featuredMedia,
                     authors: [content.mainAuthor.name, ...content.secondaryAuthors.map((a) => a.name)],
+                    publishedAt: content.publishedAt,
                 }}
-                onPublish={() => handleSubmit('publish')}
+                onPublish={(publishedAt) => handleSubmit('publish', publishedAt)}
                 onRequestReview={() => handleSubmit('review')}
             />
             <ConfirmModal

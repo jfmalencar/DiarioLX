@@ -199,13 +199,8 @@ class JdbiUserRepository(
             .bind("offset", offset)
             .bind("limit", limit)
             .bind("query", "%$query%")
-            .let { q ->
-                if (!roles.isNullOrEmpty()) {
-                    q.bindList("roles", roles.map { it.name })
-                } else {
-                    q
-                }
-            }.mapTo<UserDBModel>()
+            .bindListIfNotNull("roles", roles)
+            .mapTo<UserDBModel>()
             .list()
             .map { it.toUserDomain() }
     }

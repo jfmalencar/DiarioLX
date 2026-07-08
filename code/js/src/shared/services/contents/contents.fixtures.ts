@@ -23,7 +23,7 @@ const make = (
         slug: slugify(title),
         type,
         title,
-        state: 'PUBLISHED',
+        state: 'APPROVED',
         headline: 'Um resumo breve desta publicação, para dar contexto ao leitor.',
         featuredImage: {
             id,

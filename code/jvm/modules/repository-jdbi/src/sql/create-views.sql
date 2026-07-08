@@ -1,4 +1,6 @@
+-- -----------------------------------------------------------------------
 -- Tags
+-- -----------------------------------------------------------------------
 CREATE VIEW v_tags AS
 SELECT
     t.id,
@@ -12,7 +14,9 @@ SELECT
     t.archived_at
 FROM tags t;
 
+-- -----------------------------------------------------------------------
 -- Categories
+-- -----------------------------------------------------------------------
 CREATE VIEW v_categories AS
 SELECT
     c.id,
@@ -24,7 +28,9 @@ SELECT
     p.name AS parentName,
     (SELECT COUNT(*) FROM contents a
         WHERE a.category_id = c.id
-          AND a.state = 'PUBLISHED'
+          AND a.state = 'APPROVED'
+          AND a.published_at IS NOT NULL
+          AND a.published_at <= extract(epoch FROM now())
     ) AS quantity,
     c.created_at,
     c.updated_at,
@@ -32,7 +38,9 @@ SELECT
 FROM categories c
 LEFT JOIN categories p ON p.id = c.parent_id;
 
+-- -----------------------------------------------------------------------
 -- Users
+-- -----------------------------------------------------------------------
 CREATE VIEW v_users AS
 SELECT
     u.id,
@@ -54,7 +62,9 @@ SELECT
 FROM users u
 LEFT JOIN medias m ON m.id = u.avatar_media_id;
 
+-- -----------------------------------------------------------------------
 -- Medias
+-- -----------------------------------------------------------------------
 CREATE OR REPLACE VIEW v_medias AS
 SELECT
     m.id,
@@ -211,10 +221,14 @@ LEFT JOIN LATERAL (
     WHERE cb.content_id = a.id
 ) blocks ON true;
 
+-- -----------------------------------------------------------------------
 -- Contents (published)
+-- -----------------------------------------------------------------------
 CREATE OR REPLACE VIEW v_published_contents AS
 SELECT * FROM v_contents
-WHERE content_state = 'PUBLISHED'::content_state
+WHERE content_state = 'APPROVED'::content_state
+  AND published_at IS NOT NULL
+  AND published_at <= extract(epoch FROM now())
   AND slug IS NOT NULL
   AND category_id IS NOT NULL
   AND category_archived IS NOT TRUE
@@ -279,11 +293,14 @@ FROM contents a
         LIMIT 1
 ) primary_tag ON true;
 
-
+-- -----------------------------------------------------------------------
 -- Contents summary (published)
+-- -----------------------------------------------------------------------
 CREATE OR REPLACE VIEW v_published_contents_summary AS
 SELECT * FROM v_contents_summary
-WHERE content_state = 'PUBLISHED'::content_state
+WHERE content_state = 'APPROVED'::content_state
+  AND published_at IS NOT NULL
+  AND published_at <= extract(epoch FROM now())
   AND slug IS NOT NULL
   AND category_id IS NOT NULL
   AND category_archived IS NOT TRUE
@@ -302,7 +319,9 @@ SELECT
 FROM content_history ch
          LEFT JOIN users u ON u.id = ch.performed_by;
 
+-- -----------------------------------------------------------------------
 -- Featured sections
+-- -----------------------------------------------------------------------
 CREATE VIEW v_featured_sections AS
 SELECT
     fs.id          AS section_id,
@@ -318,4 +337,7 @@ FROM featured_sections fs
          LEFT JOIN categories sc ON sc.id = fs.category_id
          LEFT JOIN featured_contents fc ON fc.section_id = fs.id
          LEFT JOIN v_contents_summary cs ON cs.id = fc.content_id
+             AND cs.content_state = 'APPROVED'::content_state
+             AND cs.published_at IS NOT NULL
+             AND cs.published_at <= extract(epoch FROM now())
 ORDER BY fs.position, fc.position;

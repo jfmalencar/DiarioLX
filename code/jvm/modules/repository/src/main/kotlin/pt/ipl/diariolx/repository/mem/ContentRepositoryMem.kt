@@ -120,11 +120,12 @@ class ContentRepositoryMem(
         excludeArchivedCategory: Boolean,
         archived: Boolean?,
         orderBy: String,
+        published: Boolean?,
     ): List<ContentSummary> =
         contents
             .filter { content ->
                 (parentId == null || content.parentId == parentId) &&
-                    content.state == ContentState.PUBLISHED &&
+                    content.state == ContentState.APPROVED &&
                     content.slug != null &&
                     content.category != null &&
                     (
@@ -157,9 +158,9 @@ class ContentRepositoryMem(
                 )
             }
 
-    override fun internalGetById(id: Int): Content? = contents.find { it.id == id }
+    override fun getById(id: Int): Content? = contents.find { it.id == id }
 
-    override fun internalGetBySlug(slug: String): Content? {
+    override fun getBySlug(slug: String): Content? {
         TODO("Not yet implemented")
     }
 
@@ -169,7 +170,7 @@ class ContentRepositoryMem(
         return true
     }
 
-    override fun getBySlug(slug: String): Content? = contents.find { it.slug == slug && it.state == ContentState.PUBLISHED }
+    override fun getPublishedBySlug(slug: String): Content? = contents.find { it.slug == slug && it.state == ContentState.APPROVED }
 
     override fun archive(
         id: Int,
@@ -207,6 +208,7 @@ class ContentRepositoryMem(
         now: Instant,
         comment: String?,
         reviewerId: Int?,
+        publishedAt: Instant?,
     ): Boolean {
         TODO("Not yet implemented")
     }

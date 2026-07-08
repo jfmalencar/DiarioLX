@@ -104,8 +104,8 @@ export const useContents = () => {
     )
 
     const publish = useCallback(
-        (id: number, comment?: string): Promise<Result> =>
-            runAction(() => contentsService.publish(id, comment), 'Failed to publish content', setLoading, setError),
+        (id: number, comment?: string, publishedAt?: number): Promise<Result> =>
+            runAction(() => contentsService.publish(id, comment, publishedAt), 'Failed to publish content', setLoading, setError),
         [contentsService]
     )
 

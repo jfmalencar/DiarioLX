@@ -33,6 +33,7 @@ export const initialState: EditContentState = {
         secondaryAuthorSearch: '',
         featuredMedia: null,
         embedUrl: '',
+        publishedAt: undefined,
     },
     blocks: [],
     galleryMode: null,
@@ -84,6 +85,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                     secondaryAuthorSearch: '',
                     featuredMedia: content.featuredImage,
                     embedUrl: content.embedUrl ?? '',
+                    publishedAt: content.publishedAt ? new Date(content.publishedAt).getTime() : undefined,
                 },
                 blocks: content.blocks,
             };

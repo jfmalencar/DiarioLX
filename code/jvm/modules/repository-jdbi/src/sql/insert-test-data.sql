@@ -123,7 +123,7 @@ VALUES (
     'transformacao-silenciosa-avenida-almirante-reis',
     (SELECT id FROM categories WHERE slug = 'lisboa-cidade-aberta'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-3 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -168,7 +168,7 @@ VALUES (
     'mercado-arroios-reinventou-se',
     (SELECT id FROM categories WHERE slug = 'lisboa-cidade-aberta'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-8 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -213,7 +213,7 @@ VALUES (
     'nova-vida-quiosques-historicos',
     (SELECT id FROM categories WHERE slug = 'lisboa-cidade-aberta'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-15 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -258,7 +258,7 @@ VALUES (
     'marvila-empresas-artistas-moradores',
     (SELECT id FROM categories WHERE slug = 'lisboa-cidade-aberta'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-21 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -303,7 +303,7 @@ VALUES (
     'lisboa-prepara-ondas-calor',
     (SELECT id FROM categories WHERE slug = 'sociedade'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-4 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -348,7 +348,7 @@ VALUES (
     'mapa-rendas-mudou-lisboa',
     (SELECT id FROM categories WHERE slug = 'a-fundo'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-10 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -393,7 +393,7 @@ VALUES (
     'quem-controla-alojamento-local',
     (SELECT id FROM categories WHERE slug = 'a-fundo'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-18 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -438,7 +438,7 @@ VALUES (
     'mobilidade-lisboa-dez-anos-promessas-atrasos',
     (SELECT id FROM categories WHERE slug = 'a-fundo'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-28 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -483,7 +483,7 @@ VALUES (
     'escola-publica-vista-por-dentro',
     (SELECT id FROM categories WHERE slug = 'educacao'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-11 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -528,7 +528,7 @@ VALUES (
     'comercio-tradicional-alfama',
     (SELECT id FROM categories WHERE slug = 'sociedade'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-6 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -573,7 +573,7 @@ VALUES (
     'estrategia-saude-mental-portugal',
     (SELECT id FROM categories WHERE slug = 'saude'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-19 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -618,7 +618,7 @@ VALUES (
     'tribunais-digitais-processos',
     (SELECT id FROM categories WHERE slug = 'justica'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-23 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -663,7 +663,7 @@ VALUES (
     'parlamento-consensos-linhas-vermelhas',
     (SELECT id FROM categories WHERE slug = 'politica'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-2 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -706,7 +706,7 @@ VALUES (
     'autarquicas-bairros-centro-campanha',
     (SELECT id FROM categories WHERE slug = 'politica'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-13 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -751,7 +751,7 @@ VALUES (
     'europa-regras-plataformas-digitais',
     (SELECT id FROM categories WHERE slug = 'mundo'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-17 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -796,7 +796,7 @@ VALUES (
     'guerra-informacao-redes-locais',
     (SELECT id FROM categories WHERE slug = 'media'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-24 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -841,7 +841,7 @@ VALUES (
     'ia-transformar-redacoes-portuguesas',
     (SELECT id FROM categories WHERE slug = 'media'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-9 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -886,7 +886,7 @@ VALUES (
     'museu-exposicao-lisboa-oitocentista',
     (SELECT id FROM categories WHERE slug = 'cultura'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-14 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -931,7 +931,7 @@ VALUES (
     'livrarias-independentes-resistem-centro',
     (SELECT id FROM categories WHERE slug = 'cultura'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-20 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -976,7 +976,7 @@ VALUES (
     'teatro-palcos-bairro',
     (SELECT id FROM categories WHERE slug = 'cultura'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-25 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1021,7 +1021,7 @@ VALUES (
     'verao-a-beira-tejo',
     (SELECT id FROM categories WHERE slug = 'especiais'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-5 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1066,7 +1066,7 @@ VALUES (
     'especial-25-abril-memorias-cidade',
     (SELECT id FROM categories WHERE slug = 'especiais'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-31 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1111,7 +1111,7 @@ VALUES (
     'guia-miradouros-menos-obvios-lisboa',
     (SELECT id FROM categories WHERE slug = 'especiais'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-16 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1156,7 +1156,7 @@ VALUES (
     'fotografia-lisboa-antes-manha',
     (SELECT id FROM categories WHERE slug = 'fotografia'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-7 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1201,7 +1201,7 @@ VALUES (
     'benfica-sporting-nova-epoca-pressao',
     (SELECT id FROM categories WHERE slug = 'desportos'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-12 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1244,7 +1244,7 @@ VALUES (
     'corrida-rua-rotina-milhares',
     (SELECT id FROM categories WHERE slug = 'desportos'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-27 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1289,7 +1289,7 @@ VALUES (
     'video-cais-sodre-ultima-decada',
     (SELECT id FROM categories WHERE slug = 'lisboa-cidade-aberta'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-1 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1334,7 +1334,7 @@ VALUES (
     'video-nova-estacao-metro',
     (SELECT id FROM categories WHERE slug = 'sociedade'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-22 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1379,7 +1379,7 @@ VALUES (
     'video-tarde-redacao-local',
     (SELECT id FROM categories WHERE slug = 'media'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-26 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1422,7 +1422,7 @@ VALUES (
     'video-bicicletas-partilhadas-lisboa',
     (SELECT id FROM categories WHERE slug = 'a-fundo'),
     (EXTRACT(EPOCH FROM (NOW() + INTERVAL '-35 days'))::bigint),
-    'PUBLISHED'
+    'APPROVED'
     )
     RETURNING id
     )
@@ -1775,7 +1775,7 @@ FROM featured_sections fs
          JOIN (
     SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS rn
     FROM contents
-    WHERE type = 'ARTICLE' AND state = 'PUBLISHED' AND slug IS NOT NULL AND category_id IS NOT NULL
+    WHERE type = 'ARTICLE' AND state = 'APPROVED' AND slug IS NOT NULL AND category_id IS NOT NULL
     ORDER BY id
     LIMIT 4
 ) picked ON TRUE

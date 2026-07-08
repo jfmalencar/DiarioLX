@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
+import kotlinx.datetime.Clock
 import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
@@ -16,11 +17,12 @@ import java.time.LocalDate
 @Named
 class ContentQueryService(
     private val transactionManager: TransactionManager,
+    private val clock: Clock,
 ) {
     fun getPublishedBySlug(slug: String): ContentResult =
         transactionManager.run {
-            val content = it.contentRepository.getBySlug(slug)
-            if (content == null || !content.isPubliclyVisible) {
+            val content = it.contentRepository.getPublishedBySlug(slug)
+            if (content == null || !content.isVisibleAt(clock.now())) {
                 return@run failure(ContentError.ContentNotFound)
             } else {
                 return@run success(content)
@@ -49,7 +51,7 @@ class ContentQueryService(
                     query = query,
                     tag = tag,
                     category = category,
-                    state = ContentState.PUBLISHED,
+                    state = ContentState.APPROVED,
                     from = from,
                     to = to,
                     parentId = parentId,
@@ -58,6 +60,7 @@ class ContentQueryService(
                     excludeArchivedCategory = true,
                     archived = false,
                     orderBy = "published_at",
+                    published = true,
                 )
             }
         }

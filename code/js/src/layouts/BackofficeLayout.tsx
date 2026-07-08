@@ -141,7 +141,7 @@ export const BackofficeLayout = () => {
           </div>
         </header>
         <FloatingActionMenu options={options} />
-        <main className='px-5 pb-4' style={{ marginBottom: '6rem' }}>
+        <main className='px-5 pb-4'>
           <Outlet />
         </main>
       </div>

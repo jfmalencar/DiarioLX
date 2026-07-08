@@ -53,14 +53,14 @@ class ContentModificationTests {
 
     @Test
     fun `editors and admins may always modify content, even once published`() {
-        val published = content(ContentState.PUBLISHED, primaryAuthorId = 99)
+        val published = content(ContentState.APPROVED, primaryAuthorId = 99)
         assertNull(published.denyModificationFor(user(1, UserRole.EDITOR)))
         assertNull(published.denyModificationFor(user(1, UserRole.ADMIN)))
     }
 
     @Test
     fun `a contributor cannot modify published content`() {
-        val published = content(ContentState.PUBLISHED, primaryAuthorId = 2)
+        val published = content(ContentState.APPROVED, primaryAuthorId = 2)
         assertEquals(
             ContentModificationDenial.PUBLISHED_LOCKED,
             published.denyModificationFor(user(2, UserRole.CONTRIBUTOR)),

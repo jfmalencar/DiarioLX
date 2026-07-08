@@ -21,7 +21,7 @@ interface ContentRepository {
         now: Instant,
     )
 
-    fun getBySlug(slug: String): Content?
+    fun getPublishedBySlug(slug: String): Content?
 
     fun getAll(
         limit: Int,
@@ -40,11 +40,12 @@ interface ContentRepository {
         excludeArchivedCategory: Boolean = false,
         archived: Boolean? = null,
         orderBy: String = "id",
+        published: Boolean? = null,
     ): List<ContentSummary>
 
-    fun internalGetById(id: Int): Content?
+    fun getById(id: Int): Content?
 
-    fun internalGetBySlug(slug: String): Content?
+    fun getBySlug(slug: String): Content?
 
     fun delete(id: Int): Boolean
 
@@ -64,6 +65,7 @@ interface ContentRepository {
         now: Instant,
         comment: String? = null,
         reviewerId: Int? = null,
+        publishedAt: Instant? = null,
     ): Boolean
 
     fun reject(

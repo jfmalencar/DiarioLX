@@ -5,6 +5,7 @@ import { useContentList } from '@/shared/hooks/useContentList';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { ContentCard } from '@/shared/components/ContentCard';
 import { Avatar } from '@/shared/components/Avatar';
+import { NotFound } from './NotFound';
 import type { ContentSummary } from '@/shared/services/contents/contents.types';
 
 const Grid = ({ items }: { items: ContentSummary[] }) => (
@@ -35,7 +36,7 @@ export function Author() {
     }
 
     if (authorError || !member) {
-        return <div className='container py-5 text-center text-muted'>{t('author.not_found')}</div>;
+        return <NotFound />;
     }
 
     const loadingContent = writtenLoading || creditedLoading;

@@ -14,9 +14,12 @@ import pt.ipl.diariolx.http.dto.auth.LoginUserDTO
 import pt.ipl.diariolx.http.dto.content.ContentResponseDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentDTO
 import pt.ipl.diariolx.http.dto.content.CreateContentResponseDTO
+import pt.ipl.diariolx.http.dto.content.PublishContentDTO
 import pt.ipl.diariolx.http.dto.content.ReviewContentDTO
 import pt.ipl.diariolx.http.dto.content.UpdateContentDTO
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ContentTests {
@@ -72,12 +75,13 @@ class ContentTests {
         categoryId: Int,
         mediaId: Int,
         tagId: Int,
+        slug: String = "artigo-teste-fluxo-editorial",
     ) = UpdateContentDTO(
         id = id,
         title = title,
         headline = "Entrada de teste do fluxo editorial.",
         featuredMediaId = mediaId,
-        slug = "artigo-teste-fluxo-editorial",
+        slug = slug,
         categoryId = categoryId,
         parentId = null,
         embedUrl = null,
@@ -85,6 +89,59 @@ class ContentTests {
         tags = listOf(ContentTag(tagId)),
         blocks = emptyList(),
     )
+
+    private fun seedIds(admin: String): Triple<Int, Int, Int> {
+        val seedList =
+            client
+                .get()
+                .uri(Uris.Guest.LIST_CONTENT)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .returnResult()
+                .responseBody!!
+
+        val seedContentId = ObjectMapper().readTree(seedList)["items"][0]["id"].asInt()
+        val seed =
+            client
+                .get()
+                .uri(byId(Uris.Content.CONTENT_BY_ID, seedContentId))
+                .cookie("accessToken", admin)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody(ContentResponseDTO::class.java)
+                .returnResult()
+                .responseBody!!
+
+        return Triple(seed.category!!.id, seed.featuredImage!!.id, seed.tags.first().id)
+    }
+
+    private fun internalListIds(
+        cookie: String,
+        published: Boolean,
+    ): List<Int> {
+        val body =
+            client
+                .get()
+                .uri { b ->
+                    b
+                        .path(Uris.Content.INTERNAL_GET_ALL)
+                        .queryParam("state", "APPROVED")
+                        .queryParam("published", published)
+                        .queryParam("size", 100)
+                        .build()
+                }.cookie("accessToken", cookie)
+                .exchange()
+                .expectStatus()
+                .isOk
+                .expectBody()
+                .returnResult()
+                .responseBody!!
+
+        return ObjectMapper().readTree(body)["items"].map { it["id"].asInt() }
+    }
 
     @Test
     fun `public content list is available without authentication`() {
@@ -210,7 +267,7 @@ class ContentTests {
             .expectStatus()
             .isNoContent
 
-        // ... and publishes directly, without a second review → PUBLISHED.
+        // ... and publishes directly, without a second review → APPROVED.
         client
             .post()
             .uri(byId(Uris.Content.PUBLISH, id))
@@ -219,7 +276,7 @@ class ContentTests {
             .expectStatus()
             .isNoContent
 
-        assertEquals(ContentState.PUBLISHED, stateOf(id, admin))
+        assertEquals(ContentState.APPROVED, stateOf(id, admin))
 
         // 7. Clean up - remove it
         client
@@ -238,5 +295,81 @@ class ContentTests {
             .exchange()
             .expectStatus()
             .isNotFound
+    }
+
+    @Test
+    fun `scheduled content stays hidden until its moment, backdated content is visible`() {
+        val admin = login("admin")
+        val contributor = login("test.contributor")
+        val (categoryId, mediaId, tagId) = seedIds(admin)
+        val slug = "artigo-agendamento-teste"
+
+        // A contributor drafts a fully populated article.
+        val id =
+            client
+                .post()
+                .uri(Uris.Content.MAIN)
+                .cookie("accessToken", contributor)
+                .bodyValue(CreateContentDTO(type = "ARTICLE"))
+                .exchange()
+                .expectStatus()
+                .isCreated
+                .expectBody(CreateContentResponseDTO::class.java)
+                .returnResult()
+                .responseBody!!
+                .id
+
+        client
+            .put()
+            .uri(Uris.Content.MAIN)
+            .cookie("accessToken", contributor)
+            .bodyValue(fullArticle(id, "Reportagem agendada", categoryId, mediaId, tagId, slug = slug))
+            .exchange()
+            .expectStatus()
+            .isNoContent
+
+        val nowSeconds = System.currentTimeMillis() / 1000
+
+        // Admin schedules it for the future.
+        client
+            .post()
+            .uri(byId(Uris.Content.PUBLISH, id))
+            .cookie("accessToken", admin)
+            .bodyValue(PublishContentDTO(publishedAt = nowSeconds + 100_000))
+            .exchange()
+            .expectStatus()
+            .isNoContent
+
+        // It is approved but hidden from the public site and listed under "scheduled", not "published".
+        client
+            .get()
+            .uri(Uris.Guest.GET_CONTENT.replace("{slug}", slug))
+            .exchange()
+            .expectStatus()
+            .isNotFound
+
+        assertTrue(id in internalListIds(admin, published = false), "scheduled tab should list it")
+        assertFalse(id in internalListIds(admin, published = true), "published tab should not yet")
+
+        // Admin re-publishes with a date in the past (backdating).
+        client
+            .post()
+            .uri(byId(Uris.Content.PUBLISH, id))
+            .cookie("accessToken", admin)
+            .bodyValue(PublishContentDTO(publishedAt = nowSeconds - 100_000))
+            .exchange()
+            .expectStatus()
+            .isNoContent
+
+        // Now it is publicly visible and has moved to the "published" tab.
+        client
+            .get()
+            .uri(Uris.Guest.GET_CONTENT.replace("{slug}", slug))
+            .exchange()
+            .expectStatus()
+            .isOk
+
+        assertTrue(id in internalListIds(admin, published = true), "published tab should list it")
+        assertFalse(id in internalListIds(admin, published = false), "scheduled tab should no longer")
     }
 }

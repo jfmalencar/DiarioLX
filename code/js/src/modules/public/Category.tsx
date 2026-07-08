@@ -8,6 +8,7 @@ import type { Query } from '@/shared/types/Query';
 import type { CategoryResource } from '@/shared/services/contents/contents.types';
 
 import { ContentListPage } from './ContentListPage';
+import { NotFound } from './NotFound';
 
 export function Category() {
     const { slug } = useParams<{ slug: string }>();
@@ -21,6 +22,10 @@ export function Category() {
         fetchCategory,
         slug,
     );
+
+    if (!loading && !resource) {
+        return <NotFound />;
+    }
 
     return (
         <ContentListPage

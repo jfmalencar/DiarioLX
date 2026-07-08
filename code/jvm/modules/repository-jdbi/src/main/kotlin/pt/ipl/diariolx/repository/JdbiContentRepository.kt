@@ -104,11 +104,11 @@ class JdbiContentRepository(
         updateBlocks(contentId, content.blocks)
     }
 
-    override fun getBySlug(slug: String): Content? = findContent("v_published_contents", "slug", slug)
+    override fun getPublishedBySlug(slug: String): Content? = findContent("v_published_contents", "slug", slug)
 
-    override fun internalGetById(id: Int): Content? = findContent("v_contents", "id", id)
+    override fun getById(id: Int): Content? = findContent("v_contents", "id", id)
 
-    override fun internalGetBySlug(slug: String): Content? = findContent("v_contents", "slug", slug)
+    override fun getBySlug(slug: String): Content? = findContent("v_contents", "slug", slug)
 
     private fun findContent(
         view: String,
@@ -139,6 +139,7 @@ class JdbiContentRepository(
         excludeArchivedCategory: Boolean,
         archived: Boolean?,
         orderBy: String,
+        published: Boolean?,
     ): List<ContentSummary> {
         val conditions =
             buildList {
@@ -185,12 +186,11 @@ class JdbiContentRepository(
                         """.trimIndent(),
                     )
                 }
-                if (state == ContentState.PUBLISHED) {
-                    add("published_at IS NOT NULL AND published_at <= EXTRACT(EPOCH FROM NOW())")
-                }
                 if (state != null) add("content_state = :state::content_state")
                 if (from != null) add("published_at >= :from")
                 if (to != null) add("published_at <= :to")
+                if (published == true) add("published_at < extract(epoch FROM now())")
+                if (published == false) add("published_at > extract(epoch FROM now())")
             }
         return handle
             .createQuery(summaryQuery(conditions, orderBy))
@@ -206,13 +206,8 @@ class JdbiContentRepository(
             .bind("parentId", parentId)
             .bind("author", author)
             .bind("creditedTo", creditedTo)
-            .let { q ->
-                if (!types.isNullOrEmpty()) {
-                    q.bindList("types", types.map { it.name })
-                } else {
-                    q
-                }
-            }.mapTo<ContentSummaryModel>()
+            .bindListIfNotNull("types", types)
+            .mapTo<ContentSummaryModel>()
             .list()
             .map { it.content }
     }
@@ -259,21 +254,28 @@ class JdbiContentRepository(
         now: Instant,
         comment: String?,
         reviewerId: Int?,
+        publishedAt: Instant?,
     ): Boolean {
         val result =
             handle
                 .createUpdate(
                     """
                    UPDATE contents
-                     SET published_at = COALESCE(published_at, :published_at), updated_at = :updated_at, state = :newState::content_state
+                     SET published_at = CASE
+                             WHEN :is_approved THEN COALESCE(:chosen_published_at, published_at, :now)
+                             ELSE published_at
+                         END,
+                         updated_at = :updated_at, state = :newState::content_state
                      WHERE id = :id
                 """,
-                ).bind("published_at", if (newState == ContentState.PUBLISHED) now.epochSeconds else null)
+                ).bind("is_approved", newState == ContentState.APPROVED)
+                .bind("chosen_published_at", publishedAt?.epochSeconds)
+                .bind("now", now.epochSeconds)
                 .bind("updated_at", now.epochSeconds)
                 .bind("newState", newState.name)
                 .bind("id", id)
                 .execute()
-        if (result > 0 && newState == ContentState.PUBLISHED && reviewerId != null) {
+        if (result > 0 && newState == ContentState.APPROVED && reviewerId != null) {
             handle
                 .createUpdate(
                     """

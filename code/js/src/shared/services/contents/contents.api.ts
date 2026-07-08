@@ -135,8 +135,9 @@ export const useContentsApiService = (): ContentsService => {
       }
     },
 
-    async publish(id, comment) {
-      const result = await post(endpoints.backoffice.contents.publish.href.replace('{id}', id.toString()), comment ? { comment } : null);
+    async publish(id, comment, publishedAt) {
+      const body = comment || publishedAt !== undefined ? { comment, publishedAt } : null;
+      const result = await post(endpoints.backoffice.contents.publish.href.replace('{id}', id.toString()), body);
       if (!result.success) {
         throw new Error(result.error || 'Failed to publish content');
       }

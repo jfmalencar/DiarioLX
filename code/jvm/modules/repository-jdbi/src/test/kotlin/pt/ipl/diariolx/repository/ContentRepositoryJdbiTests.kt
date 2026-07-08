@@ -41,7 +41,7 @@ class ContentRepositoryJdbiTests {
             val id = contentRepo.createEmpty(ContentType.ARTICLE, author.id, now)
 
             // then: it exists as a draft article whose primary author is that user
-            val content = contentRepo.internalGetById(id)
+            val content = contentRepo.getById(id)
             assertNotNull(content)
             assertEquals(ContentType.ARTICLE, content.type)
             assertEquals(ContentState.DRAFT, content.state)

@@ -8,13 +8,14 @@ import type { Media } from '@/shared/hooks/useMedia';
 type Props = {
     isOpen: boolean;
     onClose: () => void;
-    onPublish: () => void;
+    onPublish: (publishedAt?: number) => void;
     onRequestReview?: () => void;
     content: {
         title: string;
         category: string;
         featured: Media | null;
         authors: string[];
+        publishedAt?: number;
     };
 };
 
@@ -27,10 +28,14 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
     const canRequestReview = user?.features?.includes('request-review');
 
     const [mode, setMode] = useState<'publish' | 'review'>(canPublish ? 'publish' : 'review');
+    const [publishAt, setPublishAt] = useState(content.publishedAt ? new Date(content.publishedAt).toISOString().slice(0, 16) : '');
 
     const handleConfirm = () => {
-        if (mode === 'publish') onPublish();
-        else if (onRequestReview) onRequestReview();
+        if (mode === 'publish') {
+            onPublish(publishAt ? Math.floor(new Date(publishAt).getTime() / 1000) : undefined);
+        } else if (onRequestReview) {
+            onRequestReview();
+        }
     };
 
     return (
@@ -96,11 +101,28 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
                                 onChange={() => setMode('publish')}
                             />
                             <label className='form-check-label' htmlFor='mode-publish'>
-                                <div className='fw-medium'>{t('posts.publish_now')}</div>
+                                <div className='fw-medium'>{t('posts.approve_now')}</div>
                                 <div className='text-muted' style={{ fontSize: '0.85rem' }}>
-                                    {t('posts.publish_now_desc')}
+                                    {t('posts.approve_now_desc')}
                                 </div>
                             </label>
+                        </div>
+                    )}
+                    {canPublish && mode === 'publish' && (
+                        <div className='ms-4 mb-2'>
+                            <label className='form-label small text-muted mb-1' htmlFor='publish-at'>
+                                {t('posts.publish_at_label')}
+                            </label>
+                            <input
+                                id='publish-at'
+                                type='datetime-local'
+                                className='form-control form-control-sm'
+                                value={publishAt}
+                                onChange={(e) => setPublishAt(e.currentTarget.value)}
+                            />
+                            <div className='text-muted mt-1' style={{ fontSize: '0.8rem' }}>
+                                {t('posts.publish_at_hint')}
+                            </div>
                         </div>
                     )}
                     {onRequestReview && canRequestReview && (

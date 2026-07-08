@@ -2,6 +2,7 @@ package pt.ipl.diariolx.services
 
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.content.Content
 import pt.ipl.diariolx.domain.content.ContentModificationDenial
@@ -74,7 +75,7 @@ class ContentService(
             if (it.isBlank()) return failure(ContentError.InvalidSlug)
         }
         return transactionManager.run { tx ->
-            val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            val content = tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
             contributorGuard(content, user)?.let { return@run failure(it) }
             categoryId?.let {
                 tx.categoryRepository.getById(it) ?: return@run failure(ContentError.CategoryNotFound)
@@ -86,7 +87,7 @@ class ContentService(
             val resolvedParentId =
                 if (content.type == ContentType.EPISODE) {
                     parentId?.also {
-                        val parent = tx.contentRepository.internalGetById(it)
+                        val parent = tx.contentRepository.getById(it)
                         if (parent == null || parent.type != ContentType.PODCAST) {
                             return@run failure(ContentError.InvalidParent)
                         }
@@ -103,7 +104,7 @@ class ContentService(
                     else -> null
                 }
             slug?.let {
-                tx.contentRepository.internalGetBySlug(it)?.let { existing ->
+                tx.contentRepository.getBySlug(it)?.let { existing ->
                     if (existing.id != id) {
                         return@run failure(ContentError.SlugAlreadyExists)
                     }
@@ -140,7 +141,7 @@ class ContentService(
         user: User,
     ): ContentUpdateResult =
         transactionManager.run { tx ->
-            val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            val content = tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
             contributorGuard(content, user)?.let { return@run failure(it) }
             val result = tx.contentRepository.delete(id)
             if (result) {
@@ -154,7 +155,9 @@ class ContentService(
         id: Int,
         comment: String?,
         reviewerId: Int,
-    ): ContentUpdateResult = send(id, ContentState.PUBLISHED, comment, reviewerId)
+        publishedAt: Long? = null,
+    ): ContentUpdateResult =
+        send(id, ContentState.APPROVED, comment, reviewerId, publishedAt = publishedAt?.let { Instant.fromEpochSeconds(it) })
 
     fun submit(
         id: Int,
@@ -167,9 +170,10 @@ class ContentService(
         comment: String? = null,
         reviewerId: Int? = null,
         user: User? = null,
+        publishedAt: Instant? = null,
     ): ContentUpdateResult {
         return transactionManager.run { tx ->
-            val content = tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            val content = tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
             if (user != null) {
                 contributorGuard(content, user)?.let { return@run failure(it) }
             }
@@ -177,7 +181,7 @@ class ContentService(
             if (missing.isNotEmpty()) {
                 return@run failure(ContentError.IncompleteContent(missing))
             }
-            tx.contentRepository.publish(id, newState, clock.now(), comment, reviewerId)
+            tx.contentRepository.publish(id, newState, clock.now(), comment, reviewerId, publishedAt)
             return@run success(Unit)
         }
     }
@@ -188,7 +192,7 @@ class ContentService(
         reviewerId: Int,
     ): ContentUpdateResult {
         return transactionManager.run { tx ->
-            tx.contentRepository.internalGetById(id) ?: return@run failure(ContentError.ContentNotFound)
+            tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
             tx.contentRepository.reject(id, clock.now(), comment, reviewerId)
             return@run success(Unit)
         }
@@ -229,9 +233,10 @@ class ContentService(
         types: List<ContentType>?,
         category: String?,
         archived: Boolean?,
+        published: Boolean?,
         user: User,
     ): PageResponse<ContentSummary> {
-        val authorId = if (user.role < UserRole.EDITOR && state != ContentState.PUBLISHED) user.id else null
+        val authorId = if (user.role < UserRole.EDITOR && state != ContentState.APPROVED) user.id else null
         return transactionManager.run {
             paginate(page, size) { limit, offset ->
                 it.contentRepository.getAll(
@@ -243,6 +248,7 @@ class ContentService(
                     types = types,
                     authorId = authorId,
                     archived = archived,
+                    published = published,
                 )
             }
         }
@@ -250,7 +256,7 @@ class ContentService(
 
     fun internalGetById(id: Int): ContentResult =
         transactionManager.run {
-            val content = it.contentRepository.internalGetById(id)
+            val content = it.contentRepository.getById(id)
             if (content == null) {
                 return@run failure(ContentError.ContentNotFound)
             } else {

@@ -30,6 +30,7 @@ type Props = {
     filter: {
         state?: ContentState
         archived?: boolean
+        published?: boolean
     };
 };
 
@@ -43,11 +44,12 @@ const ContentsTable = ({ filter }: Props) => {
 
     const canEditPublished = user?.features?.includes('edit-published')
     const isArchivedTab = !!filter.archived
+    const showPublishedAt = filter.state === 'APPROVED'
 
     const refetch = useCallback(() => {
-        const params = buildQuery({ p: 'page', total: 'size', search: 'query', type: 'type' }, { state: filter.state, archived: filter.archived });
+        const params = buildQuery({ p: 'page', total: 'size', search: 'query', types: 'types' }, { state: filter.state, archived: filter.archived, published: filter.published });
         fetchAll(params)
-    }, [fetchAll, buildQuery, filter.state, filter.archived]);
+    }, [fetchAll, buildQuery, filter.state, filter.archived, filter.published]);
 
     useEffect(() => {
         refetch()
@@ -112,7 +114,7 @@ const ContentsTable = ({ filter }: Props) => {
                         {t('contents.column.publication')}
                     </TableColumn>
                     <TableColumn className='col-lg-2' isHeader={true}>
-                        {t('contents.column.created')}
+                        {showPublishedAt ? t('contents.column.published') : t('contents.column.created')}
                     </TableColumn>
                     <TableColumn className='col-lg-3' isHeader={true}>
                         {t('contents.column.authors')}
@@ -153,8 +155,8 @@ const ContentsTable = ({ filter }: Props) => {
                                 </div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2'>
-                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('contents.column.created')}</div>
-                                <div className='text-secondary'>{formatDate(new Date(row.createdAt), true)}</div>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{showPublishedAt ? t('contents.column.published') : t('contents.column.created')}</div>
+                                <div className='text-secondary'>{formatDate(new Date(showPublishedAt ? (row.publishedAt ?? row.createdAt) : row.createdAt), true)}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-3'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('contents.column.authors')}</div>
@@ -164,7 +166,7 @@ const ContentsTable = ({ filter }: Props) => {
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>
                                     {isArchivedTab ? (
                                         <>
-                                            {row.state === 'PUBLISHED' &&
+                                            {row.state === 'APPROVED' &&
                                                 <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
                                                     <ExternalLink size={16} />
                                                 </Link>
@@ -194,12 +196,12 @@ const ContentsTable = ({ filter }: Props) => {
                                         </>
                                     ) : (
                                         <>
-                                            {row.state === 'PUBLISHED' &&
+                                            {row.state === 'APPROVED' &&
                                                 <Link to={`/p/${row.slug}`} target='_blank' className='btn btn-outline-dark rounded-2'>
                                                     <ExternalLink size={16} />
                                                 </Link>
                                             }
-                                            {(row.state !== 'PUBLISHED' || canEditPublished) &&
+                                            {(row.state !== 'APPROVED' || canEditPublished) &&
                                                 <Link
                                                     to={`/backoffice/contents/${row.id}`}
                                                     className='btn btn-dark rounded-2'
@@ -224,7 +226,7 @@ const ContentsTable = ({ filter }: Props) => {
                                                     <ClipboardList size={16} />
                                                 </Link>
                                             }
-                                            {canEditPublished && row.state === 'PUBLISHED' &&
+                                            {canEditPublished && row.state === 'APPROVED' &&
                                                 <button
                                                     type='button'
                                                     onClick={() => openModal('archive', row.id)}
@@ -235,7 +237,7 @@ const ContentsTable = ({ filter }: Props) => {
                                                     <Archive size={16} />
                                                 </button>
                                             }
-                                            {canEditPublished && row.state !== 'PUBLISHED' &&
+                                            {canEditPublished && row.state !== 'APPROVED' &&
                                                 <button
                                                     type='button'
                                                     onClick={() => openModal('delete', row.id)}
@@ -271,7 +273,7 @@ export const Contents = () => {
 
     const sections: FilterSection[] = [
         {
-            key: 'type',
+            key: 'types',
             title: t('contents.filter.type'),
             options: [
                 { value: 'VIDEO', label: t('contents.type.video') },
@@ -294,7 +296,10 @@ export const Contents = () => {
                 }
             >
                 <Tab id='published' label={t('common.published')}>
-                    <ContentsTable filter={{ state: 'PUBLISHED', archived: false }} />
+                    <ContentsTable filter={{ state: 'APPROVED', published: true, archived: false }} />
+                </Tab>
+                <Tab id='scheduled' label={t('common.scheduled')}>
+                    <ContentsTable filter={{ state: 'APPROVED', published: false, archived: false }} />
                 </Tab>
                 <Tab id='pending' label={t('common.pending')}>
                     <ContentsTable filter={{ state: 'PENDING_REVIEW', archived: false }} />

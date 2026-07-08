@@ -127,7 +127,7 @@ export const useContentsMockService = (): ContentsService => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       store[index] = {
         ...store[index],
-        state: 'PUBLISHED',
+        state: 'APPROVED',
         publishedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };

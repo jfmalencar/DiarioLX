@@ -32,7 +32,7 @@ data class Content(
     val authors: List<Author>,
     val blocks: List<ContentBlock>,
 ) {
-    val isPubliclyVisible: Boolean get() = state == ContentState.PUBLISHED
+    fun isVisibleAt(now: Instant): Boolean = state == ContentState.APPROVED && publishedAt != null && publishedAt <= now
 
     fun missingPublicationFields(): List<ContentField> =
         buildList {
@@ -55,11 +55,10 @@ data class Content(
 
     fun denyModificationFor(user: User): ContentModificationDenial? {
         if (user.role >= UserRole.EDITOR) return null
-        if (state == ContentState.PUBLISHED) return ContentModificationDenial.PUBLISHED_LOCKED
+        if (state == ContentState.APPROVED) return ContentModificationDenial.PUBLISHED_LOCKED
         val primaryAuthorId = authors.firstOrNull { it.role.equals("primary", ignoreCase = true) }?.id
         return if (primaryAuthorId != user.id) ContentModificationDenial.NOT_OWNER else null
     }
 
-    fun stateAfterEdit(): ContentState =
-        if (state == ContentState.PUBLISHED || state == ContentState.REJECTED) ContentState.DRAFT else state
+    fun stateAfterEdit(): ContentState = if (state == ContentState.APPROVED || state == ContentState.REJECTED) ContentState.DRAFT else state
 }

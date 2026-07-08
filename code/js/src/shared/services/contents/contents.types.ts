@@ -4,7 +4,7 @@ import type { Pagination } from '@/shared/types/Pagination';
 
 export type ContentType = 'ARTICLE' | 'VIDEO' | 'EPISODE' | 'PODCAST' | 'PHOTO_ESSAY';
 
-export type ContentState = 'DRAFT' | 'PENDING_REVIEW' | 'PUBLISHED' | 'REJECTED'
+export type ContentState = 'DRAFT' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED'
 
 export type Content = {
     id: number;
@@ -238,7 +238,7 @@ export interface ContentsService {
 
     update(id: number, content: UpdateContentRequest): Promise<void>;
 
-    publish(id: number, comment: string | undefined): Promise<void>;
+    publish(id: number, comment: string | undefined, publishedAt?: number): Promise<void>;
 
     submit(id: number): Promise<void>;
 

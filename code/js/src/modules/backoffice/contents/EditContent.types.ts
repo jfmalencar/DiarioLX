@@ -32,6 +32,7 @@ export type ContentEditingInput = {
     secondaryAuthorSearch: string;
     featuredMedia: Media | null;
     embedUrl: string;
+    publishedAt?: number;
 };
 
 export type GalleryMode = 'featured' | 'block' | 'video-block' | 'audio-block' | 'gallery' | null;

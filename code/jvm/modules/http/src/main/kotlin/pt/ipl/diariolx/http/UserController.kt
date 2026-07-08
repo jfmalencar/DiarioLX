@@ -130,7 +130,7 @@ class UserController(
                 response.items.map {
                     UserResponseDTO.from(it)
                 },
-                Pagination(response.page, response.pageSize, response.hasPrevious, response.hasNext),
+                Pagination.of(response),
             ),
         )
     }

@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import pt.ipl.diariolx.domain.PageResponse
-import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.http.annotations.MayReturnAuthorOk
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
@@ -75,7 +73,7 @@ class GuestController(
             ResourceContentsResponseDTO(
                 resource = TagSummaryResponseDTO(tag.id, tag.name, tag.slug.value),
                 items = response.items.map { ContentSummaryResponseDTO.from(it) },
-                pagination = paginationOf(response),
+                pagination = Pagination.of(response),
             ),
         )
     }
@@ -95,7 +93,7 @@ class GuestController(
             ResourceContentsResponseDTO(
                 resource = CategorySummaryResponseDTO(category.id, category.name, category.slug.value, category.color.value),
                 items = response.items.map { ContentSummaryResponseDTO.from(it) },
-                pagination = paginationOf(response),
+                pagination = Pagination.of(response),
             ),
         )
     }
@@ -159,16 +157,8 @@ class GuestController(
         return ResponseEntity.ok(
             PaginatedResponseDTO(
                 response.items.map { ContentSummaryResponseDTO.from(it) },
-                paginationOf(response),
+                Pagination.of(response),
             ),
         )
     }
-
-    private fun paginationOf(response: PageResponse<ContentSummary>): Pagination =
-        Pagination(
-            response.page,
-            response.pageSize,
-            response.hasPrevious,
-            response.hasNext,
-        )
 }

@@ -39,7 +39,7 @@ export const ModalSelectContent = ({
         if (!query.trim()) return;
 
         const handle = setTimeout(() => {
-            const payload: Record<string, string> = { state: 'PUBLISHED' };
+            const payload: Record<string, string> = { state: 'APPROVED' };
             if (query.trim()) payload.query = query.trim();
             if (filterType) payload.type = filterType;
             if (filterCategory) payload.category = filterCategory;
