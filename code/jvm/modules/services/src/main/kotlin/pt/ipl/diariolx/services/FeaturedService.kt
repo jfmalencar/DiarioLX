@@ -4,7 +4,7 @@ import jakarta.inject.Named
 import pt.ipl.diariolx.domain.featured.FeaturedSection
 import pt.ipl.diariolx.domain.featured.FeaturedSectionInput
 import pt.ipl.diariolx.domain.featured.SectionPolicy
-import pt.ipl.diariolx.domain.featured.SectionType
+import pt.ipl.diariolx.domain.featured.SectionViolation
 import pt.ipl.diariolx.repository.TransactionManager
 import pt.ipl.diariolx.utils.FeaturedError
 import pt.ipl.diariolx.utils.FeaturedSectionResult
@@ -23,27 +23,8 @@ class FeaturedService(
 
     fun saveHomepage(sections: List<FeaturedSectionInput>): FeaturedSectionResult =
         transactionManager.run { tx ->
-            val seenSingletons = mutableSetOf<SectionType>()
-            sections.forEach { section ->
-                val type = section.type
-                val rule = sectionPolicy.rule(type)
-                if (rule.hasCategory && section.categoryId == null) {
-                    return@run failure(FeaturedError.CategoryRequired)
-                }
-                if (!rule.hasCategory && section.categoryId != null) {
-                    return@run failure(FeaturedError.CategoryNotAllowed)
-                }
-                if (section.contentIds.size > rule.maxArticles) {
-                    return@run failure(
-                        FeaturedError.TooManyArticles(type, rule.maxArticles, section.contentIds.size),
-                    )
-                }
-                if (!rule.canBeAdded) {
-                    if (!seenSingletons.add(type)) {
-                        return@run failure(FeaturedError.DuplicateSingleton(type))
-                    }
-                }
-            }
+            sectionPolicy.validate(sections)?.let { return@run failure(it.toFeaturedError()) }
+
             val allIds = sections.flatMap { it.contentIds }.distinct()
             if (allIds.isNotEmpty()) {
                 val published = tx.featuredRepository.findPublishedIds(allIds)
@@ -54,5 +35,13 @@ class FeaturedService(
             }
             tx.featuredRepository.saveHomepage(sections)
             success(Unit)
+        }
+
+    private fun SectionViolation.toFeaturedError(): FeaturedError =
+        when (this) {
+            is SectionViolation.CategoryRequired -> FeaturedError.CategoryRequired
+            is SectionViolation.CategoryNotAllowed -> FeaturedError.CategoryNotAllowed
+            is SectionViolation.TooManyArticles -> FeaturedError.TooManyArticles(type, max, got)
+            is SectionViolation.DuplicateSingleton -> FeaturedError.DuplicateSingleton(type)
         }
 }

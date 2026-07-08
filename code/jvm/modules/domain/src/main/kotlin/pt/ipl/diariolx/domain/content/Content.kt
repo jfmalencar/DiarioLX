@@ -7,6 +7,8 @@ import pt.ipl.diariolx.domain.content.value.ContentBlock
 import pt.ipl.diariolx.domain.content.value.ContentParent
 import pt.ipl.diariolx.domain.media.MediaSummary
 import pt.ipl.diariolx.domain.tag.TagSummary
+import pt.ipl.diariolx.domain.users.User
+import pt.ipl.diariolx.domain.users.UserRole
 
 private const val MIN_PHOTO_ESSAY_IMAGES = 3
 
@@ -30,6 +32,8 @@ data class Content(
     val authors: List<Author>,
     val blocks: List<ContentBlock>,
 ) {
+    val isPubliclyVisible: Boolean get() = state == ContentState.PUBLISHED
+
     fun missingPublicationFields(): List<ContentField> =
         buildList {
             if (title.isBlank()) add(ContentField.TITLE)
@@ -48,4 +52,14 @@ data class Content(
                 if (photoCount < MIN_PHOTO_ESSAY_IMAGES) add(ContentField.PHOTOS)
             }
         }
+
+    fun denyModificationFor(user: User): ContentModificationDenial? {
+        if (user.role >= UserRole.EDITOR) return null
+        if (state == ContentState.PUBLISHED) return ContentModificationDenial.PUBLISHED_LOCKED
+        val primaryAuthorId = authors.firstOrNull { it.role.equals("primary", ignoreCase = true) }?.id
+        return if (primaryAuthorId != user.id) ContentModificationDenial.NOT_OWNER else null
+    }
+
+    fun stateAfterEdit(): ContentState =
+        if (state == ContentState.PUBLISHED || state == ContentState.REJECTED) ContentState.DRAFT else state
 }

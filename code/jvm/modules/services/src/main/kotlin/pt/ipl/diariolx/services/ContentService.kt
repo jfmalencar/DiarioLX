@@ -4,9 +4,11 @@ import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import pt.ipl.diariolx.domain.PageResponse
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentModificationDenial
 import pt.ipl.diariolx.domain.content.ContentState
 import pt.ipl.diariolx.domain.content.ContentSummary
 import pt.ipl.diariolx.domain.content.ContentType
+import pt.ipl.diariolx.domain.content.Embed
 import pt.ipl.diariolx.domain.content.UpdateContent
 import pt.ipl.diariolx.domain.content.value.ContentAuthor
 import pt.ipl.diariolx.domain.content.value.ContentTag
@@ -19,7 +21,6 @@ import pt.ipl.diariolx.utils.ContentError
 import pt.ipl.diariolx.utils.ContentHistoryResult
 import pt.ipl.diariolx.utils.ContentResult
 import pt.ipl.diariolx.utils.ContentUpdateResult
-import pt.ipl.diariolx.utils.Embed
 import pt.ipl.diariolx.utils.failure
 import pt.ipl.diariolx.utils.paginate
 import pt.ipl.diariolx.utils.success
@@ -32,12 +33,12 @@ class ContentService(
     private fun contributorGuard(
         content: Content,
         user: User,
-    ): ContentError? {
-        if (user.role >= UserRole.EDITOR) return null
-        if (content.state == ContentState.PUBLISHED) return ContentError.PublishedLocked
-        val primaryAuthorId = content.authors.firstOrNull { it.role.equals("primary", ignoreCase = true) }?.id
-        return if (primaryAuthorId != user.id) ContentError.NotContentOwner else null
-    }
+    ): ContentError? =
+        when (content.denyModificationFor(user)) {
+            ContentModificationDenial.PUBLISHED_LOCKED -> ContentError.PublishedLocked
+            ContentModificationDenial.NOT_OWNER -> ContentError.NotContentOwner
+            null -> null
+        }
 
     fun createEmpty(
         type: String,
@@ -127,11 +128,7 @@ class ContentService(
                     authors,
                     tags,
                     blocks,
-                    if (content.state == ContentState.REJECTED || content.state == ContentState.PUBLISHED) {
-                        ContentState.DRAFT
-                    } else {
-                        content.state
-                    },
+                    content.stateAfterEdit(),
                 )
             tx.contentRepository.updateContent(updateContent, clock.now())
             return@run success(Unit)

@@ -19,13 +19,13 @@ import pt.ipl.diariolx.utils.success
 @Named
 class InviteService(
     private val transactionManager: TransactionManager,
-    val config: InviteDomainConfig,
+    private val config: InviteDomainConfig,
     private val clock: Clock.System,
 ) {
     fun getInvite(invite: String): Invite? =
         transactionManager.run {
             val result = it.inviteRepository.get(invite) ?: return@run null
-            if (result.isStillValid(clock)) {
+            if (result.isValidAt(clock.now())) {
                 result
             } else {
                 null
@@ -91,10 +91,4 @@ class InviteService(
                 )
             }
         }
-
-    private fun Invite.isStillValid(clock: Clock): Boolean {
-        val now = clock.now()
-        return this.createdAt <= now &&
-            (now - this.createdAt) <= config.inviteExpirationTime
-    }
 }

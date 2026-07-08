@@ -20,9 +20,7 @@ class ContentQueryService(
     fun getPublishedBySlug(slug: String): ContentResult =
         transactionManager.run {
             val content = it.contentRepository.getBySlug(slug)
-            if (content == null) {
-                return@run failure(ContentError.ContentNotFound)
-            } else if (content.state != ContentState.PUBLISHED) {
+            if (content == null || !content.isPubliclyVisible) {
                 return@run failure(ContentError.ContentNotFound)
             } else {
                 return@run success(content)
