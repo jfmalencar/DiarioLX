@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 type Props = {
@@ -37,20 +37,37 @@ const config = {
 };
 
 export const Snackbar = ({ show, message, type, delay, onClose }: Props) => {
+    const ref = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        if (show && !el.matches(':popover-open')) el.showPopover();
+        if (!show && el.matches(':popover-open')) el.hidePopover();
         if (!show) return;
         const timer = setTimeout(onClose, delay);
         return () => clearTimeout(timer);
     }, [show, delay, onClose]);
 
-    if (!show) return null;
-
     const { icon: Icon, color, bg, border } = config[type];
 
     return (
         <div
-            className='position-fixed bottom-0 start-50 translate-middle-x p-3'
-            style={{ zIndex: 1080 }}
+            ref={ref}
+            popover='manual'
+            className='p-3'
+            style={{
+                position: 'fixed',
+                inset: 'auto',
+                bottom: 0,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                margin: 0,
+                padding: '1rem',
+                border: 'none',
+                background: 'transparent',
+                overflow: 'visible',
+            }}
         >
             <div
                 className='d-flex align-items-center gap-3 px-4 py-3 rounded-3'

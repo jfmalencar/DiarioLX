@@ -29,6 +29,8 @@ sealed class UserError(
     object EmailAlreadyExists : UserError("Email already exists")
 
     object DeactivatedAccount : UserError("Your account is deactivated")
+
+    object UserHasContents : UserError("User cannot be deleted while it has associated contents")
 }
 
 sealed class AuthError(

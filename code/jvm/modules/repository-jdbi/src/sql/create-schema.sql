@@ -110,7 +110,7 @@ INSERT INTO invites (invite_token, role_assigned, created_at, expires_at) VALUES
 
 CREATE TABLE sessions (
      id            SERIAL PRIMARY KEY,
-     user_id       INT NOT NULL REFERENCES users(id),
+     user_id       INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
      refresh_token VARCHAR(64) NOT NULL UNIQUE,
      created_at    BIGINT DEFAULT EXTRACT(EPOCH FROM NOW()),
      expires_at    BIGINT NOT NULL

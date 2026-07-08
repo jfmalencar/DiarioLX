@@ -29,10 +29,6 @@ class ContentService(
     private val transactionManager: TransactionManager,
     private val clock: Clock,
 ) {
-    companion object {
-        const val MIN_PHOTO_ESSAY_IMAGES = 3
-    }
-
     private fun contributorGuard(
         content: Content,
         user: User,
@@ -180,34 +176,9 @@ class ContentService(
             if (user != null) {
                 contributorGuard(content, user)?.let { return@run failure(it) }
             }
-            if (content.title.isBlank()) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.headline.isBlank()) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.slug == null) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.type == ContentType.EPISODE) {
-                if (content.parentId == null) {
-                    return@run failure(ContentError.ParentRequired)
-                }
-            } else if (content.category == null) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.tags.isEmpty()) {
-                return@run failure(ContentError.EmptyField)
-            }
-            val canEmbed = content.type == ContentType.VIDEO || content.type == ContentType.EPISODE
-            if (content.featuredImage == null && !(canEmbed && content.embedUrl != null)) {
-                return@run failure(ContentError.EmptyField)
-            }
-            if (content.type == ContentType.PHOTO_ESSAY) {
-                val photoCount = content.blocks.filter { it.type == "GALLERY" }.sumOf { it.images.size }
-                if (photoCount < MIN_PHOTO_ESSAY_IMAGES) {
-                    return@run failure(ContentError.InsufficientPhotos)
-                }
+            val missing = content.missingPublicationFields()
+            if (missing.isNotEmpty()) {
+                return@run failure(ContentError.IncompleteContent(missing))
             }
             tx.contentRepository.publish(id, newState, clock.now(), comment, reviewerId)
             return@run success(Unit)

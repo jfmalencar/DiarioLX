@@ -29,6 +29,8 @@ interface UserRepository {
 
     fun delete(id: Int): Boolean
 
+    fun hasContents(id: Int): Boolean
+
     fun changeStatus(
         id: Int,
         now: Instant,

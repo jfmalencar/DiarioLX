@@ -1,6 +1,7 @@
 package pt.ipl.diariolx.repository
 
 import kotlinx.datetime.Clock
+import pt.ipl.diariolx.domain.content.ContentType
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.domain.users.internal.NewUser
 import pt.ipl.diariolx.domain.users.value.Email
@@ -64,5 +65,29 @@ class UserRepositoryJdbiTests {
             val retrieved = repo.getById(created.id)
             assertNotNull(retrieved)
             assertFalse(retrieved.active)
+        }
+
+    @Test
+    fun `hasContents is false for a user with no content`(): Unit =
+        testWithHandleAndRollback { handle ->
+            val repo = JdbiUserRepository(handle)
+            val user = repo.create(newUser("jdbi-no-content"), Clock.System.now())
+
+            assertFalse(repo.hasContents(user.id))
+        }
+
+    @Test
+    fun `hasContents is true when the user authored content`(): Unit =
+        testWithHandleAndRollback { handle ->
+            val userRepo = JdbiUserRepository(handle)
+            val contentRepo = JdbiContentRepository(handle)
+            val now = Clock.System.now()
+
+            // given: a user who authors a piece of content
+            val user = userRepo.create(newUser("jdbi-has-content"), now)
+            contentRepo.createEmpty(ContentType.ARTICLE, user.id, now)
+
+            // then: hasContents reports true (this is what guards user deletion)
+            assertTrue(userRepo.hasContents(user.id))
         }
 }

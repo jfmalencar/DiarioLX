@@ -33,6 +33,7 @@ fun ContentError.toProblem() =
         is ContentError.InvalidSlug -> Problem.invalidSlug
         is ContentError.ContentNotFound -> Problem.notFound
         is ContentError.EmptyField -> Problem.emptyField
+        is ContentError.IncompleteContent -> Problem.emptyField
         is ContentError.InvalidType -> Problem.invalidField
         is ContentError.SlugAlreadyExists -> Problem.invalidSlug
         is ContentError.AuthorNotFound -> Problem.authorNotFound
@@ -61,6 +62,7 @@ fun UserError.toProblem(): Problem =
         is UserError.EmailAlreadyExists -> Problem.emailAlreadyExists
         is UserError.InvalidInvite -> Problem.invalidInvite
         is UserError.DeactivatedAccount -> Problem.deactivatedAccount
+        is UserError.UserHasContents -> Problem.userHasContents
     }
 
 fun AuthError.toProblem(): Problem =

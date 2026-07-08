@@ -66,6 +66,8 @@ class UserRepositoryMem : UserRepository {
         return true
     }
 
+    override fun hasContents(id: Int): Boolean = false
+
     override fun changeStatus(
         id: Int,
         now: Instant,

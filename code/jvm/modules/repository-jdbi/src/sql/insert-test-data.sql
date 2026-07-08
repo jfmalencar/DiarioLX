@@ -86,6 +86,9 @@ INSERT INTO users (username, email, role, password_hash, first_name, last_name, 
                                                                                                                                  ('lucia.rocha', 'lucia@example.com', 'ADMIN', '$2a$10$zx51.oyueMBIcSjfxsxOJ.rew4kfDdpSDaZcJIGbYTHpJGklWpouu', 'Lucia', 'Rocha', 'Project manager.',  FALSE, 1700000005000, 1700000005000),
                                                                                                                                  ('admin', 'admin@diariolx.com', 'ADMIN', '$2a$10$M7ajQwhD7s.V7qAvg6TWiuGaPsTYkivIe87jUWWxOIPoTGDRHjKta', 'Jessé', 'Alencar', 'Administrator account.', TRUE, 1700000006000, 1700000006000);
 
+INSERT INTO users (username, email, role, password_hash, first_name, last_name, bio, active_account, created_at, updated_at) VALUES ('test.editor', 'test.editor@diariolx.com', 'EDITOR', '$2a$10$M7ajQwhD7s.V7qAvg6TWiuGaPsTYkivIe87jUWWxOIPoTGDRHjKta', 'Test', 'Editor', '', TRUE, 1700000200000, 1700000200000);
+INSERT INTO users (username, email, role, password_hash, first_name, last_name, bio, active_account, created_at, updated_at) VALUES ('test.contributor', 'test.contributor@diariolx.com', 'CONTRIBUTOR', '$2a$10$M7ajQwhD7s.V7qAvg6TWiuGaPsTYkivIe87jUWWxOIPoTGDRHjKta', 'Test', 'Contributor', '', TRUE, 1700000201000, 1700000201000);
+
 -- ----------------------------------------------------------------------------
 -- 1. MEDIAS  (apontam para objetos já existentes no bucket `medias`)
 -- ----------------------------------------------------------------------------

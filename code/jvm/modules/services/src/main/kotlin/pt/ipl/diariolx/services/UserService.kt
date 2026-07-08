@@ -12,7 +12,6 @@ import pt.ipl.diariolx.domain.auth.RefreshToken
 import pt.ipl.diariolx.domain.auth.Session
 import pt.ipl.diariolx.domain.auth.UserTokens
 import pt.ipl.diariolx.domain.invites.Invite
-import pt.ipl.diariolx.domain.media.Buckets
 import pt.ipl.diariolx.domain.media.NewMedia
 import pt.ipl.diariolx.domain.users.User
 import pt.ipl.diariolx.domain.users.UserRole
@@ -44,7 +43,6 @@ class UserService(
     private val passwordEncoder: PasswordEncoder,
     private val tokenGenerator: TokenGenerator,
     private val fileStorage: FileStorage,
-    private val buckets: Buckets,
     private val jwtConfig: JwtConfig,
     private val clock: Clock.System,
     private val logger: Logger,
@@ -131,7 +129,6 @@ class UserService(
 
     fun getTeam(): List<User> = transactionManager.run { it.userRepository.getTeam() }
 
-    // Public profile lookup by username — any user (author/credited), not just team members.
     fun getByUsername(username: String): User? =
         transactionManager.run { tx ->
             Username.parse(username)?.let { tx.userRepository.getByUsername(it) }
@@ -182,6 +179,9 @@ class UserService(
             }
             logger.info("Deleting user by id: $id; author: ${author.username}")
             if (author.id == id || author.role == UserRole.ADMIN) {
+                if (it.userRepository.hasContents(id)) {
+                    return@run failure(UserError.UserHasContents)
+                }
                 val result = it.userRepository.delete(id)
                 if (result) {
                     return@run success(Unit)

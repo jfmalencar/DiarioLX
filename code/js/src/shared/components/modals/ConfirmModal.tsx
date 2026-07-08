@@ -1,5 +1,6 @@
 import { Modal } from '@/shared/components/modals/Modal';
 import { Alert, type AlertVariant } from '@/shared/components/Alert';
+import { useI18n } from '@/shared/hooks/useI18n';
 import type { Result } from '@/shared/types/Result';
 
 export type ModalConfig = {
@@ -21,6 +22,7 @@ type Props = {
 }
 
 export const ConfirmModal = ({ name, config, open, closeModal, onConfirm }: Props) => {
+    const { t } = useI18n();
     return (
         <Modal
             isOpen={open && config !== undefined}
@@ -29,7 +31,7 @@ export const ConfirmModal = ({ name, config, open, closeModal, onConfirm }: Prop
             buttons={[
                 {
                     key: 'cancel',
-                    label: 'Cancelar',
+                    label: t('common.cancel'),
                     variant: 'secondary',
                     onClick: closeModal,
                     dataTestId: `cancel-${name}-button`,
@@ -44,7 +46,7 @@ export const ConfirmModal = ({ name, config, open, closeModal, onConfirm }: Prop
             ]}
         >
             <h6 className='mb-3'>{config?.subtitle}</h6>
-            <Alert variant={config?.variant ?? 'warning'} title='Atenção!'>
+            <Alert variant={config?.variant ?? 'warning'} title={t('common.warning')}>
                 {config?.alert}
             </Alert>
         </Modal>

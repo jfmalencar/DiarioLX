@@ -8,8 +8,6 @@ object Uris {
     const val HOME = PREFIX
     const val BACKOFFICE = "$PREFIX/backoffice"
 
-    fun home(): URI = URI(HOME)
-
     object Users {
         const val ROOT = "$BACKOFFICE/users"
 
@@ -109,7 +107,6 @@ object Uris {
 
     object Guest {
         const val HOMEPAGE = "$PREFIX/homepage"
-        const val NAVIGATION = "$PREFIX/navigation"
         const val LIST_CONTENT = "$PREFIX/contents"
         const val GET_CONTENT = "$PREFIX/contents/{slug}"
         const val TEAM = "$PREFIX/team"

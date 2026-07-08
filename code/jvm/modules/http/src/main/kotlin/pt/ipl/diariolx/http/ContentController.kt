@@ -117,7 +117,7 @@ class ContentController(
     @MayReturnUnauthorized
     @MayReturnBadRequest
     fun createEmptyContent(
-        authenticatedUser: AuthenticatedUser,
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @RequestBody body: CreateContentDTO,
     ): ResponseEntity<*> =
         when (val response = contentService.createEmpty(body.type, authenticatedUser.user.id)) {
@@ -140,7 +140,7 @@ class ContentController(
     @MayReturnBadRequest
     @MayReturnNotFound
     fun updateContent(
-        authenticatedUser: AuthenticatedUser,
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @RequestBody body: UpdateContentDTO,
     ): ResponseEntity<*> =
         when (
@@ -179,7 +179,7 @@ class ContentController(
     @MayReturnBadRequest
     @MayReturnNotFound
     fun deleteContent(
-        authenticatedUser: AuthenticatedUser,
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
     ): ResponseEntity<*> =
         when (val response = contentService.delete(id, authenticatedUser.user)) {
@@ -243,7 +243,7 @@ class ContentController(
     @MayReturnBadRequest
     @MayReturnNotFound
     fun publishContent(
-        authenticatedUser: AuthenticatedUser,
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
         @RequestBody body: ReviewContentDTO?,
     ): ResponseEntity<*> =
@@ -267,7 +267,7 @@ class ContentController(
     @MayReturnBadRequest
     @MayReturnNotFound
     fun submitContent(
-        authenticatedUser: AuthenticatedUser,
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
     ): ResponseEntity<*> =
         when (val response = contentService.submit(id, authenticatedUser.user)) {
@@ -290,7 +290,7 @@ class ContentController(
     @MayReturnBadRequest
     @MayReturnNotFound
     fun rejectContent(
-        authenticatedUser: AuthenticatedUser,
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
         @RequestBody body: ReviewContentDTO?,
     ): ResponseEntity<*> =

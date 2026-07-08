@@ -172,7 +172,6 @@ class CategoryServiceTest {
             service.create("Cultura", "svc-getall-a", null, "#ffffff", null)
             service.create("Sociedade", "svc-getall-b", null, "#000000", null)
 
-            // Filter by a token only these two share, so the seed categories don't affect the count.
             val result = service.getAll(page = 1, 10, query = "svc-getall-", archived = false)
 
             assertEquals(2, result.items.size)

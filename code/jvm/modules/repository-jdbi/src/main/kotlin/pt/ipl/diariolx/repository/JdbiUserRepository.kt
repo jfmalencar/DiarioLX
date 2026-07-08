@@ -114,6 +114,19 @@ class JdbiUserRepository(
         return rowsAffected > 0
     }
 
+    override fun hasContents(id: Int): Boolean =
+        handle
+            .createQuery(
+                """
+                select (
+                    exists(select 1 from content_authors where author_id = :id)
+                    or exists(select 1 from media_credits where user_id = :id)
+                )
+                """.trimIndent(),
+            ).bind("id", id)
+            .mapTo(Boolean::class.java)
+            .one()
+
     override fun changeStatus(
         id: Int,
         now: Instant,

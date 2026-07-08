@@ -1,12 +1,17 @@
 package pt.ipl.diariolx.utils
 
 import pt.ipl.diariolx.domain.content.Content
+import pt.ipl.diariolx.domain.content.ContentField
 import pt.ipl.diariolx.domain.content.ContentHistory
 
 sealed class ContentError(
     val message: String,
 ) {
     object EmptyField : ContentError("Content field cannot be empty")
+
+    data class IncompleteContent(
+        val fields: List<ContentField>,
+    ) : ContentError("Content is missing required fields: $fields")
 
     object InvalidType : ContentError("Content type is invalid")
 

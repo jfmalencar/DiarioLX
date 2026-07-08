@@ -1,9 +1,10 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router';
 import { ExternalLink, Edit, ClipboardCheck, ClipboardList, FileText, Video, Mic, Radio, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
+import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
 import { TableBody, Table, TableHeader, TableColumn, TableRow, TablePagination } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
 import { TableFilters } from '@/shared/components/table/TableFilters';
@@ -50,27 +51,56 @@ const ContentsTable = ({ filter }: Props) => {
         refetch()
     }, [refetch, searchParams]);
 
-    const handleArchive = async (id: number) => {
-        const res = await archive(id)
-        if (!res.ok) { showSnackbar(res.error, 'error'); return }
-        showSnackbar(t('contents.archived_success'), 'success')
-        refetch()
-    }
+    type RowAction = 'archive' | 'unarchive' | 'delete';
+    const [modalAction, setModalAction] = useState<RowAction | null>(null);
+    const [modalId, setModalId] = useState<number | null>(null);
 
-    const handleUnarchive = async (id: number) => {
-        const res = await unarchive(id)
-        if (!res.ok) { showSnackbar(res.error, 'error'); return }
-        showSnackbar(t('contents.unarchived_success'), 'success')
-        refetch()
-    }
+    const modalConfig: Record<RowAction, ModalConfig> = {
+        archive: {
+            title: t('contents.archive_title'),
+            subtitle: t('contents.archive_confirmation'),
+            alert: t('contents.archive_alert'),
+            confirmLabel: t('common.archive'),
+            action: archive,
+            getRedirect: () => '',
+        },
+        unarchive: {
+            title: t('contents.unarchive_title'),
+            subtitle: t('contents.unarchive_confirmation'),
+            alert: t('contents.unarchive_alert'),
+            confirmLabel: t('common.unarchive'),
+            action: unarchive,
+            getRedirect: () => '',
+        },
+        delete: {
+            title: t('contents.delete_title'),
+            subtitle: t('contents.delete_confirm'),
+            alert: t('contents.delete_alert'),
+            confirmLabel: t('common.delete'),
+            action: deleteContent,
+            getRedirect: () => '',
+            variant: 'danger',
+        },
+    };
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm(t('contents.delete_confirm'))) return
-        const res = await deleteContent(id)
-        if (!res.ok) { showSnackbar(res.error, 'error'); return }
-        showSnackbar(t('contents.deleted_success'), 'success')
-        refetch()
-    }
+    const successKey: Record<RowAction, string> = {
+        archive: 'contents.archived_success',
+        unarchive: 'contents.unarchived_success',
+        delete: 'contents.deleted_success',
+    };
+
+    const config = modalAction ? modalConfig[modalAction] : undefined;
+    const openModal = (action: RowAction, id: number) => { setModalAction(action); setModalId(id); };
+    const closeModal = () => { setModalAction(null); setModalId(null); };
+
+    const handleConfirm = async () => {
+        if (modalId === null || !modalAction || !config) return;
+        const res = await config.action(modalId);
+        if (!res.ok) { showSnackbar(res.error, 'error'); return; }
+        showSnackbar(t(successKey[modalAction]), 'success');
+        closeModal();
+        refetch();
+    };
 
     return (
         <>
@@ -140,7 +170,7 @@ const ContentsTable = ({ filter }: Props) => {
                                             {canEditPublished &&
                                                 <button
                                                     type='button'
-                                                    onClick={() => handleUnarchive(row.id)}
+                                                    onClick={() => openModal('unarchive', row.id)}
                                                     className='btn btn-outline-dark rounded-2'
                                                     title={t('common.unarchive')}
                                                     disabled={loading}
@@ -151,7 +181,7 @@ const ContentsTable = ({ filter }: Props) => {
                                             {canEditPublished &&
                                                 <button
                                                     type='button'
-                                                    onClick={() => handleDelete(row.id)}
+                                                    onClick={() => openModal('delete', row.id)}
                                                     className='btn btn-outline-danger rounded-2'
                                                     title={t('common.delete')}
                                                     disabled={loading}
@@ -195,12 +225,23 @@ const ContentsTable = ({ filter }: Props) => {
                                             {canEditPublished && row.state === 'PUBLISHED' &&
                                                 <button
                                                     type='button'
-                                                    onClick={() => handleArchive(row.id)}
+                                                    onClick={() => openModal('archive', row.id)}
                                                     className='btn btn-outline-dark rounded-2'
                                                     title={t('common.archive')}
                                                     disabled={loading}
                                                 >
                                                     <Archive size={16} />
+                                                </button>
+                                            }
+                                            {canEditPublished && row.state !== 'PUBLISHED' &&
+                                                <button
+                                                    type='button'
+                                                    onClick={() => openModal('delete', row.id)}
+                                                    className='btn btn-outline-danger rounded-2'
+                                                    title={t('common.delete')}
+                                                    disabled={loading}
+                                                >
+                                                    <Trash2 size={16} />
                                                 </button>
                                             }
                                         </>
@@ -212,6 +253,13 @@ const ContentsTable = ({ filter }: Props) => {
                 </TableBody>
             </Table>
             {pagination && <TablePagination hasPrevious={pagination.hasPrevious} hasNext={pagination.hasNext} />}
+            <ConfirmModal
+                open={modalId !== null && config !== undefined}
+                onConfirm={handleConfirm}
+                config={config}
+                name='content'
+                closeModal={closeModal}
+            />
         </>
     );
 }
