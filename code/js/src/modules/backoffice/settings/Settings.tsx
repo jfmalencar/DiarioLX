@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { FieldSection } from '@/shared/components/inputs/FieldSection';
 import { UnderlineInput } from '@/shared/components/inputs/UnderlineInput';
 import { UnderlineTextArea } from '@/shared/components/inputs/UnderlineTextArea';
-import { Button } from '@/shared/components/Button';
+import { SaveBar } from '@/shared/components/SaveBar';
 import { useSettings } from '@/shared/hooks/useSettings';
 import { useCategories } from '@/shared/hooks/useCategories';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
@@ -23,10 +23,14 @@ export const Settings = () => {
     const { showSnackbar } = useSnackbar();
     const { t } = useI18n();
     const [form, setForm] = useState<BackofficeSettings>(EMPTY);
+    const [saved, setSaved] = useState<BackofficeSettings>(EMPTY);
 
     useEffect(() => {
         fetch().then((s) => {
-            if (s) setForm(s);
+            if (s) {
+                setForm(s);
+                setSaved(s);
+            }
         });
     }, [fetch]);
 
@@ -59,11 +63,14 @@ export const Settings = () => {
 
     const handleSave = async () => {
         const res = await save(form);
+        if (res.ok) setSaved(form);
         showSnackbar(res.ok ? t('settings.saved') : res.error, res.ok ? 'success' : 'error');
     };
 
+    const isDirty = JSON.stringify(form) !== JSON.stringify(saved);
+
     return (
-        <div className='row justify-content-center'>
+        <div className='row justify-content-center' style={{ paddingBottom: '5rem' }}>
             <FieldSection title='Twitter'>
                 <UnderlineInput
                     value={form.social.twitter}
@@ -149,7 +156,6 @@ export const Settings = () => {
                     onChange={(e) => setPublication('owner', e.currentTarget.value)}
                 />
             </FieldSection>
-
             <FieldSection
                 title={t('settings.featured_categories_title')}
                 description={t('settings.featured_categories_description')}
@@ -197,16 +203,13 @@ export const Settings = () => {
                     </div>
                 ))}
             </FieldSection>
-            <div className='d-flex justify-content-end gap-3 pt-2'>
-                <Button
-                    dataTestId='save-settings-button'
-                    type='button'
-                    disabled={loading}
-                    onClick={handleSave}
-                >
-                    {loading ? t('settings.saving') : t('settings.save')}
-                </Button>
-            </div>
+            <SaveBar
+                visible={isDirty}
+                saving={loading}
+                onSave={handleSave}
+                onCancel={() => setForm(saved)}
+                saveTestId='save-settings-button'
+            />
         </div>
     );
 };

@@ -1,10 +1,6 @@
 import type { ContentSummary, ContentType } from '@/shared/services/contents/contents.types';
 import { youtubeThumb } from '@/shared/utils/embed';
-
-const MONTHS = [
-    'JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN',
-    'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'
-];
+import { formatDate } from '@/shared/utils/format';
 
 const TYPE_ACCENT: Partial<Record<ContentType, string>> = {
     VIDEO: '#D4E600',
@@ -31,5 +27,5 @@ export const isVideoThumbnail = (content: Pick<ContentSummary, 'type' | 'embedUr
 export const contentDate = (content: ContentSummary) => {
     if (!content.publishedAt) return '';
     const date = new Date(content.publishedAt);
-    return `${date.getDate()} ${MONTHS[date.getMonth()]}`;
+    return formatDate(date);
 };

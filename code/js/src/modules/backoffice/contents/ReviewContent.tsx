@@ -8,6 +8,8 @@ import { ContentPreview } from '@/shared/components/ContentPreview';
 import { type Content, useContents } from '@/shared/hooks/useContents';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
+import { formatDate } from '@/shared/utils/format';
+
 import icon from '@/assets/icon.svg';
 
 import { ReviewModal } from './ReviewModal';
@@ -33,7 +35,7 @@ const HistoryEntryCard = ({ entry }: { entry: HistoryEntry }) => {
                         <strong style={{ color: config.sublabelColor }}>{t(config.sublabelKey)}</strong>
                     </span>
                 </div>
-                <span className='text-muted' style={{ fontSize: '0.75rem' }}>{new Date(entry.date).toLocaleDateString()}</span>
+                <span className='text-muted' style={{ fontSize: '0.75rem' }}>{formatDate(new Date(entry.date))}</span>
             </div>
             {entry.comment && (
                 <div className='mb-2' style={{ fontSize: '0.85rem', color: '#333' }}>

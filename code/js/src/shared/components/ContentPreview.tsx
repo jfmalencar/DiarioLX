@@ -4,6 +4,8 @@ import { AudioLines } from 'lucide-react';
 import { usePath } from '@/shared/hooks/usePath';
 import { contentAccent } from '@/shared/utils/content';
 import { groupCredits } from '@/shared/utils/credits';
+import { formatDate } from '@/shared/utils/format';
+
 import { useCreditLabel } from '@/shared/hooks/useCreditLabel';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
@@ -14,13 +16,6 @@ import { AudioPlayer } from '@/shared/components/AudioPlayer';
 import { EmbedPlayer } from '@/shared/components/EmbedPlayer';
 import { usePageTheme } from '@/shared/hooks/usePageTheme';
 import type { Content } from '@/shared/hooks/useContents';
-
-const formatNewsDate = (dateString: string): string => {
-    const MONTHS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-    const d = new Date(dateString);
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${day} ${MONTHS[d.getMonth()]}`;
-};
 
 type Props = {
     content: Content;
@@ -75,7 +70,7 @@ export const ContentPreview = ({ content }: Props) => {
     const heroImageUrl = content.featuredImage?.path ? buildMediaUrl(content.featuredImage.path) : '';
     const category = content.category.name?.toUpperCase();
     const credits = content.featuredImage?.credits || [];
-    const date = formatNewsDate(content.publishedAt ?? content.createdAt);
+    const date = formatDate(new Date(content.publishedAt ?? content.createdAt));
     const wasUpdatedAfterPublish = content.publishedAt != null && content.updatedAt.slice(0, 10) > content.publishedAt.slice(0, 10);
     const accent = contentAccent(content.type, content.category?.color);
     const episodeArtwork = content.parent?.image ?? null;
@@ -205,7 +200,7 @@ export const ContentPreview = ({ content }: Props) => {
                                 </div>
                                 {wasUpdatedAfterPublish && (
                                     <p className='text-uppercase mb-4' style={{ fontSize: '0.78rem', opacity: 0.65, letterSpacing: '0.04em' }}>
-                                        {t('content.updated_at', { date: formatNewsDate(content.updatedAt) })}
+                                        {t('content.updated_at', { date: formatDate(new Date(content.updatedAt)) })}
                                     </p>
                                 )}
                                 <div className='d-flex gap-3'>

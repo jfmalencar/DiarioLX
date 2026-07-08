@@ -5,9 +5,11 @@ type Props = {
     saving: boolean;
     onSave: () => void;
     onCancel: () => void;
+    message?: string;
+    saveTestId?: string;
 };
 
-export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
+export const SaveBar = ({ visible, saving, onSave, onCancel, message, saveTestId }: Props) => {
     const { t } = useI18n();
     return (
         <div
@@ -22,7 +24,7 @@ export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
                 className='d-flex align-items-center justify-content-between py-3 px-4 mx-auto'
                 style={{ maxWidth: 1100 }}
             >
-                <span className='text-secondary'>{t('homepage.unsaved_changes')}</span>
+                <span className='text-secondary'>{message ?? t('common.unsaved_changes')}</span>
                 <div className='d-flex gap-2'>
                     <button
                         type='button'
@@ -37,8 +39,9 @@ export const SaveBar = ({ visible, saving, onSave, onCancel }: Props) => {
                         className='btn btn-dark'
                         onClick={onSave}
                         disabled={saving}
+                        data-testid={saveTestId}
                     >
-                        {saving ? t('homepage.saving') : t('common.save')}
+                        {saving ? t('common.saving') : t('common.save')}
                     </button>
                 </div>
             </div>

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
-import { UserIcon, Trash, UserX, UserCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+import { UserIcon, Trash, UserX, UserCheck, ExternalLink } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
@@ -13,6 +15,7 @@ import { useSnackbar } from '@/shared/hooks/useSnackbar';
 import { useFilters } from '@/shared/hooks/useFilters';
 import { usePath } from '@/shared/hooks/usePath';
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
+import { RoleBadge } from '@/shared/components/RoleBadge';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 
 type Props = {
@@ -47,23 +50,26 @@ const UsersTable = ({ filter, openModal }: Props) => {
         <>
             <Table dataTestId='users-table'>
                 <TableHeader>
-                    <TableColumn className='col-lg-5' isHeader={true}>
+                    <TableColumn className='col-lg-4' isHeader={true}>
                         {t('users.name')}
                     </TableColumn>
                     <TableColumn className='col-lg-2' isHeader={true}>
                         {t('users.username')}
                     </TableColumn>
-                    <TableColumn className='col-lg-3' isHeader={true}>
+                    <TableColumn className='col-lg-2' isHeader={true}>
                         {t('users.email')}
+                    </TableColumn>
+                    <TableColumn className='col-lg-3' isHeader={true}>
+                        {t('users.role')}
                     </TableColumn>
                     <TableColumn className='col-lg-2 text-center' isHeader={true}>
                         {t('common.actions')}
                     </TableColumn>
                 </TableHeader>
-                <TableBody cols={4} loading={loading} isEmpty={users.length === 0} emptyMessage={t('users.empty_message')}>
-                    {users.map((row) => (
+                <TableBody cols={5} loading={loading} isEmpty={users.length === 0} emptyMessage={t('users.empty_message')}>
+                    {users.map((row, index) => (
                         <TableRow key={row.userId}>
-                            <TableColumn className='col-lg-5'>
+                            <TableColumn className='col-lg-4'>
                                 <div className='d-flex align-items-center gap-3'>
                                     <div
                                         className='d-flex align-items-center justify-content-center rounded-circle border border-dark flex-shrink-0'
@@ -96,9 +102,13 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
                                 <div className='text-secondary'>{row.email}</div>
                             </TableColumn>
-                            <TableColumn className='col-6 col-lg-2 text-lg-end'>
+                            <TableColumn className='col-6 col-lg-3'>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.role')}</div>
+                                <RoleBadge role={row.role} />
+                            </TableColumn>
+                            <TableColumn className='col-6 col-lg-3 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center align-items-center gap-3'>
-                                    {canManageUsers &&
+                                    {canManageUsers ?
                                         <>
                                             <div className='form-check form-switch m-0' title={t('users.show_on_team')}>
                                                 <input
@@ -125,6 +135,14 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                                 </div>
                                             )}
                                         </>
+                                        :
+                                        <Link
+                                            to={`/a/${row.username}`}
+                                            className='btn btn-outline-dark rounded-2'
+                                            data-testid={`visit-author-button-${index}`}
+                                        >
+                                            <ExternalLink size={16} />
+                                        </Link>
                                     }
                                 </div>
                             </TableColumn>

@@ -7,7 +7,7 @@ import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
 import { SectionBlock } from './SectionBlock';
 import { ModalSelectContent } from './ModalSelectContent';
-import { SaveBar } from './SaveBar';
+import { SaveBar } from '@/shared/components/SaveBar';
 import {
     makeHomepageReducer,
     buildInitialState,

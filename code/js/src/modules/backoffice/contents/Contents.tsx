@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSearchParams } from 'react-router';
-import { ExternalLink, Edit, ClipboardCheck, ClipboardList, FileText, Video, Mic, Radio, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
+import { ExternalLink, Images, Edit, ClipboardCheck, ClipboardList, FileText, CirclePlay, Mic, AudioLines, Archive, ArchiveRestore, Trash2, ImageOff } from 'lucide-react';
 
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
@@ -16,12 +16,14 @@ import { contentThumbnail, isVideoThumbnail } from '@/shared/utils/content';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
+import { formatDate } from '@/shared/utils/format';
+
 const typeIcon = {
     ARTICLE: <FileText size={14} className='text-muted' />,
-    VIDEO: <Video size={14} className='text-muted' />,
+    VIDEO: <CirclePlay size={14} className='text-muted' />,
     EPISODE: <Mic size={14} className='text-muted' />,
-    PODCAST: <Radio size={14} className='text-muted' />,
-    PHOTO_ESSAY: <ExternalLink size={14} className='text-muted' />,
+    PODCAST: <AudioLines size={14} className='text-muted' />,
+    PHOTO_ESSAY: <Images size={14} className='text-muted' />,
 };
 
 type Props = {
@@ -126,7 +128,7 @@ const ContentsTable = ({ filter }: Props) => {
                                 <div className='d-flex align-items-center gap-3'>
                                     <div
                                         className='d-flex align-items-center justify-content-center border border-dark flex-shrink-0'
-                                        style={{ width: 135, height: 80, overflow: 'hidden', backgroundColor: '#f0f0f0' }}
+                                        style={{ width: 90, height: 60, overflow: 'hidden', backgroundColor: '#f0f0f0' }}
                                     >
                                         {contentThumbnail(row) ? (
                                             <MediaPreview
@@ -138,13 +140,13 @@ const ContentsTable = ({ filter }: Props) => {
                                             />
                                         ) : (
                                             <div className='d-flex align-items-center justify-content-center w-100 h-100 text-muted'>
-                                                {typeIcon[row.type]}
+                                                <ImageOff size={14} className='text-muted' />
                                             </div>
                                         )}
                                     </div>
                                     <div className='d-flex align-items-center gap-2'>
                                         {typeIcon[row.type]}
-                                        <div className='fw-medium text-dark' style={{ fontSize: '1.1rem' }}>
+                                        <div className='fw-medium text-dark me-2' style={{ fontSize: '1.1rem' }}>
                                             {row.title}
                                         </div>
                                     </div>
@@ -152,7 +154,7 @@ const ContentsTable = ({ filter }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('contents.column.created')}</div>
-                                <div className='text-secondary'>{new Date(row.createdAt).toLocaleDateString()}</div>
+                                <div className='text-secondary'>{formatDate(new Date(row.createdAt), true)}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-3'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('contents.column.authors')}</div>

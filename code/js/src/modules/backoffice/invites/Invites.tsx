@@ -14,18 +14,15 @@ import { useFilters } from '@/shared/hooks/useFilters';
 
 import { Button } from '@/shared/components/Button';
 import { ConfirmModal, type ModalConfig } from '@/shared/components/modals/ConfirmModal';
+import { RoleBadge } from '@/shared/components/RoleBadge';
+import { ROLE_COLORS, ROLE_COLOR_OPACITY } from '@/shared/components/roleColors';
+
+import { formatDate } from '@/shared/utils/format';
 
 type Props = {
     filter: { expired: boolean };
     remove: (invite: Invite) => void;
 };
-
-const OPACITY = 25
-const COLORS = {
-    CONTRIBUTOR: '#006eff',
-    EDITOR: '#179b00',
-    ADMIN: '#6a00ff',
-}
 
 const RoleCard = ({ role, title, description, icon, onGenerate }: { role: UserRole, title: string, description: string, icon: React.ReactNode, onGenerate: () => void }) => {
     const { t } = useI18n();
@@ -38,7 +35,7 @@ const RoleCard = ({ role, title, description, icon, onGenerate }: { role: UserRo
                         style={{
                             minWidth: 56,
                             height: 56,
-                            backgroundColor: `${COLORS[role]}${OPACITY}`,
+                            backgroundColor: `${ROLE_COLORS[role]}${ROLE_COLOR_OPACITY}`,
                         }}
                     >
                         {icon}
@@ -97,27 +94,16 @@ const InvitesTable = ({ filter, remove }: Props) => {
                                 <div className='text-secondary'>{row.invite}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2'>
-                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                                <div className='text-secondary'>
-                                    <div
-                                        className='badge rounded-pill px-3 py-2 fw-medium'
-                                        style={{
-                                            backgroundColor: `${COLORS[row.role]}${OPACITY}`,
-                                        }}
-                                    >
-                                        <span className='text-sm font-weight-bold' style={{ color: COLORS[row.role] }}>
-                                            {t(`users.${row.role.toLowerCase()}`).toUpperCase()}
-                                        </span>
-                                    </div>
-                                </div>
+                                <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.role')}</div>
+                                <RoleBadge role={row.role} />
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-3'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                                <div className='text-secondary'>{new Date(row.createdAt).toLocaleString()}</div>
+                                <div className='text-secondary'>{formatDate(new Date(row.createdAt), true)}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-3'>
                                 <div className='text-muted d-lg-none small text-uppercase mb-1'>{t('users.email')}</div>
-                                <div className='text-secondary'>{new Date(row.expiresAt).toLocaleString()}</div>
+                                <div className='text-secondary'>{formatDate(new Date(row.expiresAt), true)}</div>
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex d-lg-flex justify-content-center gap-2'>

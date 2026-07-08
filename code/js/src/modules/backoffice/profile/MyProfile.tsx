@@ -12,19 +12,7 @@ import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
 import { Modal } from '@/shared/components/modals/Modal';
 
-const formatDate = (value: string | null | undefined) => {
-    if (!value) {
-        return 'N/D';
-    }
-
-    const parsedDate = new Date(value);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-        return 'N/D';
-    }
-
-    return parsedDate.toLocaleDateString('pt-PT');
-};
+import { formatDate } from '@/shared/utils/format';
 
 export function MyProfile() {
     const { user, hydrated, logout, refreshUser } = useAuthentication();
@@ -57,7 +45,7 @@ export function MyProfile() {
     const displayName = firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName || t('myprofile.profile_name');
     const imageUrl = user?.profilePicturePath ? buildMediaUrl(user.profilePicturePath) : 'https://placehold.co/213x213/black/white?text=' + (displayName.charAt(0).toUpperCase() || 'U');
     const email = user?.email || t('common.no_email');
-    const createdAtDate = user?.createdAt ? formatDate(user.createdAt) : t('common.not_available');
+    const createdAtDate = user?.createdAt ? formatDate(new Date(user.createdAt)) : t('common.not_available');
     const role = user?.username?.toUpperCase() || t('common.not_available');
     const statusLabel = user?.isActive ? t('myprofile.active').toUpperCase() : t('myprofile.inactive').toUpperCase();
     const statusColor = user?.isActive ? '#1FBC7D' : '#6c757d';
