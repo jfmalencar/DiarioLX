@@ -107,6 +107,25 @@ routing:
             host and client headers required for object access.
 \end{itemize}
 
+A special case of the first rule handles link previews on social platforms. For a
+digital newspaper, the sharing of articles on social media is an important channel for
+reaching readers, and an inviting link preview --- a title, a summary, and an image ---
+is what turns a shared link into a visit. Delivering good previews, however, is at odds
+with a client-rendered single-page application: because the public site renders in the
+browser, its HTML shell carries no per-article metadata, so a crawler fetching an article
+URL would find no title, description, or image from which to build a preview. This
+tension motivated dedicated handling of social crawlers. To address it, the containerised
+Nginx inspects the \texttt{User-Agent} of requests to article paths
+(\texttt{/p/\{slug\}}) and, when it matches a known social-media crawler --- such as
+those of Facebook, WhatsApp, X, or LinkedIn --- rewrites the request to a dedicated
+backend endpoint that returns a lightweight server-rendered page carrying the Open
+Graph~\cite{ogp} metadata (title, description, image, and canonical URL) for that
+article. Human visitors are unaffected and continue to receive the single-page
+application. This is a targeted solution rather than full server-side rendering: it
+covers only the crawler user agents that are explicitly recognised, and both widening
+that set and, more fundamentally, moving to genuine server-side rendering of the public
+pages remain possible improvements.
+
 Beyond routing, this Nginx layer applies a tiered caching policy that offloads both the
 backend and the object store. Responses from the public API are held in a short
 cache of roughly thirty seconds, which still absorbs load on hot endpoints such as the

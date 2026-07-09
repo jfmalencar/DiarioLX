@@ -130,4 +130,10 @@ object Uris {
         const val TAG = "$PREFIX/tags/{slug}"
         const val CATEGORY = "$PREFIX/categories/{slug}"
     }
+
+    object OpenGraph {
+        const val ROOT = "$PREFIX/og"
+
+        const val PUBLISHED_CONTENT = "$ROOT/p/{slug}"
+    }
 }
