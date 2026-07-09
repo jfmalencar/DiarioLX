@@ -3,6 +3,12 @@
 %
 \chapter{Frontend} \label{cap:frontend}
 
+This chapter describes the implementation of the frontend. It presents the chosen
+technologies and the application's modular organization, the bootstrap, configuration, and
+authentication mechanisms that support it, and then the two faces of the interface --- the
+editorial backoffice and the public website --- illustrated with representative excerpts of
+a hook and a component, before closing with the automated testing approach.
+
 \section{Technology} \label{sec:fe_technology}
 
 The frontend is developed as a single-page application (SPA) using \textbf{React}
@@ -88,6 +94,73 @@ The main modules are:
             (content, users, categories, tags).
 \end{description}
 
+\section{Hooks and Components} \label{sec:fe_hooks_components}
+
+Most of the interface is built from two kinds of building block: \emph{hooks}, which
+encapsulate data access and state, and presentational \emph{components}, which render the
+UI from their props. Listing~\ref{lst:fe_hook} shows a representative hook, which backs the
+public content listings.
+
+\begin{lstlisting}[language=JavaScript, caption={A hook composing data access with reusable pagination.}, label={lst:fe_hook}]
+export const useContentList = (params: Record<string, string | undefined>) => {
+    const contentsService = useContentsService();
+    // ... build the query string from params, with a fixed page size
+
+    const fetchPage = useCallback(
+        (page: number) => contentsService.fetchPublicContents({ ...params, page }),
+        [contentsService, baseQuery],
+    );
+
+    const { items: contents, loading, hasMore, loadMore, error } =
+        useLoadMore<ContentSummary, ContentsResponse>(fetchPage);
+
+    return { contents, loading, hasMore, loadMore, error };
+};
+\end{lstlisting}
+
+The hook reaches the backend only through the injected \texttt{Services} interface,
+never calling \texttt{fetch} directly --- the abstraction
+that lets the whole application run against a mock in tests (Section~\ref{sec:fe_tests}).
+It also composes with \texttt{useLoadMore}, a reusable hook that encapsulates paginated
+``load more'' behaviour, so any listing gains it without duplicating the logic, and exposes
+only the state a page actually needs.
+
+Components, by contrast, hold no business logic. Many keep their own local UI state ---
+whether a menu is open, the current value of an input --- whereas state that must be
+coordinated with the rest of the page is lifted into a hook or a parent, and the component
+is then driven by props. The \texttt{SaveBar} in Listing~\ref{lst:fe_component}, the action
+bar used by editable forms such as the settings page, is an example of this second,
+fully-controlled kind.
+
+\begin{lstlisting}[language=JavaScript, caption={A presentational component controlled by its props.}, label={lst:fe_component}]
+type Props = {
+    visible: boolean; saving: boolean;
+    onSave: () => void; onCancel: () => void;
+    message?: string; saveTestId?: string;
+};
+
+export const SaveBar = ({ visible, saving, onSave, onCancel, message, saveTestId }: Props) => {
+    const { t } = useI18n();
+    return (
+        <div className='position-fixed bottom-0 ...'
+             style={{ transform: visible ? 'translateY(0)' : 'translateY(100%)' }}>
+            <span>{message ?? t('common.unsaved_changes')}</span>
+            <button onClick={onCancel} disabled={saving}>{t('common.cancel')}</button>
+            <button onClick={onSave} disabled={saving} data-testid={saveTestId}>
+                {saving ? t('common.saving') : t('common.save')}
+            </button>
+        </div>
+    );
+};
+\end{lstlisting}
+
+The bar keeps no state of its own: it is told whether it is \texttt{visible} and
+\texttt{saving} and is given \texttt{onSave} and \texttt{onCancel} callbacks, so the same
+component serves any form that needs a save/cancel affordance. Its text comes through the
+\texttt{useI18n} hook rather than being hard-coded, keeping the interface translatable, and
+its interactive elements carry \texttt{data-testid} attributes that the end-to-end tests
+target (Section~\ref{sec:fe_tests}).
+
 \section{Bootstrap, Configuration and Navigation} \label{sec:fe_bootstrap_navigation}
 
 When the application starts, the \texttt{useBootstrap} hook retrieves the initial
@@ -144,11 +217,27 @@ determines the role assigned to the new account. Both pages share a split layout
 --- a full-height cover image with the \textit{Diário LX} branding on the left, and the
 form on the right.
 
+A user who has forgotten their password requests a reset from a dedicated
+forgot-password page, entering only their username; the result is confirmed with a
+generic message that does not reveal whether the account exists. Once an Administrator has
+approved the request (Section~\ref{sec:fe_user_mgmt}) and shared the resulting link, the
+user opens a reset-password page --- reached through that link, which carries the reset
+token --- and chooses a new password. The page validates the token's format before
+accepting the new password and redirects to the login page when the token is missing or
+malformed.
+
 \subsection{User Management} \label{sec:fe_user_mgmt}
 
 The user management page (Figure~\ref{fig:fe_users}) lists all active and deactivated
 users, displaying their name, username, email, and profile picture. Administrators
 can invite new ones via the invitation system.
+
+Administrators also handle password-reset requests from this area. A dedicated view lists
+the requests by status --- pending, approved, rejected, and completed --- and each
+request's detail offers approve and reject actions. Because the platform sends no email,
+approving a request reveals a ready-made reset link with a copy-to-clipboard control,
+which the Administrator delivers to the user directly; the underlying workflow is
+described in Section~\ref{sec:be_password_reset}.
 
 \subsection{Category and Tag Management} \label{sec:fe_cat_mgmt}
 
@@ -200,14 +289,6 @@ category, primary and secondary tags, and primary and secondary authors. When a
 published item is edited, the editor warns that saving will return it to the draft
 state until it is re-published.
 
-\begin{figure}[H]
-      \begin{center}
-            \resizebox{\textwidth}{!}{\includegraphics{./figures/screenshots/add-content.png}}
-      \end{center}
-      \caption{Backoffice --- content editor with a published article.}
-      \label{fig:fe_editor}
-\end{figure}
-
 Media is inserted via a gallery modal (Figure~\ref{fig:fe_media_gallery}), which lists
 all uploaded items with their credits and accessible description; new files can be
 uploaded directly from the modal (Figure~\ref{fig:fe_media_upload}).
@@ -224,9 +305,7 @@ review page presents the rendered content alongside the approve and reject actio
 When approving, the reviewer can either publish the item immediately or schedule it: the
 publish dialog offers a choice between approving now and selecting a future date and
 time, in which case the item is approved but withheld from readers until that instant is
-reached. Scheduled items appear under a dedicated \textit{Scheduled} tab in the content
-listing --- separate from the \textit{Published} tab of already-live content ---
-alongside their publication date.
+reached --- appearing meanwhile under the \textit{Scheduled} tab described above.
 
 \subsection{Homepage Management} \label{sec:fe_homepage_mgmt_sec}
 
@@ -235,6 +314,20 @@ featured content displayed on the public website's homepage
 (Figure~\ref{fig:fe_homepage_mgmt}). Sections are ordered and typed (for example a
 highlight, a featured grid, or a category row), and each section is populated with a
 curated, ordered selection of content items (Figure~\ref{fig:fe_homepage_select_featured}).
+
+\subsection{Site Settings} \label{sec:fe_settings}
+
+A settings page, restricted to Administrators, centralises the site-wide configuration
+that is not tied to any single content item. From it an Administrator edits the
+publication's social-media links and contact details, the legal and masthead information
+(such as the ERC registration, ownership, and periodicity), and the composition of the
+public navigation menu --- selecting which categories are featured and toggling the
+Photography, Podcasts, and Videos sections on or off. These values are persisted in the
+key/value \texttt{settings} store described in Section~\ref{sec:dm_settings} and consumed
+by the public site through its bootstrap configuration. Edits are governed by a
+\texttt{SaveBar} that appears only once the form differs from the saved state, offering
+explicit save and cancel actions and preventing accidental navigation away from unsaved
+changes.
 
 \section{Public Website} \label{sec:fe_public}
 
@@ -255,14 +348,6 @@ specific content each one displays --- for example dedicated blocks for \textit{
 The sections and their curated content are driven by the homepage configuration managed
 in the backoffice.
 
-\begin{figure}[H]
-      \begin{center}
-            \includegraphics[width=\textwidth]{./figures/screenshots/home_1.png}
-      \end{center}
-      \caption{Homepage --- header, hero, featured articles, latest news, featured sections.}
-      \label{fig:fe_homepage_1}
-\end{figure}
-
 \subsection{Article Page} \label{sec:fe_article}
 
 Each content item is rendered on a dedicated public page accessible at its slug-based
@@ -282,6 +367,19 @@ additionally exposes dedicated section listings for Photography, Podcasts, and V
 the media sections adopt a darker, more immersive presentation consistent with their
 content type (Figures~\ref{fig:fe_photography_page}, \ref{fig:fe_podcasts_list_page}
 and~\ref{fig:fe_videos_page}).
+
+\subsection{Search} \label{sec:fe_search}
+
+Readers can search the site through an overlay opened from the header, which offers live
+suggestions as the query is typed and, on submission, leads to a dedicated results page
+addressable by its own URL (\texttt{/s?q=\ldots}). Both the overlay and the results page
+query the public content endpoint, which matches the search term, case-insensitively, as
+a substring of an article's title or slug and returns only published content, paginated
+with the same ``load more'' control as the listing pages. The match is intentionally
+simple --- it is neither a tokenised full-text search nor ranked by relevance, and it does
+not reach into the article body --- which is adequate for the current scale but leaves
+richer, ranked search (see Chapter~\ref{cap:conclusion}) as a clear avenue for
+improvement.
 
 \subsection{Podcast and Episode Pages} \label{sec:fe_podcast}
 
@@ -328,9 +426,9 @@ integration pipeline via GitHub Actions~\cite{github_actions} and runs automatic
 every push. Listing~\ref{lst:test_e2e} shows a representative end-to-end test, and
 Figure~\ref{fig:fe_test_report} an example run of the suite.
 
-\begin{lstlisting}[language=JavaScript, caption={Playwright end-to-end test: the \textit{``Ver mais''} control appends more content.}, label={lst:test_e2e}]
-test('"Ver mais" appends more content', async ({ page }) => {
-    await page.goto('/podcasts');
+\begin{lstlisting}[language=JavaScript, caption={Playwright end-to-end test: the ``load more'' control appends more content.}, label={lst:test_e2e}]
+test('load more button appends more content', async ({ page }) => {
+    await page.goto('/latest');
     const cards = page.getByTestId('content-card');
     await expect(cards.first()).toBeVisible();
 

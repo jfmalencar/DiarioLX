@@ -3,6 +3,12 @@
 %
 \chapter{Architecture} \label{cap:architecture}
 
+This chapter presents the architecture of \textit{Diário LX}. It gives a high-level view of
+the system and its main components, the technology stack that realises them, and the design
+of the REST API, and then examines the cross-cutting concerns that shape the system: its
+authentication and authorization model, the way media is stored and served, and the
+editorial workflow that governs a content item's lifecycle.
+
 \section{Overview} \label{sec:arch_overview}
 
 The \textit{Diário LX} platform follows a client-server architecture. The system is composed
@@ -24,8 +30,7 @@ The system comprises the following main components:
       \item \textbf{Frontend} (React + TypeScript): A single-page application (SPA)
             running in the browser, responsible for rendering the public website and the
             backoffice interface. Communicates with the backend via HTTP requests and
-            uploads media directly to SeaweedFS using pre-signed URLs, bypassing the
-            application server.
+            uploads media directly to the object store, bypassing the application server.
 
       \item \textbf{Web Service} (Spring Boot + Kotlin): The backend application
             responsible for business logic, authentication, and data access. Controls media
@@ -119,11 +124,10 @@ they are only transmitted over encrypted connections. While access tokens are va
 refresh tokens are persisted in the database to support session invalidation,
 logout, and propagation of user role changes.
 
-The access token encodes the user's identifier and role as JWT claims, enabling
-stateless validation on every request without a database lookup. Refresh tokens
-are persisted in the \texttt{sessions} table and invalidated upon logout, providing
-explicit session termination. When the access token expires, the client transparently
-obtains a new one via \texttt{POST /api/auth/refresh}.
+The access token encodes the user's identifier and role as JWT claims, which is what
+makes that validation stateless, while refresh tokens live in the \texttt{sessions}
+table. When the access token expires, the client transparently obtains a new one via
+\texttt{POST /api/auth/refresh}.
 
 Role-based access control (RBAC)~\cite{sandhu1996rbac} is enforced at the HTTP layer, with each endpoint
 declaring the minimum required role. The implementation details are covered in
@@ -147,20 +151,14 @@ application. This isolation is reflected in the backend, where storage is define
 abstraction with an interchangeable implementation, as described in
 Chapter~\ref{cap:backend}.
 
-Crucially, the media bytes never pass through the application server --- in either
-direction. On upload, the browser first obtains a short-lived, single-purpose
-authorization from the backend --- valid for fifteen minutes --- and then transfers the
-file directly to the object store;
-the backend never handles the file contents, and its role is limited to authorizing the
-transfer and, once the file is stored, recording the media's metadata --- its location,
-type, and descriptive fields such as caption and credit --- in the database. Delivery
-follows the same principle in reverse: readers' browsers load images, audio, and video
-directly from the object store through the URLs kept in that metadata, rather than having
-the application server relay them. With the bytes off its path in both directions, the
-server stays responsive under large uploads and heavy read traffic alike, and can
-concentrate on what it is actually responsible for --- business logic and the metadata
-that links media to content. The concrete mechanism behind this flow is detailed in
-Chapter~\ref{cap:backend}.
+Crucially, the media bytes never pass through the application server, in either direction.
+On upload, the browser obtains a short-lived (fifteen-minute) authorization from the
+backend and transfers the file directly to the object store; the backend never handles the
+file contents, only recording the media's metadata --- its location, type, and descriptive
+fields such as caption and credit. Delivery mirrors this: readers' browsers load images,
+audio, and video directly from the object store through the URLs kept in that metadata.
+Keeping the server off the byte path leaves it responsive under large uploads and heavy
+read traffic alike. The concrete mechanism is detailed in Chapter~\ref{cap:backend}.
 
 \section{Editorial Workflow} \label{sec:arch_workflow}
 
@@ -173,6 +171,14 @@ of four values: \textit{Draft}, \textit{Pending Review}, \textit{Approved}, or
 \textit{Rejected}. Figure~\ref{fig:workflow} summarises the states and the
 transitions between them, each annotated with the role required to perform it.
 
+\begin{figure}[H]
+      \begin{center}
+            \includegraphics[width=0.85\textwidth]{./figures/workflow_diagram.png}
+      \end{center}
+      \caption{Editorial workflow: content states and the role-guarded transitions between them.}
+      \label{fig:workflow}
+\end{figure}
+
 A deliberate design decision separates the editorial \emph{approval} of a content
 item from its \emph{publication}. Approval is the moderation act by which an Editor or
 Administrator endorses the content and is captured by the \textit{Approved} state,
@@ -182,14 +188,6 @@ only when it is \textit{Approved} \emph{and} its \texttt{published\_at} instant 
 been reached. Keeping these two concerns distinct lets the editorial decision be
 recorded independently of when the content goes live, and in particular enables
 publication to be scheduled for a future instant.
-
-\begin{figure}[H]
-      \begin{center}
-            \includegraphics[width=0.85\textwidth]{./figures/workflow_diagram.png}
-      \end{center}
-      \caption{Editorial workflow: content states and the role-guarded transitions between them.}
-      \label{fig:workflow}
-\end{figure}
 
 The states are defined as follows:
 

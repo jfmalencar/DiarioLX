@@ -42,9 +42,9 @@ preceding chapters:
             with a responsive layout.
 
       \item \textbf{Security}: authentication uses short-lived JWT access tokens and
-            long-lived opaque refresh tokens, issued as \texttt{HttpOnly},
-            \texttt{SameSite=Strict}, and --- in production --- \texttt{Secure} cookies.
-            Role-based access control is enforced at the HTTP boundary.
+            long-lived opaque refresh tokens, delivered as hardened cookies
+            (Section~\ref{sec:arch_auth}), with role-based access control enforced at the
+            HTTP boundary.
 
       \item \textbf{Deployment}: the system is fully containerised and its images are
             published to a container registry through continuous integration, allowing
@@ -71,6 +71,13 @@ delivered here can be continued rather than restarted.
 On this basis, several enhancements are envisaged as natural continuations of the work:
 
 \begin{itemize}
+      \item \textbf{Richer backoffice filtering}: the content listing currently supports
+            filtering by workflow state and by content type, alongside keyword search;
+            extending it with filters by category, tag, and author would help editorial
+            staff locate content more quickly as the archive grows. The data-access layer
+            already accepts these criteria, so the work is largely a matter of exposing them
+            in the API and the interface.
+
       \item \textbf{Internationalisation and content translation}: the frontend already
             centralises the translation of the interface's static text; the natural next
             step is to extend multi-language support to the editorial content itself,
@@ -84,7 +91,7 @@ On this basis, several enhancements are envisaged as natural continuations of th
             without having to keep the cache window short.
 
       \item \textbf{Search engine optimisation}: building on the Open Graph previews
-            already served to social-media crawlers (Section~\ref{sec:dep_proxy}) by
+            already served to social-media crawlers (Section~\ref{sec:dep_previews}) by
             enriching public pages with structured data and a generated sitemap, and,
             more broadly, adopting server-side rendering so that all content is fully
             indexable rather than only prerendered for recognised crawlers.

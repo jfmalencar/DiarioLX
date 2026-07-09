@@ -1,63 +1,189 @@
 \chapter{Backend} \label{cap:backend}
 
+This chapter describes the implementation of the backend. It opens with the module
+organization that gives the system its layered structure, then walks through the layers in
+turn --- the HTTP controllers, the service layer, and the framework-free domain --- with a
+representative excerpt of code for each. It goes on to the cross-cutting concerns of
+authentication and authorization, error handling, and database access, and closes with the
+generated API documentation and the testing strategy.
+
 \section{Organization} \label{sec:be_organization}
 
-The backend is a Spring Boot application written in Kotlin, structured as a set of
-loosely coupled Gradle~\cite{gradle} modules. Each module has a well-defined responsibility and
-depends only on modules below it in the hierarchy, ensuring that business logic
-remains isolated from infrastructure concerns, following principles commonly associated
-with Clean Architecture~\cite{martin2017clean}. Figure~\ref{fig:backend_layers}
-illustrates the module organization and the dependency relationships between them.
+The backend is a Spring Boot application written in Kotlin, organized as a set of loosely
+coupled Gradle~\cite{gradle} modules. Figure~\ref{fig:backend_layers} shows these modules
+and the dependency relationships between them.
 
 \begin{figure}[H]
-      \begin{center}
-            \resizebox{\textwidth}{!}{\includegraphics{./figures/backend_module_diagram.png}}
-      \end{center}
-      \caption{Backend module organization.}
-      \label{fig:backend_layers}
+    \begin{center}
+        \resizebox{\textwidth}{!}{\includegraphics{./figures/backend_module_diagram.png}}
+    \end{center}
+    \caption{Backend module organization.}
+    \label{fig:backend_layers}
 \end{figure}
 
+Each module has a well-defined responsibility and depends only on the modules below it in
+the hierarchy, so that business logic remains isolated from infrastructure concerns,
+following principles commonly associated with Clean Architecture~\cite{martin2017clean}.
+The modules are the following:
+
 \begin{description}
-      \item[HTTP] \textbf{HTTP} Defines the REST controllers that expose the API endpoints, with each
-            controller responsible for a bounded domain (e.g., content, user, and category
-            controllers). It also contains the authentication interceptor, argument resolvers,
-            and Problem+JSON error handling.
+    \item[HTTP] Defines the REST controllers that expose the API endpoints, with each
+          controller responsible for a bounded domain (e.g., content, user, and category
+          controllers). It also contains the authentication interceptor, argument resolvers,
+          and Problem+JSON error handling.
 
-      \item[Services] Contains the business logic, orchestrating operations across
-            repositories and enforcing domain rules such as publication workflow transitions
-            and permission checks.
+    \item[Services] Contains the business logic, orchestrating operations across
+          repositories and enforcing domain rules such as publication workflow transitions
+          and permission checks.
 
-      \item[Domain] Defines the core domain entities and value objects. This module
-            has no dependencies on any other module, ensuring the domain model remains
-            isolated from infrastructure concerns.
+    \item[Domain] Defines the core domain entities and value objects. This module
+          has no dependencies on any other module, ensuring the domain model remains
+          isolated from infrastructure concerns.
 
-      \item[Repository] Defines the repository interfaces through which the service
-            layer accesses persistent data. The concrete implementation, \texttt{Repository JDBI},
-            implements these interfaces using JDBI, mapping SQL result sets to domain objects.
-            This abstraction allows the persistence layer to be replaced without affecting
-            business logic.
+    \item[Repository] Defines the repository interfaces through which the service
+          layer accesses persistent data. The concrete implementation, \texttt{Repository JDBI},
+          implements these interfaces using JDBI, mapping SQL result sets to domain objects.
+          This abstraction allows the persistence layer to be replaced without affecting
+          business logic.
 
-      \item[Storage] Defines the storage interface for multimedia files. The concrete
-            implementation, \texttt{Storage S3}, integrates with SeaweedFS
-            for binary file storage using the AWS S3 SDK~\cite{aws_s3_sdk}, as SeaweedFS
-            exposes an S3-compatible API. An S3-compatible storage layer was chosen to
-            avoid coupling the application to a specific storage provider while retaining a
-            widely adopted interface. SeaweedFS was selected as a self-hosted
-            implementation that satisfies the project's operational constraints and
-            supports direct browser uploads, allowing large media files to bypass the
-            application server during transfer. This approach reduces server load and keeps
-            the backend responsible only for media metadata and access control.
+    \item[Storage] Defines the storage interface for multimedia files. The concrete
+          implementation, \texttt{Storage S3}, integrates with SeaweedFS using the AWS S3
+          SDK~\cite{aws_s3_sdk}, as SeaweedFS exposes an S3-compatible API. The rationale
+          for this abstraction and the direct-upload flow are given in
+          Section~\ref{sec:arch_media}.
 
-      \item[Host] The root composition module, responsible for assembling the full
-            application. It contains the Spring Boot entry point, all bean definitions, and
-            the application configuration (database connection, storage credentials, server
-            settings). No business logic resides here --- its sole purpose is wiring all
-            modules together and bootstrapping the application.
+    \item[Host] The root composition module, responsible for assembling the full
+          application. It contains the Spring Boot entry point, all bean definitions, and
+          the application configuration (database connection, storage credentials, server
+          settings). No business logic resides here --- its sole purpose is wiring all
+          modules together and bootstrapping the application.
 \end{description}
 
 The external systems used by the backend are \textbf{PostgreSQL}, accessed via the
 JDBI repository implementation, and \textbf{SeaweedFS}, accessed via the S3 storage
 implementation.
+
+The sections that follow trace this layering from the outside in --- the HTTP layer that
+receives a request, the service layer that carries the business logic, and the
+framework-free domain at the core --- before turning to the cross-cutting concerns of
+authentication, error handling, and persistence.
+
+\section{HTTP Layer} \label{sec:be_http}
+
+Controllers are deliberately thin. A handler parses the request, states its access
+requirement declaratively, delegates the actual work to a service, and translates the
+service's result into an HTTP response --- it contains no business logic of its own.
+Listing~\ref{lst:http_handler} shows the handler that creates a category.
+
+\begin{lstlisting}[language=Kotlin, caption={A controller handler: parse, delegate, and map the result.}, label={lst:http_handler}]
+@RequireRole(UserRole.ADMIN)
+@PostMapping(Uris.Categories.CREATE)
+@MayReturnCreated
+@MayReturnUnauthorized
+@MayReturnForbidden
+@MayReturnBadRequest
+@MayReturnConflict
+fun createCategory(
+    @RequestBody body: CreateUpdateCategoryRequestDTO,
+): ResponseEntity<*> =
+    when (val res = categoryService.create(
+        body.name, body.slug, body.description, body.color, body.parentId,
+    )) {
+        is Success -> ResponseEntity
+            .created(Uris.Categories.byId(res.value))
+            .build<Unit>()
+        is Failure -> Problem.response(res.value.toProblem(), Uris.Categories.CREATE)
+    }
+\end{lstlisting}
+
+The \texttt{@RequireRole} annotation (Section~\ref{sec:be_authorization}) restricts the
+endpoint to authorised callers. The request body is bound to a DTO and forwarded to
+\texttt{categoryService.create}, which returns an \texttt{Either}: the handler maps a
+\texttt{Success} to a \texttt{201 Created} with a \texttt{Location} header, and a
+\texttt{Failure} to a Problem+JSON response (Section~\ref{sec:be_errors}).
+
+The \texttt{@MayReturn\ldots} annotations are project-defined shortcuts over the OpenAPI
+annotations that declare the endpoint's possible responses, feeding the Scalar
+documentation (Section~\ref{sec:be_apidocs}) so that each handler's documented contract
+lives next to its code.
+
+\section{Service Layer} \label{sec:be_services}
+
+The service layer holds the business logic: it validates input, enforces the domain
+rules, coordinates persistence within a transaction, and reports the outcome as an
+\texttt{Either}. Listing~\ref{lst:service_fn} shows the corresponding \texttt{create}
+service.
+
+\begin{lstlisting}[language=Kotlin, caption={A service function: validate, then persist within a transaction.}, label={lst:service_fn}]
+fun create(
+    name: String?, slug: String?, description: String?,
+    color: String?, parentId: Int?,
+): CategoryCreateResult {
+    val name = (if (name.isNullOrBlank()) null else name) ?: return failure(CategoryError.EmptyName)
+    val color = Color.parse(color) ?: return failure(CategoryError.InvalidColor)
+    val slug = Slug.parse(slug) ?: return failure(CategoryError.InvalidSlug)
+
+    return transactionManager.run { tx ->
+        validateData(tx, null, slug, parentId).let { if (it is Failure) return@run it }
+        val categoryId = tx.categoryRepository.create(name, slug, description, color, parentId)
+        success(categoryId)
+    }
+}
+\end{lstlisting}
+
+The raw inputs are first parsed into domain value objects: \texttt{Color.parse} and
+\texttt{Slug.parse} reject a malformed colour or slug as a typed failure \emph{before} any
+database work occurs, so invalid data never reaches the repository. Only then is a
+transaction opened; within it the service checks the remaining invariants that need the
+database (\texttt{validateData} verifies slug uniqueness and the parent category) and, if
+they hold, delegates the insertion to the repository and returns the new identifier. Any
+failure short-circuits with an \texttt{Either.Left}, and any exception rolls the
+transaction back (Section~\ref{sec:be_database}).
+
+\section{Domain Layer} \label{sec:be_domain}
+
+The domain module is framework-free: it depends on no web or persistence library and
+expresses the model in plain Kotlin. Its heart is the set of \emph{entities} --- content,
+users, categories, tags, and the rest --- each an immutable \texttt{data class} that holds
+both the entity's data and the business rules that operate on it. In
+Listing~\ref{lst:domain_entity}, the \texttt{Content} entity's \texttt{isVisibleAt} and
+\texttt{stateAfterEdit} methods are pure functions of its own fields --- deciding whether an
+item is publicly visible, or what state an edit returns it to --- with no dependency on the
+database or the web layer.
+
+\begin{lstlisting}[language=Kotlin, caption={A domain entity: a data class carrying both its data and its business rules.}, label={lst:domain_entity}]
+data class Content(
+    val id: Int,
+    val title: String,
+    val state: ContentState,
+    val publishedAt: Instant?,
+    // ... remaining fields
+) {
+    fun isVisibleAt(now: Instant): Boolean =
+        state == ContentState.APPROVED && publishedAt != null && publishedAt <= now
+
+    fun stateAfterEdit(): ContentState =
+        if (state == ContentState.APPROVED || state == ContentState.REJECTED) ContentState.DRAFT else state
+}
+\end{lstlisting}
+
+Two lightweight idioms support these entities. \emph{Value objects} --- small wrapper types
+such as the \texttt{Color} and \texttt{Slug} seen in the service above --- make an invariant
+unrepresentable by allowing an instance to be obtained only through a validating factory
+that returns \texttt{null} for invalid input. And the \texttt{Either} type
+(Listing~\ref{lst:domain_either}) carries an operation's outcome as either a success value
+or a typed error, so that failures travel as ordinary return values --- the
+\texttt{Success} and \texttt{Failure} of the earlier listings --- rather than as exceptions.
+
+\begin{lstlisting}[language=Kotlin, caption={The \texttt{Either} type used for error-as-value results.}, label={lst:domain_either}]
+sealed class Either<out L, out R> {
+    data class Left<out L>(val value: L) : Either<L, Nothing>()
+    data class Right<out R>(val value: R) : Either<Nothing, R>()
+}
+
+typealias Success<S> = Either.Right<S>
+typealias Failure<F> = Either.Left<F>
+\end{lstlisting}
 
 \section{Authentication} \label{sec:be_auth}
 
@@ -80,16 +206,16 @@ interface, running before each request reaches a controller via the \texttt{preH
 method. It performs the following sequential checks:
 
 \begin{enumerate}
-      \item \textbf{Token extraction}: the interceptor reads the access token from the
-            request cookies. If the endpoint requires authentication --- determined by the
-            presence of a \texttt{@RequireRole} annotation or an \texttt{AuthenticatedUser}
-            parameter --- and no valid token is found, the request is rejected with
-            \texttt{401 Unauthorized}.
+    \item \textbf{Token extraction}: the interceptor reads the access token from the
+          request cookies. If the endpoint requires authentication --- determined by the
+          presence of a \texttt{@RequireRole} annotation or an \texttt{AuthenticatedUser}
+          parameter --- and no valid token is found, the request is rejected with
+          \texttt{401 Unauthorized}.
 
-      \item \textbf{Role verification}: if the endpoint is annotated with
-            \texttt{@RequireRole}, the role claim extracted from the JWT is compared against
-            the required role without a database lookup. A mismatch results in a
-            \texttt{403 Forbidden} response.
+    \item \textbf{Role verification}: if the endpoint is annotated with
+          \texttt{@RequireRole}, the role claim extracted from the JWT is compared against
+          the required role without a database lookup. A mismatch results in a
+          \texttt{403 Forbidden} response.
 \end{enumerate}
 
 If both checks pass, and the controller declares an \texttt{AuthenticatedUser}
@@ -97,14 +223,48 @@ parameter, the user is fetched from the database by the identifier in the JWT cl
 and injected via \texttt{AuthenticatedUserArgumentResolver}. Endpoints that do not
 declare this parameter incur no database lookup during authentication.
 
+This interception is paired with a set of \texttt{HandlerMethodArgumentResolver}s that let
+controllers declare their security needs as ordinary method parameters. Having validated
+the request, the interceptor stages its results --- the authenticated user, the caller's
+role, and the refresh token --- as request attributes; the matching resolvers then read those
+attributes back and hand them to
+any controller method that declares an \texttt{AuthenticatedUser}, \texttt{UserRole}, or
+\texttt{RefreshToken} parameter. The interceptor and the three resolvers are registered
+together through a \texttt{WebMvcConfigurer}, the single place where the authentication
+pipeline is attached to Spring MVC. The net effect is that authentication and
+authorization live entirely in this pipeline: a controller receives already-validated
+identity and role information as parameters and repeats no security logic of its own.
+
+\subsection{Password Reset} \label{sec:be_password_reset}
+
+Because the platform has no outbound email capability, password recovery is modelled as
+an \emph{administrator-mediated} workflow rather than a self-service email link. A user
+who cannot sign in submits a reset request through a public endpoint
+(\texttt{POST /api/auth/password-reset}), identifying themselves by username; this records
+a \textit{pending} request. An Administrator reviews the pending requests in the
+backoffice and either approves or rejects each one. On approval, the backend mints a
+single-use reset token --- a 64-character hexadecimal string drawn from
+\texttt{SecureRandom} --- and stores it on the request; the Administrator then conveys the
+corresponding reset link to the user through a trusted channel. The user opens that link
+and chooses a new password through a second public endpoint
+(\texttt{PATCH /api/auth/password-reset/complete}), which is honoured only while the
+request is in the \textit{approved} state and marks it \textit{completed} once the
+password has been changed.
+
+Each request therefore moves through an explicit \textit{pending} $\rightarrow$
+\textit{approved} $\rightarrow$ \textit{completed} lifecycle --- or \textit{pending}
+$\rightarrow$ \textit{rejected} --- persisted in a dedicated
+\texttt{password\_reset\_requests} table together with the acting Administrator. The
+reset tokens are single-use but do not currently carry an expiry, a deliberate
+simplification given the manual, out-of-band delivery of the link and a natural candidate
+for future hardening.
+
 \section{Authorization} \label{sec:be_authorization}
 
 Role-based access control (RBAC) is enforced at the HTTP layer via the
-\texttt{@RequireRole} annotation. Each endpoint declares the minimum role required
-to access it. The three roles --- \textit{Contributor}, \textit{Editor}, and
-\textit{Administrator} --- form a strict permission hierarchy where each role inherits
-all permissions of the roles below it, as described in
-Section~\ref{sec:req_users}.
+\texttt{@RequireRole} annotation. Each endpoint declares the minimum role required to
+access it, drawn from the three-role hierarchy (\textit{Contributor}, \textit{Editor},
+\textit{Administrator}) defined in Section~\ref{sec:req_users}.
 
 The adoption of a dedicated authorization library, such as Casbin~\cite{casbin}, was
 considered as an alternative to enforcing the rules natively. General-purpose
@@ -132,11 +292,11 @@ defined in RFC 9457. All error responses are returned with the
 \texttt{application/problem+json} content type and contain the following fields:
 
 \begin{itemize}
-      \item \texttt{type} --- a URI identifying the problem type, pointing to the
-            project's documentation at \texttt{github.com/jfmalencar/DiarioLX}.
-      \item \texttt{title} --- a short, human-readable summary.
-      \item \texttt{status} --- the HTTP status code.
-      \item \texttt{detail} --- a human-readable explanation specific to the occurrence.
+    \item \texttt{type} --- a URI identifying the problem type, pointing to the
+          project's documentation at \texttt{github.com/jfmalencar/DiarioLX}.
+    \item \texttt{title} --- a short, human-readable summary.
+    \item \texttt{status} --- the HTTP status code.
+    \item \texttt{detail} --- a human-readable explanation specific to the occurrence.
 \end{itemize}
 
 All problem instances are defined as static constants in the \texttt{Problem} class,
@@ -146,6 +306,43 @@ human-readable \texttt{title} and \texttt{detail} are resolved from localized me
 bundles. Controllers invoke
 \texttt{Problem.response()} to produce the appropriate \texttt{ResponseEntity} directly,
 without relying on a centralised exception handler.
+
+Each constant fixes the HTTP status at its definition, pairing the problem's code with an
+\texttt{HttpStatus}, as shown in Listing~\ref{lst:problem_constants}.
+
+\begin{lstlisting}[language=Kotlin, caption={Problem constants, where each code's HTTP status is defined.}, label={lst:problem_constants}]
+class Problem(val code: String, val status: HttpStatusCode) {
+    companion object {
+        val notFound = Problem("resource-not-found", HttpStatus.NOT_FOUND)
+        val insufficientPhotos = Problem("insufficient-photos", HttpStatus.BAD_REQUEST)
+        val publishedLocked = Problem("published-locked", HttpStatus.FORBIDDEN)
+        val rejectionCommentRequired = Problem("rejection-comment-required", HttpStatus.BAD_REQUEST)
+        // ... one constant per problem type
+    }
+}
+\end{lstlisting}
+
+The bridge between a service's typed error and the HTTP response is a \texttt{toProblem}
+mapping defined for each error family. It is an exhaustive \texttt{when} over the sealed
+error type, translating every variant into a \texttt{Problem} constant, as shown in
+Listing~\ref{lst:error_mapping}.
+
+\begin{lstlisting}[language=Kotlin, caption={Mapping a typed domain error to a Problem constant.}, label={lst:error_mapping}]
+fun ContentError.toProblem(): Problem =
+    when (this) {
+        is ContentError.ContentNotFound -> Problem.notFound
+        is ContentError.InsufficientPhotos -> Problem.insufficientPhotos
+        is ContentError.PublishedLocked -> Problem.publishedLocked
+        is ContentError.RejectionCommentRequired -> Problem.rejectionCommentRequired
+        // ... one branch per error variant
+    }
+\end{lstlisting}
+
+A controller therefore maps a failure to a response in a single expression which looks up the localized
+title and detail for the problem's code and builds the \texttt{application/problem+json}
+entity with the right status. Because the \texttt{when} is exhaustive over a sealed
+hierarchy, adding a new error variant does not compile until its HTTP mapping is decided,
+so no error can silently fall through to a generic \texttt{500}.
 
 To keep these \texttt{type} URIs actionable rather than opaque, each problem code
 resolves to a human-readable Markdown page in the project documentation that describes
@@ -199,6 +396,27 @@ class JdbiTransactionManager(
 }
 \end{lstlisting}
 
+Services use this manager to group their persistence into a single unit of work.
+Listing~\ref{lst:tx_usage} shows the rejection of a content item: within one
+\texttt{run\{\}} block the service looks the item up and, only if it exists, records the
+rejection.
+
+\begin{lstlisting}[language=Kotlin, caption={Using the transaction manager: a lookup and a write in a single transaction.}, label={lst:tx_usage}]
+fun reject(id: Int, comment: String?, reviewerId: Int): ContentUpdateResult {
+    if (comment.isNullOrBlank()) return failure(ContentError.RejectionCommentRequired)
+    return transactionManager.run { tx ->
+        tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
+        tx.contentRepository.reject(id, clock.now(), comment, reviewerId)
+        success(Unit)
+    }
+}
+\end{lstlisting}
+
+Both repository calls inside the block run on the same handle, and therefore in the same
+transaction: the lookup and the write that follows it --- which updates the content's
+state and appends an entry to its review history --- either commit together or, if any
+step throws, roll back as a whole, leaving no partial change behind.
+
 \section{API Documentation} \label{sec:be_apidocs}
 
 The API is documented using the OpenAPI standard~\cite{openapi}.
@@ -216,22 +434,23 @@ and HTTP --- using JUnit~5. The suites are integrated into the continuous integr
 pipeline via GitHub Actions~\cite{github_actions} and run automatically on every push
 through the \texttt{./gradlew check} task.
 
-\subsection{Unit Tests} \label{sec:tests_be_unit}
+\subsection{Service-Layer Tests} \label{sec:tests_be_unit}
 
-Service-layer tests validate the business logic in isolation from the database:
-publication-workflow state transitions, role-based permission checks, and input
-validation. Because the repository is defined as an interface, the services are
-exercised against lightweight in-memory implementations of that interface, which keeps
-the tests fast and deterministic and independent of SQL and of the HTTP layer.
-Listing~\ref{lst:test_service} shows a representative example.
+Service-layer tests validate the business logic --- publication-workflow state
+transitions, role-based permission checks, and input validation --- independently of the
+HTTP layer. Each test constructs the service directly and runs it against a dedicated
+PostgreSQL instance inside a transaction that is rolled back once the test completes, so
+that tests stay isolated from one another and leave no residual state without the cost of
+rebuilding the schema between them. Listing~\ref{lst:test_service} shows a representative
+example.
 
-\begin{lstlisting}[language=Kotlin, caption={Service-layer unit test running against in-memory repositories.}, label={lst:test_service}]
+\begin{lstlisting}[language=Kotlin, caption={Service-layer test running against a transaction that is rolled back afterwards.}, label={lst:test_service}]
 @Test
-fun `create fails when name is empty`() {
-    val service = createService()   // wired with in-memory repositories
+fun `create fails when name is empty`() = testWithTransactionManagerAndRollback { tm ->
+    val service = CategoryService(tm)
 
     val result = service.create(
-        name = "", slug = "politica",
+        name = "", slug = "svc-politica",
         description = "desc", color = "#ffffff", parentId = null,
     )
 

@@ -1,11 +1,135 @@
 \appendix
 
-\chapter{Entity-Relationship Diagram} \label{app:db_model}
+\chapter{Data Model} \label{app:db_model}
+
+\section{Complete Entity-Relationship Diagram} \label{app:er_full}
+
+\begin{figure}[H]
+    \begin{center}
+        \fbox{\parbox{0.9\textwidth}{\centering\itshape\small
+                [TO ADD]
+            }}
+    \end{center}
+    \caption{Complete entity-relationship diagram of the data model.}
+    \label{fig:er_full}
+\end{figure}
+
+\section{Physical Schema} \label{app:physical_schema}
 
 \begin{figure}[H]
     \begin{center}
         \resizebox{\textwidth}{!}{\includegraphics{./figures/db_model.png}}
     \end{center}
-    \caption{Entity-relationship diagram of the database schema.}
+    \caption{Complete physical database schema: tables, columns, and foreign-key relationships.}
     \label{fig:db_model}
 \end{figure}
+
+\subsection{Enumerated Types} \label{app:dm_enums}
+
+Several columns are typed using PostgreSQL enumerated types, which constrain the set
+of admissible values at the database level:
+
+\begin{description}
+      \item[\texttt{user\_role}] \textit{ADMIN}, \textit{EDITOR}, \textit{CONTRIBUTOR}.
+
+      \item[\texttt{content\_type}] \textit{ARTICLE}, \textit{VIDEO}, \textit{EPISODE},
+            \textit{PODCAST}, \textit{PHOTO\_ESSAY}.
+
+      \item[\texttt{content\_state}] \textit{DRAFT}, \textit{PENDING\_REVIEW},
+            \textit{APPROVED}, \textit{REJECTED} --- the editorial workflow states of a
+            content item.
+
+      \item[\texttt{content\_history\_action}] \textit{APPROVED}, \textit{REJECTED} ---
+            the moderation actions recorded in the review history.
+
+      \item[\texttt{block\_type}] \textit{TEXT}, \textit{QUOTE}, \textit{MEDIA},
+            \textit{H3}, \textit{H4}, \textit{GALLERY}, \textit{EMBED}.
+
+      \item[\texttt{media\_purpose}] \textit{GALLERY} (editorial media) or
+            \textit{PROFILE} (user avatars).
+
+      \item[\texttt{credit\_role}] one of \textit{PHOTOGRAPHER}, \textit{VIDEOGRAPHER},
+            \textit{AUDIO\_ENGINEER}, \textit{WRITER}, \textit{DIRECTOR}, \textit{PRODUCER},
+            \textit{EDITOR}, \textit{NARRATOR}, \textit{ACTOR}, \textit{MODEL},
+            \textit{ILLUSTRATOR}, \textit{DESIGNER}, or \textit{OTHER}.
+\end{description}
+
+\subsection{Views} \label{app:dm_views}
+
+Several PostgreSQL views encapsulate complex query logic and provide pre-joined
+representations of the data for use by the repository layer:
+
+\begin{description}
+      \item[\texttt{v\_contents}] Full content view, including category, featured media,
+            authors ordered by role, tags, and content blocks with their associated media
+            and gallery images. Used for single content item retrieval.
+
+      \item[\texttt{v\_published\_contents}] Restricts \texttt{v\_contents} to
+            \textit{APPROVED} content whose \texttt{published\_at} instant has already
+            passed and that has a slug, an active category, and is not itself archived,
+            backing the public article pages.
+
+      \item[\texttt{v\_contents\_summary}] Lightweight content listing view, including
+            only the fields required for listing pages: title, slug, type, state,
+            category, featured image URL, primary tag, and author names. Used for
+            paginated content listings in the backoffice.
+
+      \item[\texttt{v\_published\_contents\_summary}] The public counterpart of
+            \texttt{v\_contents\_summary}, restricted to visible content for the reader-facing
+            listings.
+
+      \item[\texttt{v\_content\_review\_history}] Joins \texttt{content\_history} with the
+            performing user to expose the moderation trail (action, comment, author, and
+            timestamp) of each content item.
+
+      \item[\texttt{v\_featured\_sections}] Assembles the homepage layout, joining each
+            featured section with its category (when applicable) and its ordered list of
+            featured content items.
+
+      \item[\texttt{v\_medias}] Media view that composes the object \texttt{path} and
+            \texttt{thumbnail\_path} from \texttt{bucket} and \texttt{object\_key}, and
+            aggregates credits as a JSON array.
+
+      \item[\texttt{v\_categories}] Category view that joins each category with its
+            parent name and includes a \texttt{quantity} count of the \emph{publicly
+            visible} content items in the category (those that are \textit{APPROVED} with
+            a due \texttt{published\_at}).
+
+      \item[\texttt{v\_tags}] Tag view that includes a \texttt{quantity} count of
+            \emph{all} content items associated with the tag, regardless of state.
+
+      \item[\texttt{v\_users}] Internal user view joining each user with their avatar
+            media. It is the single source both for authentication and user lookup ---
+            and therefore carries sensitive fields such as the email and password hash ---
+            and for the public team and author pages, which are served through a response
+            projection that exposes only non-sensitive profile fields (name, position,
+            biography, and avatar).
+\end{description}
+
+\subsection{Indexes} \label{app:dm_indexes}
+
+The following indexes support the most frequent query patterns:
+
+\begin{description}
+      \item[\texttt{idx\_content\_category\_id}] Supports filtering content by category.
+
+      \item[\texttt{idx\_content\_blocks\_content\_position}] Composite index on
+            \texttt{(content\_id, position)}, supporting ordered block retrieval per
+            content item.
+
+      \item[\texttt{idx\_content\_authors\_content\_id} and \texttt{idx\_content\_authors\_author\_id}]
+            Support join queries on the \texttt{content\_authors} association table.
+
+      \item[\texttt{idx\_content\_tags\_content\_id} and \texttt{idx\_content\_tags\_tag\_id}]
+            Support join queries on the \texttt{content\_tags} association table.
+
+      \item[\texttt{idx\_contents\_section}] Composite index on
+            \texttt{(section\_id, position)} of \texttt{featured\_contents}, supporting
+            ordered retrieval of the items within each homepage section.
+
+      \item[\texttt{uq\_content\_primary\_author}] Partial unique index ensuring that
+            each content item has at most one author with \texttt{role = 'primary'}.
+
+      \item[\texttt{uq\_content\_primary\_tag}] Partial unique index ensuring that
+            each content item has at most one tag with \texttt{role = 'primary'}.
+\end{description}

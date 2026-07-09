@@ -3,41 +3,39 @@
 %
 \chapter{Data Model} \label{cap:datamodel}
 
-\section{Entities} \label{sec:dm_entities}
+This chapter describes the data model that underpins \textit{Diário LX}. It first presents
+the \emph{conceptual} model --- a simplified entity-relationship diagram
+(Figure~\ref{fig:er_model}) together with a description of the core entities and their
+relationships. It then outlines the \emph{physical} model built on top of it and the key
+design decisions behind the schema. The complete entity-relationship diagram and the full
+physical schema --- every table, column, enumerated type, view, and index --- are provided
+in Appendix~\ref{app:db_model}.
 
-This section describes the core entities of the \textit{Diário LX} data model, their
-attributes, and the relationships between them. The complete entity-relationship
-diagram is presented in Appendix~\ref{app:db_model}.
+\section{Conceptual Model} \label{sec:dm_conceptual}
 
-\subsection{Enumerated Types} \label{sec:dm_enums}
+At the conceptual level, the model centres on the \emph{content} item, which represents any
+publication --- an article, video, podcast, episode, or photo essay. Each content item
+belongs to a \emph{category} (a category may itself have a parent category, forming
+subcategories), is written by one or more \emph{users} acting as its authors, and is
+labelled with one or more \emph{tags}. Its body is an ordered sequence of \emph{blocks},
+some of which reference \emph{media} items. A podcast \emph{episode} is a content item
+attached to a parent podcast. Editorial staff curate the homepage through \emph{featured
+      sections}, each holding an ordered selection of content items, and every moderation
+decision on a content item is recorded as a \emph{history} entry attributed to the acting
+user. Figure~\ref{fig:er_model} summarises these entities and their associations.
 
-Several columns are typed using PostgreSQL enumerated types, which constrain the set
-of admissible values at the database level:
+\begin{figure}[H]
+      \begin{center}
+            \fbox{\parbox{0.9\textwidth}{\centering\itshape\small
+                        [TO ADD] Simplified entity-relationship diagram. The complete
+                        entity-relationship diagram is given in Appendix~\ref{app:er_full}.}}
+      \end{center}
+      \caption{Simplified entity-relationship diagram of the core entities.}
+      \label{fig:er_model}
+\end{figure}
 
-\begin{description}
-      \item[\texttt{user\_role}] \textit{ADMIN}, \textit{EDITOR}, \textit{CONTRIBUTOR}.
-
-      \item[\texttt{content\_type}] \textit{ARTICLE}, \textit{VIDEO}, \textit{EPISODE},
-            \textit{PODCAST}, \textit{PHOTO\_ESSAY}.
-
-      \item[\texttt{content\_state}] \textit{DRAFT}, \textit{PENDING\_REVIEW},
-            \textit{APPROVED}, \textit{REJECTED} --- the editorial workflow states of a
-            content item.
-
-      \item[\texttt{content\_history\_action}] \textit{APPROVED}, \textit{REJECTED} ---
-            the moderation actions recorded in the review history.
-
-      \item[\texttt{block\_type}] \textit{TEXT}, \textit{QUOTE}, \textit{MEDIA},
-            \textit{H3}, \textit{H4}, \textit{GALLERY}, \textit{EMBED}.
-
-      \item[\texttt{media\_purpose}] \textit{GALLERY} (editorial media) or
-            \textit{PROFILE} (user avatars).
-
-      \item[\texttt{credit\_role}] one of \textit{PHOTOGRAPHER}, \textit{VIDEOGRAPHER},
-            \textit{AUDIO\_ENGINEER}, \textit{WRITER}, \textit{DIRECTOR}, \textit{PRODUCER},
-            \textit{EDITOR}, \textit{NARRATOR}, \textit{ACTOR}, \textit{MODEL},
-            \textit{ILLUSTRATOR}, \textit{DESIGNER}, or \textit{OTHER}.
-\end{description}
+The core entities are described below; the enumerated types that constrain several of
+their columns are listed in Appendix~\ref{app:dm_enums}.
 
 \subsection{User} \label{sec:dm_user}
 
@@ -190,140 +188,21 @@ configuration such as social media links, contact information, and the public
 navigation layout, allowing these values to be edited by administrators without
 schema changes.
 
-\section{Database Views} \label{sec:dm_views}
+\section{Physical Model} \label{sec:dm_physical}
 
-Several PostgreSQL views are defined to encapsulate complex query logic and provide
-pre-joined representations of the data for use by the repository layer:
-
-\begin{description}
-      \item[\texttt{v\_contents}] Full content view, including category, featured media,
-            authors ordered by role, tags, and content blocks with their associated media
-            and gallery images. Used for single content item retrieval.
-
-      \item[\texttt{v\_published\_contents}] Restricts \texttt{v\_contents} to
-            \textit{APPROVED} content whose \texttt{published\_at} instant has already
-            passed and that has a slug, an active category, and is not itself archived,
-            backing the public article pages.
-
-      \item[\texttt{v\_contents\_summary}] Lightweight content listing view, including
-            only the fields required for listing pages: title, slug, type, state,
-            category, featured image URL, primary tag, and author names. Used for
-            paginated content listings in the backoffice.
-
-      \item[\texttt{v\_published\_contents\_summary}] The public counterpart of
-            \texttt{v\_contents\_summary}, restricted to visible content for the reader-facing
-            listings.
-
-      \item[\texttt{v\_content\_review\_history}] Joins \texttt{content\_history} with the
-            performing user to expose the moderation trail (action, comment, author, and
-            timestamp) of each content item.
-
-      \item[\texttt{v\_featured\_sections}] Assembles the homepage layout, joining each
-            featured section with its category (when applicable) and its ordered list of
-            featured content items.
-
-      \item[\texttt{v\_medias}] Media view that composes the object \texttt{path} and
-            \texttt{thumbnail\_path} from \texttt{bucket} and \texttt{object\_key}, and
-            aggregates credits as a JSON array.
-
-      \item[\texttt{v\_categories}] Category view that joins each category with its
-            parent name and includes a \texttt{quantity} count of the \emph{publicly
-            visible} content items in the category (those that are \textit{APPROVED} with
-            a due \texttt{published\_at}).
-
-      \item[\texttt{v\_tags}] Tag view that includes a \texttt{quantity} count of
-            \emph{all} content items associated with the tag, regardless of state.
-
-      \item[\texttt{v\_users}] Internal user view joining each user with their avatar
-            media. It is the single source both for authentication and user lookup ---
-            and therefore carries sensitive fields such as the email and password hash ---
-            and for the public team and author pages, which are served through a response
-            projection that exposes only non-sensitive profile fields (name, position,
-            biography, and avatar).
-\end{description}
-
-\section{Indexes} \label{sec:dm_indexes}
-
-The following indexes were defined to support the most frequent query patterns:
-
-\begin{description}
-      \item[\texttt{idx\_content\_category\_id}] Supports filtering content by category.
-
-      \item[\texttt{idx\_content\_blocks\_content\_position}] Composite index on
-            \texttt{(content\_id, position)}, supporting ordered block retrieval per
-            content item.
-
-      \item[\texttt{idx\_content\_authors\_content\_id} and \texttt{idx\_content\_authors\_author\_id}]
-            Support join queries on the \texttt{content\_authors} association table.
-
-      \item[\texttt{idx\_content\_tags\_content\_id} and \texttt{idx\_content\_tags\_tag\_id}]
-            Support join queries on the \texttt{content\_tags} association table.
-
-      \item[\texttt{idx\_contents\_section}] Composite index on
-            \texttt{(section\_id, position)} of \texttt{featured\_contents}, supporting
-            ordered retrieval of the items within each homepage section.
-
-      \item[\texttt{uq\_content\_primary\_author}] Partial unique index ensuring that
-            each content item has at most one author with \texttt{role = 'primary'}.
-
-      \item[\texttt{uq\_content\_primary\_tag}] Partial unique index ensuring that
-            each content item has at most one tag with \texttt{role = 'primary'}.
-\end{description}
-
-\section{Key Design Decisions} \label{sec:dm_decisions}
-
-\begin{itemize}
-      \item \textbf{Block-based content model}: Instead of storing article body as a
-            single rich-text blob, content is decomposed into an ordered sequence of
-            typed blocks (text, headings, quotes, embeds, single media, and galleries).
-            This enables structured rendering, easier reordering, and per-block media
-            references. Gallery images are normalised into a dedicated
-            \texttt{content\_block\_images} table.
-
-      \item \textbf{Explicit editorial workflow}: Rather than inferring status from
-            timestamps, a dedicated \texttt{content\_state} enumeration models the
-            editorial state machine (\textit{DRAFT}, \textit{PENDING\_REVIEW},
-            \textit{APPROVED}, \textit{REJECTED}). State records the editorial decision
-            while the separate \texttt{published\_at} timestamp gates public visibility,
-            decoupling approval from publication; \texttt{published\_at} is preserved as
-            the immutable first-publication date and \texttt{updated\_at} tracks later
-            edits. The
-            \texttt{content\_history} table provides an auditable record of approvals and
-            rejections.
-
-      \item \textbf{Self-referencing hierarchies}: A single \texttt{categories} table
-            with a \texttt{parent\_id} foreign key supports the two-level category
-            hierarchy, and the same technique on \texttt{contents} links a podcast to its
-            episodes without dedicated child tables.
-
-      \item \textbf{Uploaded or embedded media}: Video and episode content may either
-            reference an uploaded file or an external provider through \texttt{embed\_url}
-            (YouTube or Spotify), avoiding the need to host large third-party media.
-
-      \item \textbf{Two-table homepage curation}: The homepage is modelled as
-            \texttt{featured\_sections} (ordered, typed layout slots) and
-            \texttt{featured\_contents} (the ordered items within each slot), which keeps
-            section configuration independent from the content assigned to it.
-
-      \item \textbf{Media metadata separation}: Binary files are stored in SeaweedFS;
-            only metadata is persisted in the database. The \textit{pending}/\textit{ready}
-            status tracks the asynchronous upload lifecycle, ensuring that incomplete
-            uploads do not surface in the application before the file is available in
-            storage.
-
-      \item \textbf{Key/value site settings}: Editable, non-structural configuration
-            (social links, contact details, navigation) is stored in a generic
-            \texttt{settings} table, allowing administrators to change it at runtime
-            without schema migrations.
-
-      \item \textbf{Timestamps as epoch integers}: All timestamps are stored as
-            \texttt{BIGINT} Unix epoch values rather than \texttt{TIMESTAMP} columns.
-            This avoids timezone conversion issues, as epoch values are inherently UTC,
-            and simplifies interoperability with the \texttt{kotlinx.datetime.\allowbreak Instant}
-            type used throughout the backend.
-
-      \item \textbf{Serial primary keys}: All tables use \texttt{SERIAL}
-            (auto-incrementing integer) primary keys rather than UUIDs. This simplifies
-            joins and keeps index sizes small, which is well-suited to the expected data
-            volume of the platform.
-\end{itemize}
+The physical schema is built directly on this model: each entity becomes a PostgreSQL
+table whose columns, foreign keys, and constraints enforce the rules described above. The
+central \texttt{contents} table, for example, holds each item's \texttt{title},
+\texttt{headline}, \texttt{slug}, \texttt{state}, and \texttt{published\_at}; references its
+category and, for episodes, its parent podcast through foreign keys; and links to its
+authors, tags, and blocks through association tables --- a partial unique index
+guaranteeing at most one primary author per item. The remaining tables follow the same
+pattern. Two conventions apply schema-wide: all timestamps are stored as \texttt{BIGINT}
+Unix-epoch values --- inherently UTC, which sidesteps timezone conversion and maps directly
+onto the \texttt{kotlinx.datetime.Instant} type used in the backend --- and every table
+uses an auto-incrementing \texttt{SERIAL} primary key rather than a UUID, keeping joins and
+indexes compact for the platform's expected data volume. The schema additionally defines
+\emph{views} that encapsulate the common join and aggregation logic used by the repository
+layer, and \emph{indexes} supporting the most frequent query patterns. The enumerated
+types, views, and indexes --- together with the complete schema diagram --- are provided in
+Appendix~\ref{app:db_model}.
