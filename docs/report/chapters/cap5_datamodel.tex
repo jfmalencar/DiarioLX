@@ -21,7 +21,7 @@ of admissible values at the database level:
             \textit{PODCAST}, \textit{PHOTO\_ESSAY}.
 
       \item[\texttt{content\_state}] \textit{DRAFT}, \textit{PENDING\_REVIEW},
-            \textit{PUBLISHED}, \textit{REJECTED} --- the editorial workflow states of a
+            \textit{APPROVED}, \textit{REJECTED} --- the editorial workflow states of a
             content item.
 
       \item[\texttt{content\_history\_action}] \textit{APPROVED}, \textit{REJECTED} ---
@@ -73,15 +73,19 @@ optional reference to its \texttt{category}. The body of a content item is compo
 an ordered sequence of \texttt{content\_blocks}.
 
 The editorial lifecycle of a content item is tracked by the \texttt{state} column
-(\texttt{content\_state}), which is the primary control over public visibility. Content
-progresses through \textit{DRAFT}, \textit{PENDING\_REVIEW}, and \textit{PUBLISHED},
-or is \textit{REJECTED} during review; only \textit{PUBLISHED} items are exposed to
-readers. The \texttt{published\_at} timestamp records the moment of the first
-publication and is preserved across subsequent edits and re-publications, so that it
-always reflects the original publication date; the \texttt{updated\_at} timestamp, in
-turn, captures the most recent modification and is surfaced publicly as an
-``updated on'' indicator. A future \texttt{published\_at} value additionally allows a
-content item to be withheld from listings until that instant is reached.
+(\texttt{content\_state}). Content progresses through \textit{DRAFT},
+\textit{PENDING\_REVIEW}, and \textit{APPROVED}, or is \textit{REJECTED} during review.
+Approval and publication are modelled as distinct concerns: \texttt{state} records the
+editorial decision, while the \texttt{published\_at} timestamp governs when the item
+actually becomes visible. An item is exposed to readers only when it is
+\textit{APPROVED} \emph{and} its \texttt{published\_at} instant has been reached.
+The \texttt{published\_at} value is set at approval and preserved across subsequent
+edits and re-approvals, so that it always reflects the original publication date; the
+\texttt{updated\_at} timestamp, in turn, captures the most recent modification and is
+surfaced publicly as an ``updated on'' indicator. Because visibility is gated on this
+timestamp, a future \texttt{published\_at} value allows an approved item to be withheld
+from listings until that instant is reached, enabling publication to be scheduled ahead
+of time.
 
 Two content types rely on additional columns. An \textit{EPISODE} references its
 parent \textit{PODCAST} through the self-referencing \texttt{parent\_id} foreign key
@@ -174,9 +178,9 @@ when the section type is \texttt{CATEGORY}.
 
 The \texttt{featured\_contents} table then holds the content items placed within each
 section: each row references a \texttt{section\_id} and a \texttt{content\_id}, together
-with a \texttt{position} for ordering. Unique constraints on
-\texttt{(section\_id, content\_id)} and \texttt{(section\_id, position)} prevent
-duplicate or conflicting placements, and both foreign keys cascade on deletion.
+with a \texttt{position} for ordering. A unique constraint on
+\texttt{(section\_id, position)} prevents two items from occupying the same slot within
+a section, and both foreign keys cascade on deletion.
 
 \subsection{Settings} \label{sec:dm_settings}
 
@@ -197,8 +201,9 @@ pre-joined representations of the data for use by the repository layer:
             and gallery images. Used for single content item retrieval.
 
       \item[\texttt{v\_published\_contents}] Restricts \texttt{v\_contents} to
-            \textit{PUBLISHED} content that has a slug and an active category, backing the
-            public article pages.
+            \textit{APPROVED} content whose \texttt{published\_at} instant has already
+            passed and that has a slug, an active category, and is not itself archived,
+            backing the public article pages.
 
       \item[\texttt{v\_contents\_summary}] Lightweight content listing view, including
             only the fields required for listing pages: title, slug, type, state,
@@ -217,18 +222,24 @@ pre-joined representations of the data for use by the repository layer:
             featured section with its category (when applicable) and its ordered list of
             featured content items.
 
-      \item[\texttt{v\_medias}] Media view that computes the full \texttt{url} and
-            \texttt{thumbnail\_url} from \texttt{bucket} and \texttt{object\_key}, and
+      \item[\texttt{v\_medias}] Media view that composes the object \texttt{path} and
+            \texttt{thumbnail\_path} from \texttt{bucket} and \texttt{object\_key}, and
             aggregates credits as a JSON array.
 
       \item[\texttt{v\_categories}] Category view that joins each category with its
-            parent name and includes a \texttt{quantity} count of associated content items.
+            parent name and includes a \texttt{quantity} count of the \emph{publicly
+            visible} content items in the category (those that are \textit{APPROVED} with
+            a due \texttt{published\_at}).
 
       \item[\texttt{v\_tags}] Tag view that includes a \texttt{quantity} count of
-            associated content items.
+            \emph{all} content items associated with the tag, regardless of state.
 
-      \item[\texttt{v\_users}] User view exposing the public profile fields and joining
-            the avatar media so that team and author pages can be served directly.
+      \item[\texttt{v\_users}] Internal user view joining each user with their avatar
+            media. It is the single source both for authentication and user lookup ---
+            and therefore carries sensitive fields such as the email and password hash ---
+            and for the public team and author pages, which are served through a response
+            projection that exposes only non-sensitive profile fields (name, position,
+            biography, and avatar).
 \end{description}
 
 \section{Indexes} \label{sec:dm_indexes}
@@ -272,9 +283,11 @@ The following indexes were defined to support the most frequent query patterns:
       \item \textbf{Explicit editorial workflow}: Rather than inferring status from
             timestamps, a dedicated \texttt{content\_state} enumeration models the
             editorial state machine (\textit{DRAFT}, \textit{PENDING\_REVIEW},
-            \textit{PUBLISHED}, \textit{REJECTED}). State drives visibility and
-            authorisation, while \texttt{published\_at} is preserved as the immutable
-            first-publication date and \texttt{updated\_at} tracks later edits. The
+            \textit{APPROVED}, \textit{REJECTED}). State records the editorial decision
+            while the separate \texttt{published\_at} timestamp gates public visibility,
+            decoupling approval from publication; \texttt{published\_at} is preserved as
+            the immutable first-publication date and \texttt{updated\_at} tracks later
+            edits. The
             \texttt{content\_history} table provides an auditable record of approvals and
             rejections.
 

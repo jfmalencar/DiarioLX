@@ -78,5 +78,6 @@ class Problem(
         val invalidResetRequestStatus = Problem("invalid-reset-request-status", HttpStatus.BAD_REQUEST)
         val invalidResetToken = Problem("invalid-reset-token", HttpStatus.BAD_REQUEST)
         val resetRequestNotFound = Problem("reset-request-not-found", HttpStatus.NOT_FOUND)
+        val rejectionCommentRequired = Problem("rejection-comment-required", HttpStatus.BAD_REQUEST)
     }
 }

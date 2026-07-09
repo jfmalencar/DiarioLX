@@ -40,6 +40,8 @@ sealed class ContentError(
     object PublishedLocked : ContentError("Published content cannot be modified by contributors")
 
     object NotContentOwner : ContentError("You can only modify your own content")
+
+    object RejectionCommentRequired : ContentError("A rejection must include a comment")
 }
 
 typealias ContentResult = Either<ContentError, Content>

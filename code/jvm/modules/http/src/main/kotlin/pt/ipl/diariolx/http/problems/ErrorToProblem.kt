@@ -46,6 +46,7 @@ fun ContentError.toProblem() =
         is ContentError.InvalidEmbed -> Problem.invalidField
         is ContentError.PublishedLocked -> Problem.publishedLocked
         is ContentError.NotContentOwner -> Problem.notContentOwner
+        is ContentError.RejectionCommentRequired -> Problem.rejectionCommentRequired
     }
 
 fun UserError.toProblem(): Problem =

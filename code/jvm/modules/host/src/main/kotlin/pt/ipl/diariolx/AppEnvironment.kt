@@ -36,4 +36,5 @@ class AppEnvironment(
 
     // App
     val imageBaseUrl: String get() = s3PublicEndpoint
+    val appUrl: String get() = environment.getProperty("APP_PUBLIC_URL", "http://localhost:8180")
 }

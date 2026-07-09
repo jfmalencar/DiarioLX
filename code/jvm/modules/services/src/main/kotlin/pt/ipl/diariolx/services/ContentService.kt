@@ -191,6 +191,7 @@ class ContentService(
         comment: String?,
         reviewerId: Int,
     ): ContentUpdateResult {
+        if (comment.isNullOrBlank()) return failure(ContentError.RejectionCommentRequired)
         return transactionManager.run { tx ->
             tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
             tx.contentRepository.reject(id, clock.now(), comment, reviewerId)

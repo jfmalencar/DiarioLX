@@ -85,7 +85,7 @@ user sessions.
 The public read API is organized around the following resources:
 
 \begin{itemize}
-      \item \texttt{/api/homepage} and \texttt{/api/navigation} --- homepage composition and the section menu
+      \item \texttt{/api/homepage} --- homepage composition (the section menu is delivered through the bootstrap/settings payload)
       \item \texttt{/api/contents} and \texttt{/api/contents/\{slug\}} --- listing and retrieval of published content
       \item \texttt{/api/categories/\{slug\}} and \texttt{/api/tags/\{slug\}} --- content grouped by category or tag
       \item \texttt{/api/team} and \texttt{/api/authors/\{slug\}} --- the editorial team and individual author pages
@@ -95,7 +95,7 @@ The backoffice API groups the management operations, each guarded by the minimum
 required role:
 
 \begin{itemize}
-      \item \texttt{/api/backoffice/contents} --- content management (create, edit, submit, approve, reject, publish, archive, delete, history)
+      \item \texttt{/api/backoffice/contents} --- content management (create, edit, submit, publish/approve, reject, archive, unarchive, delete, history)
       \item \texttt{/api/backoffice/categories} and \texttt{/api/backoffice/tags} --- category and tag management (create, edit, delete, list, archive, unarchive)
       \item \texttt{/api/backoffice/medias} --- media asset management (upload, list, generate signed URL)
       \item \texttt{/api/backoffice/users} --- user management (list, update, account status, team assignment)
@@ -129,6 +129,39 @@ Role-based access control (RBAC)~\cite{sandhu1996rbac} is enforced at the HTTP l
 declaring the minimum required role. The implementation details are covered in
 Chapter~\ref{cap:backend}.
 
+\section{Media Storage} \label{sec:arch_media}
+
+Content in \textit{Diário LX} is rich in multimedia --- images, audio, and video --- and
+media files can be large, with uploads permitted up to two gigabytes. Routing such
+files through the application server would make it a bottleneck: each upload would
+occupy server memory and connection time merely to relay bytes it does not otherwise
+need to process. To avoid this, media is kept in a dedicated object store, separate
+from the relational database, and the transfer of the file itself is decoupled from the
+application server.
+
+The store is SeaweedFS, accessed through an interface compatible with Amazon S3.
+Choosing an S3-compatible interface keeps the system independent of any single storage
+provider: the self-hosted SeaweedFS deployment used in this project could be replaced by
+a managed object store, or by any other S3-compatible service, without changes to the
+application. This isolation is reflected in the backend, where storage is defined as an
+abstraction with an interchangeable implementation, as described in
+Chapter~\ref{cap:backend}.
+
+Crucially, the media bytes never pass through the application server --- in either
+direction. On upload, the browser first obtains a short-lived, single-purpose
+authorization from the backend --- valid for fifteen minutes --- and then transfers the
+file directly to the object store;
+the backend never handles the file contents, and its role is limited to authorizing the
+transfer and, once the file is stored, recording the media's metadata --- its location,
+type, and descriptive fields such as caption and credit --- in the database. Delivery
+follows the same principle in reverse: readers' browsers load images, audio, and video
+directly from the object store through the URLs kept in that metadata, rather than having
+the application server relay them. With the bytes off its path in both directions, the
+server stays responsive under large uploads and heavy read traffic alike, and can
+concentrate on what it is actually responsible for --- business logic and the metadata
+that links media to content. The concrete mechanism behind this flow is detailed in
+Chapter~\ref{cap:backend}.
+
 \section{Editorial Workflow} \label{sec:arch_workflow}
 
 The editorial workflow governs the lifecycle of a content item from creation to
@@ -136,9 +169,19 @@ publication. It enforces editorial accountability by requiring explicit approval
 before any content becomes publicly accessible, while allowing Editors and
 Administrators to intervene at any stage. Each content item carries a state,
 represented in the domain by the \texttt{ContentState} enumeration, which takes one
-of four values: \textit{Draft}, \textit{Pending Review}, \textit{Published}, or
+of four values: \textit{Draft}, \textit{Pending Review}, \textit{Approved}, or
 \textit{Rejected}. Figure~\ref{fig:workflow} summarises the states and the
 transitions between them, each annotated with the role required to perform it.
+
+A deliberate design decision separates the editorial \emph{approval} of a content
+item from its \emph{publication}. Approval is the moderation act by which an Editor or
+Administrator endorses the content and is captured by the \textit{Approved} state,
+whereas publication is the moment the item actually becomes visible to readers and is
+governed by a separate \texttt{published\_at} timestamp. An item is exposed publicly
+only when it is \textit{Approved} \emph{and} its \texttt{published\_at} instant has
+been reached. Keeping these two concerns distinct lets the editorial decision be
+recorded independently of when the content goes live, and in particular enables
+publication to be scheduled for a future instant.
 
 \begin{figure}[H]
       \begin{center}
@@ -147,12 +190,6 @@ transitions between them, each annotated with the role required to perform it.
       \caption{Editorial workflow: content states and the role-guarded transitions between them.}
       \label{fig:workflow}
 \end{figure}
-
-\begin{center}
-      \fbox{\parbox{0.9\textwidth}{\centering\itshape\small
-                  [TO UPDATE] This diagram is provisional and will be replaced with a more
-                  detailed illustration of the editorial workflow.}}
-\end{center}
 
 The states are defined as follows:
 
@@ -165,8 +202,10 @@ The states are defined as follows:
             It now awaits evaluation by an Editor or Administrator, who either approve it
             for publication or reject it with feedback.
 
-      \item[Published] An Editor or Administrator has approved the content, which
-            becomes publicly accessible on the site.
+      \item[Approved] An Editor or Administrator has approved the content. From this
+            point the item is eligible for publication; it becomes publicly accessible
+            once its \texttt{published\_at} instant is reached, which may be immediate or
+            scheduled for a later time.
 
       \item[Rejected] An Editor or Administrator has rejected the content, providing a
             reason. The reviewer and the rejection comment are retained in the
@@ -180,20 +219,22 @@ The transitions between these states are the following:
       \item \textbf{Submit} --- a Contributor submits a draft, moving it from
             \textit{Draft} to \textit{Pending Review}.
 
-      \item \textbf{Publish} --- an Editor or Administrator approves a pending item,
-            moving it to \textit{Published}; the reviewer identity is recorded.
+      \item \textbf{Approve} --- an Editor or Administrator approves a pending item,
+            moving it to \textit{Approved}; the reviewer identity is recorded and a
+            \texttt{published\_at} instant is set, either immediately or scheduled for a
+            future time.
 
       \item \textbf{Reject} --- an Editor or Administrator rejects a pending item,
             moving it to \textit{Rejected} together with a review comment.
 
-      \item \textbf{Direct publish} --- because Editors and Administrators hold the
-            publishing permission, they may publish a draft directly, bypassing the
+      \item \textbf{Direct approval} --- because Editors and Administrators hold the
+            approval permission, they may approve a draft directly, bypassing the
             \textit{Pending Review} state when editorial review is not required.
 
-      \item \textbf{Edit} --- editing a \textit{Rejected} or \textit{Published} item
+      \item \textbf{Edit} --- editing a \textit{Rejected} or \textit{Approved} item
             returns it to \textit{Draft}. A rejected item is revised by its author and
-            resubmitted; a published item can only be edited by an Editor or
-            Administrator who.
+            resubmitted; an approved item can only be edited by an Editor or
+            Administrator.
 \end{itemize}
 
 These transitions are enforced at the API level. Each is exposed as a dedicated

@@ -90,7 +90,7 @@ structured content lifecycle, while Ghost supports a basic submit-and-publish mo
 where Contributors cannot publish directly but editors have no formal way to reject
 content --- they can only publish or leave it unpublished, with no feedback mechanism
 for contributors. \textit{Diário LX} enforces a formal lifecycle with four explicit states ---
-\textit{Draft}, \textit{Pending}, \textit{Published}, and \textit{Rejected} ---
+\textit{Draft}, \textit{Pending}, \textit{Approved}, and \textit{Rejected} ---
 requiring an editor to explicitly approve or reject each submission before publication.
 
 Regarding \textbf{role-based access control}, WordPress relies on plugins for any
@@ -123,7 +123,7 @@ Table~\ref{tab:cms_comparison} consolidates these differences.
             \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost}        & \textbf{\textit{Diário LX}}      \\
             \midrule
             Editorial workflow & Plugin-based       & Submit/publish only,  & Draft → Pending →       \\
-                               &                    & no rejection state    & Published / Rejected    \\
+                               &                    & no rejection state    & Approved / Rejected     \\
             \addlinespace
             Role-based access  & Plugin-based       & Four built-in roles,  & Three roles, enforced   \\
                                &                    & no rejection feedback & natively at API level   \\

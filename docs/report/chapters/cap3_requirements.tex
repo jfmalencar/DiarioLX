@@ -27,7 +27,8 @@ Content must progress through a defined workflow:
 \begin{enumerate}
       \item \textbf{Draft} — created and edited by a Contributor.
       \item \textbf{Pending Review} — submitted for editorial review.
-      \item \textbf{Published} — approved and publicly visible.
+      \item \textbf{Approved} — endorsed by an Editor or Administrator and published to
+            readers, either immediately or at a scheduled time.
       \item \textbf{Rejected} — returned to the author with revision comments.
 \end{enumerate}
 
@@ -104,16 +105,20 @@ The homepage must display:
 \subsection{Search and Navigation} \label{sec:req_search}
 
 \begin{itemize}
-      \item Full-text keyword search across articles.
+      \item Keyword search across articles.
       \item Human-readable, slugified URLs (e.g. \texttt{/politica/orcamento-estado-2026}).
 \end{itemize}
 
 \section{Non-Functional Requirements} \label{sec:req_nonfunctional}
 
 \begin{itemize}
-      \item \textbf{Security}: Authentication via JSON Web Tokens (JWT) with short-lived
-            access tokens and long-lived refresh tokens stored as \texttt{HttpOnly} cookies.
-            Role-based access control enforced at the API level.
+      \item \textbf{Security}: Authentication via JSON Web Tokens (JWT), with short-lived
+            access tokens and long-lived refresh tokens both delivered as \texttt{HttpOnly}
+            cookies. Role-based access control enforced at the API level.
+
+      \item \textbf{Media handling}: The platform must accept media uploads of up to two
+            gigabytes per file, covering the high-resolution imagery, audio, and video used
+            in editorial content.
 
       \item \textbf{Maintainability}: The system is organized into independent modules
             (HTTP, Services, Domain, Repository, Storage) allowing the frontend and backend

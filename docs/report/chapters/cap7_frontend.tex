@@ -179,10 +179,14 @@ Users can edit their profile or log out from this page.
 \subsection{Content Management} \label{sec:fe_content_mgmt}
 
 The content listing page (Figure~\ref{fig:fe_contents}) displays content items with
-their featured image, title, state, creation date, and authors, filtered by editorial
-state through dedicated tabs. A floating action button, present throughout the
-backoffice, allows users to create new items and select the type --- article, video,
-episode, podcast, photo essay, category, or tag.
+their featured image, title, state, creation date, and authors, organized into
+dedicated tabs by workflow state: \textit{Published}, \textit{Scheduled},
+\textit{Pending}, \textit{Draft}, \textit{Rejected}, and \textit{Archived}. Approved
+content is split between the \textit{Published} tab, holding items already live on the
+site, and the \textit{Scheduled} tab, holding approved items awaiting a future
+publication instant. A floating action button, present throughout the backoffice, allows
+users to create new items and select the type --- article, video, episode, podcast,
+photo essay, category, or tag.
 
 The content editor provides a split interface: a block-based writing area on the
 left, powered by TipTap, and a settings panel on the right (Figure~\ref{fig:fe_editor};
@@ -211,11 +215,18 @@ uploaded directly from the modal (Figure~\ref{fig:fe_media_upload}).
 \subsection{Editorial Review} \label{sec:fe_review}
 
 Contributors submit content for approval, moving it to the \textit{pending review}
-state, while Editors and Administrators review pending items and either approve them
---- publishing the content --- or reject them with a comment that is
-recorded in the content's history. The review page presents the rendered content
-alongside the approve and reject actions (Figure~\ref{fig:fe_review}), together with
-the content's transition history (Figure~\ref{fig:fe_history}).
+state, while Editors and Administrators review pending items and either approve or
+reject them, the latter with a comment that is recorded in the content's history. The
+review page presents the rendered content alongside the approve and reject actions
+(Figure~\ref{fig:fe_review}), together with the content's transition history
+(Figure~\ref{fig:fe_history}).
+
+When approving, the reviewer can either publish the item immediately or schedule it: the
+publish dialog offers a choice between approving now and selecting a future date and
+time, in which case the item is approved but withheld from readers until that instant is
+reached. Scheduled items appear under a dedicated \textit{Scheduled} tab in the content
+listing --- separate from the \textit{Published} tab of already-live content ---
+alongside their publication date.
 
 \subsection{Homepage Management} \label{sec:fe_homepage_mgmt_sec}
 
@@ -297,7 +308,9 @@ to mobile, tablet, and desktop viewports through standard Bootstrap breakpoints.
 The frontend is tested end to end with Playwright~\cite{playwright}, a browser-automation
 framework (supporting Chromium, Firefox, and WebKit) that drives a real browser and
 simulates genuine user interactions --- navigation, clicks, and form submissions ---
-against the running application; the suite runs on Chromium.
+against the running application. The suite runs on both Chromium and Firefox, and the
+public-website tests additionally run under mobile-emulation profiles to exercise the
+responsive layouts.
 
 The public-website tests run against the \emph{mock} implementation of the service layer
 (Section~\ref{sec:fe_organization}) rather than a live backend. Because every hook

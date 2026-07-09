@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.featured.SectionPolicy
 import pt.ipl.diariolx.domain.featured.SectionType
+import pt.ipl.diariolx.domain.media.AppBaseUrl
 import pt.ipl.diariolx.domain.media.CreditRole
-import pt.ipl.diariolx.domain.media.MediaBaseUrl
 import pt.ipl.diariolx.domain.users.UserRole
 import pt.ipl.diariolx.http.annotations.MayReturnBootstrapOk
 import pt.ipl.diariolx.http.dto.bootstrap.ApiEndpointsDTO
@@ -38,7 +38,7 @@ import pt.ipl.diariolx.services.SettingsService
     description = "API for fetching the application bootstrap configuration.",
 )
 class BootstrapController(
-    private val mediaBaseUrl: MediaBaseUrl,
+    private val appBaseUrl: AppBaseUrl,
     private val settingsService: SettingsService,
     private val sectionPolicy: SectionPolicy,
     private val passwordResetService: PasswordResetService,
@@ -51,7 +51,7 @@ class BootstrapController(
         AppBootstrapDTO(
             version = "0.0.1",
             assets =
-                AssetsDTO(mediaBaseUrl.imageBaseUrl),
+                AssetsDTO(appBaseUrl.imageBaseUrl),
             api =
                 ApiEndpointsDTO(
                     auth =

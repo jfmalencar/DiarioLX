@@ -140,8 +140,10 @@ defined in RFC 9457. All error responses are returned with the
 \end{itemize}
 
 All problem instances are defined as static constants in the \texttt{Problem} class,
-ensuring consistency across the codebase. Each problem carries a unique \texttt{type}
-URI, a \texttt{title}, a \texttt{detail}, and an HTTP status code. Controllers invoke
+ensuring consistency across the codebase. Each problem constant pairs a unique code ---
+which resolves to its \texttt{type} URI --- with an HTTP status code, while the
+human-readable \texttt{title} and \texttt{detail} are resolved from localized message
+bundles. Controllers invoke
 \texttt{Problem.response()} to produce the appropriate \texttt{ResponseEntity} directly,
 without relying on a centralised exception handler.
 

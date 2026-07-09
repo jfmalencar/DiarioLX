@@ -246,6 +246,17 @@ class ContentTests {
 
         assertEquals(ContentState.PENDING_REVIEW, stateOf(id, contributor))
 
+        // 5a. A rejection without a comment is refused — the comment is mandatory.
+        client
+            .post()
+            .uri(byId(Uris.Content.REJECT, id))
+            .cookie("accessToken", editor)
+            .bodyValue(ReviewContentDTO(comment = "   "))
+            .exchange()
+            .expectStatus()
+            .isBadRequest
+        assertEquals(ContentState.PENDING_REVIEW, stateOf(id, editor))
+
         // 5. Editor rejects it with a mandatory comment → REJECTED.
         client
             .post()

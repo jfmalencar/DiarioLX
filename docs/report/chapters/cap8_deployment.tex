@@ -36,8 +36,9 @@ SeaweedFS image used for the object-storage cluster:
             frontend and the reverse proxy. The first stage (\texttt{node:22-alpine})
             installs the frontend dependencies with \texttt{npm ci} and produces the
             React production build (\texttt{npm run build}) in \texttt{/app/dist}. The
-            second stage (\texttt{nginx:alpine}) copies the Nginx configuration and the
-            compiled build into the web root (\texttt{/usr/share/nginx/html}). Because
+            second stage (\texttt{nginx:alpine}) copies the compiled build into the web
+            root (\texttt{/usr/share/nginx/html}) and installs the shared Nginx
+            configuration. Because
             the build context is the repository root, a single image has access to both
             the frontend sources and the shared Nginx configuration.
 

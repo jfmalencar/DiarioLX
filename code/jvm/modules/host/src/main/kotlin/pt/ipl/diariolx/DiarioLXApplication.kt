@@ -21,8 +21,8 @@ import pt.ipl.diariolx.domain.featured.SectionPolicy
 import pt.ipl.diariolx.domain.featured.SectionRule
 import pt.ipl.diariolx.domain.featured.SectionType
 import pt.ipl.diariolx.domain.invites.config.InviteDomainConfig
+import pt.ipl.diariolx.domain.media.AppBaseUrl
 import pt.ipl.diariolx.domain.media.Buckets
-import pt.ipl.diariolx.domain.media.MediaBaseUrl
 import pt.ipl.diariolx.domain.users.config.UsersDomainConfig
 import pt.ipl.diariolx.http.auth.AuthenticatedUserArgumentResolver
 import pt.ipl.diariolx.http.auth.AuthenticationInterceptor
@@ -133,7 +133,7 @@ class DiarioLXApplication {
             ),
         )
 
-    @Bean fun mediaBaseUrl(appEnv: AppEnvironment) = MediaBaseUrl(appEnv.imageBaseUrl)
+    @Bean fun appBaseUrl(appEnv: AppEnvironment) = AppBaseUrl(appEnv.imageBaseUrl, appEnv.appUrl)
 
     @Bean
     fun logger(): Logger = LoggerFactory.getLogger(DiarioLXApplication::class.java)
