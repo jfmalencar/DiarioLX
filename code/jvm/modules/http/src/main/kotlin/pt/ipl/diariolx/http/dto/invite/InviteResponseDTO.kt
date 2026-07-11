@@ -9,6 +9,7 @@ data class InviteResponseDTO(
     val createdAt: String,
     val expiresAt: String,
     val role: UserRole,
+    val createdBy: Int?,
 ) {
     companion object {
         fun from(invite: Invite) =
@@ -18,6 +19,7 @@ data class InviteResponseDTO(
                 createdAt = invite.createdAt.toString(),
                 expiresAt = invite.expiresAt.toString(),
                 role = invite.role,
+                createdBy = invite.createdBy,
             )
     }
 }

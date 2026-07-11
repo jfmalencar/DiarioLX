@@ -28,6 +28,24 @@ class JdbiSettingsRepository(
             .execute()
     }
 
+    override fun getFeaturedCategoryIds(): List<Int> =
+        handle
+            .createQuery("select category_id from navigation_featured_categories order by position")
+            .mapTo<Int>()
+            .list()
+
+    override fun setFeaturedCategories(categoryIds: List<Int>) {
+        handle.createUpdate("delete from navigation_featured_categories").execute()
+        categoryIds.forEachIndexed { index, id ->
+            handle
+                .createUpdate(
+                    "insert into navigation_featured_categories (category_id, position) values (:category_id, :position)",
+                ).bind("category_id", id)
+                .bind("position", index)
+                .execute()
+        }
+    }
+
     private data class SettingRow(
         val key: String,
         val value: String,

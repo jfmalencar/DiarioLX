@@ -32,39 +32,36 @@ data class SettingsResponseDTO(
     val navigation: NavConfigDTO,
 ) {
     companion object {
-        fun from(map: Map<String, String>) =
-            SettingsResponseDTO(
-                social =
-                    SocialDTO(
-                        facebook = map["social.facebook"].orEmpty(),
-                        twitter = map["social.twitter"].orEmpty(),
-                        instagram = map["social.instagram"].orEmpty(),
-                    ),
-                contact =
-                    ContactDTO(
-                        email = map["contact.email"].orEmpty(),
-                        address = map["contact.address"].orEmpty(),
-                    ),
-                publication =
-                    PublicationDTO(
-                        erc = map["publication.erc"].orEmpty(),
-                        periodicity = map["publication.periodicity"].orEmpty(),
-                        owner = map["publication.owner"].orEmpty(),
-                        nipc = map["publication.nipc"].orEmpty(),
-                    ),
-                navigation =
-                    NavConfigDTO(
-                        featuredCategories =
-                            map["nav.featuredCategories"]
-                                .orEmpty()
-                                .split(",")
-                                .map { it.trim() }
-                                .filter { it.isNotEmpty() },
-                        showPhotos = map["nav.showPhotos"] == "true",
-                        showPodcasts = map["nav.showPodcasts"] == "true",
-                        showVideos = map["nav.showVideos"] == "true",
-                    ),
-            )
+        fun from(
+            map: Map<String, String>,
+            featuredCategories: List<String>,
+        ) = SettingsResponseDTO(
+            social =
+                SocialDTO(
+                    facebook = map["social.facebook"].orEmpty(),
+                    twitter = map["social.twitter"].orEmpty(),
+                    instagram = map["social.instagram"].orEmpty(),
+                ),
+            contact =
+                ContactDTO(
+                    email = map["contact.email"].orEmpty(),
+                    address = map["contact.address"].orEmpty(),
+                ),
+            publication =
+                PublicationDTO(
+                    erc = map["publication.erc"].orEmpty(),
+                    periodicity = map["publication.periodicity"].orEmpty(),
+                    owner = map["publication.owner"].orEmpty(),
+                    nipc = map["publication.nipc"].orEmpty(),
+                ),
+            navigation =
+                NavConfigDTO(
+                    featuredCategories = featuredCategories,
+                    showPhotos = map["nav.showPhotos"] == "true",
+                    showPodcasts = map["nav.showPodcasts"] == "true",
+                    showVideos = map["nav.showVideos"] == "true",
+                ),
+        )
     }
 }
 
@@ -85,7 +82,6 @@ data class SettingsRequestDTO(
             "publication.periodicity" to publication.periodicity,
             "publication.owner" to publication.owner,
             "publication.nipc" to publication.nipc,
-            "nav.featuredCategories" to navigation.featuredCategories.joinToString(","),
             "nav.showPhotos" to navigation.showPhotos.toString(),
             "nav.showPodcasts" to navigation.showPodcasts.toString(),
             "nav.showVideos" to navigation.showVideos.toString(),

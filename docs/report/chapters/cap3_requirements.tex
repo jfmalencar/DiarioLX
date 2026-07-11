@@ -3,7 +3,11 @@
 %
 \chapter{System Requirements} \label{cap:requirements}
 
-This chapter presents the functional and non-functional requirements of the \textit{Diário LX} platform, derived from the project specification and validated with the editorial team.
+This chapter presents the requirements of the \textit{Diário LX} platform, derived from the
+project specification and validated with the editorial team. Section~\ref{sec:req_functional}
+sets out the functional requirements --- from the content lifecycle and taxonomy to user
+permissions, the two site faces, and search; and Section~\ref{sec:req_nonfunctional} covers
+the non-functional ones, such as security, media handling, and responsiveness.
 
 \section{Functional Requirements} \label{sec:req_functional}
 
@@ -36,7 +40,7 @@ It must be possible to archive and permanently delete content. It must be possib
 
 \subsection{Categories, Subcategories, and Tags} \label{sec:req_categories}
 
-Content must be organized using categories and subcategories. The main editorial sections are:\footnote{Section names are kept in
+Content must be organised using categories and subcategories. The main editorial sections are:\footnote{Section names are kept in
       Portuguese as they are proper editorial names specific to \textit{Diário LX}.}
 \begin{itemize}
       \item \textit{Lisboa, Cidade Aberta}
@@ -87,8 +91,8 @@ The backoffice must provide:
 \subsubsection{Homepage}
 The homepage must display:
 \begin{itemize}
-      \item 4 featured articles (defined in the backoffice).
-      \item The 4 most recent articles.
+      \item Four featured articles (defined in the backoffice).
+      \item The four most recent articles.
       \item Navigation to main editorial sections.
       \item Links to institutional pages: Team, Editorial Statute, and Code of Ethics.
 \end{itemize}
@@ -106,7 +110,7 @@ The homepage must display:
 
 \begin{itemize}
       \item Keyword search across articles.
-      \item Human-readable, slugified URLs (e.g. \texttt{/politica/orcamento-estado-2026}).
+      \item Human-readable, slugified URLs (e.g. \texttt{/p/orcamento-estado-2026}).
 \end{itemize}
 
 \section{Non-Functional Requirements} \label{sec:req_nonfunctional}
@@ -120,8 +124,8 @@ The homepage must display:
             gigabytes per file, covering the high-resolution imagery, audio, and video used
             in editorial content.
 
-      \item \textbf{Maintainability}: The system is organized into independent modules
-            (HTTP, Services, Domain, Repository, Storage) allowing the frontend and backend
+      \item \textbf{Maintainability}: The system is organised into independent modules
+            (HTTP, Services, Domain, Repository, and Storage) allowing the frontend and backend
             to evolve independently.
 
       \item \textbf{Compatibility}: The public website must be fully functional on mobile,

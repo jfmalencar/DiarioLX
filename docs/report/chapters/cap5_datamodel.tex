@@ -3,206 +3,252 @@
 %
 \chapter{Data Model} \label{cap:datamodel}
 
-This chapter describes the data model that underpins \textit{Diário LX}. It first presents
-the \emph{conceptual} model --- a simplified entity-relationship diagram
-(Figure~\ref{fig:er_model}) together with a description of the core entities and their
-relationships. It then outlines the \emph{physical} model built on top of it and the key
-design decisions behind the schema. The complete entity-relationship diagram and the full
-physical schema --- every table, column, enumerated type, view, and index --- are provided
-in Appendix~\ref{app:db_model}.
+This chapter describes the data model that underpins \textit{Diário LX}. It begins with
+the \emph{conceptual} model (Section~\ref{sec:dm_conceptual}) --- the entities of the domain,
+their attributes, and the relationships between them --- and then explains how that model was
+normalised to Third Normal Form and mapped onto the physical PostgreSQL schema
+(Section~\ref{sec:dm_physical}). Since the complete entity-relationship diagram spans the
+entire domain and does not fit legibly within the text, it is provided in
+Appendix~\ref{app:er_full} (Figure~\ref{fig:er_full}); the reader may find it helpful to
+consult that diagram alongside the descriptions below. The full physical schema --- every
+table, column, enumerated type, view, and index --- is given in
+Appendix~\ref{app:physical_schema}.
 
 \section{Conceptual Model} \label{sec:dm_conceptual}
 
-At the conceptual level, the model centres on the \emph{content} item, which represents any
-publication --- an article, video, podcast, episode, or photo essay. Each content item
-belongs to a \emph{category} (a category may itself have a parent category, forming
+At the conceptual level the model centres on the \emph{content} item, which represents any
+publication --- an article, video, podcast, episode, or photo essay. A content item
+belongs to a \emph{category} (which may itself have a parent category, forming
 subcategories), is written by one or more \emph{users} acting as its authors, and is
 labelled with one or more \emph{tags}. Its body is an ordered sequence of \emph{blocks},
-some of which reference \emph{media} items. A podcast \emph{episode} is a content item
-attached to a parent podcast. Editorial staff curate the homepage through \emph{featured
-      sections}, each holding an ordered selection of content items, and every moderation
-decision on a content item is recorded as a \emph{history} entry attributed to the acting
-user. Figure~\ref{fig:er_model} summarises these entities and their associations.
+some of which reference \emph{media} items, and a podcast \emph{episode} is a content item
+attached to a parent podcast. Every moderation decision on a content item is recorded as a
+\emph{history} entry attributed to the acting user, and editorial staff curate the homepage
+through \emph{featured sections}, each holding an ordered selection of content items. Around
+this editorial core sit the entities that govern access: \emph{users} authenticate through
+\emph{sessions}, are onboarded through \emph{invites}, and recover access through
+\emph{password reset requests}. Site-wide configuration is held in a generic \emph{settings}
+store.
+
+The entities are described below, grouped by concern; each group is accompanied by a diagram
+of its entities and their attributes. The diagrams use Chen's entity-relationship
+notation~\cite{chen1976er}, in which entities are drawn as rectangles, relationships as
+diamonds, and attributes as ellipses, with doubled borders marking weak entities and their
+identifying relationships. The relationships between these entities are
+not repeated in those diagrams but are shown together in the complete entity-relationship
+diagram in Appendix~\ref{app:er_full} (Figure~\ref{fig:er_full}); the only
+exception is the
+attribute-less \emph{Navigation} entity, whose relationship to \emph{Category} is shown in its
+group diagram (Figure~\ref{fig:dm_featured}), as it has no attributes of its own to depict.
+Where an attribute is restricted to a fixed set of values, that domain is captured by an
+enumerated type; these are listed in Appendix~\ref{app:dm_enums}.
+
+\subsection{Users, Sessions, Invites, and Password Resets} \label{sec:dm_identity}
 
 \begin{figure}[H]
       \begin{center}
-            \fbox{\parbox{0.9\textwidth}{\centering\itshape\small
-                        [TO ADD] Simplified entity-relationship diagram. The complete
-                        entity-relationship diagram is given in Appendix~\ref{app:er_full}.}}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_users.png}}
       \end{center}
-      \caption{Simplified entity-relationship diagram of the core entities.}
-      \label{fig:er_model}
+      \caption{Identity and access entities and their attributes.}
+      \label{fig:dm_identity}
 \end{figure}
 
-The core entities are described below; the enumerated types that constrain several of
-their columns are listed in Appendix~\ref{app:dm_enums}.
+Figure~\ref{fig:dm_identity} presents these entities and their attributes.
+A \textbf{User} represents an authenticated member of the editorial team. Each user has a
+role (\textit{ADMIN}, \textit{EDITOR}, or \textit{CONTRIBUTOR}), credentials
+(\texttt{username}, \texttt{email}, and a hashed password), and profile information
+(\texttt{first\_name}, \texttt{last\_name}, \texttt{position}, \texttt{bio}, and an optional
+avatar). An \texttt{on\_team} flag marks users that appear on the public team page, and an
+\texttt{active\_account} flag allows an account to be deactivated without deleting its
+record.
 
-\subsection{User} \label{sec:dm_user}
+A \textbf{Session} records an active login. It holds the refresh token issued at
+authentication together with its creation and expiration instants, and belongs to exactly
+one user; sessions are removed on logout and expire automatically.
 
-Represents an authenticated system user. Each user has a \texttt{role}
-(\textit{ADMIN}, \textit{EDITOR}, or \textit{CONTRIBUTOR}), credentials
-(\texttt{username}, \texttt{email}, \texttt{password\_hash}), and profile information
-(\texttt{first\_name}, \texttt{last\_name}, \texttt{position}, \texttt{bio}), together
-with an optional \texttt{avatar\_media\_id} reference to a media item. An
-\texttt{on\_team} flag marks users that appear on the public team page, and an
-\texttt{active\_account} flag is used to deactivate access without deleting the record.
-Creation and modification are tracked through \texttt{created\_at} and
-\texttt{updated\_at}.
+An \textbf{Invite} is a single-use token generated by an administrator to allow a new
+account to register. It carries the token itself, the role the future account will receive,
+an expiration instant, and a reference to the administrator that created it. An invite is
+consumed --- and removed --- the moment it is used, so a code can never be reused.
 
-\subsection{Session} \label{sec:dm_session}
-
-Stores active refresh tokens issued upon login. Each session is associated with a
-user and holds a \texttt{refresh\_token}, \texttt{created\_at}, and
-\texttt{expires\_at}. Sessions are deleted on logout and expire automatically based
-on \texttt{expires\_at}.
-
-\subsection{Invite} \label{sec:dm_invite}
-
-Represents an invitation token generated by an Administrator to allow new user
-registration. Each invite carries an \texttt{invite\_token}, a \texttt{role\_assigned},
-an expiration timestamp, and a \texttt{used} flag to prevent reuse.
+A \textbf{Password Reset Request} represents a user's request to recover access. It records
+the requesting user, a status, the administrator that approves it, a single-use reset token,
+and the relevant timestamps.
 
 \subsection{Content} \label{sec:dm_content}
 
-The central entity of the system. Each content item has a \texttt{type}
-(\textit{ARTICLE}, \textit{VIDEO}, \textit{EPISODE}, \textit{PODCAST}, or
-\textit{PHOTO\_ESSAY}), a \texttt{title}, a \texttt{headline}, a \texttt{slug}, and an
-optional reference to its \texttt{category}. The body of a content item is composed of
-an ordered sequence of \texttt{content\_blocks}.
+\begin{figure}[H]
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_contents.png}}
+      \end{center}
+      \caption{The content item and the entities that make up its body.}
+      \label{fig:dm_content}
+\end{figure}
 
-The editorial lifecycle of a content item is tracked by the \texttt{state} column
-(\texttt{content\_state}). Content progresses through \textit{DRAFT},
-\textit{PENDING\_REVIEW}, and \textit{APPROVED}, or is \textit{REJECTED} during review.
-Approval and publication are modelled as distinct concerns: \texttt{state} records the
-editorial decision, while the \texttt{published\_at} timestamp governs when the item
-actually becomes visible. An item is exposed to readers only when it is
-\textit{APPROVED} \emph{and} its \texttt{published\_at} instant has been reached.
-The \texttt{published\_at} value is set at approval and preserved across subsequent
-edits and re-approvals, so that it always reflects the original publication date; the
-\texttt{updated\_at} timestamp, in turn, captures the most recent modification and is
-surfaced publicly as an ``updated on'' indicator. Because visibility is gated on this
-timestamp, a future \texttt{published\_at} value allows an approved item to be withheld
-from listings until that instant is reached, enabling publication to be scheduled ahead
-of time.
+The content item and the entities that make up its body are shown in
+Figure~\ref{fig:dm_content}. The \textbf{Content} item is the central entity of the system. Each item has a
+\texttt{type}, a \texttt{title}, a \texttt{headline}, and a \texttt{slug}, belongs to a
+category, and progresses through an editorial \texttt{state} (\textit{DRAFT},
+\textit{PENDING\_REVIEW}, \textit{APPROVED}, or \textit{REJECTED}). Approval and publication
+are modelled as distinct concerns: the state records the editorial decision, while a
+\texttt{published\_at} instant governs when the item actually becomes visible --- an item is
+shown to readers only once it is \textit{APPROVED} and that instant has passed, which also
+allows publication to be scheduled ahead of time. A podcast episode references its parent
+podcast through a self-relationship, and video or episode items may point to an external
+embed (a YouTube video or a Spotify episode) instead of an uploaded file. Items can be
+soft-archived rather than deleted.
 
-Two content types rely on additional columns. An \textit{EPISODE} references its
-parent \textit{PODCAST} through the self-referencing \texttt{parent\_id} foreign key
-(\texttt{ON DELETE CASCADE}, so deleting a podcast removes its episodes). \textit{VIDEO}
-and \textit{EPISODE} items may embed external media (a YouTube video or a Spotify
-episode) through the \texttt{embed\_url} column instead of an uploaded file. Content
-items may also be soft-archived via an \texttt{archived\_at} timestamp.
+A \textbf{Content Block} is a single ordered unit of a content item's body. Each block has a
+\texttt{type} (a paragraph, quotation, heading, embed, single media item, or gallery) and a
+\texttt{position} that fixes its order within the item; depending on its type it either
+holds text or references a media item.
 
-Content items may have one or more authors, recorded in the \texttt{content\_authors}
-association table with a \texttt{role} of \textit{primary} or \textit{secondary}.
-A partial unique index ensures that each content item has at most one primary author.
+\textbf{Content Block Images} hold the ordered set of images that make up a
+\textit{gallery} block. Each records the referenced media item, an optional \texttt{caption},
+and its \texttt{position} within the gallery.
 
-\subsection{Content Block} \label{sec:dm_block}
+\subsection{Authors, Tags, and Moderation History} \label{sec:dm_editorial}
 
-Represents a single unit of content within a content item. Each block has a
-\texttt{type} (\textit{TEXT}, \textit{QUOTE}, \textit{H3}, \textit{H4},
-\textit{EMBED}, \textit{MEDIA}, or \textit{GALLERY}), a \texttt{position} defining its
-order within the content item, and, depending on the type, either a \texttt{content}
-text field or a \texttt{media\_id} reference. A database constraint enforces this:
-textual blocks (\textit{TEXT}, \textit{QUOTE}, \textit{H3}, \textit{H4},
-\textit{EMBED}) must have \texttt{content} set, \textit{MEDIA} blocks must reference a
-\texttt{media\_id}, and \textit{GALLERY} blocks must have neither (their images are
-stored separately). A unique constraint on \texttt{(content\_id, position)} keeps the
-ordering consistent.
+\begin{figure}[H]
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_content_related.png}}
+      \end{center}
+      \caption{Entities associating a content item with its authors, tags, and review trail.}
+      \label{fig:dm_editorial}
+\end{figure}
 
-\subsection{Content Block Images} \label{sec:dm_block_images}
+These three entities are shown in Figure~\ref{fig:dm_editorial}.
+\textbf{Content Authors} associates a content item with the users that wrote it, each with a
+\texttt{role} of \textit{primary} or \textit{secondary}; a content item has at most one
+primary author. \textbf{Content Tags} likewise associates a content item with its tags,
+again distinguishing a single primary tag from the secondary ones.
 
-\textit{GALLERY} blocks aggregate an ordered set of images in the
-\texttt{content\_block\_images} table. Each row links a block to a \texttt{media\_id},
-with an optional \texttt{caption} and a \texttt{position}, keyed by
-\texttt{(block\_id, position)}. Rows are removed automatically when the parent block is
-deleted.
+\textbf{Content History} records the moderation trail of a content item. Each entry captures
+the action taken (\textit{APPROVED} or \textit{REJECTED}), an optional review comment, the
+instant it was performed, and the user who performed it. This provides an auditable log of
+the approval workflow and supplies the mandatory justification attached to a rejection.
 
-\subsection{Content History} \label{sec:dm_history}
+\subsection{Categories and Tags} \label{sec:dm_taxonomy}
 
-Records the moderation trail of a content item. Each entry in the
-\texttt{content\_history} table references the \texttt{content\_id}, the user who
-performed the action (\texttt{performed\_by}, set to \texttt{NULL} if that user is
-later removed), the \texttt{action} taken (\textit{APPROVED} or \textit{REJECTED}), an
-optional review \texttt{comment}, and the \texttt{performed\_at} timestamp. This
-provides an auditable log of the approval workflow and supplies the review comment
-attached to rejections.
+\begin{figure}[H]
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_categories_slugs.png}}
+      \end{center}
+      \caption{The taxonomy entities.}
+      \label{fig:dm_taxonomy}
+\end{figure}
 
-\subsection{Category} \label{sec:dm_category}
+Figure~\ref{fig:dm_taxonomy} shows both taxonomy entities.
+A \textbf{Category} organises content editorially and supports a two-level hierarchy through
+a self-relationship: top-level categories have no parent, and subcategories reference their
+parent. Each category has a \texttt{name}, a unique \texttt{slug}, a distinctive
+\texttt{colour} used throughout the interface, and an optional description, and may be
+soft-archived.
 
-Editorial categories support a two-level hierarchy via a \texttt{parent\_id}
-self-reference on the \texttt{categories} table. Top-level categories have
-\texttt{parent\_id = NULL}; subcategories reference their parent. Each category
-has a \texttt{name}, a unique \texttt{slug}, a unique \texttt{color}, and an
-optional \texttt{description}. The foreign key uses \texttt{ON DELETE SET NULL}, so
-deleting a parent category promotes its subcategories to top level rather than
-removing them. Categories may be soft-deleted via an \texttt{archived\_at} timestamp.
-
-\subsection{Tag} \label{sec:dm_tag}
-
-Tags provide cross-cutting thematic classification. Each tag has a \texttt{name}, a
-unique \texttt{slug}, and an optional \texttt{description}, and may be soft-deleted via
-an \texttt{archived\_at} timestamp. A content item may have multiple tags, recorded in
-the \texttt{content\_tags} association table. Each tag association carries a
-\texttt{role} of \textit{primary} or \textit{secondary}; a partial unique index
-ensures that each content item has at most one primary tag.
+A \textbf{Tag} provides cross-cutting thematic classification independent of the category
+hierarchy. Each tag has a \texttt{name}, a unique \texttt{slug}, and an optional
+description, and may also be soft-archived. A single content item may carry several tags.
 
 \subsection{Media} \label{sec:dm_media}
 
-Stores metadata for uploaded media files (images, videos, and audio). Binary files
-are stored externally rather than in the database. The table stores only the media
-\texttt{purpose} (\textit{GALLERY} or \textit{PROFILE}), the original filename, storage
-location (\texttt{bucket} and \texttt{object\_key}, with optional
-\texttt{thumbnail\_bucket} and \texttt{thumbnail\_object\_key}), alternative text,
-MIME type, file size, and upload status. Newly created records are initially marked
-as \textit{pending}. Once the frontend confirms that the upload has completed, the
-backend updates the status to \textit{ready} and records the
-\texttt{uploaded\_at} timestamp.
+\begin{figure}[H]
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_medias.png}}
+      \end{center}
+      \caption{The media entity and its credits.}
+      \label{fig:dm_media}
+\end{figure}
 
-Media items may have associated credits via the \texttt{media\_credits} table,
-which records the contributing user and their \texttt{credit\_role} (e.g.\
-\textit{PHOTOGRAPHER}, \textit{VIDEOGRAPHER}, \textit{AUDIO\_ENGINEER}, \textit{WRITER},
-\textit{DIRECTOR}), keyed by \texttt{(media\_id, user\_id, role)} so that a single
-person may hold more than one role on the same item.
+Figure~\ref{fig:dm_media} shows the media entity and its credits.
+A \textbf{Media} item stores the metadata of an uploaded file --- image, video, or audio ---
+whose binary content is held externally rather than in the database. It records the media
+\texttt{purpose}, its storage location, alternative text, MIME type, size, and an upload
+\texttt{status} that moves from \textit{pending} to \textit{ready} once the upload is
+confirmed.
 
-\subsection{Featured Sections and Contents} \label{sec:dm_featured}
+\textbf{Media Credits} attribute a media item to the users that contributed to it, each with
+a \texttt{credit\_role} (such as \textit{PHOTOGRAPHER} or \textit{VIDEOGRAPHER}), so that a
+single person may hold more than one role on the same item.
 
-The homepage layout is curated through two related tables. The
-\texttt{featured\_sections} table defines the ordered sections of the homepage; each
-row has a \texttt{type} (e.g.\ \texttt{HIGHLIGHT}, \texttt{FEATURED}, \texttt{CATEGORY},
-\texttt{CATEGORY\_ROW}, \texttt{PHOTOS}, \texttt{PODCASTS}, \texttt{VIDEOS}), a unique
-\texttt{position}, and, for \texttt{CATEGORY} sections only, a \texttt{category\_id}
-reference. A check constraint enforces that a \texttt{category\_id} is present exactly
-when the section type is \texttt{CATEGORY}.
+\subsection{Homepage Curation and Settings} \label{sec:dm_featured}
 
-The \texttt{featured\_contents} table then holds the content items placed within each
-section: each row references a \texttt{section\_id} and a \texttt{content\_id}, together
-with a \texttt{position} for ordering. A unique constraint on
-\texttt{(section\_id, position)} prevents two items from occupying the same slot within
-a section, and both foreign keys cascade on deletion.
+\begin{figure}[H]
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_settings.png}}
+      \end{center}
+      \caption{The homepage-curation and configuration entities.}
+      \label{fig:dm_featured}
+\end{figure}
 
-\subsection{Settings} \label{sec:dm_settings}
+The homepage and public navigation are curated through a few related entities, shown in
+Figure~\ref{fig:dm_featured}. A \textbf{Featured Section} defines an ordered section of the
+homepage and has a \texttt{type} and a \texttt{position}; category sections additionally
+reference the category they display. \textbf{Featured Contents} then place individual
+content items within a section, each with a \texttt{position} that fixes its order. The
+public navigation bar is modelled by a \textbf{Navigation} entity, which has no attributes of
+its own; the categories highlighted there are given by a relationship between \emph{Category}
+and \emph{Navigation} --- ``a category can appear in the navigation'' --- that carries a
+single relationship attribute, \texttt{position}, fixing the order in which those categories
+are shown.
 
-Site-wide configuration is stored in a generic key/value \texttt{settings} table,
-mapping a \texttt{key} (primary key) to a textual \texttt{value}. It holds
-configuration such as social media links, contact information, and the public
-navigation layout, allowing these values to be edited by administrators without
-schema changes.
+Finally, \textbf{Settings}\label{sec:dm_settings} is a generic key/value store for the
+remaining site-wide configuration --- social-media links, contact information, and the
+navigation toggles that control whether the photos, podcasts, and videos sections are shown
+--- allowing these values to be edited by administrators without schema changes.
 
-\section{Physical Model} \label{sec:dm_physical}
+\section{Normalisation and Physical Model} \label{sec:dm_physical}
 
-The physical schema is built directly on this model: each entity becomes a PostgreSQL
-table whose columns, foreign keys, and constraints enforce the rules described above. The
-central \texttt{contents} table, for example, holds each item's \texttt{title},
-\texttt{headline}, \texttt{slug}, \texttt{state}, and \texttt{published\_at}; references its
-category and, for episodes, its parent podcast through foreign keys; and links to its
-authors, tags, and blocks through association tables --- a partial unique index
-guaranteeing at most one primary author per item. The remaining tables follow the same
-pattern. Two conventions apply schema-wide: all timestamps are stored as \texttt{BIGINT}
-Unix-epoch values --- inherently UTC, which sidesteps timezone conversion and maps directly
-onto the \texttt{kotlinx.datetime.Instant} type used in the backend --- and every table
-uses an auto-incrementing \texttt{SERIAL} primary key rather than a UUID, keeping joins and
-indexes compact for the platform's expected data volume. The schema additionally defines
-\emph{views} that encapsulate the common join and aggregation logic used by the repository
-layer, and \emph{indexes} supporting the most frequent query patterns. The enumerated
-types, views, and indexes --- together with the complete schema diagram --- are provided in
-Appendix~\ref{app:db_model}.
+The conceptual model was translated into a relational schema and normalised to Third Normal
+Form (3NF)~\cite{codd1972normalization, elmasri2016fundamentals}, the standard target for a
+transactional relational database. Informally, 3NF requires that every non-key attribute
+depend on the key, the whole key, and nothing but the key. In practice this meant, in
+increasing order of the normal forms: storing only atomic values and moving every repeating
+group --- a content item's authors, tags, and blocks, or a media item's credits --- into its
+own table rather than into arrays or delimited strings (First Normal Form); ensuring that,
+in tables with a composite key, no attribute depends on only part of that key (Second Normal
+Form); and removing transitive dependencies, so that derived or dependent data is not
+duplicated across tables (Third Normal Form).
+
+The mapping from the conceptual model to the physical schema follows the usual relational
+transformation rules:
+
+\begin{itemize}
+      \item each \textbf{entity} becomes a table with an auto-incrementing \texttt{SERIAL}
+            surrogate primary key;
+      \item each \textbf{one-to-many relationship} becomes a foreign key on the table at the
+            ``many'' end (for example, a content item's category, or a session's user).
+            Where the relationship is optional and carries its own attributes,
+            a separate table may be used instead. For example,
+            \texttt{navigation\_featured\_categories} implements the
+            \emph{Category}--\emph{Navigation} relationship by storing the
+            \texttt{position} of each category within a navigation section while avoiding a
+            nullable foreign key in \texttt{categories};
+      \item each \textbf{many-to-many relationship} becomes an \emph{association table}
+            keyed by the foreign keys it relates and carrying any attributes of the
+            relationship: \texttt{content\_authors}, \texttt{content\_tags}, and
+            \texttt{media\_credits} record a \texttt{role}, while
+            \texttt{featured\_contents} records the \texttt{position} of a content item
+            within a homepage section;
+      \item \textbf{weak entities}, whose identity depends on a parent --- the images of a
+            gallery block (\texttt{content\_block\_images}, keyed by block and position) ---
+            take a composite primary key drawn from that parent;
+      \item \textbf{hierarchies and self-references} --- a category's parent, and a
+            podcast's episodes --- are expressed as a foreign key from a table to itself.
+\end{itemize}
+
+Two conventions apply schema-wide. All timestamps are stored as \texttt{BIGINT} Unix-epoch
+values --- inherently UTC, which sidesteps timezone conversion and maps directly onto the
+\texttt{kotlinx.datetime.Instant} type used in the backend --- and every table uses a
+compact surrogate key rather than a UUID, keeping joins and indexes small for the platform's
+expected data volume. Several attribute domains are further constrained by PostgreSQL
+enumerated types (Appendix~\ref{app:dm_enums}), and referential integrity is enforced with
+foreign-key constraints whose deletion behaviour reflects each relationship --- cascading
+where a child cannot outlive its parent (a content item's blocks), or nulling the reference
+where it can (a category's subcategories when the parent is removed).
+
+Built on top of this schema, a set of PostgreSQL \emph{views} encapsulates the recurring
+join and aggregation logic used by the repository layer, and a set of \emph{indexes}
+supports the most frequent query patterns; two partial unique indexes additionally enforce
+the ``at most one primary author'' and ``at most one primary tag'' rules that the
+association tables alone cannot express. The complete physical schema --- all tables,
+enumerated types, views, and indexes --- is provided in Appendix~\ref{app:physical_schema}.

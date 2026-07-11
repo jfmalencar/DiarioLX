@@ -5,23 +5,22 @@
 \section{Complete Entity-Relationship Diagram} \label{app:er_full}
 
 \begin{figure}[H]
-    \begin{center}
-        \fbox{\parbox{0.9\textwidth}{\centering\itshape\small
-                [TO ADD]
-            }}
-    \end{center}
-    \caption{Complete entity-relationship diagram of the data model.}
-    \label{fig:er_full}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_relationships.png}}
+      \end{center}
+      \caption{Complete entity-relationship diagram of the data model (entities and
+            relationships, without attributes).}
+      \label{fig:er_full}
 \end{figure}
 
 \section{Physical Schema} \label{app:physical_schema}
 
 \begin{figure}[H]
-    \begin{center}
-        \resizebox{\textwidth}{!}{\includegraphics{./figures/db_model.png}}
-    \end{center}
-    \caption{Complete physical database schema: tables, columns, and foreign-key relationships.}
-    \label{fig:db_model}
+      \begin{center}
+            \resizebox{\textwidth}{!}{\includegraphics{./figures/db_model.png}}
+      \end{center}
+      \caption{Complete physical database schema: tables, columns, and foreign-key relationships.}
+      \label{fig:db_model}
 \end{figure}
 
 \subsection{Enumerated Types} \label{app:dm_enums}
@@ -92,7 +91,7 @@ representations of the data for use by the repository layer:
 
       \item[\texttt{v\_categories}] Category view that joins each category with its
             parent name and includes a \texttt{quantity} count of the \emph{publicly
-            visible} content items in the category (those that are \textit{APPROVED} with
+                  visible} content items in the category (those that are \textit{APPROVED} with
             a due \texttt{published\_at}).
 
       \item[\texttt{v\_tags}] Tag view that includes a \texttt{quantity} count of

@@ -66,6 +66,7 @@ class InviteService(
                     createdAt = now,
                     expiresAt = now.plus(config.inviteExpirationTime),
                     role = userRole,
+                    createdBy = author.id,
                 )
             val result = it.inviteRepository.create(invite)
             success(result)

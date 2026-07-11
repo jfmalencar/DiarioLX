@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.ipl.diariolx.domain.auth.CookieConfig
 import pt.ipl.diariolx.domain.auth.RefreshToken
-import pt.ipl.diariolx.domain.invites.Invite
 import pt.ipl.diariolx.http.annotations.MayReturnBadRequest
 import pt.ipl.diariolx.http.annotations.MayReturnCreated
 import pt.ipl.diariolx.http.annotations.MayReturnForbidden
@@ -56,10 +55,7 @@ class AuthController(
     fun register(
         @RequestBody body: CreateUserRequestDTO,
     ): ResponseEntity<*> {
-        val invite =
-            inviteService.getInvite(body.inviteCode)?.let {
-                Invite(it.id, it.invite, it.role, it.createdAt, it.expiresAt, it.used)
-            }
+        val invite = inviteService.getInvite(body.inviteCode)
         if (invite == null) {
             return Problem.response(
                 Problem.invalidInvite,

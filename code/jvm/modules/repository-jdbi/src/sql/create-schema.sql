@@ -111,6 +111,7 @@ CREATE TABLE invites (
     id SERIAL PRIMARY KEY,
     invite_token VARCHAR(64) UNIQUE NOT NULL,
     role_assigned user_role NOT NULL,
+    created_by INTEGER NULL REFERENCES users(id) ON DELETE SET NULL,
     created_at BIGINT NOT NULL,
     expires_at BIGINT NOT NULL,
     used BOOLEAN DEFAULT FALSE
@@ -233,10 +234,13 @@ CREATE TABLE featured_contents (
     CONSTRAINT uq_section_position_content UNIQUE (section_id, position)
 );
 
--- Generic key/value site settings (social links, contact info, navigation config)
+-- Generic key/value site settings (social links, contact info, navigation toggles)
 CREATE TABLE settings (
     key   VARCHAR(255) PRIMARY KEY,
     value TEXT NOT NULL
 );
 
-
+CREATE TABLE navigation_featured_categories (
+    category_id INTEGER PRIMARY KEY REFERENCES categories(id) ON DELETE CASCADE,
+    position    INTEGER NOT NULL UNIQUE
+);

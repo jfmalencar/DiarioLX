@@ -18,7 +18,7 @@ Enum content_type {
 Enum content_state {
   DRAFT
   PENDING_REVIEW
-  PUBLISHED
+  APPROVED
   REJECTED
 }
 
@@ -87,9 +87,9 @@ Table invites {
   id serial [pk]
   invite_token varchar(64) [not null, unique]
   role_assigned user_role [not null]
+  created_by integer [ref: > users.id, note: 'admin who generated it; SET NULL on delete']
   created_at bigint [not null]
   expires_at bigint [not null]
-  used boolean
 }
 
 Table medias {
@@ -216,6 +216,11 @@ Table featured_sections {
   id serial [pk]
   type varchar(30) [not null]
   category_id integer [ref: > categories.id]
+  position integer [not null, unique]
+}
+
+Table navigation_featured_categories {
+  category_id integer [pk, ref: > categories.id, note: "ON DELETE CASCADE"]
   position integer [not null, unique]
 }
 

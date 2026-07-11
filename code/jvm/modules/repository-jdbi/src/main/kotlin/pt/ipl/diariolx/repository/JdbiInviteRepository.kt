@@ -14,10 +14,9 @@ class JdbiInviteRepository(
         handle
             .createQuery(
                 """
-                        SELECT id, invite_token, role_assigned, created_at, expires_at, used
+                        SELECT id, invite_token, role_assigned, created_by, created_at, expires_at
                         FROM invites
                         WHERE invite_token = :invite_token
-                        AND used = false
                         AND expires_at > EXTRACT(EPOCH FROM NOW())
                         """,
             ).bind("invite_token", invite)
@@ -33,7 +32,9 @@ class JdbiInviteRepository(
     ): List<Invite> {
         val sql =
             buildString {
-                append("select id, invite_token, role_assigned, created_at, expires_at, used from invites WHERE 1 = 1".trimIndent())
+                append(
+                    "select id, invite_token, role_assigned, created_by, created_at, expires_at from invites WHERE 1 = 1".trimIndent(),
+                )
                 if (expired == false) {
                     append(" AND expires_at > EXTRACT(EPOCH FROM NOW())")
                 }
@@ -61,12 +62,13 @@ class JdbiInviteRepository(
             handle
                 .createUpdate(
                     """
-            INSERT INTO invites (invite_token, role_assigned, created_at, expires_at, used)
-            VALUES (:invite_token, :role_assigned::user_role, :created_at, :expires_at, false)
+            INSERT INTO invites (invite_token, role_assigned, created_by, created_at, expires_at)
+            VALUES (:invite_token, :role_assigned::user_role, :created_by, :created_at, :expires_at)
             RETURNING id
             """,
                 ).bind("invite_token", invite.invite)
                 .bind("role_assigned", invite.role.name)
+                .bind("created_by", invite.createdBy)
                 .bind("created_at", invite.createdAt.epochSeconds)
                 .bind("expires_at", invite.expiresAt.epochSeconds)
                 .executeAndReturnGeneratedKeys()
@@ -79,7 +81,7 @@ class JdbiInviteRepository(
             role = invite.role,
             createdAt = invite.createdAt,
             expiresAt = invite.expiresAt,
-            used = false,
+            createdBy = invite.createdBy,
         )
     }
 
@@ -106,9 +108,9 @@ class JdbiInviteRepository(
         val id: Int,
         val inviteToken: String,
         val roleAssigned: String,
+        val createdBy: Int?,
         val createdAt: Long,
         val expiresAt: Long,
-        val used: Boolean,
     ) {
         fun toInviteDomain(): Invite =
             Invite(
@@ -117,7 +119,7 @@ class JdbiInviteRepository(
                 role = UserRole.valueOf(roleAssigned),
                 createdAt = Instant.fromEpochSeconds(createdAt),
                 expiresAt = Instant.fromEpochSeconds(expiresAt),
-                used = used,
+                createdBy = createdBy,
             )
     }
 }

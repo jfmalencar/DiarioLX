@@ -5,6 +5,7 @@ import pt.ipl.diariolx.domain.category.Category
 import pt.ipl.diariolx.domain.category.CategorySummary
 import pt.ipl.diariolx.domain.settings.NavSection
 import pt.ipl.diariolx.domain.settings.NavigationView
+import pt.ipl.diariolx.domain.settings.SettingsView
 import pt.ipl.diariolx.repository.TransactionManager
 
 @Named
@@ -13,24 +14,43 @@ class SettingsService(
 ) {
     fun getAll(): Map<String, String> = transactionManager.run { it.settingsRepository.getAll() }
 
-    fun update(values: Map<String, String>) =
+    fun getSettings(): SettingsView =
         transactionManager.run { tx ->
-            values.forEach { (key, value) -> tx.settingsRepository.upsert(key, value) }
+            val values = tx.settingsRepository.getAll()
+            val slugs =
+                tx.settingsRepository
+                    .getFeaturedCategoryIds()
+                    .mapNotNull { id ->
+                        tx.categoryRepository
+                            .getById(id)
+                            ?.slug
+                            ?.value
+                    }
+            SettingsView(values, slugs)
         }
+
+    fun update(
+        values: Map<String, String>,
+        featuredCategorySlugs: List<String>,
+    ) = transactionManager.run { tx ->
+        values.forEach { (key, value) -> tx.settingsRepository.upsert(key, value) }
+        val allCategories =
+            tx.categoryRepository.getAll(limit = 1000, offset = 0, query = null, archived = false)
+        val featuredIds =
+            featuredCategorySlugs
+                .mapNotNull { slug -> allCategories.find { it.slug.value == slug }?.id }
+                .distinct()
+        tx.settingsRepository.setFeaturedCategories(featuredIds)
+    }
 
     fun getNavigation(): NavigationView =
         transactionManager.run { tx ->
             val settings = tx.settingsRepository.getAll()
-            val featuredSlugs =
-                settings["nav.featuredCategories"]
-                    .orEmpty()
-                    .split(",")
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
 
             val allCategories =
                 tx.categoryRepository.getAll(limit = 1000, offset = 0, query = null, archived = false)
-            val featured = featuredSlugs.mapNotNull { slug -> allCategories.find { it.slug.value == slug } }
+            val categoriesById = allCategories.associateBy { it.id }
+            val featured = tx.settingsRepository.getFeaturedCategoryIds().mapNotNull { categoriesById[it] }
             val featuredIds = featured.map { it.id }.toSet()
             val sections =
                 allCategories

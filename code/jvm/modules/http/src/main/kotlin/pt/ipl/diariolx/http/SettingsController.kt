@@ -26,7 +26,10 @@ class SettingsController(
     @MayReturnSettingsOk
     @MayReturnUnauthorized
     @MayReturnForbidden
-    fun getSettings(): ResponseEntity<*> = ResponseEntity.ok(SettingsResponseDTO.from(settingsService.getAll()))
+    fun getSettings(): ResponseEntity<*> {
+        val view = settingsService.getSettings()
+        return ResponseEntity.ok(SettingsResponseDTO.from(view.values, view.featuredCategorySlugs))
+    }
 
     @RequireRole(UserRole.ADMIN)
     @PutMapping(Uris.Settings.ROOT)
@@ -36,7 +39,7 @@ class SettingsController(
     fun updateSettings(
         @RequestBody body: SettingsRequestDTO,
     ): ResponseEntity<*> {
-        settingsService.update(body.toMap())
+        settingsService.update(body.toMap(), body.navigation.featuredCategories)
         return ResponseEntity.noContent().build<Unit>()
     }
 }

@@ -1,15 +1,18 @@
 \chapter{Backend} \label{cap:backend}
 
-This chapter describes the implementation of the backend. It opens with the module
-organization that gives the system its layered structure, then walks through the layers in
-turn --- the HTTP controllers, the service layer, and the framework-free domain --- with a
-representative excerpt of code for each. It goes on to the cross-cutting concerns of
-authentication and authorization, error handling, and database access, and closes with the
-generated API documentation and the testing strategy.
+This chapter describes the implementation of the backend, with a representative excerpt of
+code for each layer. Section~\ref{sec:be_organization} describes the layered
+Gradle-module structure; Sections~\ref{sec:be_http}, \ref{sec:be_services}, and~\ref{sec:be_domain}
+trace a request through the thin controllers, the transactional service layer, and the
+framework-free domain; Section~\ref{sec:be_auth} covers JWT authentication and password reset,
+and Section~\ref{sec:be_authorization} the role-based access control; Section~\ref{sec:be_errors}
+the mapping of domain errors to Problem Details; Section~\ref{sec:be_database} JDBI data access
+and transactions; Section~\ref{sec:be_apidocs} the generated OpenAPI documentation; and
+Section~\ref{sec:be_tests} the layered testing strategy.
 
-\section{Organization} \label{sec:be_organization}
+\section{Organisation} \label{sec:be_organization}
 
-The backend is a Spring Boot application written in Kotlin, organized as a set of loosely
+The backend is a Spring Boot application written in Kotlin, organised as a set of loosely
 coupled Gradle~\cite{gradle} modules. Figure~\ref{fig:backend_layers} shows these modules
 and the dependency relationships between them.
 
@@ -17,14 +20,14 @@ and the dependency relationships between them.
     \begin{center}
         \resizebox{\textwidth}{!}{\includegraphics{./figures/backend_module_diagram.png}}
     \end{center}
-    \caption{Backend module organization.}
+    \caption{Backend module organisation.}
     \label{fig:backend_layers}
 \end{figure}
 
 Each module has a well-defined responsibility and depends only on the modules below it in
 the hierarchy, so that business logic remains isolated from infrastructure concerns,
 following principles commonly associated with Clean Architecture~\cite{martin2017clean}.
-The modules are the following:
+The modules are as follows:
 
 \begin{description}
     \item[HTTP] Defines the REST controllers that expose the API endpoints, with each
@@ -54,7 +57,7 @@ The modules are the following:
 
     \item[Host] The root composition module, responsible for assembling the full
           application. It contains the Spring Boot entry point, all bean definitions, and
-          the application configuration (database connection, storage credentials, server
+          the application configuration (database connection, storage credentials, and server
           settings). No business logic resides here --- its sole purpose is wiring all
           modules together and bootstrapping the application.
 \end{description}
@@ -206,13 +209,13 @@ interface, running before each request reaches a controller via the \texttt{preH
 method. It performs the following sequential checks:
 
 \begin{enumerate}
-    \item \textbf{Token extraction}: the interceptor reads the access token from the
+    \item \textbf{Token extraction} - the interceptor reads the access token from the
           request cookies. If the endpoint requires authentication --- determined by the
           presence of a \texttt{@RequireRole} annotation or an \texttt{AuthenticatedUser}
           parameter --- and no valid token is found, the request is rejected with
           \texttt{401 Unauthorized}.
 
-    \item \textbf{Role verification}: if the endpoint is annotated with
+    \item \textbf{Role verification} - if the endpoint is annotated with
           \texttt{@RequireRole}, the role claim extracted from the JWT is compared against
           the required role without a database lookup. A mismatch results in a
           \texttt{403 Forbidden} response.
@@ -237,7 +240,7 @@ identity and role information as parameters and repeats no security logic of its
 
 \subsection{Password Reset} \label{sec:be_password_reset}
 
-Because the platform has no outbound email capability, password recovery is modelled as
+Since the platform has no outbound email capability, password recovery is modelled as
 an \emph{administrator-mediated} workflow rather than a self-service email link. A user
 who cannot sign in submits a reset request through a public endpoint
 (\texttt{POST /api/auth/password-reset}), identifying themselves by username; this records
@@ -340,7 +343,7 @@ fun ContentError.toProblem(): Problem =
 
 A controller therefore maps a failure to a response in a single expression which looks up the localized
 title and detail for the problem's code and builds the \texttt{application/problem+json}
-entity with the right status. Because the \texttt{when} is exhaustive over a sealed
+entity with the right status. Since the \texttt{when} is exhaustive over a sealed
 hierarchy, adding a new error variant does not compile until its HTTP mapping is decided,
 so no error can silently fall through to a generic \texttt{500}.
 
@@ -429,20 +432,38 @@ application is running.
 
 \section{Tests} \label{sec:be_tests}
 
-The backend is tested at the level of each architectural layer --- service, repository,
-and HTTP --- using JUnit~5. The suites are integrated into the continuous integration
-pipeline via GitHub Actions~\cite{github_actions} and run automatically on every push
-through the \texttt{./gradlew check} task.
+The backend is tested at the level of each architectural layer --- domain, service,
+repository, and HTTP --- using JUnit~5. The suites are integrated into the continuous
+integration pipeline via GitHub Actions~\cite{github_actions} and run automatically on
+every push through the \texttt{./gradlew check} task.
+
+\subsection{Domain Tests} \label{sec:tests_be_domain}
+
+The domain module is covered by pure unit tests that exercise its business rules in
+isolation, with no framework or database involved, so they are fast and deterministic.
+Listing~\ref{lst:test_domain} shows a representative example, verifying the rule that
+separates editorial approval from publication.
+
+\begin{lstlisting}[language=Kotlin, caption={A domain unit test: a content item is visible only when approved and its publication moment has passed.}, label={lst:test_domain}]
+@Test
+fun `content is visible only when approved and its publish moment has passed`() {
+    // approved and already published -> visible
+    assertTrue(content(ContentState.APPROVED, publishedAt = past).isVisibleAt(now))
+    // approved but scheduled for the future -> hidden until then
+    assertFalse(content(ContentState.APPROVED, publishedAt = future).isVisibleAt(now))
+    // any non-approved state -> never visible
+    assertFalse(content(ContentState.DRAFT).isVisibleAt(now))
+}
+\end{lstlisting}
 
 \subsection{Service-Layer Tests} \label{sec:tests_be_unit}
 
 Service-layer tests validate the business logic --- publication-workflow state
 transitions, role-based permission checks, and input validation --- independently of the
-HTTP layer. Each test constructs the service directly and runs it against a dedicated
-PostgreSQL instance inside a transaction that is rolled back once the test completes, so
-that tests stay isolated from one another and leave no residual state without the cost of
-rebuilding the schema between them. Listing~\ref{lst:test_service} shows a representative
-example.
+HTTP layer. Each test constructs the service directly and runs it against a dedicated PostgreSQL
+instance inside a transaction. The transaction is rolled back once the test completes,
+ensuring that tests remain isolated from one another and leave no residual state without
+the cost of rebuilding the schema between executions.
 
 \begin{lstlisting}[language=Kotlin, caption={Service-layer test running against a transaction that is rolled back afterwards.}, label={lst:test_service}]
 @Test
@@ -468,8 +489,8 @@ tears down afterwards --- validating the SQL queries and the mapping of result s
 the domain model. HTTP tests then exercise the full request--response cycle through
 Spring's \texttt{WebTestClient}, authenticating, calling the REST endpoints, and
 asserting the returned status codes, JSON payloads, and RFC~9457 error responses, so
-that the HTTP, service, and repository layers are verified together. Listing~\ref{lst:test_http}
-illustrates the HTTP level.
+that the HTTP, service, and repository layers are verified together.
+Listing~\ref{lst:test_http} illustrates the HTTP level.
 
 \begin{lstlisting}[language=Kotlin, caption={HTTP integration test exercising the full request cycle with \texttt{WebTestClient}.}, label={lst:test_http}]
 @Test
@@ -494,7 +515,7 @@ The backend test suite runs automatically on GitHub Actions~\cite{github_actions
 every push, a workflow runs \texttt{./gradlew check}, which starts the PostgreSQL test
 container, executes the unit and integration suites, and tears the container down. The
 frontend end-to-end suite runs in a separate workflow, described in
-Chapter~\ref{cap:frontend}. A further workflow, triggered on release tags, builds the
+Chapter~\ref{cap:frontend}. Another workflow, triggered on release tags, builds the
 container images and publishes them to the registry (Chapter~\ref{cap:deployment}),
 keeping the packaging of deployable artefacts separate from the test pipelines that run
 on every push.

@@ -6,10 +6,8 @@
 This chapter describes how the components introduced in the previous chapters are
 packaged, provisioned, and run in production. Whereas Chapter~\ref{cap:architecture}
 presented the \emph{logical} architecture --- how the source code is organised into
-modules and layers --- this chapter presents the \emph{physical} deployment view: the
-container images, the services that run on the host, the reverse-proxy layers, and the
-path an external request travels to reach the application. The two views are
-complementary: the Spring Boot backend that appears as a single logical component in
+modules and layers --- this chapter presents the \emph{physical} deployment view. The two
+views are complementary: the Spring Boot backend that appears as a single logical component in
 Chapter~\ref{cap:architecture} is, at deployment time, one container image among
 several orchestrated together.
 
@@ -17,7 +15,13 @@ The platform runs on a single virtual machine (VM). Almost every runtime compone
 runs as a Docker~\cite{docker} container, orchestrated through Docker Compose; the only exception is
 the outermost reverse proxy, a system-level Nginx~\cite{nginx} provisioned directly on the host to
 terminate HTTPS. The complete topology is shown in Figure~\ref{fig:deployment}
-(Appendix~\ref{app:deployment}).
+(Appendix~\ref{app:deployment}). Section~\ref{sec:dep_images} describes the container
+images; Section~\ref{sec:dep_services} the services orchestrated with Docker Compose;
+Section~\ref{sec:dep_proxy} the two Nginx layers for TLS and routing;
+Section~\ref{sec:dep_previews} the crawler-facing social-media previews;
+Section~\ref{sec:dep_lifecycle} the path of a request through the system;
+Section~\ref{sec:dep_cd} the image-building CI pipeline; and Section~\ref{sec:dep_run} how the
+stack is run in production.
 
 \section{Container Images} \label{sec:dep_images}
 
@@ -128,7 +132,7 @@ from cache.
 For a digital newspaper, the sharing of articles on social media is an important channel
 for reaching readers, and an inviting link preview --- a title, a summary, and an image ---
 is what turns a shared link into a visit. Delivering good previews, however, is at odds
-with a client-rendered single-page application: because the public site renders in the
+with a client-rendered single-page application: since the public site renders in the
 browser, its HTML shell carries no per-article metadata, so a crawler fetching an article
 URL would find nothing from which to build a preview.
 
@@ -171,10 +175,10 @@ server itself builds nothing (Section~\ref{sec:dep_cd}). The production Compose
 file references the images by tag and reads its configuration from a \texttt{.env} file.
 The secrets --- that \texttt{.env} file and the \texttt{seaweed-config.json} that
 pre-declares the S3 identities (so no manual object-storage configuration is needed) ---
-are provisioned directly on the VM and are never baked into the published images. The
+are provisioned directly on the VM and are never included in the published images. The
 deployment is deliberately minimal in its exposed surface: only the entry-point
 \texttt{diariolx-web} container is published to the host, so the internal services
 (PostgreSQL, the SeaweedFS S3 gateway,
-and the admin service) are reachable exclusively over the Compose network. Because the
+and the admin service) are reachable exclusively over the Compose network. Since the
 images are self-contained and all data lives on named volumes, the stack can be
 recreated without loss of stored content.

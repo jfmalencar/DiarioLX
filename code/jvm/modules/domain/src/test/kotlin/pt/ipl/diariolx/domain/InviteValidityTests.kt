@@ -18,7 +18,6 @@ class InviteValidityTests {
             role = UserRole.EDITOR,
             createdAt = createdAt,
             expiresAt = expiresAt,
-            used = false,
         )
 
     @Test

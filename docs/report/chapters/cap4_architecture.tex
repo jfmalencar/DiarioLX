@@ -3,11 +3,14 @@
 %
 \chapter{Architecture} \label{cap:architecture}
 
-This chapter presents the architecture of \textit{Diário LX}. It gives a high-level view of
-the system and its main components, the technology stack that realises them, and the design
-of the REST API, and then examines the cross-cutting concerns that shape the system: its
-authentication and authorization model, the way media is stored and served, and the
-editorial workflow that governs a content item's lifecycle.
+This chapter presents the architecture of \textit{Diário LX}.
+Section~\ref{sec:arch_overview} presents the
+client-server structure and its main components; Section~\ref{sec:arch_stack} the technology
+chosen for each layer and the rationale behind it; Section~\ref{sec:arch_api} the REST API and
+its Problem Details error format; Section~\ref{sec:arch_auth} the JWT authentication and
+role-based access model; Section~\ref{sec:arch_media} how media is kept off the application
+server and served directly; and Section~\ref{sec:arch_workflow} the content-state lifecycle
+and its role-guarded transitions.
 
 \section{Overview} \label{sec:arch_overview}
 
@@ -27,20 +30,20 @@ high-level architecture of the system.
 The system comprises the following main components:
 
 \begin{itemize}
-      \item \textbf{Frontend} (React + TypeScript): A single-page application (SPA)
+      \item \textbf{Frontend} (React + TypeScript) - a single-page application (SPA)
             running in the browser, responsible for rendering the public website and the
             backoffice interface. Communicates with the backend via HTTP requests and
             uploads media directly to the object store, bypassing the application server.
 
-      \item \textbf{Web Service} (Spring Boot + Kotlin): The backend application
+      \item \textbf{Web Service} (Spring Boot + Kotlin) - the backend application
             responsible for business logic, authentication, and data access. Controls media
             metadata and mediates access to the data layer.
 
-      \item \textbf{PostgreSQL}~\cite{postgresql_docs}: Relational database storing structured data
+      \item \textbf{PostgreSQL}~\cite{postgresql_docs} - a relational database storing structured data
             (content, users, categories, tags, sessions).
 
-      \item \textbf{SeaweedFS}~\cite{seaweedfs}: Self-hosted distributed file system used for multimedia
-            asset storage (images, audio, video), accessed via an API compatible with Amazon S3~\cite{amazon_s3}. Receives
+      \item \textbf{SeaweedFS}~\cite{seaweedfs} - a self-hosted distributed file system used for multimedia
+            asset storage (images, audio, and video), accessed via an API compatible with Amazon S3~\cite{amazon_s3}. Receives
             direct uploads from the frontend and is managed by the backend via media control
             operations.
 \end{itemize}
@@ -77,7 +80,7 @@ The API follows standard HTTP conventions for resource naming and status codes,
 and all error responses follow the Problem Details for HTTP APIs standard
 (\texttt{application/problem+json}), as defined in RFC~9457~\cite{rfc9457}.
 
-The API is divided into two groups: a public, unauthenticated read API that
+The API is organised into two groups: a public, unauthenticated read API that
 serves the reader-facing website, and an authenticated \textit{backoffice} API,
 prefixed with \texttt{/api/backoffice/}, that provides editorial management
 operations. This separation makes the authentication boundary explicit in the URL
@@ -87,7 +90,7 @@ Authentication is handled separately under \texttt{/api/auth}, which provides th
 signup, login, logout, and token refresh endpoints used to establish and maintain
 user sessions.
 
-The public read API is organized around the following resources:
+The public read API is organised around the following resources:
 
 \begin{itemize}
       \item \texttt{/api/homepage} --- homepage composition (the section menu is delivered through the bootstrap/settings payload)
@@ -136,7 +139,7 @@ Chapter~\ref{cap:backend}.
 \section{Media Storage} \label{sec:arch_media}
 
 Content in \textit{Diário LX} is rich in multimedia --- images, audio, and video --- and
-media files can be large, with uploads permitted up to two gigabytes. Routing such
+media files can be large, with uploads allowed up to two gigabytes. Routing such
 files through the application server would make it a bottleneck: each upload would
 occupy server memory and connection time merely to relay bytes it does not otherwise
 need to process. To avoid this, media is kept in a dedicated object store, separate
@@ -152,7 +155,7 @@ abstraction with an interchangeable implementation, as described in
 Chapter~\ref{cap:backend}.
 
 Crucially, the media bytes never pass through the application server, in either direction.
-On upload, the browser obtains a short-lived (fifteen-minute) authorization from the
+On upload, the browser obtains a short-lived (15 minutes) authorization from the
 backend and transfers the file directly to the object store; the backend never handles the
 file contents, only recording the media's metadata --- its location, type, and descriptive
 fields such as caption and credit. Delivery mirrors this: readers' browsers load images,
@@ -211,7 +214,7 @@ The states are defined as follows:
             revise and resubmit.
 \end{description}
 
-The transitions between these states are the following:
+The transitions between these states are as follows:
 
 \begin{itemize}
       \item \textbf{Submit} --- a Contributor submits a draft, moving it from
@@ -225,7 +228,7 @@ The transitions between these states are the following:
       \item \textbf{Reject} --- an Editor or Administrator rejects a pending item,
             moving it to \textit{Rejected} together with a review comment.
 
-      \item \textbf{Direct approval} --- because Editors and Administrators hold the
+      \item \textbf{Direct approval} --- since Editors and Administrators hold the
             approval permission, they may approve a draft directly, bypassing the
             \textit{Pending Review} state when editorial review is not required.
 
@@ -235,7 +238,7 @@ The transitions between these states are the following:
             Administrator.
 \end{itemize}
 
-These transitions are enforced at the API level. Each is exposed as a dedicated
+These transitions are enforced at the API level. Each one is exposed as a dedicated
 endpoint under \texttt{/api/backoffice/contents} and guarded by the
 \texttt{@RequireRole} annotation, so the backend validates that the requesting user's
 role permits the transition before persisting the state change. The permission model

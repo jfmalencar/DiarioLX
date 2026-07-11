@@ -1738,12 +1738,14 @@ INSERT INTO settings (key, value) VALUES
     ('publication.periodicity', 'Diário'),
     ('publication.owner',       'Escola Superior de Comunicação Social (ESCS) - Instituto Politécnico de Lisboa'),
     ('publication.nipc',        '508 519 713'),
-    ('nav.featuredCategories', 'lisboa-cidade-aberta,a-fundo'),
     ('nav.showPhotos',         'true'),
     ('nav.showPodcasts',       'true'),
     ('nav.showVideos',         'true');
 
--- Equipa / Quem somos (team members shown on the homepage and /equipa page)
+INSERT INTO navigation_featured_categories (category_id, position) VALUES
+    ((SELECT id FROM categories WHERE slug = 'lisboa-cidade-aberta'), 0),
+    ((SELECT id FROM categories WHERE slug = 'a-fundo'), 1);
+
 UPDATE users SET on_team = TRUE,
     position = 'Diretora e editora da Secção Lisboa, Cidade Aberta',
     bio = 'Jornalista desde 1997, já trabalhou, colaborou ou publicou em diversos meios de comunicação nacionais. Doutorada em Ciências da Comunicação pela Faculdade de Ciências Sociais e Humanas (FCSH) da Universidade Nova de Lisboa, é coordenadora da licenciatura em Jornalismo da Escola Superior de Comunicação Social (ESCS) e do Laboratório de Tendências em Jornalismo, do LIACOM.'

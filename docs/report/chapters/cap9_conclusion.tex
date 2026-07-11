@@ -12,7 +12,10 @@ dedicated public website, within a decoupled client--server architecture. As dis
 in Chapter~\ref{cap:background}, existing content management systems such as WordPress
 and Ghost were evaluated but did not fully accommodate these requirements, motivating
 the development of a tailored solution. This document describes the final version of
-that system, which has been implemented and deployed.
+that system, which has been implemented and deployed. Section~\ref{sec:conc_summary} reviews
+the delivered platform against its goals; Section~\ref{sec:conc_future} reflects on maintainability and
+proposes future directions; and Section~\ref{sec:conc_remarks} offers closing thoughts on the
+purpose-built approach and the experience gained.
 
 \section{Summary of Work} \label{sec:conc_summary}
 
@@ -20,38 +23,38 @@ The delivered platform realises the architecture and requirements described in t
 preceding chapters:
 
 \begin{itemize}
-      \item \textbf{Editorial workflow}: the full content lifecycle --- draft, pending
+      \item \textbf{Editorial workflow} - the full content lifecycle --- draft, pending
             review, approved, and rejected --- is implemented and enforced according
             to the actor's role. Contributors submit content for review; Editors and
             Administrators approve it (publishing it) or reject it with a
             comment, and every transition is recorded in the content's history.
 
-      \item \textbf{Content model and editor}: the backoffice content editor supports
+      \item \textbf{Content model and editor} - the backoffice content editor supports
             block-based authoring across all content types --- articles, videos,
             podcasts, episodes, and photo essays --- with inline formatting, single media,
             captioned image galleries, external embeds, and full metadata configuration.
             Media assets carry credits and accessible descriptions.
 
-      \item \textbf{Backoffice}: the editorial interface covers content management, user
+      \item \textbf{Backoffice} - the editorial interface covers content management, user
             administration, invitation-based onboarding, category and tag management, the
             media library, and curation of the public homepage.
 
-      \item \textbf{Public website}: the reader-facing site presents a homepage driven by
+      \item \textbf{Public website} - the reader-facing site presents a homepage driven by
             the backoffice curation, article pages, category, tag, and section listings,
             dedicated podcast, episode, and photo-essay pages, and team and author pages,
             with a responsive layout.
 
-      \item \textbf{Security}: authentication uses short-lived JWT access tokens and
+      \item \textbf{Security} - authentication uses short-lived JWT access tokens and
             long-lived opaque refresh tokens, delivered as hardened cookies
             (Section~\ref{sec:arch_auth}), with role-based access control enforced at the
             HTTP boundary.
 
-      \item \textbf{Deployment}: the system is fully containerised and its images are
+      \item \textbf{Deployment} - the system is fully containerised and its images are
             published to a container registry through continuous integration, allowing
             the production server to deploy by pulling rather than building, behind a
             TLS-terminating reverse proxy (Chapter~\ref{cap:deployment}).
 
-      \item \textbf{Quality assurance}: automated backend and end-to-end frontend tests
+      \item \textbf{Quality assurance} - automated backend and end-to-end frontend tests
             run in a continuous integration pipeline, and the REST API is documented
             through an interactive OpenAPI interface.
 \end{itemize}
@@ -71,45 +74,45 @@ delivered here can be continued rather than restarted.
 On this basis, several enhancements are envisaged as natural continuations of the work:
 
 \begin{itemize}
-      \item \textbf{Richer backoffice filtering}: the content listing currently supports
+      \item \textbf{Richer backoffice filtering} - the content listing currently supports
             filtering by workflow state and by content type, alongside keyword search;
             extending it with filters by category, tag, and author would help editorial
             staff locate content more quickly as the archive grows. The data-access layer
             already accepts these criteria, so the work is largely a matter of exposing them
             in the API and the interface.
 
-      \item \textbf{Internationalisation and content translation}: the frontend already
+      \item \textbf{Internationalisation and content translation} - the frontend already
             centralises the translation of the interface's static text; the natural next
             step is to extend multi-language support to the editorial content itself,
             allowing a publication to be authored in more than one language and served to
             each reader in their preferred one.
 
-      \item \textbf{Cache invalidation}: complementing the current time-based caching ---
+      \item \textbf{Cache invalidation} - complementing the current time-based caching ---
             where public responses are held only briefly to bound how long content can
             appear stale --- with explicit invalidation, so that approving or editing a
             publication purges the affected entries and the change is reflected immediately,
             without having to keep the cache window short.
 
-      \item \textbf{Search engine optimisation}: building on the Open Graph previews
+      \item \textbf{Search engine optimisation} - building on the Open Graph previews
             already served to social-media crawlers (Section~\ref{sec:dep_previews}) by
             enriching public pages with structured data and a generated sitemap, and,
             more broadly, adopting server-side rendering so that all content is fully
             indexable rather than only prerendered for recognised crawlers.
 
-      \item \textbf{Asynchronous media processing}: offloading heavy media handling to
+      \item \textbf{Asynchronous media processing} - offloading heavy media handling to
             background tasks so that uploads return promptly instead of blocking on large
             files --- generating server-side resized, responsive variants of images and
             extracting thumbnail frames for videos, rather than serving a single original of
             each asset.
 
-      \item \textbf{Accessibility}: further accessibility improvements, such as audio
+      \item \textbf{Accessibility} - further accessibility improvements, such as audio
             description for multimedia content, broadening the platform's reach.
 
-      \item \textbf{Content recommendations}: surfacing related articles on the article
+      \item \textbf{Content recommendations} - surfacing related articles on the article
             page to improve navigation and reader retention.
 \end{itemize}
 
-Because the platform is delivered as a working, deployed system built on a modular and
+Since the platform is delivered as a working, deployed system built on a modular and
 well-documented codebase, each of these extensions can be approached incrementally,
 without a structural rewrite --- which was, from the outset, an explicit objective of the
 project.

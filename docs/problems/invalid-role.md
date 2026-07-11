@@ -8,7 +8,7 @@ The provided role is invalid.
 
 ## When it occurs
 
-Raised when the supplied role is not one of the recognised roles (Contributor, Editor, Administrator).
+Raised when the supplied role is not one of the recognised roles (Contributor, Editor, and Administrator).
 
 ## How to resolve
 

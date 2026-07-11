@@ -3,11 +3,13 @@
 %
 \chapter{Background} \label{cap:background}
 
-This chapter reviews the context in which \textit{Diário LX} is situated. It surveys the
-landscape of digital journalism platforms and the content management systems most commonly
-used to build them, and assesses how well those systems meet the project's editorial,
-access-control, and multimedia requirements --- motivating the decision to build a
-purpose-made platform rather than adapt an existing one.
+This chapter reviews the context in which \textit{Diário LX} is situated and assesses how well
+existing systems meet the project's editorial, access-control, and multimedia requirements,
+motivating the decision to build a purpose-made platform rather than adapt an existing one.
+Section~\ref{sec:background_journalism} reviews the shift to web-native journalism and the
+contrasting slow-journalism movement; Section~\ref{sec:background_comparable} looks at two
+comparable student-run local publications; and Section~\ref{sec:background_existing} weighs
+content management systems such as WordPress and Ghost against the project's needs.
 
 \section{Digital Journalism Platforms} \label{sec:background_journalism}
 
@@ -22,7 +24,7 @@ depth, and contextual analysis. Platforms designed to support slow journalism re
 features that differ substantially from high-volume news aggregators: robust editorial
 workflows, multimedia support, and fine-grained access control for editorial teams.
 
-\section{Comparable Platforms} \label{sec:background_comparable}
+\section{Similar Platforms} \label{sec:background_comparable}
 
 The \textit{Diário LX} newspaper originates as an initiative of the Laboratory of
 Journalism Trends of the LIACOM research unit at the ESCS-IPL, conceived as a
@@ -32,7 +34,7 @@ focus on the Greater Lisbon region. Within this context, two existing journalism
 initiatives were identified during the project's design phase as direct points of
 reference, as they share its student-driven and locally focused character.
 
-\textit{Diari de Barcelona} is a digital newspaper operated by journalism students of the
+\textit{Diari de Barcelona}\footnote{\url{https://diaridebarcelona.cat}} is a digital newspaper operated by journalism students of the
 Universitat Pompeu Fabra (UPF). It serves as both an educational and a practical
 platform, in which students publish journalistic content and experiment in a real
 news-production environment, with a structure organised to cover several editorial areas
@@ -40,7 +42,7 @@ and to let students explore different journalistic formats. This dual educationa
 editorial purpose closely mirrors the role \textit{Diário LX} plays for the journalism
 programmes of the ESCS.
 
-\textit{A Mensagem de Lisboa} is a local newspaper, founded in 2021, that focuses on the
+\textit{A Mensagem de Lisboa}\footnote{\url{https://amensagem.pt}} is a local newspaper, founded in 2021, that focuses on the
 stories of the Lisbon metropolitan area. It is characterised by a humanised,
 community-oriented approach, covering themes that range from culture and society to
 urban issues and contemporary challenges. Its emphasis on local, in-depth reporting for
@@ -48,7 +50,7 @@ a specific region aligns with \textit{Diário LX}'s focus on the Greater Lisbon 
 on long-form, context-rich journalism.
 
 These initiatives informed the editorial scope and structure of \textit{Diário LX} at the
-domain level. The remainder of this chapter examines the general-purpose content
+domain level. Section~\ref{sec:background_existing} examines the general-purpose content
 management systems that were evaluated as potential technical foundations for the
 platform.
 
@@ -89,9 +91,8 @@ also makes full frontend decoupling impractical.
 \subsection{Summary} \label{sec:background_summary}
 
 The three platforms differ significantly in how they address the core requirements
-of \textit{Diário LX}. Table~\ref{tab:cms_comparison} summarises the comparison across four
-dimensions --- editorial workflow, role-based access control, multimedia support, and
-frontend decoupling --- each discussed in turn below.
+of \textit{Diário LX}. Table~\ref{tab:cms_comparison} summarises the comparison across different
+dimensions each one discussed in turn below.
 
 \begin{table}[H]
       \centering
@@ -99,22 +100,22 @@ frontend decoupling --- each discussed in turn below.
       \label{tab:cms_comparison}
       \begin{tabularx}{\textwidth}{lXXX}
             \toprule
-            \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost}        & \textbf{\textit{Diário LX}}      \\
+            \textbf{Feature}   & \textbf{WordPress} & \textbf{Ghost}        & \textbf{\textit{Diário LX}} \\
             \midrule
-            Editorial workflow & Plugin-based       & Submit/publish only,  & Draft → Pending →       \\
-                               &                    & no rejection state    & Approved / Rejected     \\
+            Editorial workflow & Plugin-based       & Submit/publish only,  & Draft → Pending →           \\
+                               &                    & no rejection state    & Approved / Rejected         \\
             \addlinespace
-            Role-based access  & Plugin-based       & Four built-in roles,  & Three roles, enforced   \\
-                               &                    & no rejection feedback & natively at API level   \\
+            Role-based access  & Plugin-based       & Four built-in roles,  & Three roles, enforced       \\
+                               &                    & no rejection feedback & natively at API level       \\
             \addlinespace
-            Multimedia support & Plugin-based       & Basic                 & Native (images, video,  \\
-                               &                    &                       & audio)                  \\
+            Multimedia support & Plugin-based       & Basic                 & Native (images, video,      \\
+                               &                    &                       & audio)                      \\
             \addlinespace
-            API-first design   & Partial            & Yes                   & Yes                     \\
+            API-first design   & Partial            & Yes                   & Yes                         \\
             \addlinespace
-            Custom frontend    & Theme-based        & Theme-based           & React (fully decoupled) \\
+            Custom frontend    & Theme-based        & Theme-based           & React (fully decoupled)     \\
             \addlinespace
-            Open source        & Yes                & Yes                   & Yes                     \\
+            Open source        & Yes                & Yes                   & Yes                         \\
             \bottomrule
       \end{tabularx}
 \end{table}

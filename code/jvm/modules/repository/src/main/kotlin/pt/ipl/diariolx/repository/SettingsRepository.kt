@@ -7,4 +7,8 @@ interface SettingsRepository {
         key: String,
         value: String,
     )
+
+    fun getFeaturedCategoryIds(): List<Int>
+
+    fun setFeaturedCategories(categoryIds: List<Int>)
 }

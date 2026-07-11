@@ -17,20 +17,20 @@ A proof of concept was initially implemented using WordPress to validate the edi
 
 \textit{Diário LX} is a web-based content management and publication platform
 built to support the full editorial lifecycle of a digital journalism
-outlet. The system is organized around two distinct areas:
+outlet. The system is organised around two distinct areas:
 
 \begin{itemize}
-      \item \textbf{Backoffice}: A restricted editorial management interface, accessible only to authenticated users (Administrators, Editors, and Contributors), supporting content creation, revision, approval, and publishing workflows.
-      \item \textbf{Public Website}: A reader-facing interface providing access to published articles, multimedia content (podcasts, videos, photo essays), organized by category, tag, and editorial section.
+      \item \textbf{Backoffice} - a restricted editorial management interface, accessible only to authenticated users (Administrators, Editors, and Contributors), supporting content creation, revision, approval, and publishing workflows.
+      \item \textbf{Public Website} - a reader-facing interface providing access to published articles, multimedia content (podcasts, videos, and photo essays), organised by category, tag, and editorial section.
 \end{itemize}
 
 The system is built around an editorial workflow in which content progresses through
 defined states — draft, pending review, approved, and rejected — with each transition
 guarded by the requesting user's role.
 
-\section{Report Organization} \label{sec:intro_organization}
+\section{Report Organisation} \label{sec:intro_organization}
 
-The remainder of this report is organized as follows:
+The remainder of this report is organised as follows:
 
 \begin{itemize}
       \item Chapter~\ref{cap:background} presents the context, related work, and existing solutions analysed during the project.
@@ -41,4 +41,12 @@ The remainder of this report is organized as follows:
       \item Chapter~\ref{cap:frontend} covers the frontend implementation.
       \item Chapter~\ref{cap:deployment} describes how the system is packaged and deployed to production.
       \item Chapter~\ref{cap:conclusion} concludes the report, summarising the delivered system and outlining directions for future work.
+\end{itemize}
+
+The report is complemented by three appendices:
+
+\begin{itemize}
+      \item Appendix~\ref{app:db_model} provides the complete data model --- the full entity-relationship diagram, the physical database schema, and the enumerated types, views, and indexes that support it.
+      \item Appendix~\ref{app:deployment} presents the deployment diagram of the production environment.
+      \item Appendix~\ref{app:screenshots} collects screenshots of the backoffice and public-website interfaces.
 \end{itemize}

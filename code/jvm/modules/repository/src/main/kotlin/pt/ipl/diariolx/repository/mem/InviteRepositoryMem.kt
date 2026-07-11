@@ -17,7 +17,6 @@ class InviteRepositoryMem : InviteRepository {
                 UserRole.ADMIN,
                 Clock.System.now(),
                 Instant.fromEpochSeconds(25.minutes.inWholeSeconds),
-                false,
             ),
         )
     private var currentId = 2
@@ -48,7 +47,7 @@ class InviteRepositoryMem : InviteRepository {
                 role = invite.role,
                 createdAt = invite.createdAt,
                 expiresAt = invite.expiresAt,
-                used = false,
+                createdBy = invite.createdBy,
             )
         invites.add(newInvite)
         return newInvite
@@ -56,7 +55,6 @@ class InviteRepositoryMem : InviteRepository {
 
     override fun consumeInvite(id: Int): Boolean {
         val invite = invites.find { it.id == id } ?: return false
-        check(!invite.used) { "An used invite should never exist." }
         invites.remove(invite)
         return true
     }

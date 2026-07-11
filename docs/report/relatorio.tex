@@ -1,5 +1,5 @@
 % Classe do documento e parâmetros gerais.
-\documentclass[a4paper,openright,twoside,11pt]{report}
+\documentclass[a4paper,openany,twoside,11pt]{report}
 
 % Packages utilizadas e respetivos parâmetros.
 \usepackage[utf8]{inputenc}
@@ -72,13 +72,6 @@
    aboveskip=1em,
    belowskip=1em,
    captionpos=b,
-}
-
-% Placeholder box for screenshots still to be captured.
-\newcommand{\screenshotTODO}[1]{%
-   \fbox{\parbox[c][5cm][c]{0.97\textwidth}{%
-      \centering \ttfamily [SCREENSHOT TO ADD]\\[6pt]\normalfont\itshape #1%
-   }}%
 }
 
 % Definições das dimensões das páginas
@@ -236,23 +229,27 @@ React; REST API; Spring Boot; Web Development.
 \chapter*{Usage of Generative AI Tools}
 
 Throughout this project, generative artificial intelligence (GenAI) assistants were used
-as a support tool across several stages of development. The tools employed were
-Anthropic's \textit{Claude} models --- accessed both through a conversational interface
-and through the \textit{Claude Code} command-line agent --- OpenAI's \textit{ChatGPT}
-(GPT-4o), and Google's \textit{Gemini}.
+as a support tool across several stages of development and writing. The tools employed
+were Anthropic's \textit{Claude} models --- accessed both through a conversational
+interface and through the \textit{Claude Code} command-line agent --- OpenAI's
+\textit{ChatGPT} (GPT-4o), and Google's \textit{Gemini}.
 
-These assistants were primarily used for brainstorming technical solutions and exploring
-architectural approaches, for writing and structuring documentation, for prototyping and
-iterating on interface components, and for generating preliminary code examples and
-Bootstrap-based layouts. They were also consulted to clarify technical concepts related
-to the technologies adopted, and to assist with repetitive or mechanical refactoring
-tasks --- for example, consolidating the interface's static texts into a centralized
-translations file for internationalization.
+During development, these assistants were primarily used for brainstorming technical
+solutions and exploring architectural approaches, for prototyping and iterating on
+interface components, and for generating preliminary code examples and Bootstrap-based
+layouts. They were also consulted to clarify technical concepts related to the
+technologies adopted, and to assist with repetitive or mechanical refactoring tasks ---
+for example, consolidating the interface's static texts into a centralized translations
+file for internationalization.
+
+In the preparation of this report, GenAI tools were used to assist in structuring
+content, drafting and revising sections, and improving the clarity and consistency of
+the text.
 
 In every case, the generated output was reviewed, validated, and adapted by the authors
-before being incorporated. All final architectural, implementation, and validation
-decisions were made by the project authors, who retain full responsibility for the
-content of this work.
+before being incorporated. All architectural, implementation, and validation decisions,
+as well as the analysis and conclusions presented in this document, were made by the
+project authors, who retain full responsibility for the content of this work.
 
 % Table of contents
 \cleardoublepage
@@ -264,6 +261,57 @@ content of this work.
 \cleardoublepage
 
 \listoftables
+\cleardoublepage
+
+% List of acronyms
+\chapter*{List of Acronyms}
+\addcontentsline{toc}{chapter}{List of Acronyms}
+
+\begin{description}
+   \item[API] Application Programming Interface
+   \item[AWS] Amazon Web Services
+   \item[CI] Continuous Integration
+   \item[CMS] Content Management System
+   \item[CSRF] Cross-Site Request Forgery
+   \item[CSS] Cascading Style Sheets
+   \item[DNS] Domain Name System
+   \item[DTO] Data Transfer Object
+   \item[ESCS] Escola Superior de Comunicação Social
+   \item[GenAI] Generative Artificial Intelligence
+   \item[GHCR] GitHub Container Registry
+   \item[HMAC] Hash-based Message Authentication Code
+   \item[HTML] HyperText Markup Language
+   \item[HTTP] HyperText Transfer Protocol
+   \item[HTTPS] HyperText Transfer Protocol Secure
+   \item[IP] Internet Protocol
+   \item[IPL] Instituto Politécnico de Lisboa
+   \item[JSON] JavaScript Object Notation
+   \item[JVM] Java Virtual Machine
+   \item[JWT] JSON Web Token
+   \item[LIACOM] Applied Research Laboratory in Communication and Media
+   \item[MAC] Message Authentication Code
+   \item[MIME] Multipurpose Internet Mail Extensions
+   \item[MVC] Model-View-Controller
+   \item[ORM] Object-Relational Mapping
+   \item[RBAC] Role-Based Access Control
+   \item[REST] Representational State Transfer
+   \item[RFC] Request for Comments
+   \item[S3] Simple Storage Service
+   \item[SDK] Software Development Kit
+   \item[SPA] Single-Page Application
+   \item[SQL] Structured Query Language
+   \item[SVG] Scalable Vector Graphics
+   \item[TLS] Transport Layer Security
+   \item[UI] User Interface
+   \item[UPF] Universitat Pompeu Fabra
+   \item[URI] Uniform Resource Identifier
+   \item[URL] Uniform Resource Locator
+   \item[UTC] Coordinated Universal Time
+   \item[UUID] Universally Unique Identifier
+   \item[VM] Virtual Machine
+   \item[XSS] Cross-Site Scripting
+   \item[3NF] Third Normal Form
+\end{description}
 \cleardoublepage
 
 % Arabic numbering

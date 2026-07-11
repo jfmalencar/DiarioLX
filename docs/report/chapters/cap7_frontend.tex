@@ -3,11 +3,15 @@
 %
 \chapter{Frontend} \label{cap:frontend}
 
-This chapter describes the implementation of the frontend. It presents the chosen
-technologies and the application's modular organization, the bootstrap, configuration, and
-authentication mechanisms that support it, and then the two faces of the interface --- the
-editorial backoffice and the public website --- illustrated with representative excerpts of
-a hook and a component, before closing with the automated testing approach.
+This chapter describes the implementation of the frontend, illustrated with representative
+excerpts of a hook and a component. Section~\ref{sec:fe_technology} presents the React and
+TypeScript stack and its supporting libraries; Section~\ref{sec:fe_organization} the modular,
+layered source structure; Section~\ref{sec:fe_hooks_components} a representative hook and
+component; Section~\ref{sec:fe_providers} the context providers that supply cross-cutting
+state; Section~\ref{sec:fe_bootstrap_navigation} start-up configuration and client-side
+routing; Section~\ref{sec:fe_auth} cookie-based sessions and transparent token refresh;
+Sections~\ref{sec:fe_backoffice} and~\ref{sec:fe_public} the editorial backoffice and the
+public website; and Section~\ref{sec:fe_tests} the Playwright end-to-end suite.
 
 \section{Technology} \label{sec:fe_technology}
 
@@ -36,21 +40,21 @@ The following libraries were adopted:
             and lightweight SVG-based icons throughout the interface.
 \end{itemize}
 
-\section{Organization} \label{sec:fe_organization}
+\section{Organisation} \label{sec:fe_organization}
 
 The frontend follows a modular architecture inspired by the separation of concerns
-principle. Figure~\ref{fig:frontend_diagram} illustrates the internal organization
+principle. Figure~\ref{fig:frontend_diagram} illustrates the internal organisation
 of the frontend and its relationship with the backend API.
 
 \begin{figure}[H]
       \begin{center}
             \resizebox{\textwidth}{!}{\includegraphics{./figures/frontend_module_diagram.png}}
       \end{center}
-      \caption{Frontend module organization.}
+      \caption{Frontend module organisation.}
       \label{fig:frontend_diagram}
 \end{figure}
 
-The source tree is organized as follows:
+The source tree is organised as follows:
 
 \begin{verbatim}
 src/
@@ -98,7 +102,7 @@ The main modules are:
 
 Most of the interface is built from two kinds of building block: \emph{hooks}, which
 encapsulate data access and state, and presentational \emph{components}, which render the
-UI from their props. Listing~\ref{lst:fe_hook} shows a representative hook, which backs the
+UI from their properties. Listing~\ref{lst:fe_hook} shows a representative hook, which backs the
 public content listings.
 
 \begin{lstlisting}[language=JavaScript, caption={A hook composing data access with reusable pagination.}, label={lst:fe_hook}]
@@ -161,7 +165,23 @@ component serves any form that needs a save/cancel affordance. Its text comes th
 its interactive elements carry \texttt{data-testid} attributes that the end-to-end tests
 target (Section~\ref{sec:fe_tests}).
 
-\section{Bootstrap, Configuration and Navigation} \label{sec:fe_bootstrap_navigation}
+\section{Providers} \label{sec:fe_providers}
+
+Cross-cutting state is supplied through React \emph{context providers} composed at the
+application root, each exposing its state to the component tree through a dedicated hook.
+Internationalisation is a representative example: the \texttt{I18nProvider} holds the current
+language and a translation function, backed by a single \texttt{translations.json} that maps
+namespaced keys to their Portuguese and English text. Components read it through the
+\texttt{useI18n} hook and reference keys rather than hard-coded strings, so the whole
+interface can be re-languaged from one place (Listing~\ref{lst:i18n}).
+
+\begin{lstlisting}[language=JavaScript, caption={Reading translated text through the \texttt{useI18n} hook.}, label={lst:i18n}]
+const { t } = useI18n();
+// t looks up the key for the active language, falling back to the key itself
+const message = t('register.invalid_email');
+\end{lstlisting}
+
+\section{Bootstrap, Configuration, and Navigation} \label{sec:fe_bootstrap_navigation}
 
 When the application starts, the \texttt{useBootstrap} hook retrieves the initial
 configuration from the backend, including the definitions of the available API
@@ -234,7 +254,7 @@ can invite new ones via the invitation system.
 
 Administrators also handle password-reset requests from this area. A dedicated view lists
 the requests by status --- pending, approved, rejected, and completed --- and each
-request's detail offers approve and reject actions. Because the platform sends no email,
+request's detail offers approve and reject actions. Since the platform sends no email,
 approving a request reveals a ready-made reset link with a copy-to-clipboard control,
 which the Administrator delivers to the user directly; the underlying workflow is
 described in Section~\ref{sec:be_password_reset}.
@@ -268,7 +288,7 @@ Users can edit their profile or log out from this page.
 \subsection{Content Management} \label{sec:fe_content_mgmt}
 
 The content listing page (Figure~\ref{fig:fe_contents}) displays content items with
-their featured image, title, state, creation date, and authors, organized into
+their featured image, title, state, creation date, and authors, organised into
 dedicated tabs by workflow state: \textit{Published}, \textit{Scheduled},
 \textit{Pending}, \textit{Draft}, \textit{Rejected}, and \textit{Archived}. Approved
 content is split between the \textit{Published} tab, holding items already live on the
@@ -292,6 +312,13 @@ state until it is re-published.
 Media is inserted via a gallery modal (Figure~\ref{fig:fe_media_gallery}), which lists
 all uploaded items with their credits and accessible description; new files can be
 uploaded directly from the modal (Figure~\ref{fig:fe_media_upload}).
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{./figures/screenshots/add-content.png}
+      \caption{Backoffice --- content editor with a published article.}
+      \label{fig:fe_editor}
+\end{figure}
 
 \subsection{Editorial Review} \label{sec:fe_review}
 
@@ -332,7 +359,7 @@ changes.
 \section{Public Website} \label{sec:fe_public}
 
 The public website is the reader-facing interface of \textit{Diário LX}, providing
-access to published content organized by editorial section. It is designed to reflect
+access to published content organised by editorial section. It is designed to reflect
 the editorial identity of the publication, prioritising long-form reading and visual
 journalism. The homepage, article, category, tag, and section listing pages, as well
 as the team, author, podcast, episode, and photo-essay pages, are implemented.
@@ -357,7 +384,14 @@ credits, and the full block-based body, including galleries. When an item has be
 edited after publication, an ``updated on'' date is also shown. Social sharing links
 are presented alongside the content.
 
-\subsection{Category, Tag and Section Pages} \label{sec:fe_listings}
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{./figures/screenshots/article.png}
+      \caption{Public website --- article page.}
+      \label{fig:fe_article_page}
+\end{figure}
+
+\subsection{Category, Tag, and Section Pages} \label{sec:fe_listings}
 
 Category and tag pages list the content associated with a given category or tag,
 led by the most recent item and followed by the remainder in reverse-chronological
@@ -414,17 +448,16 @@ The public-website tests run against the \emph{mock} implementation of the servi
 (Section~\ref{sec:fe_organization}) rather than a live backend. Because every hook
 communicates through the \texttt{Services} interface, substituting the mock makes the
 tests deterministic, fast, and independent of network state or database contents. They
-cover the reader-facing flows --- homepage rendering, navigation between editorial
-sections and categories, content listings with the ``load more'' pagination, and the
-not-found page. A separate suite covers authenticated backoffice flows, such as category
-and tag management.
+cover the reader-facing flows --- homepage rendering, client-side routing, navigation
+between editorial sections and categories, article pages, content listings with the
+``load more'' pagination, keyword search, and the not-found page. A separate suite covers
+authenticated backoffice flows, such as category and tag management.
 
 Tests locate elements through stable \texttt{data-testid} attributes rather than text or
 layout, so they stay robust to copy and styling changes, and rely on Playwright's
 automatic waiting to reduce timing flakiness. The suite is integrated into the continuous
 integration pipeline via GitHub Actions~\cite{github_actions} and runs automatically on
-every push. Listing~\ref{lst:test_e2e} shows a representative end-to-end test, and
-Figure~\ref{fig:fe_test_report} an example run of the suite.
+every push. Listing~\ref{lst:test_e2e} shows a representative end-to-end test.
 
 \begin{lstlisting}[language=JavaScript, caption={Playwright end-to-end test: the ``load more'' control appends more content.}, label={lst:test_e2e}]
 test('load more button appends more content', async ({ page }) => {
@@ -441,10 +474,10 @@ test('load more button appends more content', async ({ page }) => {
 });
 \end{lstlisting}
 
-\begin{figure}[H]
-      \begin{center}
-            \screenshotTODO{Playwright test report --- results of the end-to-end suite (public and backoffice specs).}
-      \end{center}
-      \caption{Playwright end-to-end test report.}
-      \label{fig:fe_test_report}
-\end{figure}
+The tests are organised into Playwright \emph{projects}. A dedicated \emph{setup} project
+authenticates once and persists the resulting session state, which the backoffice projects
+then reuse so that each authenticated test starts already logged in rather than repeating the
+login flow; the public projects run anonymously. Playwright starts the development server
+automatically before the run and, on the continuous-integration server, retries a failing
+test and records an execution trace of the retry that can be replayed in the Playwright trace
+viewer to diagnose failures.

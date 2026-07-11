@@ -9,7 +9,7 @@ data class Invite(
     val role: UserRole,
     val createdAt: Instant,
     val expiresAt: Instant,
-    val used: Boolean,
+    val createdBy: Int? = null,
 ) {
     fun isValidAt(now: Instant) = now in createdAt..expiresAt
 }

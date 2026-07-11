@@ -8,4 +8,5 @@ data class NewInvite(
     val role: UserRole,
     val createdAt: Instant,
     val expiresAt: Instant,
+    val createdBy: Int?,
 )
