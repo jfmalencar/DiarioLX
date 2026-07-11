@@ -37,8 +37,9 @@ class PasswordResetService(
             val user = tx.userRepository.getByUsername(username) ?: return@run failure(UserError.UserNotFound)
             val requests = tx.passwordResetRepository.getByUserId(user.id)
             requests.forEach {
-                if (it.status == ResetRequestStatus.PENDING || it.status == ResetRequestStatus.APPROVED)
+                if (it.status == ResetRequestStatus.PENDING || it.status == ResetRequestStatus.APPROVED) {
                     tx.passwordResetRepository.delete(it.id)
+                }
             }
             val newResetRequest = NewResetRequest(user.id)
             tx.passwordResetRepository.create(newResetRequest, clock.now())
