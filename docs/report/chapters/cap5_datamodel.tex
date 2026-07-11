@@ -45,6 +45,9 @@ enumerated type; these are listed in Appendix~\ref{app:dm_enums}.
 
 \subsection{Users, Sessions, Invites, and Password Resets} \label{sec:dm_identity}
 
+Figure~\ref{fig:dm_identity} presents the User, Session, Invite, and Password Reset Request
+entities and their attributes.
+
 \begin{figure}[H]
       \begin{center}
             \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_users.png}}
@@ -53,7 +56,6 @@ enumerated type; these are listed in Appendix~\ref{app:dm_enums}.
       \label{fig:dm_identity}
 \end{figure}
 
-Figure~\ref{fig:dm_identity} presents these entities and their attributes.
 A \textbf{User} represents an authenticated member of the editorial team. Each user has a
 role (\textit{ADMIN}, \textit{EDITOR}, or \textit{CONTRIBUTOR}), credentials
 (\texttt{username}, \texttt{email}, and a hashed password), and profile information
@@ -77,6 +79,9 @@ and the relevant timestamps.
 
 \subsection{Content} \label{sec:dm_content}
 
+Figure~\ref{fig:dm_content} presents the Content, Content Block, and Content Block Images
+entities and their attributes.
+
 \begin{figure}[H]
       \begin{center}
             \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_contents.png}}
@@ -85,8 +90,7 @@ and the relevant timestamps.
       \label{fig:dm_content}
 \end{figure}
 
-The content item and the entities that make up its body are shown in
-Figure~\ref{fig:dm_content}. The \textbf{Content} item is the central entity of the system. Each item has a
+The \textbf{Content} item is the central entity of the system. Each item has a
 \texttt{type}, a \texttt{title}, a \texttt{headline}, and a \texttt{slug}, belongs to a
 category, and progresses through an editorial \texttt{state} (\textit{DRAFT},
 \textit{PENDING\_REVIEW}, \textit{APPROVED}, or \textit{REJECTED}). Approval and publication
@@ -109,6 +113,9 @@ and its \texttt{position} within the gallery.
 
 \subsection{Authors, Tags, and Moderation History} \label{sec:dm_editorial}
 
+Figure~\ref{fig:dm_editorial} presents the Content Authors, Content Tags, and Content History
+entities and their attributes.
+
 \begin{figure}[H]
       \begin{center}
             \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_content_related.png}}
@@ -117,11 +124,17 @@ and its \texttt{position} within the gallery.
       \label{fig:dm_editorial}
 \end{figure}
 
-These three entities are shown in Figure~\ref{fig:dm_editorial}.
 \textbf{Content Authors} associates a content item with the users that wrote it, each with a
 \texttt{role} of \textit{primary} or \textit{secondary}; a content item has at most one
 primary author. \textbf{Content Tags} likewise associates a content item with its tags,
 again distinguishing a single primary tag from the secondary ones.
+
+Both are \emph{association entities} - they resolve the many-to-many relationships between a
+content item and, respectively, its authors and its tags, and each carries the \texttt{role}
+attribute that qualifies the link. The primary author supplies the article's main byline and
+the primary tag its principal theme, while the secondary authors and tags act as additional
+co-authors and cross-cutting labels; a partial uniqueness rule enforces that at most one of
+each may be marked primary, keeping the principal author and theme unambiguous.
 
 \textbf{Content History} records the moderation trail of a content item. Each entry captures
 the action taken (\textit{APPROVED} or \textit{REJECTED}), an optional review comment, the
@@ -129,6 +142,8 @@ instant it was performed, and the user who performed it. This provides an audita
 the approval workflow and supplies the mandatory justification attached to a rejection.
 
 \subsection{Categories and Tags} \label{sec:dm_taxonomy}
+
+Figure~\ref{fig:dm_taxonomy} presents the Category and Tag entities and their attributes.
 
 \begin{figure}[H]
       \begin{center}
@@ -138,7 +153,6 @@ the approval workflow and supplies the mandatory justification attached to a rej
       \label{fig:dm_taxonomy}
 \end{figure}
 
-Figure~\ref{fig:dm_taxonomy} shows both taxonomy entities.
 A \textbf{Category} organises content editorially and supports a two-level hierarchy through
 a self-relationship: top-level categories have no parent, and subcategories reference their
 parent. Each category has a \texttt{name}, a unique \texttt{slug}, a distinctive
@@ -151,6 +165,8 @@ description, and may also be soft-archived. A single content item may carry seve
 
 \subsection{Media} \label{sec:dm_media}
 
+Figure~\ref{fig:dm_media} presents the Media and Media Credits entities and their attributes.
+
 \begin{figure}[H]
       \begin{center}
             \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_medias.png}}
@@ -159,7 +175,6 @@ description, and may also be soft-archived. A single content item may carry seve
       \label{fig:dm_media}
 \end{figure}
 
-Figure~\ref{fig:dm_media} shows the media entity and its credits.
 A \textbf{Media} item stores the metadata of an uploaded file --- image, video, or audio ---
 whose binary content is held externally rather than in the database. It records the media
 \texttt{purpose}, its storage location, alternative text, MIME type, size, and an upload
@@ -172,6 +187,9 @@ single person may hold more than one role on the same item.
 
 \subsection{Homepage Curation and Settings} \label{sec:dm_featured}
 
+Figure~\ref{fig:dm_featured} presents the Featured Section, Featured Contents, Navigation, and
+Settings entities and their attributes.
+
 \begin{figure}[H]
       \begin{center}
             \resizebox{\textwidth}{!}{\includegraphics{./figures/er/er_settings.png}}
@@ -180,8 +198,7 @@ single person may hold more than one role on the same item.
       \label{fig:dm_featured}
 \end{figure}
 
-The homepage and public navigation are curated through a few related entities, shown in
-Figure~\ref{fig:dm_featured}. A \textbf{Featured Section} defines an ordered section of the
+A \textbf{Featured Section} defines an ordered section of the
 homepage and has a \texttt{type} and a \texttt{position}; category sections additionally
 reference the category they display. \textbf{Featured Contents} then place individual
 content items within a section, each with a \texttt{position} that fixes its order. The

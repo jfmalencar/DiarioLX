@@ -400,25 +400,26 @@ class JdbiTransactionManager(
 \end{lstlisting}
 
 Services use this manager to group their persistence into a single unit of work.
-Listing~\ref{lst:tx_usage} shows the rejection of a content item: within one
-\texttt{run\{\}} block the service looks the item up and, only if it exists, records the
-rejection.
+Listing~\ref{lst:tx_usage} shows the completion of a password reset: within one
+\texttt{run\{\}} block the service performs two writes --- setting the user's new password
+and marking the reset request completed.
 
-\begin{lstlisting}[language=Kotlin, caption={Using the transaction manager: a lookup and a write in a single transaction.}, label={lst:tx_usage}]
-fun reject(id: Int, comment: String?, reviewerId: Int): ContentUpdateResult {
-    if (comment.isNullOrBlank()) return failure(ContentError.RejectionCommentRequired)
-    return transactionManager.run { tx ->
-        tx.contentRepository.getById(id) ?: return@run failure(ContentError.ContentNotFound)
-        tx.contentRepository.reject(id, clock.now(), comment, reviewerId)
-        success(Unit)
-    }
+\begin{lstlisting}[language=Kotlin, caption={Using the transaction manager: two writes committed as one unit of work.}, label={lst:tx_usage}]
+transactionManager.run { tx ->
+    // ... resolve the request and user and build the updated user (validation omitted)
+
+    // both repository calls share one handle, so they run in a single transaction
+    tx.userRepository.update(updatedUser, user.id, clock.now())    // set the new password
+    tx.passwordResetRepository.complete(request.id, clock.now())   // close the reset request
+    success(Unit)
 }
 \end{lstlisting}
 
-Both repository calls inside the block run on the same handle, and therefore in the same
-transaction: the lookup and the write that follows it --- which updates the content's
-state and appends an entry to its review history --- either commit together or, if any
-step throws, roll back as a whole, leaving no partial change behind.
+Both writes inside the block run on the same handle, and therefore in the same
+transaction: updating the user's password and closing the reset request either commit
+together or, if any step throws, roll back as a whole. The atomicity matters here --- a
+partial outcome that changed the password without closing the request, or the reverse,
+would leave the account in an inconsistent state.
 
 \section{API Documentation} \label{sec:be_apidocs}
 
@@ -509,13 +510,3 @@ fun `can create and edit category`() {
 }
 \end{lstlisting}
 
-\subsection{Continuous Integration} \label{sec:tests_be_ci}
-
-The backend test suite runs automatically on GitHub Actions~\cite{github_actions}. On
-every push, a workflow runs \texttt{./gradlew check}, which starts the PostgreSQL test
-container, executes the unit and integration suites, and tears the container down. The
-frontend end-to-end suite runs in a separate workflow, described in
-Chapter~\ref{cap:frontend}. Another workflow, triggered on release tags, builds the
-container images and publishes them to the registry (Chapter~\ref{cap:deployment}),
-keeping the packaging of deployable artefacts separate from the test pipelines that run
-on every push.

@@ -169,11 +169,27 @@ target (Section~\ref{sec:fe_tests}).
 
 Cross-cutting state is supplied through React \emph{context providers} composed at the
 application root, each exposing its state to the component tree through a dedicated hook.
-Internationalisation is a representative example: the \texttt{I18nProvider} holds the current
-language and a translation function, backed by a single \texttt{translations.json} that maps
-namespaced keys to their Portuguese and English text. Components read it through the
-\texttt{useI18n} hook and reference keys rather than hard-coded strings, so the whole
-interface can be re-languaged from one place (Listing~\ref{lst:i18n}).
+Internationalisation is a representative example. The \texttt{I18nProvider} holds the current
+language and a translation function \texttt{t}, backed by a single \texttt{translations.json}
+that maps namespaced keys to their Portuguese and English text, and publishes them through a
+context (Listing~\ref{lst:i18n_provider}).
+
+\begin{lstlisting}[language=JavaScript, caption={The \texttt{I18nProvider} resolves a key for the active language and publishes \texttt{t} through a context.}, label={lst:i18n_provider}]
+export function I18nProvider({ children }) {
+    const [lang, setLang] = useState('pt');   // 'pt' | 'en'
+    // resolve the key for the active language, falling back to the key itself
+    const t = (key) => translations[lang]?.[key] || key;
+    return (
+        <I18nContext.Provider value={{ lang, setLang, t }}>
+            {children}
+        </I18nContext.Provider>
+    );
+}
+\end{lstlisting}
+
+Any component then reads it through the \texttt{useI18n} hook and references keys rather than
+hard-coded strings, so the whole interface can be re-languaged from one place
+(Listing~\ref{lst:i18n}).
 
 \begin{lstlisting}[language=JavaScript, caption={Reading translated text through the \texttt{useI18n} hook.}, label={lst:i18n}]
 const { t } = useI18n();
@@ -404,7 +420,8 @@ and~\ref{fig:fe_videos_page}).
 
 \subsection{Search} \label{sec:fe_search}
 
-Readers can search the site through an overlay opened from the header, which offers live
+Readers can search the site through an overlay opened from the header
+(Figure~\ref{fig:fe_search}), which offers live
 suggestions as the query is typed and, on submission, leads to a dedicated results page
 addressable by its own URL (\texttt{/s?q=\ldots}). Both the overlay and the results page
 query the public content endpoint, which matches the search term, case-insensitively, as
@@ -414,6 +431,13 @@ simple --- it is neither a tokenised full-text search nor ranked by relevance, a
 not reach into the article body --- which is adequate for the current scale but leaves
 richer, ranked search (see Chapter~\ref{cap:conclusion}) as a clear avenue for
 improvement.
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=\textwidth,height=0.5\textheight,keepaspectratio]{./figures/screenshots/search.png}
+      \caption{Public website --- keyword search.}
+      \label{fig:fe_search}
+\end{figure}
 
 \subsection{Podcast and Episode Pages} \label{sec:fe_podcast}
 

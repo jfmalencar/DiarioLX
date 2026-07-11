@@ -30,12 +30,12 @@ high-level architecture of the system.
 The system comprises the following main components:
 
 \begin{itemize}
-      \item \textbf{Frontend} (React + TypeScript) - a single-page application (SPA)
+      \item \textbf{Frontend} (React + TypeScript~\cite{typescript}) - a single-page application (SPA)
             running in the browser, responsible for rendering the public website and the
             backoffice interface. Communicates with the backend via HTTP requests and
             uploads media directly to the object store, bypassing the application server.
 
-      \item \textbf{Web Service} (Spring Boot + Kotlin) - the backend application
+      \item \textbf{Web Service} (Spring Boot~\cite{springboot_docs} + Kotlin~\cite{kotlin}) - the backend application
             responsible for business logic, authentication, and data access. Controls media
             metadata and mediates access to the data layer.
 
@@ -58,14 +58,14 @@ Table~\ref{tab:tech_stack} summarises the technologies adopted in this project.
       \label{tab:tech_stack}
       \begin{tabularx}{\textwidth}{llX}
             \toprule
-            \textbf{Layer} & \textbf{Technology}                                       & \textbf{Rationale}                                                                      \\
+            \textbf{Layer} & \textbf{Technology}  & \textbf{Rationale}                                                                      \\
             \midrule
-            Frontend       & React~\cite{react_docs} (TypeScript~\cite{typescript})    & Component-based UI architecture and strong ecosystem support                            \\
-            Backend        & Spring Boot~\cite{springboot_docs} (Kotlin~\cite{kotlin}) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
-            Database       & PostgreSQL                                                & Relational model well-suited for editorial and structured data                          \\
-            Media Storage  & SeaweedFS                                                 & Self-hosted Amazon S3-compatible distributed storage with low operational overhead      \\
-            Data Access    & JDBI                                                      & Lightweight SQL library providing direct query control without ORM overhead             \\
-            Authentication & JWT                                                       & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
+            Frontend       & React (TypeScript)   & Component-based UI architecture and strong ecosystem support                            \\
+            Backend        & Spring Boot (Kotlin) & Robust HTTP API development, JVM ecosystem integration, and type safety                 \\
+            Database       & PostgreSQL           & Relational model well-suited for editorial and structured data                          \\
+            Media Storage  & SeaweedFS            & Self-hosted Amazon S3-compatible distributed storage with low operational overhead      \\
+            Data Access    & JDBI                 & Lightweight SQL library providing direct query control without ORM overhead             \\
+            Authentication & JWT                  & Stateless token validation with short-lived access tokens and long-lived refresh tokens \\
             \bottomrule
       \end{tabularx}
 \end{table}
@@ -113,6 +113,11 @@ required role:
 \end{itemize}
 
 \section{Authentication and Authorization} \label{sec:arch_auth}
+
+User passwords are never stored in plaintext: only a \emph{bcrypt} hash~\cite{provos1999bcrypt} of each password
+--- a salted, deliberately slow function that resists brute-force and rainbow-table
+attacks --- is kept in the \texttt{password\_hash} column, and at login the submitted
+password is verified against that hash rather than compared directly.
 
 Authentication is implemented using JSON Web Tokens (JWT)~\cite{jwt_spec}. Upon
 successful login, the server generates two tokens: a short-lived access token
@@ -237,9 +242,3 @@ The transitions between these states are as follows:
             resubmitted; an approved item can only be edited by an Editor or
             Administrator.
 \end{itemize}
-
-These transitions are enforced at the API level. Each one is exposed as a dedicated
-endpoint under \texttt{/api/backoffice/contents} and guarded by the
-\texttt{@RequireRole} annotation, so the backend validates that the requesting user's
-role permits the transition before persisting the state change. The permission model
-and the implementation of these checks are described in Chapter~\ref{cap:backend}.
