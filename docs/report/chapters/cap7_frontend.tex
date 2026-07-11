@@ -11,7 +11,8 @@ component; Section~\ref{sec:fe_providers} the context providers that supply cros
 state; Section~\ref{sec:fe_bootstrap_navigation} start-up configuration and client-side
 routing; Section~\ref{sec:fe_auth} cookie-based sessions and transparent token refresh;
 Sections~\ref{sec:fe_backoffice} and~\ref{sec:fe_public} the editorial backoffice and the
-public website; and Section~\ref{sec:fe_tests} the Playwright end-to-end suite.
+public website; Section~\ref{sec:fe_responsive} how the interface adapts across viewports;
+and Section~\ref{sec:fe_tests} the Playwright end-to-end suite.
 
 \section{Technology} \label{sec:fe_technology}
 
@@ -456,8 +457,18 @@ contributor --- has a public author page listing their profile and the content t
 authored or were credited on
 (Figures~\ref{fig:fe_team_page} and~\ref{fig:fe_author_page}).
 
-The interface is built on Bootstrap's responsive grid system, adapting layouts
-to mobile, tablet, and desktop viewports through standard Bootstrap breakpoints.
+\section{Responsiveness} \label{sec:fe_responsive}
+
+Delivering the public website across mobile, tablet, and desktop viewports is an explicit
+requirement (Section~\ref{sec:req_nonfunctional}). Layouts are composed with Bootstrap's
+responsive grid and its standard breakpoints: multi-column arrangements --- the homepage
+featured grid, the content listings, and the section menus --- reflow into a single stacked
+column on narrow screens, while the header condenses into a collapsible menu. The backoffice,
+by contrast, is designed for desktop use only, where editorial work takes place.
+Figure~\ref{fig:fe_responsive} shows the mobile layouts of the header, the homepage, and an
+article page. This
+behaviour is exercised automatically: the public end-to-end suite runs under mobile-emulation
+profiles alongside the desktop browsers (Section~\ref{sec:fe_tests}).
 
 \section{Tests} \label{sec:fe_tests}
 

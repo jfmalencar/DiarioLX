@@ -90,10 +90,10 @@ class BootstrapController(
                                         setTeam = LinkDTO(Uris.Users.SET_TEAM, HttpMethod.PATCH),
                                         resetPassword =
                                             PasswordResetEndpointsDTO(
-                                                getById = LinkDTO(Uris.Users.PasswordReset.GET_BY_ID, HttpMethod.GET),
-                                                getAll = LinkDTO(Uris.Users.PasswordReset.GET_ALL, HttpMethod.GET),
-                                                approve = LinkDTO(Uris.Users.PasswordReset.APPROVE, HttpMethod.POST),
-                                                reject = LinkDTO(Uris.Users.PasswordReset.REJECT, HttpMethod.POST),
+                                                getById = LinkDTO(Uris.Users.PasswordResetRequests.GET_BY_ID, HttpMethod.GET),
+                                                getAll = LinkDTO(Uris.Users.PasswordResetRequests.GET_ALL, HttpMethod.GET),
+                                                approve = LinkDTO(Uris.Users.PasswordResetRequests.APPROVE, HttpMethod.POST),
+                                                reject = LinkDTO(Uris.Users.PasswordResetRequests.REJECT, HttpMethod.POST),
                                             ),
                                     ),
                                 tags =

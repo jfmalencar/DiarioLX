@@ -205,13 +205,11 @@ content items within a section, each with a \texttt{position} that fixes its ord
 public navigation bar is modelled by a \textbf{Navigation} entity, which has no attributes of
 its own; the categories highlighted there are given by a relationship between \emph{Category}
 and \emph{Navigation} --- ``a category can appear in the navigation'' --- that carries a
-single relationship attribute, \texttt{position}, fixing the order in which those categories
-are shown.
+single relationship attribute, \texttt{position}.
 
 Finally, \textbf{Settings}\label{sec:dm_settings} is a generic key/value store for the
-remaining site-wide configuration --- social-media links, contact information, and the
-navigation toggles that control whether the photos, podcasts, and videos sections are shown
---- allowing these values to be edited by administrators without schema changes.
+remaining site-wide configuration --- social-media links, contact information, and navigation
+toggles --- editable by administrators without schema changes.
 
 \section{Normalisation and Physical Model} \label{sec:dm_physical}
 
@@ -258,10 +256,7 @@ values --- inherently UTC, which sidesteps timezone conversion and maps directly
 \texttt{kotlinx.datetime.Instant} type used in the backend --- and every table uses a
 compact surrogate key rather than a UUID, keeping joins and indexes small for the platform's
 expected data volume. Several attribute domains are further constrained by PostgreSQL
-enumerated types (Appendix~\ref{app:dm_enums}), and referential integrity is enforced with
-foreign-key constraints whose deletion behaviour reflects each relationship --- cascading
-where a child cannot outlive its parent (a content item's blocks), or nulling the reference
-where it can (a category's subcategories when the parent is removed).
+enumerated types (Appendix~\ref{app:dm_enums}).
 
 Built on top of this schema, a set of PostgreSQL \emph{views} encapsulates the recurring
 join and aggregation logic used by the repository layer, and a set of \emph{indexes}

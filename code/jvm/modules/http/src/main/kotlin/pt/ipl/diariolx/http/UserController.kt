@@ -211,7 +211,7 @@ class UserController(
     }
 
     @RequireRole(UserRole.ADMIN)
-    @GetMapping(Uris.Users.PasswordReset.GET_BY_ID)
+    @GetMapping(Uris.Users.PasswordResetRequests.GET_BY_ID)
     @MayReturnOk
     @MayReturnBadRequest
     fun getResetById(
@@ -222,12 +222,12 @@ class UserController(
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Users.PasswordReset.GET_BY_ID,
+                    Uris.Users.PasswordResetRequests.GET_BY_ID,
                 )
         }
 
     @RequireRole(UserRole.ADMIN)
-    @GetMapping(Uris.Users.PasswordReset.GET_ALL)
+    @GetMapping(Uris.Users.PasswordResetRequests.GET_ALL)
     @MayReturnPaginationOk
     @MayReturnBadRequest
     fun getAllResetRequests(
@@ -254,12 +254,12 @@ class UserController(
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Users.PasswordReset.GET_ALL,
+                    Uris.Users.PasswordResetRequests.GET_ALL,
                 )
         }
 
     @RequireRole(UserRole.ADMIN)
-    @PostMapping(Uris.Users.PasswordReset.APPROVE)
+    @PostMapping(Uris.Users.PasswordResetRequests.APPROVE)
     @MayReturnOk
     @MayReturnBadRequest
     fun approvePasswordReset(
@@ -271,12 +271,12 @@ class UserController(
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Users.PasswordReset.APPROVE,
+                    Uris.Users.PasswordResetRequests.APPROVE,
                 )
         }
 
     @RequireRole(UserRole.ADMIN)
-    @PostMapping(Uris.Users.PasswordReset.REJECT)
+    @PostMapping(Uris.Users.PasswordResetRequests.REJECT)
     @MayReturnOk
     @MayReturnBadRequest
     fun rejectPasswordReset(
@@ -288,7 +288,7 @@ class UserController(
             is Failure ->
                 Problem.response(
                     response.value.toProblem(),
-                    Uris.Users.PasswordReset.REJECT,
+                    Uris.Users.PasswordResetRequests.REJECT,
                 )
         }
 }

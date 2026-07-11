@@ -113,8 +113,7 @@ CREATE TABLE invites (
     role_assigned user_role NOT NULL,
     created_by INTEGER NULL REFERENCES users(id) ON DELETE SET NULL,
     created_at BIGINT NOT NULL,
-    expires_at BIGINT NOT NULL,
-    used BOOLEAN DEFAULT FALSE
+    expires_at BIGINT NOT NULL
 );
 
 INSERT INTO invites (invite_token, role_assigned, created_at, expires_at) VALUES

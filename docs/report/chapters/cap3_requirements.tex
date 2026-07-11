@@ -115,19 +115,21 @@ The homepage must display:
 
 \section{Non-Functional Requirements} \label{sec:req_nonfunctional}
 
+As non-functional requirements, we have the following:
+
 \begin{itemize}
-      \item \textbf{Security}: Authentication via JSON Web Tokens (JWT), with short-lived
-            access tokens and long-lived refresh tokens both delivered as \texttt{HttpOnly}
+      \item \textbf{Security} - Authentication using short-lived JSON Web Token (JWT) access
+            tokens and long-lived refresh tokens, both delivered as \texttt{HttpOnly}
             cookies. Role-based access control enforced at the API level.
 
-      \item \textbf{Media handling}: The platform must accept media uploads of up to two
+      \item \textbf{Media handling} - The platform must accept media uploads of up to two
             gigabytes per file, covering the high-resolution imagery, audio, and video used
             in editorial content.
 
-      \item \textbf{Maintainability}: The system is organised into independent modules
+      \item \textbf{Maintainability} - The system is organised into independent modules
             (HTTP, Services, Domain, Repository, and Storage) allowing the frontend and backend
             to evolve independently.
 
-      \item \textbf{Compatibility}: The public website must be fully functional on mobile,
-            tablet, and desktop viewports. The backoffice is optimised for desktop use.
+      \item \textbf{Compatibility} - The public website must be fully functional on mobile,
+            tablet, and desktop viewports. The backoffice is designed for desktop use only.
 \end{itemize}

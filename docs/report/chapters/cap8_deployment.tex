@@ -124,8 +124,8 @@ content-addressed and never change, are cached for thirty days and marked
 \texttt{immutable}, as are the static frontend assets, which carry content-hashed file
 names. The backoffice, authentication, and documentation endpoints are explicitly marked
 \texttt{no-store}, so that no authenticated or administrative response is ever cached.
-Each response exposes an \texttt{X-Cache-Status} header indicating whether it was served
-from cache.
+Cacheable responses --- those from the public API and media --- expose an
+\texttt{X-Cache-Status} header indicating whether they were served from cache.
 
 \section{Social Media Previews} \label{sec:dep_previews}
 
