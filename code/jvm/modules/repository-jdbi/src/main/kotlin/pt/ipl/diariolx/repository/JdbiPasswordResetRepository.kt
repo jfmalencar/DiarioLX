@@ -71,13 +71,15 @@ class JdbiPasswordResetRepository(
             .singleOrNull()
             ?.toDomain()
 
-    override fun getByUserId(userId: Int): PasswordResetRequest? =
+    override fun getByUserId(userId: Int): List<PasswordResetRequest> =
         handle
             .createQuery("SELECT * FROM v_password_reset_requests WHERE user_id = :user_id")
             .bind("user_id", userId)
             .mapTo<ResetRequestDBModel>()
-            .singleOrNull()
-            ?.toDomain()
+            .list()
+            .map {
+                it.toDomain()
+            }
 
     override fun getByResetToken(resetToken: String): PasswordResetRequest? =
         handle

@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { Upload, Eye, EyeOff } from 'lucide-react';
+import { Upload } from 'lucide-react';
 
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { useI18n } from '@/shared/hooks/useI18n';
@@ -10,14 +9,12 @@ import { usePath } from '@/shared/hooks/usePath';
 import { useUsers } from '@/shared/hooks/useUsers';
 import { useSnackbar } from '@/shared/hooks/useSnackbar';
 
-import { Modal } from '@/shared/components/modals/Modal';
-
 import { formatDate } from '@/shared/utils/format';
+import { EditProfileModal, type ProfileUpdateData } from './EditProfileModal';
 
 export function MyProfile() {
     const { user, hydrated, logout, refreshUser } = useAuthentication();
     const { updateProfile, completeAvatarUpload } = useUsers();
-    const [showPassword, setShowPassword] = useState(false);
     const { t } = useI18n();
     const navigate = useNavigate();
     const { getSignedUrl } = useMedia();
@@ -25,15 +22,6 @@ export function MyProfile() {
     const { showSnackbar } = useSnackbar();
 
     const [editModalOpen, setEditModalOpen] = useState(false);
-    const [editFormData, setEditFormData] = useState({
-        username: user?.username || '',
-        email: user?.email || '',
-        password: '',
-        firstName: user?.firstName || '',
-        lastName: user?.lastName || '',
-        position: user?.position || '',
-        bio: user?.bio || '',
-    });
     const [saveLoading, setSaveLoading] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [imageHovered, setImageHovered] = useState(false);
@@ -49,19 +37,6 @@ export function MyProfile() {
     const role = user?.username?.toUpperCase() || t('common.not_available');
     const statusLabel = user?.isActive ? t('myprofile.active').toUpperCase() : t('myprofile.inactive').toUpperCase();
     const statusColor = user?.isActive ? '#1FBC7D' : '#6c757d';
-
-    const handleEditClick = () => {
-        setEditFormData({
-            username: user?.username || '',
-            email: user?.email || '',
-            password: '',
-            firstName: user?.firstName || '',
-            lastName: user?.lastName || '',
-            position: user?.position || '',
-            bio: user?.bio || '',
-        });
-        setEditModalOpen(true);
-    };
 
     const handleImageUploadClick = () => {
         fileInputRef.current?.click();
@@ -90,7 +65,6 @@ export function MyProfile() {
 
             await completeAvatarUpload(signedUpload.id);
             await refreshUser();
-
         } catch (err) {
             console.error(err);
             showSnackbar(t('common.upload_error'), 'error');
@@ -99,17 +73,17 @@ export function MyProfile() {
         }
     };
 
-    const handleSaveProfile = async () => {
+    const handleSaveProfile = async (updatedData: ProfileUpdateData) => {
         setSaveLoading(true);
         try {
             const result = await updateProfile(
-                editFormData.username,
-                editFormData.email,
-                editFormData.password || undefined,
-                editFormData.firstName,
-                editFormData.lastName,
-                editFormData.bio || null,
-                editFormData.position || null
+                updatedData.username,
+                updatedData.email,
+                updatedData.password,
+                updatedData.firstName,
+                updatedData.lastName,
+                updatedData.bio,
+                updatedData.position
             );
             if (!result.ok) {
                 showSnackbar(result.error, 'error');
@@ -136,12 +110,7 @@ export function MyProfile() {
             <div style={{ width: '100%', maxWidth: 568, position: 'relative' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                     <div
-                        style={{
-                            position: 'relative',
-                            width: 213,
-                            height: 213,
-                            cursor: 'pointer'
-                        }}
+                        style={{ position: 'relative', width: 213, height: 213, cursor: 'pointer' }}
                         onMouseEnter={() => setImageHovered(true)}
                         onMouseLeave={() => setImageHovered(false)}
                         onClick={handleImageUploadClick}
@@ -206,16 +175,11 @@ export function MyProfile() {
                             <span style={{ color: statusColor, fontSize: 15, fontWeight: 600, textTransform: 'uppercase', wordWrap: 'break-word', position: 'relative' }}>
                                 {statusLabel}
                             </span>
-                            <div style={{ width: 14, height: 14, position: 'relative', overflow: 'hidden' }}>
-                                <div style={{ width: 11.67, height: 11.67, position: 'relative', background: statusColor, margin: '1.17px' }} />
-                                <div style={{ width: 0.90, height: 3.29, position: 'relative', background: statusColor, marginLeft: '6.55px', marginTop: '5.08px' }} />
-                                <div style={{ width: 1.20, height: 1.20, position: 'relative', background: statusColor, marginLeft: '6.40px', marginTop: '2px' }} />
-                            </div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center', marginTop: '16px', position: 'relative' }}>
                         <button
-                            onClick={handleEditClick}
+                            onClick={() => setEditModalOpen(true)}
                             style={{
                                 padding: '8px 16px',
                                 fontSize: 15,
@@ -229,14 +193,6 @@ export function MyProfile() {
                                 transition: 'all 0.3s ease',
                                 position: 'relative',
                                 whiteSpace: 'nowrap'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = '#f8f9fa';
-                                e.currentTarget.style.borderColor = '#999';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'white';
-                                e.currentTarget.style.borderColor = '#ccc';
                             }}
                         >
                             {t('common.edit')}
@@ -257,14 +213,6 @@ export function MyProfile() {
                                 position: 'relative',
                                 whiteSpace: 'nowrap'
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = '#dc3545';
-                                e.currentTarget.style.color = 'white';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'white';
-                                e.currentTarget.style.color = '#dc3545';
-                            }}
                         >
                             {t('common.logout')}
                         </button>
@@ -276,106 +224,23 @@ export function MyProfile() {
                     </div>
                 )}
             </div>
-            <Modal
-                isOpen={editModalOpen}
-                title={t('common.edit_profile')}
-                onClose={() => setEditModalOpen(false)}
-                buttons={[
-                    {
-                        key: 'cancel',
-                        label: t('common.cancel'),
-                        variant: 'secondary',
-                        onClick: () => setEditModalOpen(false),
-                    },
-                    {
-                        key: 'save',
-                        label: t('common.save'),
-                        variant: 'primary',
-                        onClick: handleSaveProfile,
-                        disabled: saveLoading,
-                    },
-                ]}
-            >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div className='mb-3'>
-                        <label className='form-label'>{t('common.username')}</label>
-                        <input
-                            type='text'
-                            className='form-control'
-                            value={editFormData.username}
-                            onChange={(e) => setEditFormData(prev => ({ ...prev, username: e.target.value }))}
-                        />
-                    </div>
-                    <div className='mb-3'>
-                        <label className='form-label'>{t('common.email')}</label>
-                        <input
-                            type='email'
-                            className='form-control'
-                            value={editFormData.email}
-                            onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
-                        />
-                    </div>
-                    <div className='mb-3'>
-                        <label className='form-label'>{t('common.password')} ({t('common.optional')})</label>
-                        <div className='input-group'>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                className='form-control'
-                                value={editFormData.password}
-                                onChange={(e) => setEditFormData(prev => ({ ...prev, password: e.target.value }))}
-                                placeholder={t('myprofile.password_placeholder')}
-                            />
-                            <button
-                                type='button'
-                                className='input-group-text border-0 border-bottom rounded-0 border-black bg-transparent'
-                                onClick={() => setShowPassword((current) => !current)}
-                                aria-label={showPassword ? t('register.hide_password') : t('register.show_password')}
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label className='form-label'>{t('common.first_name')}</label>
-                        <input
-                            type='text'
-                            className='form-control'
-                            value={editFormData.firstName}
-                            minLength={3}
-                            onChange={(e) => setEditFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className='form-label'>{t('common.last_name')}</label>
-                        <input
-                            type='text'
-                            className='form-control'
-                            value={editFormData.lastName}
-                            minLength={3}
-                            onChange={(e) => setEditFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className='form-label'>{t('myprofile.position')}</label>
-                        <input
-                            type='text'
-                            className='form-control'
-                            placeholder={t('myprofile.position_placeholder')}
-                            value={editFormData.position}
-                            onChange={(e) => setEditFormData(prev => ({ ...prev, position: e.target.value }))}
-                        />
-                    </div>
-                    <div>
-                        <label className='form-label'>{t('common.bio')}</label>
-                        <textarea
-                            className='form-control'
-                            rows={4}
-                            value={editFormData.bio}
-                            onChange={(e) => setEditFormData(prev => ({ ...prev, bio: e.target.value }))}
-                        />
-                    </div>
-                </div>
-            </Modal>
+
+            {editModalOpen && (
+                <EditProfileModal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    initialData={{
+                        username: user?.username || '',
+                        email: user?.email || '',
+                        firstName: user?.firstName || '',
+                        lastName: user?.lastName || '',
+                        position: user?.position || '',
+                        bio: user?.bio || '',
+                    }}
+                    onSave={handleSaveProfile}
+                    isLoading={saveLoading}
+                />
+            )}
         </div>
     );
 }

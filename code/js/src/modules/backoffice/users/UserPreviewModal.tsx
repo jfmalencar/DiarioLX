@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { UserIcon } from 'lucide-react';
 
 import { useI18n } from '@/shared/hooks/useI18n';
 import { usePath } from '@/shared/hooks/usePath';
@@ -59,7 +58,7 @@ export function UserPreviewModal({ user, isOpen, onClose, onSuccess }: Props) {
     const hasChanges = selectedRole !== user.role || isOnTeam !== user.onTeam;
 
     const handleSave = async () => {
-        if (!isAdmin) return; // Salvaguarda extra de segurança por código
+        if (!isAdmin) return;
         setSaveLoading(true);
         try {
             if (selectedRole !== user.role) {
@@ -122,10 +121,15 @@ export function UserPreviewModal({ user, isOpen, onClose, onSuccess }: Props) {
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                         ) : (
-                            <UserIcon size={48} className="text-secondary" />
+                            <img
+                                src={'https://placehold.co/213x213/black/white?text=' + (user.firstName?.charAt(0).toUpperCase() || 'U')}
+                                alt={`${user.firstName} ${user.lastName}`}
+                                className='rounded-circle'
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
                         )}
                     </div>
-                    <div className='form-check form-switch d-flex align-items-center gap-2 m-0 mt-2 bg-light p-2 px-3 rounded border'>
+                    <div className='form-check form-switch d-flex align-items-center gap-2 m-0 mt-2 bg-light p-2 px-3 rounded border w-100 justify-content-center'>
                         <input
                             className='form-check-input m-0'
                             type='checkbox'
@@ -140,56 +144,69 @@ export function UserPreviewModal({ user, isOpen, onClose, onSuccess }: Props) {
                             {t('users.show_on_team')}
                         </label>
                     </div>
-                </div>
-                <div className='col-12 col-md-8 ps-md-4 d-flex flex-column justify-content-between'>
-                    <div>
-                        <h3 className="fw-semibold text-dark mb-1" style={{ fontSize: '1.6rem' }}>{displayName}</h3>
-                        <div className="text-muted mb-2 fw-medium" style={{ fontSize: '1rem' }}>{user.position || '-'}</div>
-                        <div className="text-secondary small text-lowercase mb-3">{email}</div>
-                        
-                        {bio && (
-                            <div className="mb-3">
-                                <span className="text-uppercase text-muted fw-semibold d-block mb-1" style={{ fontSize: 11, letterSpacing: '0.5px' }}>{t('common.bio')}</span>
-                                <p className="text-secondary bg-light p-2.5 px-3 rounded border mb-0 small" style={{ whiteSpace: 'pre-line' }}>
-                                    {bio}
-                                </p>
-                            </div>
-                        )}
+                    <div className="w-100 mt-3">
+                        <label className="form-label fw-semibold text-uppercase text-muted small mb-1" style={{ letterSpacing: '0.5px', fontSize: 11 }}>
+                            {t('users.role')}
+                        </label>
+                        <select 
+                            className="form-select form-select-sm"
+                            value={selectedRole}
+                            onChange={(e) => setSelectedRole(e.target.value as UserRole)}
+                            disabled={saveLoading || !isAdmin}
+                        >
+                            <option value="ADMIN">{t('users.admin')}</option>
+                            <option value="EDITOR">{t('users.editor')}</option>
+                            <option value="CONTRIBUTOR">{t('users.contributor')}</option>
+                        </select>
                     </div>
-
-                    <div>
-                        <div className='d-flex align-items-center gap-2 border-bottom border-top py-2 w-100 text-uppercase text-muted' style={{ fontSize: 12, letterSpacing: '0.5px' }}>
-                            <span>{t('myprofile.created_at')}</span>
-                            <span className="fw-semibold text-dark">{createdAtDate}</span>
+                </div>
+                <div className='col-12 col-md-8 ps-md-4 d-flex flex-column justify-content-between pt-3 pt-md-0'>
+                        <div className="mb-3">
+                            <h3 className="fw-semibold text-dark mb-0" style={{ fontSize: '1.6rem' }}>{displayName}</h3>
+                            <div className="text-muted fw-medium mt-0.5" style={{ fontSize: '1rem' }}>{user.position || '-'}</div>
+                        </div>
+                        <div className='d-flex align-items-center gap-2 border-top border-bottom py-2 w-100 text-uppercase text-muted flex-wrap mb-2' style={{ fontSize: 11, letterSpacing: '0.5px' }}>
+                            <div>
+                                <span>{t('register.username')}: </span>
+                                <span className="fw-semibold text-dark text-none">{user.username}</span>
+                            </div>
                             <span>|</span>
-                            <span>{t('register.username')}:</span>
-                            <span className="fw-semibold text-dark text-none">{user.username}</span>
+                            <div>
+                                <span>{t('register.email')}: </span>
+                                <span className="fw-semibold text-dark text-lowercase">{email}</span>
+                            </div>
+                        </div>
+                        <div className='d-flex align-items-center gap-2 border-top border-bottom py-2 w-100 text-uppercase text-muted flex-wrap mb-3' style={{ fontSize: 11, letterSpacing: '0.5px' }}>
+                            <div>
+                                <span>{t('myprofile.created_at')}: </span>
+                                <span className="fw-semibold text-dark">{createdAtDate}</span>
+                            </div>
                             <span>|</span>
-                            <div className='d-flex align-items-center gap-1'>
-                                <span style={{ color: statusColor, fontWeight: 600 }}>
+                            <div className='d-flex align-items-center gap-1.5'>
+                                <span>{t('myprofile.status')}: </span>
+                                <span style={{ color: statusColor, fontWeight: 600, paddingRight: 4, letterSpacing: '0.5px', fontSize: 11 }}>
                                     {statusLabel}
                                 </span>
                                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColor }} />
                             </div>
                         </div>
-                        <div className="w-100 mt-3">
-                            <label className="form-label fw-semibold text-uppercase text-muted small mb-1" style={{ letterSpacing: '0.5px', fontSize: 11 }}>
-                                {t('users.role')}
-                            </label>
-                            <select 
-                                className="form-select form-select-sm"
-                                value={selectedRole}
-                                onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                                disabled={saveLoading || !isAdmin}
-                            >
-                                <option value="ADMIN">{t('users.admin')}</option>
-                                <option value="EDITOR">{t('users.editor')}</option>
-                                <option value="CONTRIBUTOR">{t('users.contributor')}</option>
-                            </select>
-                        </div>
+                        {bio && (
+                            <div className="flex-grow-1 d-flex flex-column justify-content-start mt-1">
+                                <span className="text-uppercase text-muted fw-semibold d-block mb-1" style={{ fontSize: 11, letterSpacing: '0.5px' }}>{t('common.bio')}</span>
+                                <p 
+                                    className="text-secondary bg-light p-2.5 px-3 rounded border mb-0 small w-100 flex-grow-1" 
+                                    style={{ 
+                                        whiteSpace: 'pre-line', 
+                                        overflowY: 'auto',
+                                        maxHeight: '180px'
+                                    }}
+                                >
+                                    {bio}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
         </Modal>
     );
 }

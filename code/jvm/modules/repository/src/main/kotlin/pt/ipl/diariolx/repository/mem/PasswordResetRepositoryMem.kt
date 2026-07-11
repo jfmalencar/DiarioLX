@@ -30,7 +30,7 @@ class PasswordResetRepositoryMem : PasswordResetRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getByUserId(userId: Int): PasswordResetRequest? {
+    override fun getByUserId(userId: Int): List<PasswordResetRequest> {
         TODO("Not yet implemented")
     }
 

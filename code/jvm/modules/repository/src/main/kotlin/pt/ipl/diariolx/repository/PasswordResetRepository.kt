@@ -21,7 +21,7 @@ interface PasswordResetRepository {
 
     fun getById(id: Int): PasswordResetRequest?
 
-    fun getByUserId(userId: Int): PasswordResetRequest?
+    fun getByUserId(userId: Int): List<PasswordResetRequest>
 
     fun getByResetToken(resetToken: String): PasswordResetRequest?
 

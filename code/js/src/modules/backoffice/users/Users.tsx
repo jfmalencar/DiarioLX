@@ -107,16 +107,22 @@ const UsersTable = ({ filter, openModal }: Props) => {
                             </TableColumn>
                             <TableColumn className='col-6 col-lg-2 text-lg-end'>
                                 <div className='d-flex justify-content-center align-items-center gap-2'>
-                                    {canManageUsers ? (
+                                    <Link
+                                        to={`/a/${row.username}`}
+                                        className='btn btn-outline-dark rounded-2'
+                                        data-testid={`visit-author-button-${index}`}
+                                    >
+                                        <ExternalLink size={16} />
+                                    </Link>
+                                    <button
+                                        onClick={() => openModal(null, row)}
+                                        className='btn btn-outline-secondary rounded-2'
+                                        title={t('users.preview_tooltip')}
+                                    >
+                                        <MoreHorizontal size={16} />
+                                    </button>
+                                    {canManageUsers && (
                                         <>
-                                            <button
-                                                onClick={() => openModal(null, row)}
-                                                className='btn btn-outline-secondary rounded-2'
-                                                title={t('users.preview_tooltip')}
-                                            >
-                                                <MoreHorizontal size={16} />
-                                            </button>
-
                                             {row.isActive ? (
                                                 <button onClick={() => openModal('deactivate', row)} className='btn btn-dark rounded-2' title={t('users.deactivate_tooltip')}>
                                                     <UserX size={16} />
@@ -132,14 +138,6 @@ const UsersTable = ({ filter, openModal }: Props) => {
                                                 </>
                                             )}
                                         </>
-                                    ) : (
-                                        <Link
-                                            to={`/a/${row.username}`}
-                                            className='btn btn-outline-dark rounded-2'
-                                            data-testid={`visit-author-button-${index}`}
-                                        >
-                                            <ExternalLink size={16} />
-                                        </Link>
                                     )}
                                 </div>
                             </TableColumn>
