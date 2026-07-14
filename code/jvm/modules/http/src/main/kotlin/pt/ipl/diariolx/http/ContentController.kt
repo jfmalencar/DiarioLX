@@ -87,16 +87,17 @@ class ContentController(
         )
     }
 
-    @RequireRole(UserRole.EDITOR)
+    @RequireRole(UserRole.CONTRIBUTOR)
     @GetMapping(Uris.Content.INTERNAL_HISTORY_BY_ID)
     @MayReturnPaginationOk
     @MayReturnUnauthorized
     @MayReturnForbidden
     @MayReturnBadRequest
     fun getContentHistory(
+        @Parameter(hidden = true) authenticatedUser: AuthenticatedUser,
         @PathVariable id: Int,
     ): ResponseEntity<*> =
-        when (val response = contentService.historyById(id)) {
+        when (val response = contentService.historyById(id, authenticatedUser.user)) {
             is Success ->
                 ResponseEntity.ok(
                     FullHistoryResponseDTO.from(response.value),

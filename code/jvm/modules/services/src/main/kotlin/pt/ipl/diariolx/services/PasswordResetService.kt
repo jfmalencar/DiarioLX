@@ -71,7 +71,6 @@ class PasswordResetService(
         size: Int,
         status: String?,
     ): GetAllRequestsResult {
-        logger.info("GetAll Status: $status")
         val status =
             status?.let {
                 try {

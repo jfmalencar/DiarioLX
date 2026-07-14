@@ -212,6 +212,19 @@ class JdbiContentRepository(
             .map { it.content }
     }
 
+    override fun getPrimaryAuthorIdByContentId(contentId: Int): Int? =
+        handle
+            .createQuery(
+                """
+                   SELECT author_id
+                   FROM content_authors
+                   WHERE content_id = :contentId AND role = 'primary'
+                   
+                """,
+            ).bind("contentId", contentId)
+            .mapTo<Int>()
+            .firstOrNull()
+
     override fun historyById(id: Int): List<ContentHistory> =
         handle
             .createQuery(

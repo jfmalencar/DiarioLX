@@ -199,8 +199,17 @@ class ContentService(
         }
     }
 
-    fun historyById(id: Int): ContentHistoryResult {
+    fun historyById(
+        id: Int,
+        user: User,
+    ): ContentHistoryResult {
         return transactionManager.run { tx ->
+            val primaryAuthorId = tx.contentRepository.getPrimaryAuthorIdByContentId(id)
+            if (user.role == UserRole.CONTRIBUTOR && primaryAuthorId != null) {
+                if (user.id != primaryAuthorId) {
+                    return@run failure(ContentError.NotContentOwner)
+                }
+            }
             val history = tx.contentRepository.historyById(id)
             return@run success(history)
         }

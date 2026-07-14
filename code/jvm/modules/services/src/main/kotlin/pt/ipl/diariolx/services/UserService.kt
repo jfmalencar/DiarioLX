@@ -55,10 +55,6 @@ class UserService(
         lastName: String?,
         invite: Invite,
     ): UserCreateResult {
-        logger.info(
-            "Creating new user: $username, email: $email, password: $password, firstName: $firstName, " +
-                "lastName: $lastName, invite: ${invite.invite}",
-        )
         val username = Username.parse(username) ?: return failure(UserError.InvalidUsername)
         val email = Email.parse(email) ?: return failure(UserError.InvalidEmail)
         val password = Password.parse(password) ?: return failure(UserError.InvalidPassword)
@@ -87,11 +83,6 @@ class UserService(
         bio: String?,
         onTeam: Boolean?,
     ): UserUpdateResult {
-        logger.info(
-            "Updating user ${oldUser.id}: new username: $username, new email: $email, new password: $password, " +
-                "new firstName: $firstName, new lastName: $lastName, new bio: $bio",
-        )
-
         val username = Username.parse(username) ?: return failure(UserError.InvalidUsername)
         val email = Email.parse(email) ?: return failure(UserError.InvalidEmail)
         val passwordHash =
@@ -168,7 +159,6 @@ class UserService(
             if (!me.active) {
                 return@run failure(UserError.DeactivatedAccount)
             }
-            logger.info("Getting user by id: $id")
             val user = it.userRepository.getById(id)
             if (user == null) {
                 return@run failure(UserError.UserNotFound)
@@ -198,7 +188,6 @@ class UserService(
             if (!author.active) {
                 return@run failure(UserError.DeactivatedAccount)
             }
-            logger.info("Deleting user by id: $id; author: ${author.username}")
             if (author.id == id || author.role == UserRole.ADMIN) {
                 if (it.userRepository.hasContents(id)) {
                     return@run failure(UserError.UserHasContents)
@@ -239,7 +228,6 @@ class UserService(
         username: String,
         password: String,
     ): LoginResult {
-        logger.info("Logging in user: $username; password: $password")
         val username = Username.parse(username) ?: return failure(AuthError.InvalidCredentials)
         val password = Password.parse(password) ?: return failure(AuthError.InvalidCredentials)
 

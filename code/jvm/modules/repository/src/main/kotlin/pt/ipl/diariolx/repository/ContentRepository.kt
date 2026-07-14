@@ -47,6 +47,8 @@ interface ContentRepository {
 
     fun getBySlug(slug: String): Content?
 
+    fun getPrimaryAuthorIdByContentId(contentId: Int): Int?
+
     fun delete(id: Int): Boolean
 
     fun archive(

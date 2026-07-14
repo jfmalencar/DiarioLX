@@ -158,6 +158,10 @@ class ContentRepositoryMem(
                 )
             }
 
+    override fun getPrimaryAuthorIdByContentId(contentId: Int): Int? {
+        TODO("Not yet implemented")
+    }
+
     override fun getById(id: Int): Content? = contents.find { it.id == id }
 
     override fun getBySlug(slug: String): Content? {
