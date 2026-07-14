@@ -193,7 +193,7 @@ export const editContentReducer = (state: EditContentState, action: EditContentA
                     type: 'MEDIA',
                     position: 0,
                     media: action.payload,
-                    caption: null,
+                    content: null,
                 };
 
                 return {

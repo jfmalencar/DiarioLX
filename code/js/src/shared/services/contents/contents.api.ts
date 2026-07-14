@@ -101,7 +101,7 @@ export const useContentsApiService = (): ContentsService => {
             return {
               type: block.type,
               mediaId: block.media.id,
-              caption: block.caption,
+              content: block.content,
               position: block.position
             }
           }

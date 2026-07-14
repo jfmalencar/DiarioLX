@@ -95,21 +95,22 @@ export const ReviewContent = () => {
 
         if (modalAction === 'approve') {
             const result = await publish(Number(params.id), comment, publishedAt);
-            if (result) {
+            if (result.ok) {
                 showSnackbar(t('contents.publish_success'), 'success');
-                navigate('/p/' + content?.slug);
+                navigate(!publishedAt || publishedAt < Math.floor(Date.now() / 1000) ? `/p/${content?.slug}` : '/backoffice/contents?tab=scheduled');
             } else {
-                showSnackbar(t('contents.generic_error'));
+                showSnackbar(result.error || t('contents.generic_error'), 'error');
             }
         } else {
             const result = await reject(Number(params.id), comment);
-            if (result) {
+            if (result.ok) {
                 showSnackbar(t('contents.reject_success'), 'success');
                 navigate('/backoffice/contents');
+            } else {
+                showSnackbar(result.error || t('contents.generic_error'), 'error');
             }
         }
     };
-
 
     if (content === null) return null;
     return (

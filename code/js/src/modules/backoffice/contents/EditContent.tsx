@@ -420,13 +420,23 @@ export const EditContent = () => {
                             </div>
                             <div className='ej-block__content'>
                                 {block.type === 'MEDIA' ? (
-                                    block.media.mimeType.startsWith('video') ? (
-                                        <VideoBlock url={buildMediaUrl(block.media.path)} />
-                                    ) : block.media.mimeType.startsWith('audio') ? (
-                                        <audio src={buildMediaUrl(block.media.path)} controls className='w-100' />
-                                    ) : (
-                                        <ImageBlock url={buildMediaUrl(block.media.path)} alt={block.media.altText} />
-                                    )
+                                    <>
+                                        {block.media.mimeType.startsWith('video') ? (
+                                            <VideoBlock url={buildMediaUrl(block.media.path)} />
+                                        ) : block.media.mimeType.startsWith('audio') ? (
+                                            <audio src={buildMediaUrl(block.media.path)} controls className='w-100' />
+                                        ) : (
+                                            <ImageBlock url={buildMediaUrl(block.media.path)} alt={block.media.altText} />
+                                        )}
+                                        <input
+                                            type='text'
+                                            className='form-control mt-2'
+                                            placeholder={t('posts.caption')}
+                                            value={block.content ?? ''}
+                                            disabled={loading}
+                                            onChange={(e) => dispatch({ type: 'update-content-block', payload: { blockId: block.id, content: e.currentTarget.value } })}
+                                        />
+                                    </>
                                 ) : block.type === 'GALLERY' ? (
                                     <GalleryBlockEditor block={block} dispatch={dispatch} loading={loading} />
                                 ) : block.type === 'EMBED' ? (

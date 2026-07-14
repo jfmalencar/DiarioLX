@@ -117,7 +117,7 @@ export type ContentTextBlock = ContentBlockBase & {
 export type ContentMediaBlock = ContentBlockBase & {
     type: 'MEDIA';
     media: Media;
-    caption: string | null;
+    content: string | null;
 };
 
 export type GalleryImage = {
@@ -149,7 +149,7 @@ export type ContentBlockRequest =
     | { type: 'H4'; id: number, position: number, content: string }
     | { type: 'TEXT'; id: number, position: number, content: string }
     | { type: 'QUOTE'; id: number, position: number, content: string }
-    | { type: 'MEDIA'; id: number, position: number, mediaId: number; }
+    | { type: 'MEDIA'; id: number, position: number, mediaId: number; content: string | null }
     | { type: 'EMBED'; id: number, position: number, content: string }
     | { type: 'GALLERY'; id: number, position: number, images: { mediaId: number; caption: string | null }[] };
 

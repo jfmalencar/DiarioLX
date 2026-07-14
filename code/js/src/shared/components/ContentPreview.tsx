@@ -245,6 +245,11 @@ export const ContentPreview = ({ content }: Props) => {
                                         return (
                                             <div key={index}>
                                                 {media}
+                                                {block.content && (
+                                                    <p className='mb-2' style={{ fontSize: '0.9rem', lineHeight: 1.5, fontFamily: 'Sora', fontStyle: 'italic', color: isPhotoEssay ? '#cfcfcf' : '#444' }}>
+                                                        {block.content}
+                                                    </p>
+                                                )}
                                                 <div className='mb-4' style={{ fontSize: '0.9rem', lineHeight: 1.5, fontFamily: 'Sora' }}>
                                                     {groupCredits(block.media.credits, creditLabel).map((group) => (
                                                         <PeopleLine

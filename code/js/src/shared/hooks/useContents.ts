@@ -116,20 +116,8 @@ export const useContents = () => {
     )
 
     const reject = useCallback(
-        async (id: number, comment: string): Promise<boolean> => {
-            setLoading(true)
-            setError(null)
-            try {
-                await contentsService.reject(id, comment)
-                return true
-            } catch (err) {
-                const message = err instanceof Error ? err.message : 'Failed to reject content'
-                setError(message)
-                return false
-            } finally {
-                setLoading(false)
-            }
-        },
+        (id: number, comment: string): Promise<Result> =>
+            runAction(() => contentsService.reject(id, comment), 'Failed to reject content', setLoading, setError),
         [contentsService]
     )
 
