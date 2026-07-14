@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { Trash, UserX, UserCheck, MoreHorizontal, ExternalLink } from 'lucide-react';
 
+import { Button } from '@/shared/components/Button';
 import { Tabs, Tab } from '@/shared/components/Tabs';
 import { Table, TableHeader, TableColumn, TableRow, TablePagination, TableBody } from '@/shared/components/table/Table';
 import { TableSearch } from '@/shared/components/table/TableSearch';
@@ -245,12 +246,11 @@ export function Users() {
         <>
             {canManageUsers && (
                 <div className='d-flex justify-content-end mb-3'>
-                    <button
+                    <Button
                         onClick={() => navigate('/backoffice/users/reset-requests')}
-                        className='btn btn-dark rounded-0 px-4'
                     >
                         {t('users.view_reset_requests')}
-                    </button>
+                    </Button>
                 </div>
             )}
 

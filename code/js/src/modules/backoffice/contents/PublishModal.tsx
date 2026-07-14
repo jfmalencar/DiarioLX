@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuthentication } from '@/shared/hooks/useAuthentication';
 import { Modal } from '@/shared/components/modals/Modal';
 import { usePath } from '@/shared/hooks/usePath';
@@ -28,7 +28,17 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
     const canRequestReview = user?.features?.includes('request-review');
 
     const [mode, setMode] = useState<'publish' | 'review'>(canPublish ? 'publish' : 'review');
-    const [publishAt, setPublishAt] = useState(content.publishedAt ? new Date(content.publishedAt).toISOString().slice(0, 16) : '');
+    const [publishAt, setPublishAt] = useState('');
+    const userEdited = useRef(false);
+
+    useEffect(() => {
+        if (!isOpen) {
+            userEdited.current = false;
+            return;
+        }
+        if (userEdited.current) return;
+        setPublishAt(content.publishedAt ? new Date(content.publishedAt).toISOString().slice(0, 16) : '');
+    }, [isOpen, content.publishedAt]);
 
     const handleConfirm = () => {
         if (mode === 'publish') {
@@ -76,7 +86,6 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
                     </div>
                 </div>
             </div>
-
             <div className='mb-3'>
                 <div className='text-uppercase fw-semibold mb-1' style={{ fontSize: '0.75rem', color: '#666' }}>
                     {t('posts.authors')}
@@ -85,7 +94,6 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
                     {content.authors.join(', ').toUpperCase()}
                 </div>
             </div>
-
             <div>
                 <div className='text-uppercase fw-semibold mb-2' style={{ fontSize: '0.75rem', color: '#666' }}>
                     {t('posts.publish_date')}
@@ -118,7 +126,10 @@ export const PublishModal = ({ isOpen, onClose, onPublish, onRequestReview, cont
                                 type='datetime-local'
                                 className='form-control form-control-sm'
                                 value={publishAt}
-                                onChange={(e) => setPublishAt(e.currentTarget.value)}
+                                onChange={(e) => {
+                                    userEdited.current = true;
+                                    setPublishAt(e.currentTarget.value);
+                                }}
                             />
                             <div className='text-muted mt-1' style={{ fontSize: '0.8rem' }}>
                                 {t('posts.publish_at_hint')}

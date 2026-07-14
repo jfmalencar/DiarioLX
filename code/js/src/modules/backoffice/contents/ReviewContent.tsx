@@ -90,11 +90,11 @@ export const ReviewContent = () => {
         loadHistory();
     }, [fetchHistoryById, content?.id]);
 
-    const handleConfirmReview = async (comment: string) => {
+    const handleConfirmReview = async (comment: string, publishedAt?: number) => {
         setOpenConfirmModal(false);
 
         if (modalAction === 'approve') {
-            const result = await publish(Number(params.id), comment);
+            const result = await publish(Number(params.id), comment, publishedAt);
             if (result) {
                 showSnackbar(t('contents.publish_success'), 'success');
                 navigate('/p/' + content?.slug);
@@ -239,6 +239,7 @@ export const ReviewContent = () => {
             <ReviewModal
                 isOpen={openConfirmModal}
                 actionType={modalAction}
+                publishedAt={content.publishedAt ? new Date(content.publishedAt).getTime() : undefined}
                 onClose={() => setOpenConfirmModal(false)}
                 onConfirm={handleConfirmReview}
             />

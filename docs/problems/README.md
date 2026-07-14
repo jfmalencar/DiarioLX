@@ -29,6 +29,7 @@ Each problem below links to a page explaining when it occurs and how to resolve 
 | [Invalid role](invalid-role.md) | `invalid-role` | 400 |
 | [Invalid bio](invalid-bio.md) | `invalid-bio` | 400 |
 | [Unauthorized](unauthorized.md) | `unauthorized` | 401 |
+| [Forbidden](forbidden.md) | `forbidden` | 403 |
 | [User not found](user-not-found.md) | `user-not-found` | 400 |
 | [No user found](no-user-found.md) | `no-user-found` | 400 |
 | [Username already exists](username-already-exists.md) | `username-already-exists` | 409 |

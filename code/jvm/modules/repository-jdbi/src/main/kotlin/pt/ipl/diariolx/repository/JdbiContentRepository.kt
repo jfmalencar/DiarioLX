@@ -261,15 +261,11 @@ class JdbiContentRepository(
                 .createUpdate(
                     """
                    UPDATE contents
-                     SET published_at = CASE
-                             WHEN :is_approved THEN COALESCE(:chosen_published_at, published_at, :now)
-                             ELSE published_at
-                         END,
-                         updated_at = :updated_at, state = :newState::content_state
+                     SET published_at = :published_at, updated_at = :updated_at, state = :newState::content_state
                      WHERE id = :id
                 """,
                 ).bind("is_approved", newState == ContentState.APPROVED)
-                .bind("chosen_published_at", publishedAt?.epochSeconds)
+                .bind("published_at", (publishedAt ?: now).epochSeconds)
                 .bind("now", now.epochSeconds)
                 .bind("updated_at", now.epochSeconds)
                 .bind("newState", newState.name)

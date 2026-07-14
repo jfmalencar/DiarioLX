@@ -62,7 +62,7 @@ class AuthenticationInterceptor(
                 response.sendProblem(
                     objectMapper,
                     createProblemDetail(
-                        type = "https://api.example.com/errors/forbidden",
+                        type = "https://github.com/jfmalencar/DiarioLX/tree/main/docs/problems/forbidden",
                         title = "Forbidden",
                         status = HttpStatus.FORBIDDEN,
                         detail = "The account associated with this user does not have the required permission",
@@ -83,7 +83,7 @@ class AuthenticationInterceptor(
                 response.sendProblem(
                     objectMapper,
                     createProblemDetail(
-                        type = "https://api.example.com/errors/unauthorized",
+                        type = "https://github.com/jfmalencar/DiarioLX/blob/main/docs/problems/unauthorized.md",
                         title = "Unauthorized",
                         status = HttpStatus.UNAUTHORIZED,
                         detail = "The provided token is invalid or expired",

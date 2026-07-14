@@ -131,12 +131,12 @@ export const EditContent = () => {
                     }
                 });
             }
-            if (user) {
+            if (user && !canSelectMainAuthor) {
                 dispatch({ type: 'select-single', field: 'mainAuthor', searchField: 'mainAuthorSearch', option: { id: user.userId, name: user.firstName } })
             }
         }
         load();
-    }, [location.state, fetchById, params.id, navigate, user]);
+    }, [location.state, fetchById, params.id, navigate, user, canSelectMainAuthor]);
 
     const authors = useMemo(
         () => users.map((user) => ({ id: user.userId, name: `${user.firstName} ${user.lastName}` })),
@@ -234,7 +234,7 @@ export const EditContent = () => {
         const id = await ensureSaved();
         if (!id) return;
 
-        if (mode === 'publish' && publishedAt && publishedAt < Math.floor(Date.now() / 1000)) {
+        if (mode === 'publish') {
             const res = await publish(id, undefined, publishedAt);
             if (!res.ok) {
                 setOpenConfirmModal(false)
@@ -242,7 +242,7 @@ export const EditContent = () => {
                 return;
             }
             showSnackbar(t('contents.publish_success'), 'success');
-            navigate(`/p/${content.slug}`);
+            navigate(!publishedAt || publishedAt < Math.floor(Date.now() / 1000) ? `/p/${content.slug}` : '/backoffice/contents?tab=scheduled');
         } else {
             const res = await submit(id);
             if (!res.ok) {
