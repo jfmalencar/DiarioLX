@@ -144,7 +144,7 @@ export const EditContent = () => {
     );
 
     const fetchPodcastsByQuery = useCallback(
-        async ({ query }: { query: string }) => { await fetchPodcasts({ query, type: 'PODCAST' }); },
+        async ({ query }: { query: string }) => { await fetchPodcasts({ query, types: 'PODCAST' }); },
         [fetchPodcasts],
     );
 
